@@ -1,0 +1,74 @@
+package handler
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/middleware"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/service"
+)
+
+type Handler struct {
+	cfg        config.Config
+	services   *service.Container
+	middleware *middleware.Middleware
+	logger     *zap.Logger
+}
+
+type envelope struct {
+	Data      any       `json:"data"`
+	Error     *apiError `json:"error"`
+	RequestID string    `json:"request_id"`
+}
+
+type apiError struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+func New(services *service.Container, middleware *middleware.Middleware, cfg config.Config, logger *zap.Logger) *Handler {
+	return &Handler{
+		services:   services,
+		middleware: middleware,
+		cfg:        cfg,
+		logger:     logger,
+	}
+}
+
+func (h *Handler) Health(c *gin.Context) {
+	h.respond(c, http.StatusOK, gin.H{"status": "ok", "service": "gamblock-ai-backend"})
+}
+
+func (h *Handler) Ready(c *gin.Context) {
+	ready := gin.H{"status": "ready", "database_configured": h.cfg.DatabaseURL != "", "storage": h.cfg.ArtifactStoragePath}
+	h.respond(c, http.StatusOK, ready)
+}
+
+func (h *Handler) respond(c *gin.Context, status int, data any) {
+	c.JSON(status, envelope{Data: data, Error: nil, RequestID: h.requestID(c)})
+}
+
+func (h *Handler) respondError(c *gin.Context, status int, code, message string) {
+	c.JSON(status, envelope{Data: nil, Error: &apiError{Code: code, Message: message}, RequestID: h.requestID(c)})
+}
+
+func (h *Handler) requestID(c *gin.Context) string {
+	if value, ok := c.Get("request_id"); ok {
+		if id, ok := value.(string); ok {
+			return id
+		}
+	}
+	return uuid.NewString()
+}
+
+func (h *Handler) currentUserID(c *gin.Context) string {
+	val, _ := c.Get("user_id")
+	if id, ok := val.(string); ok {
+		return id
+	}
+	return ""
+}

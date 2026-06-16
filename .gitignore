@@ -1,0 +1,18 @@
+# Binary
+/bin/
+/tmp/
+/api
+*.exe
+
+# Environment
+.env
+
+# Storage directories
+/var/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
