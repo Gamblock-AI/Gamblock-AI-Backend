@@ -13,12 +13,12 @@ func (h *Handler) Login(c *gin.Context) {
 	}
 	_ = c.ShouldBindJSON(&input)
 	if input.Email == "" {
-		h.respondError(c, http.StatusBadRequest, "email_required", "Email is required")
+		h.respondCode(c, http.StatusBadRequest, "email_required")
 		return
 	}
 	response, err := h.services.Auth.Login(c.Request.Context(), input.Email, input.Password)
 	if err != nil {
-		h.respondError(c, http.StatusUnauthorized, "invalid_credentials", err.Error())
+		h.respondErrorErr(c, http.StatusUnauthorized, "invalid_credentials", err)
 		return
 	}
 	h.respond(c, http.StatusOK, response)
@@ -32,12 +32,12 @@ func (h *Handler) Register(c *gin.Context) {
 	}
 	_ = c.ShouldBindJSON(&input)
 	if input.Email == "" || input.Name == "" {
-		h.respondError(c, http.StatusBadRequest, "validation_failed", "Email and Name are required")
+		h.respondCode(c, http.StatusBadRequest, "validation_failed")
 		return
 	}
 	response, err := h.services.Auth.Register(c.Request.Context(), input.Email, input.Password, input.Name)
 	if err != nil {
-		h.respondError(c, http.StatusBadRequest, "registration_failed", err.Error())
+		h.respondErrorErr(c, http.StatusBadRequest, "registration_failed", err)
 		return
 	}
 	h.respond(c, http.StatusCreated, response)
@@ -52,7 +52,7 @@ func (h *Handler) DevLogin(c *gin.Context) {
 	_ = c.ShouldBindJSON(&input)
 	response, err := h.services.Auth.DevLogin(c.Request.Context(), input.Email, input.Role, input.DeviceID)
 	if err != nil {
-		h.respondError(c, http.StatusInternalServerError, "dev_login_failed", err.Error())
+		h.respondErrorErr(c, http.StatusInternalServerError, "dev_login_failed", err)
 		return
 	}
 	h.respond(c, http.StatusOK, response)
@@ -65,12 +65,12 @@ func (h *Handler) GoogleLogin(c *gin.Context) {
 	}
 	_ = c.ShouldBindJSON(&input)
 	if input.IDToken == "" {
-		h.respondError(c, http.StatusBadRequest, "google_token_required", "Google ID token is required")
+		h.respondCode(c, http.StatusBadRequest, "google_token_required")
 		return
 	}
 	response, err := h.services.Auth.GoogleLogin(c.Request.Context(), input.IDToken, input.DeviceID)
 	if err != nil {
-		h.respondError(c, http.StatusUnauthorized, "google_verification_failed", err.Error())
+		h.respondErrorErr(c, http.StatusUnauthorized, "google_verification_failed", err)
 		return
 	}
 	h.respond(c, http.StatusOK, response)
@@ -82,12 +82,12 @@ func (h *Handler) Refresh(c *gin.Context) {
 	}
 	_ = c.ShouldBindJSON(&input)
 	if input.RefreshToken == "" {
-		h.respondError(c, http.StatusBadRequest, "refresh_token_required", "Refresh token is required")
+		h.respondCode(c, http.StatusBadRequest, "refresh_token_required")
 		return
 	}
 	response, err := h.services.Auth.Refresh(c.Request.Context(), input.RefreshToken)
 	if err != nil {
-		h.respondError(c, http.StatusUnauthorized, "invalid_refresh_token", err.Error())
+		h.respondErrorErr(c, http.StatusUnauthorized, "invalid_refresh_token", err)
 		return
 	}
 	h.respond(c, http.StatusOK, response)
@@ -99,7 +99,7 @@ func (h *Handler) Logout(c *gin.Context) {
 	}
 	_ = c.ShouldBindJSON(&input)
 	if err := h.services.Auth.Logout(c.Request.Context(), input.RefreshToken); err != nil {
-		h.respondError(c, http.StatusInternalServerError, "logout_failed", "Unable to logout")
+		h.respondCode(c, http.StatusInternalServerError, "logout_failed")
 		return
 	}
 	h.respond(c, http.StatusOK, gin.H{"revoked": true})

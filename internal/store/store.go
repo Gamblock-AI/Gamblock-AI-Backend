@@ -1,11 +1,40 @@
+// Package store is the in-memory backing store for the Gamblock-AI backend.
+//
+// It intentionally holds model.* domain types only — there is no parallel set
+// of store-owned structs. The types below are aliases of the domain types in
+// internal/model, so store.X and model.X are the SAME type. This keeps a single
+// source of truth for domain shapes (clean architecture: the in-memory store is
+// a data-access implementation detail, not a separate domain).
 package store
 
 import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 )
 
+// Domain type aliases (single source of truth: internal/model).
+type (
+	User             = model.User
+	Device           = model.Device
+	Partner          = model.Partner
+	ApprovalRequest  = model.ApprovalRequest
+	EducationModule  = model.EducationModule
+	SupportCase      = model.SupportCase
+	DataRequest      = model.DataRequest
+	Organization     = model.Organization
+	Release          = model.Release
+	AuditEvent       = model.AuditEvent
+	NotificationItem = model.NotificationItem
+	JournalEntry     = model.JournalEntry
+	DailyMission     = model.DailyMission
+)
+
+// Store is a concurrency-safe in-memory backing store. It is used as a
+// privacy-safe fallback when PostgreSQL is unavailable and as a cache that is
+// refreshed from ent by Repository.RefreshStore.
 type Store struct {
 	mu sync.RWMutex
 
@@ -23,136 +52,7 @@ type Store struct {
 	AuditEvents        []AuditEvent       `json:"audit_events"`
 	NotificationEvents []NotificationItem `json:"notification_events"`
 	JournalEntries     []JournalEntry     `json:"journal_entries"`
-	Missions          []DailyMission    `json:"missions"`
-}
-
-type JournalEntry struct {
-	ID        string    `json:"id"`
-	UserID    string    `json:"user_id"`
-	Text      string    `json:"text"`
-	Mood      string    `json:"mood"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
-type User struct {
-	ID          string    `json:"id"`
-	Email       string    `json:"email"`
-	DisplayName string    `json:"display_name"`
-	Role        string    `json:"role"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
-
-type Device struct {
-	ID               string    `json:"id"`
-	UserID           string    `json:"user_id"`
-	Platform         string    `json:"platform"`
-	Label            string    `json:"label"`
-	AppVersion       string    `json:"app_version"`
-	OSVersion        string    `json:"os_version"`
-	ModelVersion     string    `json:"model_version"`
-	RulesetVersion   string    `json:"ruleset_version"`
-	ProtectionStatus string    `json:"protection_status"`
-	LastSeenAt       time.Time `json:"last_seen_at"`
-	CreatedAt        time.Time `json:"created_at"`
-	UpdatedAt        time.Time `json:"updated_at"`
-}
-
-type Partner struct {
-	ID           string    `json:"id"`
-	Name         string    `json:"name"`
-	Contact      string    `json:"contact"`
-	Status       string    `json:"status"`
-	PartnerEmail string    `json:"partner_email"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-}
-
-type ApprovalRequest struct {
-	ID                       string    `json:"id"`
-	Action                   string    `json:"action"`
-	ExpiresIn                string    `json:"expires_in"`
-	Status                   string    `json:"status"`
-	Reason                   string    `json:"reason"`
-	RequestedDurationMinutes int       `json:"requested_duration_minutes"`
-	CreatedAt                time.Time `json:"created_at"`
-	UpdatedAt                time.Time `json:"updated_at"`
-}
-
-type EducationModule struct {
-	ID               string    `json:"id"`
-	Slug             string    `json:"slug"`
-	Title            string    `json:"title"`
-	Summary          string    `json:"summary"`
-	BodyMarkdown     string    `json:"body_markdown"`
-	EstimatedMinutes int       `json:"estimated_minutes"`
-	Progress         float64   `json:"progress"`
-	Status           string    `json:"status"`
-	CreatedAt        time.Time `json:"created_at"`
-	UpdatedAt        time.Time `json:"updated_at"`
-}
-
-type SupportCase struct {
-	ID        string    `json:"id"`
-	Title     string    `json:"title"`
-	Type      string    `json:"type"`
-	Status    string    `json:"status"`
-	Priority  string    `json:"priority"`
-	Owner     string    `json:"owner"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
-type DataRequest struct {
-	ID        string    `json:"id"`
-	Title     string    `json:"title"`
-	Type      string    `json:"type"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
-type Organization struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Slug      string    `json:"slug"`
-	Status    string    `json:"status"`
-	Members   int       `json:"members"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
-type Release struct {
-	ID              string         `json:"id"`
-	Version         string         `json:"version"`
-	Platform        string         `json:"platform"`
-	SHA256          string         `json:"sha256"`
-	Status          string         `json:"status"`
-	DownloadURL     string         `json:"download_url"`
-	Metrics         map[string]any `json:"metrics"`
-	PublishedAtText string         `json:"published_at_text"`
-	CreatedAt       time.Time      `json:"created_at"`
-	UpdatedAt       time.Time      `json:"updated_at"`
-}
-
-type AuditEvent struct {
-	ID        string    `json:"id"`
-	Actor     string    `json:"actor"`
-	Action    string    `json:"action"`
-	Target    string    `json:"target"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
-type NotificationItem struct {
-	ID        string    `json:"id"`
-	Channel   string    `json:"channel"`
-	Recipient string    `json:"recipient"`
-	Status    string    `json:"status"`
-	Reason    string    `json:"reason"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Missions           []DailyMission     `json:"missions"`
 }
 
 func NewSeeded() *Store {
@@ -280,15 +180,57 @@ func (s *Store) GetTokenMapping(tokenHash string) (ApprovalRequest, bool) {
 	return req, ok
 }
 
-type DailyMission struct {
-	ID        string    `json:"id"`
-	UserID    string    `json:"user_id"`
-	Date      string    `json:"date"`
-	Mission1  bool      `json:"mission_1"`
-	Mission2  bool      `json:"mission_2"`
-	Mission3  bool      `json:"mission_3"`
-	Mission4  bool      `json:"mission_4"`
-	Mission5  bool      `json:"mission_5"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+
+// RefreshTokenRecord is the in-memory backing for refresh tokens (used when the
+// DB is unavailable). Mirrors the ent RefreshToken fields used by the auth flow.
+type RefreshTokenRecord struct {
+	ID        string
+	UserID    string
+	TokenHash string
+	DeviceID  *string
+	ExpiresAt time.Time
+	RevokedAt *time.Time
+}
+
+var globalRefreshTokens = make(map[string]RefreshTokenRecord) // keyed by TokenHash
+var globalRefreshMu sync.RWMutex
+
+func (s *Store) SaveRefreshToken(rec RefreshTokenRecord) {
+	globalRefreshMu.Lock()
+	defer globalRefreshMu.Unlock()
+	globalRefreshTokens[rec.TokenHash] = rec
+}
+
+func (s *Store) GetRefreshToken(tokenHash string) (RefreshTokenRecord, bool) {
+	globalRefreshMu.RLock()
+	defer globalRefreshMu.RUnlock()
+	rec, ok := globalRefreshTokens[tokenHash]
+	return rec, ok
+}
+
+func (s *Store) RevokeRefreshToken(tokenHash string) bool {
+	globalRefreshMu.Lock()
+	defer globalRefreshMu.Unlock()
+	rec, ok := globalRefreshTokens[tokenHash]
+	if !ok {
+		return false
+	}
+	now := time.Now().UTC()
+	rec.RevokedAt = &now
+	globalRefreshTokens[tokenHash] = rec
+	return true
+}
+
+func (s *Store) RevokeRefreshTokenByID(id string) bool {
+	globalRefreshMu.Lock()
+	defer globalRefreshMu.Unlock()
+	for hash, rec := range globalRefreshTokens {
+		if rec.ID == id {
+			now := time.Now().UTC()
+			rec.RevokedAt = &now
+			globalRefreshTokens[hash] = rec
+			return true
+		}
+	}
+	return false
 }

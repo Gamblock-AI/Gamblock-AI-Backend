@@ -1,18 +1,45 @@
-# Binary
+# ===== Compiled binaries (regenerable via go build) =====
 /bin/
 /tmp/
 /api
+/migrate
+/seed
 *.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 
-# Environment
+# ===== Test / coverage artifacts =====
+/coverage
+*.out
+*.prof
+
+# ===== Secrets / environment =====
 .env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+secrets.*
 
-# Storage directories
+# ===== Storage / runtime data =====
 /var/
+*.db
+*.sqlite
+*.sqlite3
 
-# IDE
+# ===== Logs =====
+*.log
+logs/
+
+# ===== IDE / Editors =====
 .idea/
 .vscode/
+*.swp
+*.swo
 
-# OS
+# ===== OS =====
 .DS_Store
+Thumbs.db

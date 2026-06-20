@@ -43,7 +43,7 @@ func (h *Handler) PortalOverview(c *gin.Context) {
 func (h *Handler) AdminModules(c *gin.Context) {
 	modules, err := h.services.Admin.GetEducationModules(c.Request.Context())
 	if err != nil {
-		h.respondError(c, http.StatusInternalServerError, "fetch_admin_modules_failed", err.Error())
+		h.respondErrorErr(c, http.StatusInternalServerError, "fetch_admin_modules_failed", err)
 		return
 	}
 	h.respond(c, http.StatusOK, modules)
@@ -52,7 +52,7 @@ func (h *Handler) AdminModules(c *gin.Context) {
 func (h *Handler) AdminModelReleases(c *gin.Context) {
 	releases, err := h.services.Admin.GetModelReleases(c.Request.Context())
 	if err != nil {
-		h.respondError(c, http.StatusInternalServerError, "fetch_admin_model_releases_failed", err.Error())
+		h.respondErrorErr(c, http.StatusInternalServerError, "fetch_admin_model_releases_failed", err)
 		return
 	}
 	h.respond(c, http.StatusOK, releases)
@@ -61,7 +61,7 @@ func (h *Handler) AdminModelReleases(c *gin.Context) {
 func (h *Handler) AdminSupportCases(c *gin.Context) {
 	cases, err := h.services.Support.GetSupportCases(c.Request.Context())
 	if err != nil {
-		h.respondError(c, http.StatusInternalServerError, "fetch_admin_support_cases_failed", err.Error())
+		h.respondErrorErr(c, http.StatusInternalServerError, "fetch_admin_support_cases_failed", err)
 		return
 	}
 	h.respond(c, http.StatusOK, cases)
@@ -134,7 +134,7 @@ func (h *Handler) CreateModelRelease(c *gin.Context) {
 		input.Metrics,
 	)
 	if err != nil {
-		h.respondError(c, http.StatusBadRequest, "create_model_release_failed", err.Error())
+		h.respondErrorErr(c, http.StatusBadRequest, "create_model_release_failed", err)
 		return
 	}
 	h.respond(c, http.StatusCreated, gin.H{"id": input.Version, "published": true})
@@ -153,7 +153,7 @@ func (h *Handler) CreateRulesetRelease(c *gin.Context) {
 		input.Rules,
 	)
 	if err != nil {
-		h.respondError(c, http.StatusBadRequest, "create_ruleset_release_failed", err.Error())
+		h.respondErrorErr(c, http.StatusBadRequest, "create_ruleset_release_failed", err)
 		return
 	}
 	h.respond(c, http.StatusCreated, gin.H{"id": input.Version, "published": true})
@@ -172,7 +172,7 @@ func (h *Handler) CreateNetworkRulesetRelease(c *gin.Context) {
 		input.Rules,
 	)
 	if err != nil {
-		h.respondError(c, http.StatusBadRequest, "create_network_release_failed", err.Error())
+		h.respondErrorErr(c, http.StatusBadRequest, "create_network_release_failed", err)
 		return
 	}
 	h.respond(c, http.StatusCreated, gin.H{"id": input.Version, "published": true})
@@ -237,7 +237,7 @@ func (h *Handler) latestRelease(c *gin.Context, kind string) {
 	}
 
 	if !found {
-		h.respondError(c, http.StatusNotFound, "release_not_found", "No active release found")
+		h.respondCode(c, http.StatusNotFound, "release_not_found")
 		return
 	}
 

@@ -1,0 +1,31 @@
+# Build artifacts & binaries (regenerable)
+bin/
+api
+migrate
+seed
+*.exe
+*.out
+*.prof
+
+# Test & coverage
+*_test.go
+coverage.out
+
+# Local env & storage
+.env
+.env.local
+.env.*.local
+var/
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE & OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# Git
+.git/
+.gitignore

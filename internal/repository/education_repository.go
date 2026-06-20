@@ -7,6 +7,7 @@ import (
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
 )
 
 func (r *Repository) GetEducationModules(ctx context.Context) ([]model.EducationModule, error) {
@@ -95,6 +96,9 @@ func (r *Repository) GetEducationModuleBySlug(ctx context.Context, slug string) 
 
 func (r *Repository) CreateEducationModule(ctx context.Context, m model.EducationModule) error {
 	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+		r.store.Modules = append(r.store.Modules, store.EducationModule(m))
 		return nil
 	}
 	_, err := r.db.PsychoeducationModule.Create().

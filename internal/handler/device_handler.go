@@ -36,7 +36,7 @@ func (h *Handler) CreateDevice(c *gin.Context) {
 		rulesetVal,
 	)
 	if err != nil {
-		h.respondError(c, http.StatusBadRequest, "device_create_failed", err.Error())
+		h.respondErrorErr(c, http.StatusBadRequest, "device_create_failed", err)
 		return
 	}
 	h.respond(c, http.StatusCreated, gin.H{"id": dev.ID, "registered": true, "status": dev.ProtectionStatus})
@@ -64,7 +64,7 @@ func (h *Handler) UpdateDevice(c *gin.Context) {
 		input.RulesetVersion,
 	)
 	if err != nil {
-		h.respondError(c, http.StatusBadRequest, "device_update_failed", err.Error())
+		h.respondErrorErr(c, http.StatusBadRequest, "device_update_failed", err)
 		return
 	}
 	h.respond(c, http.StatusOK, gin.H{"id": dev.ID, "updated": true, "status": dev.ProtectionStatus})
@@ -74,7 +74,7 @@ func (h *Handler) DeviceHeartbeat(c *gin.Context) {
 	deviceID := c.Param("device_id")
 	err := h.services.Device.RecordHeartbeat(c.Request.Context(), deviceID)
 	if err != nil {
-		h.respondError(c, http.StatusInternalServerError, "heartbeat_failed", err.Error())
+		h.respondErrorErr(c, http.StatusInternalServerError, "heartbeat_failed", err)
 		return
 	}
 	h.respond(c, http.StatusOK, gin.H{"heartbeat": "ok", "device_id": deviceID})

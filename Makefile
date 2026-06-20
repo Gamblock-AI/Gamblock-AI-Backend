@@ -31,3 +31,9 @@ migrate-fresh:
 
 seed:
 	go run ./cmd/seed
+
+test:
+	go test ./...
+
+test-cover:
+	go test -cover ./...

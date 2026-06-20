@@ -85,3 +85,16 @@ func splitCSV(value string) []string {
 	}
 	return out
 }
+
+// IsProduction reports whether the service runs in production mode. Production
+// gates error messages to friendly, non-leaking text; development surfaces
+// technical detail for debugging. Defaults to production (safe) when APP_ENV is
+// unset or not explicitly "development"/"staging".
+func (c Config) IsProduction() bool {
+	switch c.AppEnv {
+	case "development", "staging", "test", "local":
+		return false
+	default:
+		return true
+	}
+}

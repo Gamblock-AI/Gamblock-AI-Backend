@@ -44,6 +44,9 @@ func (r *Repository) UserByID(ctx context.Context, id string) (model.User, bool)
 
 func (r *Repository) CreateUser(ctx context.Context, id, email, name string) (model.User, error) {
 	if r.db == nil {
+		if _, exists := r.store.UserByEmail(email); exists {
+			return model.User{}, fmt.Errorf("email already exists")
+		}
 		newUser := store.User{
 			ID:          id,
 			Email:       email,

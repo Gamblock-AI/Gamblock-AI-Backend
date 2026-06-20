@@ -14,7 +14,7 @@ type emergencyUnlockInput struct {
 func (h *Handler) GenerateEmergencyKey(c *gin.Context) {
 	key, err := h.services.Admin.GenerateEmergencyKey(c.Request.Context(), h.currentUserID(c))
 	if err != nil {
-		h.respondError(c, http.StatusInternalServerError, "generate_key_failed", err.Error())
+		h.respondErrorErr(c, http.StatusInternalServerError, "generate_key_failed", err)
 		return
 	}
 	h.respond(c, http.StatusCreated, gin.H{
@@ -27,13 +27,13 @@ func (h *Handler) GenerateEmergencyKey(c *gin.Context) {
 func (h *Handler) EmergencyUnlock(c *gin.Context) {
 	var input emergencyUnlockInput
 	if err := c.ShouldBindJSON(&input); err != nil || input.EmergencyKey == "" {
-		h.respondError(c, http.StatusBadRequest, "emergency_key_required", "Kunci darurat diperlukan")
+		h.respondCode(c, http.StatusBadRequest, "emergency_key_required")
 		return
 	}
 
 	err := h.services.Admin.ValidateEmergencyKey(c.Request.Context(), input.EmergencyKey, input.DeviceID)
 	if err != nil {
-		h.respondError(c, http.StatusBadRequest, "invalid_key", err.Error())
+		h.respondErrorErr(c, http.StatusBadRequest, "invalid_key", err)
 		return
 	}
 	h.respond(c, http.StatusOK, gin.H{

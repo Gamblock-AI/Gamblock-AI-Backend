@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"time"
 
@@ -101,7 +99,7 @@ func (s *AccountabilityService) VerifyQuickToken(ctx context.Context, token stri
 		"request_id":                req.ID,
 		"action":                    req.Action,
 		"reason":                    req.Reason,
-		"requested_duration_minutes": req.Duration,
+		"requested_duration_minutes": req.RequestedDurationMinutes,
 		"status":                    req.Status,
 		"created_at":                req.CreatedAt,
 	}, nil

@@ -55,6 +55,14 @@ func (m *Middleware) PrivacyGuard() gin.HandlerFunc {
 			c.Next()
 			return
 		}
+		// Quick-approval verify/resolve is token-authenticated (PRD §5.2) and its
+		// body legitimately carries a "token" field. Exempt it from the guard so the
+		// forbidden-key "token" does not block legitimate approvals.
+		if strings.HasPrefix(c.Request.URL.Path, "/v1/approval-requests/verify/") ||
+			strings.Contains(c.Request.URL.Path, "/resolve-by-token") {
+			c.Next()
+			return
+		}
 		if c.Request.Method == http.MethodGet || c.Request.Method == http.MethodOptions {
 			c.Next()
 			return
@@ -165,9 +173,14 @@ func unsafeKey(key string, forbidden []string) bool {
 	return false
 }
 
-func unsafeValue(value string) bool {
-	lower := strings.ToLower(value)
-	return strings.Contains(lower, "http://") || strings.Contains(lower, "https://") || len(value) > 4000
+// unsafeValue historically rejected values containing URLs or exceeding 4000
+// chars. That censored legitimate reflective journal text (a user mentioning a
+// URL) and broke the quick-approval flow's token field. Privacy is now enforced
+// purely via forbidden KEYS (url, domain, dom, history, …) in unsafeKey; values
+// are no longer censored. Kept as a stable hook in case future value-based
+// rules are needed (return false = do not reject on value alone).
+func unsafeValue(_ string) bool {
+	return false
 }
 
 func unsafePayload(value any, forbidden []string) bool {

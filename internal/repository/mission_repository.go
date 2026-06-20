@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
 )
 
 func (r *Repository) GetMissionByDate(ctx context.Context, userID, date string) (model.DailyMission, error) {

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
@@ -23,9 +24,28 @@ func (r *Repository) RefreshStore(ctx context.Context) {
 		return
 	}
 	loaded, err := persistence.LoadStore(ctx, r.db)
-	if err == nil && loaded != nil {
-		*r.store = *loaded
+	if err != nil || loaded == nil {
+		return
 	}
+	// Copy fields individually to avoid copying the Store's mutex by value
+	// (vet: copylocks). The mutex is not part of the data we want to replace.
+	r.store.Lock()
+	defer r.store.Unlock()
+	r.store.Users = loaded.Users
+	r.store.Devices = loaded.Devices
+	r.store.Partners = loaded.Partners
+	r.store.Approvals = loaded.Approvals
+	r.store.Modules = loaded.Modules
+	r.store.SupportCases = loaded.SupportCases
+	r.store.DataRequests = loaded.DataRequests
+	r.store.Organizations = loaded.Organizations
+	r.store.ModelReleases = loaded.ModelReleases
+	r.store.RulesetReleases = loaded.RulesetReleases
+	r.store.NetworkRulesets = loaded.NetworkRulesets
+	r.store.AuditEvents = loaded.AuditEvents
+	r.store.NotificationEvents = loaded.NotificationEvents
+	r.store.JournalEntries = loaded.JournalEntries
+	r.store.Missions = loaded.Missions
 }
 
 func value(v *string) string {
@@ -91,4 +111,14 @@ func moduleProgress(slug string) float64 {
 		return 0.35
 	}
 	return 0
+}
+
+func humanApprovalAction(action string, duration int) string {
+	if action == "pause_protection" {
+		return fmt.Sprintf("Pause protection for %d minutes", duration)
+	}
+	if action == "uninstall_detected" {
+		return "Permission revoked detected"
+	}
+	return action
 }

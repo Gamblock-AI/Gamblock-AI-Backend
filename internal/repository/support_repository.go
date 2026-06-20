@@ -7,6 +7,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportcase"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
 )
 
 func (r *Repository) GetSupportCases(ctx context.Context) ([]model.SupportCase, error) {
@@ -51,6 +52,13 @@ func (r *Repository) GetSupportCases(ctx context.Context) ([]model.SupportCase, 
 
 func (r *Repository) CreateSupportCase(ctx context.Context, id, userID, title, cType, priorityVal string) error {
 	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+		r.store.SupportCases = append(r.store.SupportCases, store.SupportCase{
+			ID: id, Title: title, Type: cType,
+			Priority: priorityVal, Status: "open",
+			CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+		})
 		return nil
 	}
 	_, err := r.db.SupportCase.Create().
@@ -106,6 +114,12 @@ func (r *Repository) GetDataRequests(ctx context.Context, userID string) ([]mode
 
 func (r *Repository) CreateDataRequest(ctx context.Context, id, userID, reqType string) error {
 	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+		r.store.DataRequests = append(r.store.DataRequests, store.DataRequest{
+			ID: id, Title: reqType, Type: reqType, Status: "pending",
+			CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+		})
 		return nil
 	}
 	_, err := r.db.DataRequest.Create().

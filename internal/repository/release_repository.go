@@ -8,6 +8,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/networkrulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
 )
 
 func (r *Repository) GetModelReleases(ctx context.Context) ([]model.Release, error) {
@@ -56,6 +57,14 @@ func (r *Repository) GetModelReleases(ctx context.Context) ([]model.Release, err
 
 func (r *Repository) CreateModelRelease(ctx context.Context, id, version, platformVal, artifactPath, sha256Val, contract string, threshold float64, metrics map[string]any) error {
 	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+		r.store.ModelReleases = append(r.store.ModelReleases, store.Release{
+			ID: id, Version: version, Platform: platformVal, SHA256: sha256Val,
+			Status: "published", DownloadURL: "/v1/releases/model/" + version + "/download",
+			Metrics: metrics, PublishedAtText: "Published",
+			CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+		})
 		return nil
 	}
 	_, err := r.db.ModelRelease.Create().
@@ -122,6 +131,14 @@ func (r *Repository) GetRulesetReleases(ctx context.Context) ([]model.Release, e
 
 func (r *Repository) CreateRulesetRelease(ctx context.Context, id, version, artifactPath, sha256Val string, rules map[string]any) error {
 	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+		r.store.RulesetReleases = append(r.store.RulesetReleases, store.Release{
+			ID: id, Version: version, Platform: "all", SHA256: sha256Val,
+			Status: "published", DownloadURL: "/v1/releases/ruleset/" + version + "/download",
+			Metrics: rules, PublishedAtText: "Published",
+			CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+		})
 		return nil
 	}
 	_, err := r.db.RulesetRelease.Create().
@@ -185,6 +202,14 @@ func (r *Repository) GetNetworkRulesets(ctx context.Context) ([]model.Release, e
 
 func (r *Repository) CreateNetworkRulesetRelease(ctx context.Context, id, version, artifactPath, sha256Val string, rules map[string]any) error {
 	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+		r.store.NetworkRulesets = append(r.store.NetworkRulesets, store.Release{
+			ID: id, Version: version, Platform: "all", SHA256: sha256Val,
+			Status: "validated", DownloadURL: "/v1/releases/network-rulesets/" + version + "/download",
+			Metrics: rules, PublishedAtText: "Validated",
+			CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+		})
 		return nil
 	}
 	_, err := r.db.NetworkRulesetRelease.Create().
