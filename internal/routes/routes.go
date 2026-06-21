@@ -14,8 +14,8 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	v1.Use(mid.AuthOptional())
 
 	// Auth
-	v1.POST("/auth/login", h.Login)
-	v1.POST("/auth/register", h.Register)
+	v1.POST("/auth/login", mid.RateLimitMiddleware("5-M"), h.Login)
+	v1.POST("/auth/register", mid.RateLimitMiddleware("5-M"), h.Register)
 	v1.POST("/auth/dev-login", h.DevLogin)
 	v1.POST("/auth/google", h.GoogleLogin)
 	v1.POST("/auth/refresh", h.Refresh)

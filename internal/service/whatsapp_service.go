@@ -1,8 +1,12 @@
 package service
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 
 	"go.uber.org/zap"
 
@@ -12,10 +16,15 @@ import (
 type WhatsAppService struct {
 	cfg    config.Config
 	logger *zap.Logger
+	client *http.Client
 }
 
 func NewWhatsAppService(cfg config.Config, logger *zap.Logger) *WhatsAppService {
-	return &WhatsAppService{cfg: cfg, logger: logger}
+	return &WhatsAppService{
+		cfg:    cfg,
+		logger: logger,
+		client: &http.Client{},
+	}
 }
 
 type ApprovalSummary struct {
@@ -40,15 +49,56 @@ func (s *WhatsAppService) SendApprovalBatch(ctx context.Context, phone string, s
 		return nil
 	}
 
-	message := buildBatchMessage(summaries)
-	s.logger.Info("whatsapp: sending batch message",
+	if s.cfg.WhatsAppAPIKey == "" || s.cfg.WhatsAppPhoneID == "" {
+		return fmt.Errorf("whatsapp API credentials are not configured")
+	}
+
+	messageBody := buildBatchMessage(summaries)
+	
+	payload := map[string]interface{}{
+		"messaging_product": "whatsapp",
+		"to":                phone,
+		"type":              "text",
+		"text": map[string]interface{}{
+			"body": messageBody,
+		},
+	}
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("failed to marshal whatsapp payload: %w", err)
+	}
+
+	url := fmt.Sprintf("%s/%s/messages", s.cfg.WhatsAppBaseURL, s.cfg.WhatsAppPhoneID)
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+s.cfg.WhatsAppAPIKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		s.logger.Error("whatsapp: request failed", zap.Error(err))
+		return fmt.Errorf("failed to send whatsapp request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		body, _ := io.ReadAll(resp.Body)
+		s.logger.Error("whatsapp: API rejected message",
+			zap.Int("status", resp.StatusCode),
+			zap.String("response", string(body)),
+		)
+		return fmt.Errorf("whatsapp API returned status %d: %s", resp.StatusCode, string(body))
+	}
+
+	s.logger.Info("whatsapp: message sent successfully",
 		zap.String("recipient", phone),
-		zap.String("message", message),
 	)
 
-	// TODO: Integrate with WhatsApp Business API when credentials available
-	// POST to https://graph.facebook.com/v18.0/{PHONE_ID}/messages
-	return fmt.Errorf("whatsapp API not yet configured - set NOTIFICATION_MODE=demo for local testing")
+	return nil
 }
 
 func (s *WhatsAppService) SendSingleApproval(ctx context.Context, phone string, summary ApprovalSummary) error {
