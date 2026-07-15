@@ -1,0 +1,27 @@
+schema_version: 1
+context_version: 2026-07-15.2
+component: backend
+contracts:
+  proposal_authority: 1
+  proposal_traceability: 1
+  local_ai_lint_policy: 1
+  privacy_boundary: 1
+  api_error_catalog: 1
+canonical_instruction: AGENTS.md
+proposal_requirements:
+  - PKM-PRIV-001
+  - PKM-PRIV-002
+  - PKM-PRIV-003
+  - PKM-ACC-001
+  - PKM-ACC-002
+  - PKM-WEB-001
+  - PKM-WEB-002
+  - PKM-WEB-003
+  - PKM-WEB-004
+  - PKM-WEB-005
+  - PKM-WEB-006
+  - PKM-WEB-007
+default_lint: make lint
+explicit_request_checks:
+  - make test
+  - make verify

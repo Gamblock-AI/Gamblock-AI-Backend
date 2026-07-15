@@ -3,7 +3,7 @@ ifneq (,$(wildcard .env))
     export
 endif
 
-.PHONY: dev build start migrate migrate-fresh seed
+.PHONY: dev run build start generate migrate migrate-fresh seed lint test test-cover verify
 
 APP_NAME := api
 BUILD_DIR := ./bin
@@ -16,6 +16,9 @@ run:
 
 build:
 	go build -o $(BUILD_DIR)/$(APP_NAME) ./cmd/api
+
+generate:
+	go run entgo.io/ent/cmd/ent generate ./ent/schema
 
 start: build
 	$(BUILD_DIR)/$(APP_NAME)
@@ -32,8 +35,16 @@ migrate-fresh:
 seed:
 	go run ./cmd/seed
 
+lint:
+	go vet ./...
+
 test:
 	go test ./...
 
 test-cover:
 	go test -cover ./...
+
+verify:
+	go build ./...
+	go vet ./...
+	go test -race ./...

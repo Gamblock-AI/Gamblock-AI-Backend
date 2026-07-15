@@ -19,6 +19,7 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - run: bash scripts/verify-ai-context.sh
       - run: go mod download
       - run: go build ./...
       - run: go vet ./...

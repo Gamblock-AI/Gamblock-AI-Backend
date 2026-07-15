@@ -1,0 +1,9 @@
+---
+description: Canonical Gamblock-AI backend architecture and safety rules
+alwaysApply: true
+---
+
+Follow @AGENTS.md and use @docs/ai/README.md for capability status. Preserve
+the privacy boundary, response envelope, encryption, and strict backend
+layering. Run `make lint` by default; tests and builds require explicit user
+request.

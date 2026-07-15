@@ -1,102 +1,125 @@
 # Gamblock-AI Backend Agent Rules
 
-Go/Gin + ent + PostgreSQL API. See the root `AGENTS.md` for the full
-architecture and PRD alignment.
+Context version: `2026-07-15.2`
+
+This repository is the Go/Gin API for Gamblock-AI. It must remain safe and
+understandable as a standalone clone; no parent workspace files are required.
+Read `docs/ai/README.md` for the product capsule, capability status, and related
+repository contracts before changing behavior.
+
+## Start and finish
+
+1. Inspect `git status` and preserve unrelated user changes.
+2. Read the implementation, adjacent tests, and relevant README/context before
+   editing.
+3. Keep one API behavior or contract per change unit.
+4. Run `make lint` before handoff. Do not run tests, builds, race tests, or
+   `make verify` unless the user explicitly requests them in the current
+   conversation.
+5. Update `README.md`, this file, and `docs/ai/` when commands, paths,
+   architecture, privacy boundaries, or capability status change.
 
 ## Layering (do not skip layers)
 
-`cmd/*` → `internal/api` → `internal/routes` → `internal/handler` →
-`internal/service` → `internal/repository` → `ent`.
+`cmd/*` -> `internal/api` -> `internal/routes` -> `internal/handler` ->
+`internal/service` -> `internal/repository` -> `ent`
 
-- Handlers do HTTP only: parse, call a service, return the envelope. No business
-  logic or ent calls in handlers.
-- Services own business logic and transactions. Repositories own ent queries.
-- After changing `ent/schema/schema.go`, regenerate with `go generate ./ent`
-  (or the project's codegen command). Do not hand-edit generated `ent/` files.
+- Handlers parse HTTP input, call services, and return the response envelope.
+  They contain no business logic or ent queries.
+- Services own business rules and transactions. Repositories own persistence.
+- Domain types live only in `internal/model/`. The in-memory store uses aliases
+  to those types; do not introduce parallel store structs.
+- Register every endpoint in `internal/routes/routes.go` and add handler/service
+  tests for new behavior.
 
-## Response envelope
+## ent generation
 
-Every JSON response uses `{ "data", "error", "request_id" }`. Success sets
-`data` and `error: null`; errors set `error: { code, message }` and
-`data: null`. Use `Handler.respond` / `Handler.respondError`
-(`internal/handler/handler.go`). Do not return raw shapes.
+After changing `ent/schema/schema.go`, run `make generate`. Never hand-edit
+generated ent files. Review generated diffs and run `make lint`; tests/builds
+remain explicit opt-in checks.
 
-## Auth & RBAC (PRD §2)
+## Response envelope and errors
 
-- `middleware.AuthRequired()` validates the Bearer access token and sets
-  `user_id` / `email` / `role`.
-- `middleware.RequireRoles(...)` gates an action by role. Roles:
-  `user`, `partner` (Kepala), `platform_admin`, `support_operator`,
-  `model_release_operator`, `content_admin`.
-- Quick-approval (`/v1/approval-requests/verify/:token`,
-  `/resolve-by-token`) is intentionally unauthenticated — it is validated by a
-  single-use token instead (PRD §5.2).
+Every response uses `{ "data", "error", "request_id" }`. Use the helpers in
+`internal/handler/handler.go`; do not return raw ad-hoc shapes or leak
+`err.Error()` in production.
 
-## Privacy by design (PRD §6.1) — the PrivacyGuard
+- `respondErrorErr` logs technical detail and returns catalog-safe output.
+- `respondCode` resolves validation errors without an underlying Go error.
+- `internal/i18n/messages.go` owns stable backend error codes.
+- Every new stable code must also be added to the website and Flutter catalogs.
+  If sibling repositories are not checked out, name both follow-up paths in the
+  handoff rather than silently leaving the contract incomplete.
 
-`middleware.PrivacyGuard()` rejects any non-auth request body/query whose keys
-or values look like browsing data or secrets (`url`, `domain`, `dom`,
-`raw_url`, `history`, `screenshot`, `password`, `otp`, `token`, …) or any
-string value containing `http://`/`https://` or longer than 4000 chars. When
-adding an endpoint or field, ensure you never send raw URLs/DOM to the server —
-only aggregate events (timestamp + platform type) are allowed (PRD §4).
+## Privacy boundary
 
-## Testing
+All classification runs on-device. The API must never receive or store raw DOM,
+URLs, domains, screenshots, keystrokes, or browsing history. Only aggregate
+protection events are permitted.
 
-- `go test ./...` (or `make test`). Tests live beside code as `*_test.go`.
-- testify + enttest available. In-memory store path (`store.NewSeeded()` +
-  `repository.New(nil, store)`) powers integration tests without a DB.
-- `internal/middleware/middleware_test.go` guards the PrivacyGuard invariants
-  (exempt quick-approval + auth; forbidden KEYS rejected; values not censored).
-  Do not reintroduce value-based URL/length censorship — it breaks jurnal text
-  and quick-approval tokens (PRD §5.2).
-- `internal/handler/handler_test.go` asserts the env gate (production = friendly
-  message, dev = `[code] detail`) and envelope shape.
+`PrivacyGuard` currently enforces this by rejecting forbidden JSON/query field
+names on non-GET, non-OPTIONS, non-auth requests. It intentionally does not
+censor string values: journal text may legitimately mention a URL. Quick
+approval token routes are explicitly exempt. Keep these regression behaviors
+covered in `internal/middleware/middleware_test.go`; do not reintroduce the old
+URL/length value censorship.
 
-## Error messages & env gate (PRD §6.1 — privacy by design)
+## Auth and role model
 
-- `internal/i18n/messages.go` is the **single source of truth** for end-user
-  error text, keyed by stable error `code`. Handlers MUST NOT leak `err.Error()`
-  to clients.
-- Use `Handler.respondErrorErr(c, status, code, err)` for errors with an
-  underlying Go error: production returns the friendly catalog message; dev
-  returns `[code] err.Error()`; the technical error is always logged (zap) with
-  the request id — never lost, never leaked.
-- Use `Handler.respondCode(c, status, code)` for validation/hint errors with no
-  underlying error (resolved from the catalog, env-gated).
-- Adding a new error: add the `code` to the catalog AND mirror it in the FE
-  catalogs (`gamblock-ai-website/lib/messages.ts`,
-  `gamblock_ai_apps/lib/core/messaging/app_messages.dart`). Keep codes in sync.
-- `config.IsProduction()` gates messages (default safe = production when
-  `APP_ENV` is unset).
+`AuthRequired` validates access tokens and `RequireRoles(...)` gates actions.
+The product-facing roles include `user`, `partner`, `platform_admin`,
+`support_operator`, `model_release_operator`, and `content_admin`. The current
+ent user enum also contains `organization_owner` and `organization_admin`.
+Treat that difference as existing implementation state, not permission to
+expand access; route authorization must remain explicit.
 
-## Encryption (PRD §4 / §7.1)
+Quick approval verify/resolve routes are intentionally unauthenticated and use
+single-use tokens. Do not put them behind session auth or expose their tokens.
 
-Reflection/journal text is encrypted with AES-256-GCM before storage, using
-`internal/crypto/aes.go` (`Encrypt`/`Decrypt`) keyed by a hex env secret. Never
-store journal plaintext. The nonce is prepended to the ciphertext and stored as
-hex.
+## Proposal-derived backend role
 
-## WhatsApp batching (PRD §5.1)
+The PKM core requires on-device Hybrid Analysis, local blocking, Pattern
+Interrupt, web self-regulation, and partner-controlled removal. This backend
+supports `PKM-ACC-001`, `PKM-ACC-002`, `PKM-WEB-001`, `PKM-WEB-002`,
+`PKM-WEB-003`, `PKM-WEB-004`, `PKM-WEB-005`, `PKM-WEB-006`, `PKM-WEB-007`,
+and privacy-safe aggregate/recovery state. It must never become the classifier
+or blocking authority. Group Codes, WhatsApp, admin/operator portals, journals,
+and release management are supporting/operational, not substitutes for core.
 
-Uninstall approval requests are batched (e.g. every 4–12h) into a single
-WhatsApp message per Kepala, not sent one-by-one in real time. Keep batching in
-`internal/service/whatsapp_service.go`.
+## Sensitive data and storage
 
-## Domain types (single source of truth)
+- Target invariant: encrypt journal/reflection text with AES-256-GCM before
+  persistence via `internal/crypto/aes.go`; never log/store plaintext. Current
+  `ReflectionService` falls back to plaintext when the key is absent or
+  encryption fails. Treat this as a documented P0 gap: do not broaden it or
+  claim encryption is fail-closed, and fix it only when implementation is in
+  scope.
+- `.env` and credentials are local only. Update `.env.example` for config
+  shape changes.
+- `cmd/api` can fall back to seeded in-memory data when PostgreSQL is missing or
+  fails. This is current prototype behavior, not a production durability
+  guarantee; do not describe it as persistent storage.
+- WhatsApp approval notifications are batched, not sent per event in real time.
 
-- `internal/model/*` is the ONLY domain type set. `internal/store` holds in-memory
-  backing data using `model.*` via type aliases (`store.User = model.User`, etc.).
-  Do NOT re-introduce parallel struct definitions in `store` — that caused a
-  broken build. Adding a field means adding it to the `model` type only.
-- Presentation helpers (`humanExpiry`, `humanApprovalStatus`, `humanApprovalAction`,
-  `humanDataRequestTitle`, `moduleProgress`, `humanPublished`) live in
-  `internal/repository/repository.go` (and a duplicate set in `internal/db/db.go`
-  for the loader). Keep them package-local; do not cross-call between `db` and
-  `repository`.
+## Validation policy
 
-## Code hygiene
+```sh
+make generate          # only after ent schema changes
+make lint              # default AI check: go vet ./...
+./scripts/verify-ai-context.sh  # additionally when AI context changed
 
-- Do not commit generated binaries (`/bin`, `api`, `migrate`, `seed`) — they are
-  in `.gitignore`. Build with `make build`.
-- Keep dependencies tidy: run `go mod tidy` after adding deps.
+# Explicit user request only:
+make test
+make verify            # build all packages, vet, and race-test
+```
+
+Tests live beside code as `*_test.go`, but the AI does not run them by default.
+The seeded in-memory store supports integration tests without PostgreSQL. Do
+not hit production services from tests.
+
+## Protected and external actions
+
+- Never hand-edit generated `ent/` output.
+- Never commit binaries, coverage, `.env`, keys, or runtime databases.
+- Do not migrate/drop a real database, deploy, push, release, or change secrets
+  without explicit user authorization. `migrate-fresh` is destructive.
