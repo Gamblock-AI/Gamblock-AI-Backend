@@ -151,3 +151,27 @@ type ContentProgress struct{ ent.Schema }
 func (ContentProgress) Fields() []ent.Field {
 	return []ent.Field{idField(), field.String("user_id"), field.String("module_slug"), field.Float("progress").Default(0), field.Time("completed_at").Optional().Nillable(), updatedAt()}
 }
+
+type Intention struct{ ent.Schema }
+
+func (Intention) Fields() []ent.Field {
+	return []ent.Field{idField(), field.String("user_id"), field.Text("intention_text"), field.Enum("status").Values("active", "paused", "archived").Default("active"), createdAt(), updatedAt()}
+}
+
+type CheckIn struct{ ent.Schema }
+
+func (CheckIn) Fields() []ent.Field {
+	return []ent.Field{idField(), field.String("user_id"), field.Int("mood_score").Comment("1-5 scale"), field.Int("urge_score").Comment("1-5 scale"), field.String("context_text").Optional().Nillable(), createdAt()}
+}
+
+type DailyMission struct{ ent.Schema }
+
+func (DailyMission) Fields() []ent.Field {
+	return []ent.Field{idField(), field.String("user_id"), field.String("mission_key"), field.Enum("status").Values("completed", "skipped", "pending").Default("completed"), field.Time("completed_at").Optional().Nillable(), createdAt()}
+}
+
+type Reflection struct{ ent.Schema }
+
+func (Reflection) Fields() []ent.Field {
+	return []ent.Field{idField(), field.String("user_id"), field.Text("content_encrypted"), field.String("prompt_key").Optional().Nillable(), createdAt(), updatedAt()}
+}

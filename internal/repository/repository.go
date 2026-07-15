@@ -46,6 +46,8 @@ func (r *Repository) RefreshStore(ctx context.Context) {
 	r.store.NotificationEvents = loaded.NotificationEvents
 	r.store.JournalEntries = loaded.JournalEntries
 	r.store.Missions = loaded.Missions
+	r.store.Intentions = loaded.Intentions
+	r.store.CheckIns = loaded.CheckIns
 }
 
 func value(v *string) string {

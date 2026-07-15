@@ -63,6 +63,12 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	v1.GET("/psychoeducation/modules", mid.AuthRequired(), h.GetModules)
 	v1.GET("/psychoeducation/modules/:slug", mid.AuthRequired(), h.GetModuleDetail)
 
+	// Recovery (Intentions & Check-ins)
+	v1.GET("/intentions", mid.AuthRequired(), h.GetIntention)
+	v1.POST("/intentions", mid.AuthRequired(), h.SaveIntention)
+	v1.GET("/check-ins", mid.AuthRequired(), h.GetCheckIns)
+	v1.POST("/check-ins", mid.AuthRequired(), h.CreateCheckIn)
+
 	// Support cases
 	v1.GET("/support-cases", mid.AuthRequired(), h.GetSupportCases)
 	v1.POST("/support-cases", mid.AuthRequired(), h.CreateSupportCase)
@@ -87,6 +93,7 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	admin.Use(mid.AuthRequired(), mid.RequireRoles("platform_admin", "support_operator", "model_release_operator", "content_admin"))
 	{
 		admin.GET("/content/modules", h.AdminModules)
+		admin.POST("/content/modules", h.CreateAdminModule)
 		admin.GET("/model-releases", h.AdminModelReleases)
 		admin.GET("/support-cases", h.AdminSupportCases)
 		admin.POST("/emergency-key", h.GenerateEmergencyKey)

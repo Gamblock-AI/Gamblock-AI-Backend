@@ -15,14 +15,23 @@ type ApprovalRequest func(*sql.Selector)
 // AuditLog is the predicate function for auditlog builders.
 type AuditLog func(*sql.Selector)
 
+// CheckIn is the predicate function for checkin builders.
+type CheckIn func(*sql.Selector)
+
 // ContentProgress is the predicate function for contentprogress builders.
 type ContentProgress func(*sql.Selector)
+
+// DailyMission is the predicate function for dailymission builders.
+type DailyMission func(*sql.Selector)
 
 // DataRequest is the predicate function for datarequest builders.
 type DataRequest func(*sql.Selector)
 
 // Device is the predicate function for device builders.
 type Device func(*sql.Selector)
+
+// Intention is the predicate function for intention builders.
+type Intention func(*sql.Selector)
 
 // ModelRelease is the predicate function for modelrelease builders.
 type ModelRelease func(*sql.Selector)
@@ -53,6 +62,9 @@ type PartnerLink func(*sql.Selector)
 
 // PsychoeducationModule is the predicate function for psychoeducationmodule builders.
 type PsychoeducationModule func(*sql.Selector)
+
+// Reflection is the predicate function for reflection builders.
+type Reflection func(*sql.Selector)
 
 // RefreshToken is the predicate function for refreshtoken builders.
 type RefreshToken func(*sql.Selector)

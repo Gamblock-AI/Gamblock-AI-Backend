@@ -8,9 +8,12 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/aggregateevent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/approvalrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/auditlog"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/checkin"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/contentprogress"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/networkrulesetrelease"
@@ -21,6 +24,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organizationpolicy"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
@@ -71,6 +75,16 @@ func init() {
 	auditlogDescID := auditlogFields[0].Descriptor()
 	// auditlog.DefaultID holds the default value on creation for the id field.
 	auditlog.DefaultID = auditlogDescID.Default.(func() string)
+	checkinFields := schema.CheckIn{}.Fields()
+	_ = checkinFields
+	// checkinDescCreatedAt is the schema descriptor for created_at field.
+	checkinDescCreatedAt := checkinFields[5].Descriptor()
+	// checkin.DefaultCreatedAt holds the default value on creation for the created_at field.
+	checkin.DefaultCreatedAt = checkinDescCreatedAt.Default.(func() time.Time)
+	// checkinDescID is the schema descriptor for id field.
+	checkinDescID := checkinFields[0].Descriptor()
+	// checkin.DefaultID holds the default value on creation for the id field.
+	checkin.DefaultID = checkinDescID.Default.(func() string)
 	contentprogressFields := schema.ContentProgress{}.Fields()
 	_ = contentprogressFields
 	// contentprogressDescProgress is the schema descriptor for progress field.
@@ -87,6 +101,16 @@ func init() {
 	contentprogressDescID := contentprogressFields[0].Descriptor()
 	// contentprogress.DefaultID holds the default value on creation for the id field.
 	contentprogress.DefaultID = contentprogressDescID.Default.(func() string)
+	dailymissionFields := schema.DailyMission{}.Fields()
+	_ = dailymissionFields
+	// dailymissionDescCreatedAt is the schema descriptor for created_at field.
+	dailymissionDescCreatedAt := dailymissionFields[5].Descriptor()
+	// dailymission.DefaultCreatedAt holds the default value on creation for the created_at field.
+	dailymission.DefaultCreatedAt = dailymissionDescCreatedAt.Default.(func() time.Time)
+	// dailymissionDescID is the schema descriptor for id field.
+	dailymissionDescID := dailymissionFields[0].Descriptor()
+	// dailymission.DefaultID holds the default value on creation for the id field.
+	dailymission.DefaultID = dailymissionDescID.Default.(func() string)
 	datarequestFields := schema.DataRequest{}.Fields()
 	_ = datarequestFields
 	// datarequestDescRequestedAt is the schema descriptor for requested_at field.
@@ -121,6 +145,22 @@ func init() {
 	deviceDescID := deviceFields[0].Descriptor()
 	// device.DefaultID holds the default value on creation for the id field.
 	device.DefaultID = deviceDescID.Default.(func() string)
+	intentionFields := schema.Intention{}.Fields()
+	_ = intentionFields
+	// intentionDescCreatedAt is the schema descriptor for created_at field.
+	intentionDescCreatedAt := intentionFields[4].Descriptor()
+	// intention.DefaultCreatedAt holds the default value on creation for the created_at field.
+	intention.DefaultCreatedAt = intentionDescCreatedAt.Default.(func() time.Time)
+	// intentionDescUpdatedAt is the schema descriptor for updated_at field.
+	intentionDescUpdatedAt := intentionFields[5].Descriptor()
+	// intention.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	intention.DefaultUpdatedAt = intentionDescUpdatedAt.Default.(func() time.Time)
+	// intention.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	intention.UpdateDefaultUpdatedAt = intentionDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// intentionDescID is the schema descriptor for id field.
+	intentionDescID := intentionFields[0].Descriptor()
+	// intention.DefaultID holds the default value on creation for the id field.
+	intention.DefaultID = intentionDescID.Default.(func() string)
 	modelreleaseFields := schema.ModelRelease{}.Fields()
 	_ = modelreleaseFields
 	// modelreleaseDescThreshold is the schema descriptor for threshold field.
@@ -271,6 +311,22 @@ func init() {
 	psychoeducationmoduleDescID := psychoeducationmoduleFields[0].Descriptor()
 	// psychoeducationmodule.DefaultID holds the default value on creation for the id field.
 	psychoeducationmodule.DefaultID = psychoeducationmoduleDescID.Default.(func() string)
+	reflectionFields := schema.Reflection{}.Fields()
+	_ = reflectionFields
+	// reflectionDescCreatedAt is the schema descriptor for created_at field.
+	reflectionDescCreatedAt := reflectionFields[4].Descriptor()
+	// reflection.DefaultCreatedAt holds the default value on creation for the created_at field.
+	reflection.DefaultCreatedAt = reflectionDescCreatedAt.Default.(func() time.Time)
+	// reflectionDescUpdatedAt is the schema descriptor for updated_at field.
+	reflectionDescUpdatedAt := reflectionFields[5].Descriptor()
+	// reflection.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	reflection.DefaultUpdatedAt = reflectionDescUpdatedAt.Default.(func() time.Time)
+	// reflection.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	reflection.UpdateDefaultUpdatedAt = reflectionDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// reflectionDescID is the schema descriptor for id field.
+	reflectionDescID := reflectionFields[0].Descriptor()
+	// reflection.DefaultID holds the default value on creation for the id field.
+	reflection.DefaultID = reflectionDescID.Default.(func() string)
 	refreshtokenFields := schema.RefreshToken{}.Fields()
 	_ = refreshtokenFields
 	// refreshtokenDescCreatedAt is the schema descriptor for created_at field.

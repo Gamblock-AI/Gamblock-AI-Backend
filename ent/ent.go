@@ -15,9 +15,12 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/aggregateevent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/approvalrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/auditlog"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/checkin"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/contentprogress"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/networkrulesetrelease"
@@ -28,6 +31,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organizationpolicy"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
@@ -98,9 +102,12 @@ func checkColumn(t, c string) error {
 			aggregateevent.Table:        aggregateevent.ValidColumn,
 			approvalrequest.Table:       approvalrequest.ValidColumn,
 			auditlog.Table:              auditlog.ValidColumn,
+			checkin.Table:               checkin.ValidColumn,
 			contentprogress.Table:       contentprogress.ValidColumn,
+			dailymission.Table:          dailymission.ValidColumn,
 			datarequest.Table:           datarequest.ValidColumn,
 			device.Table:                device.ValidColumn,
+			intention.Table:             intention.ValidColumn,
 			modelrelease.Table:          modelrelease.ValidColumn,
 			modelrollout.Table:          modelrollout.ValidColumn,
 			networkrulesetrelease.Table: networkrulesetrelease.ValidColumn,
@@ -111,6 +118,7 @@ func checkColumn(t, c string) error {
 			organizationpolicy.Table:    organizationpolicy.ValidColumn,
 			partnerlink.Table:           partnerlink.ValidColumn,
 			psychoeducationmodule.Table: psychoeducationmodule.ValidColumn,
+			reflection.Table:            reflection.ValidColumn,
 			refreshtoken.Table:          refreshtoken.ValidColumn,
 			releasecohort.Table:         releasecohort.ValidColumn,
 			reportrollup.Table:          reportrollup.ValidColumn,

@@ -17,9 +17,12 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/aggregateevent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/approvalrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/auditlog"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/checkin"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/contentprogress"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/networkrulesetrelease"
@@ -30,6 +33,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organizationpolicy"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
@@ -50,12 +54,18 @@ type Client struct {
 	ApprovalRequest *ApprovalRequestClient
 	// AuditLog is the client for interacting with the AuditLog builders.
 	AuditLog *AuditLogClient
+	// CheckIn is the client for interacting with the CheckIn builders.
+	CheckIn *CheckInClient
 	// ContentProgress is the client for interacting with the ContentProgress builders.
 	ContentProgress *ContentProgressClient
+	// DailyMission is the client for interacting with the DailyMission builders.
+	DailyMission *DailyMissionClient
 	// DataRequest is the client for interacting with the DataRequest builders.
 	DataRequest *DataRequestClient
 	// Device is the client for interacting with the Device builders.
 	Device *DeviceClient
+	// Intention is the client for interacting with the Intention builders.
+	Intention *IntentionClient
 	// ModelRelease is the client for interacting with the ModelRelease builders.
 	ModelRelease *ModelReleaseClient
 	// ModelRollout is the client for interacting with the ModelRollout builders.
@@ -76,6 +86,8 @@ type Client struct {
 	PartnerLink *PartnerLinkClient
 	// PsychoeducationModule is the client for interacting with the PsychoeducationModule builders.
 	PsychoeducationModule *PsychoeducationModuleClient
+	// Reflection is the client for interacting with the Reflection builders.
+	Reflection *ReflectionClient
 	// RefreshToken is the client for interacting with the RefreshToken builders.
 	RefreshToken *RefreshTokenClient
 	// ReleaseCohort is the client for interacting with the ReleaseCohort builders.
@@ -104,9 +116,12 @@ func (c *Client) init() {
 	c.AggregateEvent = NewAggregateEventClient(c.config)
 	c.ApprovalRequest = NewApprovalRequestClient(c.config)
 	c.AuditLog = NewAuditLogClient(c.config)
+	c.CheckIn = NewCheckInClient(c.config)
 	c.ContentProgress = NewContentProgressClient(c.config)
+	c.DailyMission = NewDailyMissionClient(c.config)
 	c.DataRequest = NewDataRequestClient(c.config)
 	c.Device = NewDeviceClient(c.config)
+	c.Intention = NewIntentionClient(c.config)
 	c.ModelRelease = NewModelReleaseClient(c.config)
 	c.ModelRollout = NewModelRolloutClient(c.config)
 	c.NetworkRulesetRelease = NewNetworkRulesetReleaseClient(c.config)
@@ -117,6 +132,7 @@ func (c *Client) init() {
 	c.OrganizationPolicy = NewOrganizationPolicyClient(c.config)
 	c.PartnerLink = NewPartnerLinkClient(c.config)
 	c.PsychoeducationModule = NewPsychoeducationModuleClient(c.config)
+	c.Reflection = NewReflectionClient(c.config)
 	c.RefreshToken = NewRefreshTokenClient(c.config)
 	c.ReleaseCohort = NewReleaseCohortClient(c.config)
 	c.ReportRollup = NewReportRollupClient(c.config)
@@ -219,9 +235,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AggregateEvent:        NewAggregateEventClient(cfg),
 		ApprovalRequest:       NewApprovalRequestClient(cfg),
 		AuditLog:              NewAuditLogClient(cfg),
+		CheckIn:               NewCheckInClient(cfg),
 		ContentProgress:       NewContentProgressClient(cfg),
+		DailyMission:          NewDailyMissionClient(cfg),
 		DataRequest:           NewDataRequestClient(cfg),
 		Device:                NewDeviceClient(cfg),
+		Intention:             NewIntentionClient(cfg),
 		ModelRelease:          NewModelReleaseClient(cfg),
 		ModelRollout:          NewModelRolloutClient(cfg),
 		NetworkRulesetRelease: NewNetworkRulesetReleaseClient(cfg),
@@ -232,6 +251,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		OrganizationPolicy:    NewOrganizationPolicyClient(cfg),
 		PartnerLink:           NewPartnerLinkClient(cfg),
 		PsychoeducationModule: NewPsychoeducationModuleClient(cfg),
+		Reflection:            NewReflectionClient(cfg),
 		RefreshToken:          NewRefreshTokenClient(cfg),
 		ReleaseCohort:         NewReleaseCohortClient(cfg),
 		ReportRollup:          NewReportRollupClient(cfg),
@@ -261,9 +281,12 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AggregateEvent:        NewAggregateEventClient(cfg),
 		ApprovalRequest:       NewApprovalRequestClient(cfg),
 		AuditLog:              NewAuditLogClient(cfg),
+		CheckIn:               NewCheckInClient(cfg),
 		ContentProgress:       NewContentProgressClient(cfg),
+		DailyMission:          NewDailyMissionClient(cfg),
 		DataRequest:           NewDataRequestClient(cfg),
 		Device:                NewDeviceClient(cfg),
+		Intention:             NewIntentionClient(cfg),
 		ModelRelease:          NewModelReleaseClient(cfg),
 		ModelRollout:          NewModelRolloutClient(cfg),
 		NetworkRulesetRelease: NewNetworkRulesetReleaseClient(cfg),
@@ -274,6 +297,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		OrganizationPolicy:    NewOrganizationPolicyClient(cfg),
 		PartnerLink:           NewPartnerLinkClient(cfg),
 		PsychoeducationModule: NewPsychoeducationModuleClient(cfg),
+		Reflection:            NewReflectionClient(cfg),
 		RefreshToken:          NewRefreshTokenClient(cfg),
 		ReleaseCohort:         NewReleaseCohortClient(cfg),
 		ReportRollup:          NewReportRollupClient(cfg),
@@ -310,12 +334,13 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.ContentProgress,
-		c.DataRequest, c.Device, c.ModelRelease, c.ModelRollout,
-		c.NetworkRulesetRelease, c.NotificationDelivery, c.Organization,
-		c.OrganizationInvite, c.OrganizationMember, c.OrganizationPolicy,
-		c.PartnerLink, c.PsychoeducationModule, c.RefreshToken, c.ReleaseCohort,
-		c.ReportRollup, c.RulesetRelease, c.SupportActionAudit, c.SupportCase, c.User,
+		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.CheckIn, c.ContentProgress,
+		c.DailyMission, c.DataRequest, c.Device, c.Intention, c.ModelRelease,
+		c.ModelRollout, c.NetworkRulesetRelease, c.NotificationDelivery,
+		c.Organization, c.OrganizationInvite, c.OrganizationMember,
+		c.OrganizationPolicy, c.PartnerLink, c.PsychoeducationModule, c.Reflection,
+		c.RefreshToken, c.ReleaseCohort, c.ReportRollup, c.RulesetRelease,
+		c.SupportActionAudit, c.SupportCase, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -325,12 +350,13 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.ContentProgress,
-		c.DataRequest, c.Device, c.ModelRelease, c.ModelRollout,
-		c.NetworkRulesetRelease, c.NotificationDelivery, c.Organization,
-		c.OrganizationInvite, c.OrganizationMember, c.OrganizationPolicy,
-		c.PartnerLink, c.PsychoeducationModule, c.RefreshToken, c.ReleaseCohort,
-		c.ReportRollup, c.RulesetRelease, c.SupportActionAudit, c.SupportCase, c.User,
+		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.CheckIn, c.ContentProgress,
+		c.DailyMission, c.DataRequest, c.Device, c.Intention, c.ModelRelease,
+		c.ModelRollout, c.NetworkRulesetRelease, c.NotificationDelivery,
+		c.Organization, c.OrganizationInvite, c.OrganizationMember,
+		c.OrganizationPolicy, c.PartnerLink, c.PsychoeducationModule, c.Reflection,
+		c.RefreshToken, c.ReleaseCohort, c.ReportRollup, c.RulesetRelease,
+		c.SupportActionAudit, c.SupportCase, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -345,12 +371,18 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ApprovalRequest.mutate(ctx, m)
 	case *AuditLogMutation:
 		return c.AuditLog.mutate(ctx, m)
+	case *CheckInMutation:
+		return c.CheckIn.mutate(ctx, m)
 	case *ContentProgressMutation:
 		return c.ContentProgress.mutate(ctx, m)
+	case *DailyMissionMutation:
+		return c.DailyMission.mutate(ctx, m)
 	case *DataRequestMutation:
 		return c.DataRequest.mutate(ctx, m)
 	case *DeviceMutation:
 		return c.Device.mutate(ctx, m)
+	case *IntentionMutation:
+		return c.Intention.mutate(ctx, m)
 	case *ModelReleaseMutation:
 		return c.ModelRelease.mutate(ctx, m)
 	case *ModelRolloutMutation:
@@ -371,6 +403,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.PartnerLink.mutate(ctx, m)
 	case *PsychoeducationModuleMutation:
 		return c.PsychoeducationModule.mutate(ctx, m)
+	case *ReflectionMutation:
+		return c.Reflection.mutate(ctx, m)
 	case *RefreshTokenMutation:
 		return c.RefreshToken.mutate(ctx, m)
 	case *ReleaseCohortMutation:
@@ -789,6 +823,139 @@ func (c *AuditLogClient) mutate(ctx context.Context, m *AuditLogMutation) (Value
 	}
 }
 
+// CheckInClient is a client for the CheckIn schema.
+type CheckInClient struct {
+	config
+}
+
+// NewCheckInClient returns a client for the CheckIn from the given config.
+func NewCheckInClient(c config) *CheckInClient {
+	return &CheckInClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `checkin.Hooks(f(g(h())))`.
+func (c *CheckInClient) Use(hooks ...Hook) {
+	c.hooks.CheckIn = append(c.hooks.CheckIn, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `checkin.Intercept(f(g(h())))`.
+func (c *CheckInClient) Intercept(interceptors ...Interceptor) {
+	c.inters.CheckIn = append(c.inters.CheckIn, interceptors...)
+}
+
+// Create returns a builder for creating a CheckIn entity.
+func (c *CheckInClient) Create() *CheckInCreate {
+	mutation := newCheckInMutation(c.config, OpCreate)
+	return &CheckInCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CheckIn entities.
+func (c *CheckInClient) CreateBulk(builders ...*CheckInCreate) *CheckInCreateBulk {
+	return &CheckInCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CheckInClient) MapCreateBulk(slice any, setFunc func(*CheckInCreate, int)) *CheckInCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CheckInCreateBulk{err: fmt.Errorf("calling to CheckInClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CheckInCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CheckInCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CheckIn.
+func (c *CheckInClient) Update() *CheckInUpdate {
+	mutation := newCheckInMutation(c.config, OpUpdate)
+	return &CheckInUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CheckInClient) UpdateOne(_m *CheckIn) *CheckInUpdateOne {
+	mutation := newCheckInMutation(c.config, OpUpdateOne, withCheckIn(_m))
+	return &CheckInUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CheckInClient) UpdateOneID(id string) *CheckInUpdateOne {
+	mutation := newCheckInMutation(c.config, OpUpdateOne, withCheckInID(id))
+	return &CheckInUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CheckIn.
+func (c *CheckInClient) Delete() *CheckInDelete {
+	mutation := newCheckInMutation(c.config, OpDelete)
+	return &CheckInDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CheckInClient) DeleteOne(_m *CheckIn) *CheckInDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CheckInClient) DeleteOneID(id string) *CheckInDeleteOne {
+	builder := c.Delete().Where(checkin.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CheckInDeleteOne{builder}
+}
+
+// Query returns a query builder for CheckIn.
+func (c *CheckInClient) Query() *CheckInQuery {
+	return &CheckInQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCheckIn},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a CheckIn entity by its id.
+func (c *CheckInClient) Get(ctx context.Context, id string) (*CheckIn, error) {
+	return c.Query().Where(checkin.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CheckInClient) GetX(ctx context.Context, id string) *CheckIn {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *CheckInClient) Hooks() []Hook {
+	return c.hooks.CheckIn
+}
+
+// Interceptors returns the client interceptors.
+func (c *CheckInClient) Interceptors() []Interceptor {
+	return c.inters.CheckIn
+}
+
+func (c *CheckInClient) mutate(ctx context.Context, m *CheckInMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CheckInCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CheckInUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CheckInUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CheckInDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown CheckIn mutation op: %q", m.Op())
+	}
+}
+
 // ContentProgressClient is a client for the ContentProgress schema.
 type ContentProgressClient struct {
 	config
@@ -919,6 +1086,139 @@ func (c *ContentProgressClient) mutate(ctx context.Context, m *ContentProgressMu
 		return (&ContentProgressDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ContentProgress mutation op: %q", m.Op())
+	}
+}
+
+// DailyMissionClient is a client for the DailyMission schema.
+type DailyMissionClient struct {
+	config
+}
+
+// NewDailyMissionClient returns a client for the DailyMission from the given config.
+func NewDailyMissionClient(c config) *DailyMissionClient {
+	return &DailyMissionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `dailymission.Hooks(f(g(h())))`.
+func (c *DailyMissionClient) Use(hooks ...Hook) {
+	c.hooks.DailyMission = append(c.hooks.DailyMission, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `dailymission.Intercept(f(g(h())))`.
+func (c *DailyMissionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DailyMission = append(c.inters.DailyMission, interceptors...)
+}
+
+// Create returns a builder for creating a DailyMission entity.
+func (c *DailyMissionClient) Create() *DailyMissionCreate {
+	mutation := newDailyMissionMutation(c.config, OpCreate)
+	return &DailyMissionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DailyMission entities.
+func (c *DailyMissionClient) CreateBulk(builders ...*DailyMissionCreate) *DailyMissionCreateBulk {
+	return &DailyMissionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DailyMissionClient) MapCreateBulk(slice any, setFunc func(*DailyMissionCreate, int)) *DailyMissionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DailyMissionCreateBulk{err: fmt.Errorf("calling to DailyMissionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DailyMissionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DailyMissionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DailyMission.
+func (c *DailyMissionClient) Update() *DailyMissionUpdate {
+	mutation := newDailyMissionMutation(c.config, OpUpdate)
+	return &DailyMissionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DailyMissionClient) UpdateOne(_m *DailyMission) *DailyMissionUpdateOne {
+	mutation := newDailyMissionMutation(c.config, OpUpdateOne, withDailyMission(_m))
+	return &DailyMissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DailyMissionClient) UpdateOneID(id string) *DailyMissionUpdateOne {
+	mutation := newDailyMissionMutation(c.config, OpUpdateOne, withDailyMissionID(id))
+	return &DailyMissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DailyMission.
+func (c *DailyMissionClient) Delete() *DailyMissionDelete {
+	mutation := newDailyMissionMutation(c.config, OpDelete)
+	return &DailyMissionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DailyMissionClient) DeleteOne(_m *DailyMission) *DailyMissionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DailyMissionClient) DeleteOneID(id string) *DailyMissionDeleteOne {
+	builder := c.Delete().Where(dailymission.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DailyMissionDeleteOne{builder}
+}
+
+// Query returns a query builder for DailyMission.
+func (c *DailyMissionClient) Query() *DailyMissionQuery {
+	return &DailyMissionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDailyMission},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DailyMission entity by its id.
+func (c *DailyMissionClient) Get(ctx context.Context, id string) (*DailyMission, error) {
+	return c.Query().Where(dailymission.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DailyMissionClient) GetX(ctx context.Context, id string) *DailyMission {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *DailyMissionClient) Hooks() []Hook {
+	return c.hooks.DailyMission
+}
+
+// Interceptors returns the client interceptors.
+func (c *DailyMissionClient) Interceptors() []Interceptor {
+	return c.inters.DailyMission
+}
+
+func (c *DailyMissionClient) mutate(ctx context.Context, m *DailyMissionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DailyMissionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DailyMissionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DailyMissionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DailyMissionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DailyMission mutation op: %q", m.Op())
 	}
 }
 
@@ -1185,6 +1485,139 @@ func (c *DeviceClient) mutate(ctx context.Context, m *DeviceMutation) (Value, er
 		return (&DeviceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Device mutation op: %q", m.Op())
+	}
+}
+
+// IntentionClient is a client for the Intention schema.
+type IntentionClient struct {
+	config
+}
+
+// NewIntentionClient returns a client for the Intention from the given config.
+func NewIntentionClient(c config) *IntentionClient {
+	return &IntentionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `intention.Hooks(f(g(h())))`.
+func (c *IntentionClient) Use(hooks ...Hook) {
+	c.hooks.Intention = append(c.hooks.Intention, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `intention.Intercept(f(g(h())))`.
+func (c *IntentionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Intention = append(c.inters.Intention, interceptors...)
+}
+
+// Create returns a builder for creating a Intention entity.
+func (c *IntentionClient) Create() *IntentionCreate {
+	mutation := newIntentionMutation(c.config, OpCreate)
+	return &IntentionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Intention entities.
+func (c *IntentionClient) CreateBulk(builders ...*IntentionCreate) *IntentionCreateBulk {
+	return &IntentionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IntentionClient) MapCreateBulk(slice any, setFunc func(*IntentionCreate, int)) *IntentionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IntentionCreateBulk{err: fmt.Errorf("calling to IntentionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IntentionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IntentionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Intention.
+func (c *IntentionClient) Update() *IntentionUpdate {
+	mutation := newIntentionMutation(c.config, OpUpdate)
+	return &IntentionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IntentionClient) UpdateOne(_m *Intention) *IntentionUpdateOne {
+	mutation := newIntentionMutation(c.config, OpUpdateOne, withIntention(_m))
+	return &IntentionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IntentionClient) UpdateOneID(id string) *IntentionUpdateOne {
+	mutation := newIntentionMutation(c.config, OpUpdateOne, withIntentionID(id))
+	return &IntentionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Intention.
+func (c *IntentionClient) Delete() *IntentionDelete {
+	mutation := newIntentionMutation(c.config, OpDelete)
+	return &IntentionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IntentionClient) DeleteOne(_m *Intention) *IntentionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IntentionClient) DeleteOneID(id string) *IntentionDeleteOne {
+	builder := c.Delete().Where(intention.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IntentionDeleteOne{builder}
+}
+
+// Query returns a query builder for Intention.
+func (c *IntentionClient) Query() *IntentionQuery {
+	return &IntentionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIntention},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Intention entity by its id.
+func (c *IntentionClient) Get(ctx context.Context, id string) (*Intention, error) {
+	return c.Query().Where(intention.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IntentionClient) GetX(ctx context.Context, id string) *Intention {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *IntentionClient) Hooks() []Hook {
+	return c.hooks.Intention
+}
+
+// Interceptors returns the client interceptors.
+func (c *IntentionClient) Interceptors() []Interceptor {
+	return c.inters.Intention
+}
+
+func (c *IntentionClient) mutate(ctx context.Context, m *IntentionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IntentionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IntentionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IntentionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IntentionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Intention mutation op: %q", m.Op())
 	}
 }
 
@@ -2518,6 +2951,139 @@ func (c *PsychoeducationModuleClient) mutate(ctx context.Context, m *Psychoeduca
 	}
 }
 
+// ReflectionClient is a client for the Reflection schema.
+type ReflectionClient struct {
+	config
+}
+
+// NewReflectionClient returns a client for the Reflection from the given config.
+func NewReflectionClient(c config) *ReflectionClient {
+	return &ReflectionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `reflection.Hooks(f(g(h())))`.
+func (c *ReflectionClient) Use(hooks ...Hook) {
+	c.hooks.Reflection = append(c.hooks.Reflection, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `reflection.Intercept(f(g(h())))`.
+func (c *ReflectionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Reflection = append(c.inters.Reflection, interceptors...)
+}
+
+// Create returns a builder for creating a Reflection entity.
+func (c *ReflectionClient) Create() *ReflectionCreate {
+	mutation := newReflectionMutation(c.config, OpCreate)
+	return &ReflectionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Reflection entities.
+func (c *ReflectionClient) CreateBulk(builders ...*ReflectionCreate) *ReflectionCreateBulk {
+	return &ReflectionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ReflectionClient) MapCreateBulk(slice any, setFunc func(*ReflectionCreate, int)) *ReflectionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ReflectionCreateBulk{err: fmt.Errorf("calling to ReflectionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ReflectionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ReflectionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Reflection.
+func (c *ReflectionClient) Update() *ReflectionUpdate {
+	mutation := newReflectionMutation(c.config, OpUpdate)
+	return &ReflectionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ReflectionClient) UpdateOne(_m *Reflection) *ReflectionUpdateOne {
+	mutation := newReflectionMutation(c.config, OpUpdateOne, withReflection(_m))
+	return &ReflectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ReflectionClient) UpdateOneID(id string) *ReflectionUpdateOne {
+	mutation := newReflectionMutation(c.config, OpUpdateOne, withReflectionID(id))
+	return &ReflectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Reflection.
+func (c *ReflectionClient) Delete() *ReflectionDelete {
+	mutation := newReflectionMutation(c.config, OpDelete)
+	return &ReflectionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ReflectionClient) DeleteOne(_m *Reflection) *ReflectionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ReflectionClient) DeleteOneID(id string) *ReflectionDeleteOne {
+	builder := c.Delete().Where(reflection.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ReflectionDeleteOne{builder}
+}
+
+// Query returns a query builder for Reflection.
+func (c *ReflectionClient) Query() *ReflectionQuery {
+	return &ReflectionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeReflection},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Reflection entity by its id.
+func (c *ReflectionClient) Get(ctx context.Context, id string) (*Reflection, error) {
+	return c.Query().Where(reflection.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ReflectionClient) GetX(ctx context.Context, id string) *Reflection {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ReflectionClient) Hooks() []Hook {
+	return c.hooks.Reflection
+}
+
+// Interceptors returns the client interceptors.
+func (c *ReflectionClient) Interceptors() []Interceptor {
+	return c.inters.Reflection
+}
+
+func (c *ReflectionClient) mutate(ctx context.Context, m *ReflectionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ReflectionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ReflectionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ReflectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ReflectionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Reflection mutation op: %q", m.Op())
+	}
+}
+
 // RefreshTokenClient is a client for the RefreshToken schema.
 type RefreshTokenClient struct {
 	config
@@ -3452,17 +4018,19 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AggregateEvent, ApprovalRequest, AuditLog, ContentProgress, DataRequest, Device,
-		ModelRelease, ModelRollout, NetworkRulesetRelease, NotificationDelivery,
-		Organization, OrganizationInvite, OrganizationMember, OrganizationPolicy,
-		PartnerLink, PsychoeducationModule, RefreshToken, ReleaseCohort, ReportRollup,
-		RulesetRelease, SupportActionAudit, SupportCase, User []ent.Hook
+		AggregateEvent, ApprovalRequest, AuditLog, CheckIn, ContentProgress,
+		DailyMission, DataRequest, Device, Intention, ModelRelease, ModelRollout,
+		NetworkRulesetRelease, NotificationDelivery, Organization, OrganizationInvite,
+		OrganizationMember, OrganizationPolicy, PartnerLink, PsychoeducationModule,
+		Reflection, RefreshToken, ReleaseCohort, ReportRollup, RulesetRelease,
+		SupportActionAudit, SupportCase, User []ent.Hook
 	}
 	inters struct {
-		AggregateEvent, ApprovalRequest, AuditLog, ContentProgress, DataRequest, Device,
-		ModelRelease, ModelRollout, NetworkRulesetRelease, NotificationDelivery,
-		Organization, OrganizationInvite, OrganizationMember, OrganizationPolicy,
-		PartnerLink, PsychoeducationModule, RefreshToken, ReleaseCohort, ReportRollup,
-		RulesetRelease, SupportActionAudit, SupportCase, User []ent.Interceptor
+		AggregateEvent, ApprovalRequest, AuditLog, CheckIn, ContentProgress,
+		DailyMission, DataRequest, Device, Intention, ModelRelease, ModelRollout,
+		NetworkRulesetRelease, NotificationDelivery, Organization, OrganizationInvite,
+		OrganizationMember, OrganizationPolicy, PartnerLink, PsychoeducationModule,
+		Reflection, RefreshToken, ReleaseCohort, ReportRollup, RulesetRelease,
+		SupportActionAudit, SupportCase, User []ent.Interceptor
 	}
 )

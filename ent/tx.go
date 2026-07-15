@@ -18,12 +18,18 @@ type Tx struct {
 	ApprovalRequest *ApprovalRequestClient
 	// AuditLog is the client for interacting with the AuditLog builders.
 	AuditLog *AuditLogClient
+	// CheckIn is the client for interacting with the CheckIn builders.
+	CheckIn *CheckInClient
 	// ContentProgress is the client for interacting with the ContentProgress builders.
 	ContentProgress *ContentProgressClient
+	// DailyMission is the client for interacting with the DailyMission builders.
+	DailyMission *DailyMissionClient
 	// DataRequest is the client for interacting with the DataRequest builders.
 	DataRequest *DataRequestClient
 	// Device is the client for interacting with the Device builders.
 	Device *DeviceClient
+	// Intention is the client for interacting with the Intention builders.
+	Intention *IntentionClient
 	// ModelRelease is the client for interacting with the ModelRelease builders.
 	ModelRelease *ModelReleaseClient
 	// ModelRollout is the client for interacting with the ModelRollout builders.
@@ -44,6 +50,8 @@ type Tx struct {
 	PartnerLink *PartnerLinkClient
 	// PsychoeducationModule is the client for interacting with the PsychoeducationModule builders.
 	PsychoeducationModule *PsychoeducationModuleClient
+	// Reflection is the client for interacting with the Reflection builders.
+	Reflection *ReflectionClient
 	// RefreshToken is the client for interacting with the RefreshToken builders.
 	RefreshToken *RefreshTokenClient
 	// ReleaseCohort is the client for interacting with the ReleaseCohort builders.
@@ -192,9 +200,12 @@ func (tx *Tx) init() {
 	tx.AggregateEvent = NewAggregateEventClient(tx.config)
 	tx.ApprovalRequest = NewApprovalRequestClient(tx.config)
 	tx.AuditLog = NewAuditLogClient(tx.config)
+	tx.CheckIn = NewCheckInClient(tx.config)
 	tx.ContentProgress = NewContentProgressClient(tx.config)
+	tx.DailyMission = NewDailyMissionClient(tx.config)
 	tx.DataRequest = NewDataRequestClient(tx.config)
 	tx.Device = NewDeviceClient(tx.config)
+	tx.Intention = NewIntentionClient(tx.config)
 	tx.ModelRelease = NewModelReleaseClient(tx.config)
 	tx.ModelRollout = NewModelRolloutClient(tx.config)
 	tx.NetworkRulesetRelease = NewNetworkRulesetReleaseClient(tx.config)
@@ -205,6 +216,7 @@ func (tx *Tx) init() {
 	tx.OrganizationPolicy = NewOrganizationPolicyClient(tx.config)
 	tx.PartnerLink = NewPartnerLinkClient(tx.config)
 	tx.PsychoeducationModule = NewPsychoeducationModuleClient(tx.config)
+	tx.Reflection = NewReflectionClient(tx.config)
 	tx.RefreshToken = NewRefreshTokenClient(tx.config)
 	tx.ReleaseCohort = NewReleaseCohortClient(tx.config)
 	tx.ReportRollup = NewReportRollupClient(tx.config)

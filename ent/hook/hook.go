@@ -45,6 +45,18 @@ func (f AuditLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AuditLogMutation", m)
 }
 
+// The CheckInFunc type is an adapter to allow the use of ordinary
+// function as CheckIn mutator.
+type CheckInFunc func(context.Context, *ent.CheckInMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CheckInFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CheckInMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CheckInMutation", m)
+}
+
 // The ContentProgressFunc type is an adapter to allow the use of ordinary
 // function as ContentProgress mutator.
 type ContentProgressFunc func(context.Context, *ent.ContentProgressMutation) (ent.Value, error)
@@ -55,6 +67,18 @@ func (f ContentProgressFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ContentProgressMutation", m)
+}
+
+// The DailyMissionFunc type is an adapter to allow the use of ordinary
+// function as DailyMission mutator.
+type DailyMissionFunc func(context.Context, *ent.DailyMissionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DailyMissionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DailyMissionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DailyMissionMutation", m)
 }
 
 // The DataRequestFunc type is an adapter to allow the use of ordinary
@@ -79,6 +103,18 @@ func (f DeviceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DeviceMutation", m)
+}
+
+// The IntentionFunc type is an adapter to allow the use of ordinary
+// function as Intention mutator.
+type IntentionFunc func(context.Context, *ent.IntentionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IntentionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IntentionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntentionMutation", m)
 }
 
 // The ModelReleaseFunc type is an adapter to allow the use of ordinary
@@ -199,6 +235,18 @@ func (f PsychoeducationModuleFunc) Mutate(ctx context.Context, m ent.Mutation) (
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PsychoeducationModuleMutation", m)
+}
+
+// The ReflectionFunc type is an adapter to allow the use of ordinary
+// function as Reflection mutator.
+type ReflectionFunc func(context.Context, *ent.ReflectionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ReflectionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ReflectionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ReflectionMutation", m)
 }
 
 // The RefreshTokenFunc type is an adapter to allow the use of ordinary

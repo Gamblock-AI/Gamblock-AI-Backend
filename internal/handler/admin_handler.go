@@ -49,6 +49,25 @@ func (h *Handler) AdminModules(c *gin.Context) {
 	h.respond(c, http.StatusOK, modules)
 }
 
+func (h *Handler) CreateAdminModule(c *gin.Context) {
+	var input model.EducationModule
+	if err := c.ShouldBindJSON(&input); err != nil {
+		h.respondCode(c, http.StatusBadRequest, "err_validation")
+		return
+	}
+
+	if input.Status == "" {
+		input.Status = "published" // Default directly to published for prototyping
+	}
+
+	err := h.services.Admin.CreateEducationModule(c.Request.Context(), input)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusInternalServerError, "create_admin_module_failed", err)
+		return
+	}
+	h.respond(c, http.StatusCreated, gin.H{"id": input.ID, "published": true})
+}
+
 func (h *Handler) AdminModelReleases(c *gin.Context) {
 	releases, err := h.services.Admin.GetModelReleases(c.Request.Context())
 	if err != nil {

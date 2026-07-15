@@ -65,6 +65,21 @@ var (
 		Columns:    AuditLogsColumns,
 		PrimaryKey: []*schema.Column{AuditLogsColumns[0]},
 	}
+	// CheckInsColumns holds the columns for the "check_ins" table.
+	CheckInsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "mood_score", Type: field.TypeInt},
+		{Name: "urge_score", Type: field.TypeInt},
+		{Name: "context_text", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// CheckInsTable holds the schema information for the "check_ins" table.
+	CheckInsTable = &schema.Table{
+		Name:       "check_ins",
+		Columns:    CheckInsColumns,
+		PrimaryKey: []*schema.Column{CheckInsColumns[0]},
+	}
 	// ContentProgressesColumns holds the columns for the "content_progresses" table.
 	ContentProgressesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -79,6 +94,21 @@ var (
 		Name:       "content_progresses",
 		Columns:    ContentProgressesColumns,
 		PrimaryKey: []*schema.Column{ContentProgressesColumns[0]},
+	}
+	// DailyMissionsColumns holds the columns for the "daily_missions" table.
+	DailyMissionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "mission_key", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"completed", "skipped", "pending"}, Default: "completed"},
+		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// DailyMissionsTable holds the schema information for the "daily_missions" table.
+	DailyMissionsTable = &schema.Table{
+		Name:       "daily_missions",
+		Columns:    DailyMissionsColumns,
+		PrimaryKey: []*schema.Column{DailyMissionsColumns[0]},
 	}
 	// DataRequestsColumns holds the columns for the "data_requests" table.
 	DataRequestsColumns = []*schema.Column{
@@ -116,6 +146,21 @@ var (
 		Name:       "devices",
 		Columns:    DevicesColumns,
 		PrimaryKey: []*schema.Column{DevicesColumns[0]},
+	}
+	// IntentionsColumns holds the columns for the "intentions" table.
+	IntentionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "intention_text", Type: field.TypeString, Size: 2147483647},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "paused", "archived"}, Default: "active"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// IntentionsTable holds the schema information for the "intentions" table.
+	IntentionsTable = &schema.Table{
+		Name:       "intentions",
+		Columns:    IntentionsColumns,
+		PrimaryKey: []*schema.Column{IntentionsColumns[0]},
 	}
 	// ModelReleasesColumns holds the columns for the "model_releases" table.
 	ModelReleasesColumns = []*schema.Column{
@@ -297,6 +342,21 @@ var (
 		Columns:    PsychoeducationModulesColumns,
 		PrimaryKey: []*schema.Column{PsychoeducationModulesColumns[0]},
 	}
+	// ReflectionsColumns holds the columns for the "reflections" table.
+	ReflectionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "content_encrypted", Type: field.TypeString, Size: 2147483647},
+		{Name: "prompt_key", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// ReflectionsTable holds the schema information for the "reflections" table.
+	ReflectionsTable = &schema.Table{
+		Name:       "reflections",
+		Columns:    ReflectionsColumns,
+		PrimaryKey: []*schema.Column{ReflectionsColumns[0]},
+	}
 	// RefreshTokensColumns holds the columns for the "refresh_tokens" table.
 	RefreshTokensColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -421,9 +481,12 @@ var (
 		AggregateEventsTable,
 		ApprovalRequestsTable,
 		AuditLogsTable,
+		CheckInsTable,
 		ContentProgressesTable,
+		DailyMissionsTable,
 		DataRequestsTable,
 		DevicesTable,
+		IntentionsTable,
 		ModelReleasesTable,
 		ModelRolloutsTable,
 		NetworkRulesetReleasesTable,
@@ -434,6 +497,7 @@ var (
 		OrganizationPoliciesTable,
 		PartnerLinksTable,
 		PsychoeducationModulesTable,
+		ReflectionsTable,
 		RefreshTokensTable,
 		ReleaseCohortsTable,
 		ReportRollupsTable,

@@ -30,6 +30,8 @@ type (
 	NotificationItem = model.NotificationItem
 	JournalEntry     = model.JournalEntry
 	DailyMission     = model.DailyMission
+	Intention        = model.Intention
+	CheckIn          = model.CheckIn
 )
 
 // Store is a concurrency-safe in-memory backing store. It is used as a
@@ -53,6 +55,8 @@ type Store struct {
 	NotificationEvents []NotificationItem `json:"notification_events"`
 	JournalEntries     []JournalEntry     `json:"journal_entries"`
 	Missions           []DailyMission     `json:"missions"`
+	Intentions         []Intention        `json:"intentions"`
+	CheckIns           []CheckIn          `json:"check_ins"`
 }
 
 func NewSeeded() *Store {
@@ -102,6 +106,12 @@ func NewSeeded() *Store {
 		Missions: []DailyMission{
 			{ID: "mis_001", UserID: "usr_gading", Date: now.Format("2006-01-02"), Mission1: true, Mission2: true, Mission3: false, Mission4: false, Mission5: false, CreatedAt: now, UpdatedAt: now},
 		},
+		Intentions: []Intention{
+			{ID: "int_1", UserID: "usr_gading", Text: "Saya ingin menyelesaikan kuliah dengan pikiran yang lebih tenang.", Status: "active", CreatedAt: now, UpdatedAt: now},
+		},
+		CheckIns: []CheckIn{
+			{ID: "chk_1", UserID: "usr_gading", Mood: 4, Urge: 2, Context: "Merasa cukup tenang pagi ini.", CreatedAt: now},
+		},
 	}
 }
 
@@ -139,6 +149,10 @@ func (s *Store) Snapshot() Store {
 		NetworkRulesets:    append([]Release(nil), s.NetworkRulesets...),
 		AuditEvents:        append([]AuditEvent(nil), s.AuditEvents...),
 		NotificationEvents: append([]NotificationItem(nil), s.NotificationEvents...),
+		JournalEntries:     append([]JournalEntry(nil), s.JournalEntries...),
+		Missions:           append([]DailyMission(nil), s.Missions...),
+		Intentions:         append([]Intention(nil), s.Intentions...),
+		CheckIns:           append([]CheckIn(nil), s.CheckIns...),
 	}
 }
 

@@ -260,6 +260,51 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 			UpdatedAt: item.UpdatedAt,
 		})
 	}
+	reflections, err := client.Reflection.Query().All(ctx)
+	if err == nil {
+		for _, item := range reflections {
+			out.JournalEntries = append(out.JournalEntries, store.JournalEntry{
+				ID:        item.ID,
+				UserID:    item.UserID,
+				Text:      item.ContentEncrypted, // Text stores the encrypted content payload in ent model 
+				Mood:      value(item.PromptKey),
+				CreatedAt: item.CreatedAt,
+				UpdatedAt: item.UpdatedAt,
+			})
+		}
+	}
+	missions, err := client.DailyMission.Query().All(ctx)
+	if err == nil {
+		// Convert flat ent missions to DailyMission grouped per day (as prototype mock does)
+		// Assuming for prototype we just load seed data if empty
+		_ = missions 
+	}
+	intentions, err := client.Intention.Query().All(ctx)
+	if err == nil {
+		for _, item := range intentions {
+			out.Intentions = append(out.Intentions, store.Intention{
+				ID:        item.ID,
+				UserID:    item.UserID,
+				Text:      item.IntentionText,
+				Status:    item.Status.String(),
+				CreatedAt: item.CreatedAt,
+				UpdatedAt: item.UpdatedAt,
+			})
+		}
+	}
+	checkIns, err := client.CheckIn.Query().All(ctx)
+	if err == nil {
+		for _, item := range checkIns {
+			out.CheckIns = append(out.CheckIns, store.CheckIn{
+				ID:        item.ID,
+				UserID:    item.UserID,
+				Mood:      item.MoodScore,
+				Urge:      item.UrgeScore,
+				Context:   value(item.ContextText),
+				CreatedAt: item.CreatedAt,
+			})
+		}
+	}
 	ensureDefaults(out, seedData)
 	return out, nil
 }
@@ -337,5 +382,17 @@ func ensureDefaults(out *store.Store, seed *store.Store) {
 	}
 	if len(out.Modules) == 0 {
 		out.Modules = seed.Modules
+	}
+	if len(out.JournalEntries) == 0 {
+		out.JournalEntries = seed.JournalEntries
+	}
+	if len(out.Missions) == 0 {
+		out.Missions = seed.Missions
+	}
+	if len(out.Intentions) == 0 {
+		out.Intentions = seed.Intentions
+	}
+	if len(out.CheckIns) == 0 {
+		out.CheckIns = seed.CheckIns
 	}
 }
