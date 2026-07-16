@@ -30,15 +30,23 @@ var messages = map[string]string{
 	"logout_failed":              "Gagal keluar. Silakan coba lagi.",
 
 	// devices
-	"device_create_failed":     "Gagal mendaftarkan perangkat.",
-	"device_update_failed":     "Gagal memperbarui perangkat.",
-	"heartbeat_failed":         "Gagal mengirim sinyal aktif perangkat.",
-	"dashboard_summary_failed": "Gagal memuat ringkasan dashboard.",
-	"protection_status_failed": "Gagal memuat status perlindungan.",
-	"progress_snapshot_failed": "Gagal memuat ringkasan progres.",
-	"aggregate_event_rejected": "Agregat perangkat tidak dapat diterima.",
-	"profile_not_found":        "Profil tidak ditemukan.",
-	"profile_update_failed":    "Gagal memperbarui profil.",
+	"device_create_failed":        "Gagal mendaftarkan perangkat.",
+	"device_id_required":          "Perangkat wajib dipilih.",
+	"client_instance_required":    "Identitas instalasi aplikasi tidak tersedia.",
+	"device_update_failed":        "Gagal memperbarui perangkat.",
+	"heartbeat_failed":            "Gagal mengirim sinyal aktif perangkat.",
+	"dashboard_summary_failed":    "Gagal memuat ringkasan dashboard.",
+	"protection_status_failed":    "Gagal memuat status perlindungan.",
+	"progress_snapshot_failed":    "Gagal memuat ringkasan progres.",
+	"aggregate_event_rejected":    "Agregat perangkat tidak dapat diterima.",
+	"profile_not_found":           "Profil tidak ditemukan.",
+	"profile_update_failed":       "Gagal memperbarui profil.",
+	"password_validation_failed":  "Kata sandi saat ini dan kata sandi baru minimal 8 karakter wajib diisi.",
+	"current_password_invalid":    "Kata sandi saat ini tidak sesuai.",
+	"password_reuse_not_allowed":  "Kata sandi baru harus berbeda dari kata sandi saat ini.",
+	"password_update_failed":      "Gagal memperbarui kata sandi.",
+	"analytics_period_invalid":    "Periode analitik harus 7 atau 30 hari.",
+	"protection_analytics_failed": "Gagal memuat analitik perlindungan.",
 
 	// partners / accountability
 	"partner_email_required":         "Email pendamping wajib diisi.",
@@ -52,6 +60,7 @@ var messages = map[string]string{
 	"approval_cancel_failed":         "Gagal membatalkan permohonan.",
 	"approval_approve_failed":        "Gagal menyetujui permohonan.",
 	"approval_deny_failed":           "Gagal menolak permohonan.",
+	"approval_apply_failed":          "Persetujuan tidak dapat diterapkan atau masa penerapannya telah berakhir.",
 
 	// organizations
 	"name_required":        "Nama grup wajib diisi.",
@@ -102,6 +111,9 @@ var messages = map[string]string{
 	"artifact_unavailable":              "Artefak rilis belum tersedia atau gagal diverifikasi.",
 	"portal_overview_failed":            "Gagal memuat ringkasan operasional.",
 	"generate_key_failed":               "Gagal membuat kunci darurat.",
+	"emergency_request_failed":          "Gagal meminta pemulihan darurat.",
+	"emergency_request_not_found":       "Permintaan pemulihan darurat tidak ditemukan.",
+	"emergency_review_failed":           "Peninjauan pemulihan darurat gagal.",
 	"emergency_key_required":            "Kunci darurat wajib diisi.",
 	"invalid_key":                       "Kunci darurat tidak valid.",
 }

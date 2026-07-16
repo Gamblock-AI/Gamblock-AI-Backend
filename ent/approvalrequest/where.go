@@ -109,6 +109,16 @@ func ResolvedAt(v time.Time) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldEQ(FieldResolvedAt, v))
 }
 
+// AppliedAt applies equality check predicate on the "applied_at" field. It's identical to AppliedAtEQ.
+func AppliedAt(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEQ(FieldAppliedAt, v))
+}
+
+// GrantExpiresAt applies equality check predicate on the "grant_expires_at" field. It's identical to GrantExpiresAtEQ.
+func GrantExpiresAt(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEQ(FieldGrantExpiresAt, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldEQ(FieldCreatedAt, v))
@@ -727,6 +737,106 @@ func ResolvedAtIsNil() predicate.ApprovalRequest {
 // ResolvedAtNotNil applies the NotNil predicate on the "resolved_at" field.
 func ResolvedAtNotNil() predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldNotNull(FieldResolvedAt))
+}
+
+// AppliedAtEQ applies the EQ predicate on the "applied_at" field.
+func AppliedAtEQ(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEQ(FieldAppliedAt, v))
+}
+
+// AppliedAtNEQ applies the NEQ predicate on the "applied_at" field.
+func AppliedAtNEQ(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNEQ(FieldAppliedAt, v))
+}
+
+// AppliedAtIn applies the In predicate on the "applied_at" field.
+func AppliedAtIn(vs ...time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldIn(FieldAppliedAt, vs...))
+}
+
+// AppliedAtNotIn applies the NotIn predicate on the "applied_at" field.
+func AppliedAtNotIn(vs ...time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNotIn(FieldAppliedAt, vs...))
+}
+
+// AppliedAtGT applies the GT predicate on the "applied_at" field.
+func AppliedAtGT(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldGT(FieldAppliedAt, v))
+}
+
+// AppliedAtGTE applies the GTE predicate on the "applied_at" field.
+func AppliedAtGTE(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldGTE(FieldAppliedAt, v))
+}
+
+// AppliedAtLT applies the LT predicate on the "applied_at" field.
+func AppliedAtLT(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldLT(FieldAppliedAt, v))
+}
+
+// AppliedAtLTE applies the LTE predicate on the "applied_at" field.
+func AppliedAtLTE(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldLTE(FieldAppliedAt, v))
+}
+
+// AppliedAtIsNil applies the IsNil predicate on the "applied_at" field.
+func AppliedAtIsNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldIsNull(FieldAppliedAt))
+}
+
+// AppliedAtNotNil applies the NotNil predicate on the "applied_at" field.
+func AppliedAtNotNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNotNull(FieldAppliedAt))
+}
+
+// GrantExpiresAtEQ applies the EQ predicate on the "grant_expires_at" field.
+func GrantExpiresAtEQ(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEQ(FieldGrantExpiresAt, v))
+}
+
+// GrantExpiresAtNEQ applies the NEQ predicate on the "grant_expires_at" field.
+func GrantExpiresAtNEQ(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNEQ(FieldGrantExpiresAt, v))
+}
+
+// GrantExpiresAtIn applies the In predicate on the "grant_expires_at" field.
+func GrantExpiresAtIn(vs ...time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldIn(FieldGrantExpiresAt, vs...))
+}
+
+// GrantExpiresAtNotIn applies the NotIn predicate on the "grant_expires_at" field.
+func GrantExpiresAtNotIn(vs ...time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNotIn(FieldGrantExpiresAt, vs...))
+}
+
+// GrantExpiresAtGT applies the GT predicate on the "grant_expires_at" field.
+func GrantExpiresAtGT(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldGT(FieldGrantExpiresAt, v))
+}
+
+// GrantExpiresAtGTE applies the GTE predicate on the "grant_expires_at" field.
+func GrantExpiresAtGTE(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldGTE(FieldGrantExpiresAt, v))
+}
+
+// GrantExpiresAtLT applies the LT predicate on the "grant_expires_at" field.
+func GrantExpiresAtLT(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldLT(FieldGrantExpiresAt, v))
+}
+
+// GrantExpiresAtLTE applies the LTE predicate on the "grant_expires_at" field.
+func GrantExpiresAtLTE(v time.Time) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldLTE(FieldGrantExpiresAt, v))
+}
+
+// GrantExpiresAtIsNil applies the IsNil predicate on the "grant_expires_at" field.
+func GrantExpiresAtIsNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldIsNull(FieldGrantExpiresAt))
+}
+
+// GrantExpiresAtNotNil applies the NotNil predicate on the "grant_expires_at" field.
+func GrantExpiresAtNotNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNotNull(FieldGrantExpiresAt))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

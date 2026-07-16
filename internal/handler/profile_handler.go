@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,4 +30,26 @@ func (h *Handler) UpdateProfile(c *gin.Context) {
 		return
 	}
 	h.respond(c, http.StatusOK, user)
+}
+
+func (h *Handler) UpdatePassword(c *gin.Context) {
+	var input struct {
+		CurrentPassword string `json:"current_password"`
+		NewPassword     string `json:"new_password"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil || input.CurrentPassword == "" || len(input.NewPassword) < 8 {
+		h.respondCode(c, http.StatusBadRequest, "password_validation_failed")
+		return
+	}
+	if err := h.services.Auth.UpdatePassword(c.Request.Context(), h.currentUserID(c), input.CurrentPassword, input.NewPassword); err != nil {
+		code := "password_update_failed"
+		if strings.Contains(err.Error(), "current password") {
+			code = "current_password_invalid"
+		} else if strings.Contains(err.Error(), "different") {
+			code = "password_reuse_not_allowed"
+		}
+		h.respondErrorErr(c, http.StatusBadRequest, code, err)
+		return
+	}
+	h.respond(c, http.StatusOK, gin.H{"updated": true, "reauth_required": true})
 }

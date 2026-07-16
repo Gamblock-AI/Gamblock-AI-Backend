@@ -92,7 +92,16 @@ func humanApprovalStatus(status string) string {
 		return "Pending partner approval"
 	}
 	if status == "approved" {
-		return "Partner notified"
+		return "Approved"
+	}
+	if status == "denied" {
+		return "Denied"
+	}
+	if status == "expired" {
+		return "Expired"
+	}
+	if status == "cancelled" {
+		return "Cancelled"
 	}
 	return status
 }

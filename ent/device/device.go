@@ -16,6 +16,8 @@ const (
 	FieldID = "id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
+	// FieldClientInstanceID holds the string denoting the client_instance_id field in the database.
+	FieldClientInstanceID = "client_instance_id"
 	// FieldPlatform holds the string denoting the platform field in the database.
 	FieldPlatform = "platform"
 	// FieldLabel holds the string denoting the label field in the database.
@@ -44,6 +46,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldUserID,
+	FieldClientInstanceID,
 	FieldPlatform,
 	FieldLabel,
 	FieldAppVersion,
@@ -146,6 +149,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByUserID orders the results by the user_id field.
 func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
+}
+
+// ByClientInstanceID orders the results by the client_instance_id field.
+func ByClientInstanceID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldClientInstanceID, opts...).ToFunc()
 }
 
 // ByPlatform orders the results by the platform field.

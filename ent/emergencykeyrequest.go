@@ -19,6 +19,10 @@ type EmergencyKeyRequest struct {
 	ID string `json:"id,omitempty"`
 	// RequestedBy holds the value of the "requested_by" field.
 	RequestedBy string `json:"requested_by,omitempty"`
+	// DeviceID holds the value of the "device_id" field.
+	DeviceID *string `json:"device_id,omitempty"`
+	// ReviewedBy holds the value of the "reviewed_by" field.
+	ReviewedBy *string `json:"reviewed_by,omitempty"`
 	// ApprovedBy holds the value of the "approved_by" field.
 	ApprovedBy *string `json:"approved_by,omitempty"`
 	// Status holds the value of the "status" field.
@@ -29,8 +33,12 @@ type EmergencyKeyRequest struct {
 	RequestExpiresAt time.Time `json:"request_expires_at,omitempty"`
 	// KeyExpiresAt holds the value of the "key_expires_at" field.
 	KeyExpiresAt *time.Time `json:"key_expires_at,omitempty"`
+	// ReviewedAt holds the value of the "reviewed_at" field.
+	ReviewedAt *time.Time `json:"reviewed_at,omitempty"`
 	// ApprovedAt holds the value of the "approved_at" field.
 	ApprovedAt *time.Time `json:"approved_at,omitempty"`
+	// UsedAt holds the value of the "used_at" field.
+	UsedAt *time.Time `json:"used_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -43,9 +51,9 @@ func (*EmergencyKeyRequest) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case emergencykeyrequest.FieldID, emergencykeyrequest.FieldRequestedBy, emergencykeyrequest.FieldApprovedBy, emergencykeyrequest.FieldStatus, emergencykeyrequest.FieldKeyHash:
+		case emergencykeyrequest.FieldID, emergencykeyrequest.FieldRequestedBy, emergencykeyrequest.FieldDeviceID, emergencykeyrequest.FieldReviewedBy, emergencykeyrequest.FieldApprovedBy, emergencykeyrequest.FieldStatus, emergencykeyrequest.FieldKeyHash:
 			values[i] = new(sql.NullString)
-		case emergencykeyrequest.FieldRequestExpiresAt, emergencykeyrequest.FieldKeyExpiresAt, emergencykeyrequest.FieldApprovedAt, emergencykeyrequest.FieldCreatedAt, emergencykeyrequest.FieldUpdatedAt:
+		case emergencykeyrequest.FieldRequestExpiresAt, emergencykeyrequest.FieldKeyExpiresAt, emergencykeyrequest.FieldReviewedAt, emergencykeyrequest.FieldApprovedAt, emergencykeyrequest.FieldUsedAt, emergencykeyrequest.FieldCreatedAt, emergencykeyrequest.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -73,6 +81,20 @@ func (_m *EmergencyKeyRequest) assignValues(columns []string, values []any) erro
 				return fmt.Errorf("unexpected type %T for field requested_by", values[i])
 			} else if value.Valid {
 				_m.RequestedBy = value.String
+			}
+		case emergencykeyrequest.FieldDeviceID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field device_id", values[i])
+			} else if value.Valid {
+				_m.DeviceID = new(string)
+				*_m.DeviceID = value.String
+			}
+		case emergencykeyrequest.FieldReviewedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field reviewed_by", values[i])
+			} else if value.Valid {
+				_m.ReviewedBy = new(string)
+				*_m.ReviewedBy = value.String
 			}
 		case emergencykeyrequest.FieldApprovedBy:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -107,12 +129,26 @@ func (_m *EmergencyKeyRequest) assignValues(columns []string, values []any) erro
 				_m.KeyExpiresAt = new(time.Time)
 				*_m.KeyExpiresAt = value.Time
 			}
+		case emergencykeyrequest.FieldReviewedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field reviewed_at", values[i])
+			} else if value.Valid {
+				_m.ReviewedAt = new(time.Time)
+				*_m.ReviewedAt = value.Time
+			}
 		case emergencykeyrequest.FieldApprovedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field approved_at", values[i])
 			} else if value.Valid {
 				_m.ApprovedAt = new(time.Time)
 				*_m.ApprovedAt = value.Time
+			}
+		case emergencykeyrequest.FieldUsedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field used_at", values[i])
+			} else if value.Valid {
+				_m.UsedAt = new(time.Time)
+				*_m.UsedAt = value.Time
 			}
 		case emergencykeyrequest.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -165,6 +201,16 @@ func (_m *EmergencyKeyRequest) String() string {
 	builder.WriteString("requested_by=")
 	builder.WriteString(_m.RequestedBy)
 	builder.WriteString(", ")
+	if v := _m.DeviceID; v != nil {
+		builder.WriteString("device_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.ReviewedBy; v != nil {
+		builder.WriteString("reviewed_by=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
 	if v := _m.ApprovedBy; v != nil {
 		builder.WriteString("approved_by=")
 		builder.WriteString(*v)
@@ -183,8 +229,18 @@ func (_m *EmergencyKeyRequest) String() string {
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
+	if v := _m.ReviewedAt; v != nil {
+		builder.WriteString("reviewed_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
 	if v := _m.ApprovedAt; v != nil {
 		builder.WriteString("approved_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.UsedAt; v != nil {
+		builder.WriteString("used_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")

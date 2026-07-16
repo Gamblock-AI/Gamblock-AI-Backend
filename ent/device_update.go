@@ -42,6 +42,26 @@ func (_u *DeviceUpdate) SetNillableUserID(v *string) *DeviceUpdate {
 	return _u
 }
 
+// SetClientInstanceID sets the "client_instance_id" field.
+func (_u *DeviceUpdate) SetClientInstanceID(v string) *DeviceUpdate {
+	_u.mutation.SetClientInstanceID(v)
+	return _u
+}
+
+// SetNillableClientInstanceID sets the "client_instance_id" field if the given value is not nil.
+func (_u *DeviceUpdate) SetNillableClientInstanceID(v *string) *DeviceUpdate {
+	if v != nil {
+		_u.SetClientInstanceID(*v)
+	}
+	return _u
+}
+
+// ClearClientInstanceID clears the value of the "client_instance_id" field.
+func (_u *DeviceUpdate) ClearClientInstanceID() *DeviceUpdate {
+	_u.mutation.ClearClientInstanceID()
+	return _u
+}
+
 // SetPlatform sets the "platform" field.
 func (_u *DeviceUpdate) SetPlatform(v device.Platform) *DeviceUpdate {
 	_u.mutation.SetPlatform(v)
@@ -249,6 +269,12 @@ func (_u *DeviceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.UserID(); ok {
 		_spec.SetField(device.FieldUserID, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.ClientInstanceID(); ok {
+		_spec.SetField(device.FieldClientInstanceID, field.TypeString, value)
+	}
+	if _u.mutation.ClientInstanceIDCleared() {
+		_spec.ClearField(device.FieldClientInstanceID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Platform(); ok {
 		_spec.SetField(device.FieldPlatform, field.TypeEnum, value)
 	}
@@ -316,6 +342,26 @@ func (_u *DeviceUpdateOne) SetNillableUserID(v *string) *DeviceUpdateOne {
 	if v != nil {
 		_u.SetUserID(*v)
 	}
+	return _u
+}
+
+// SetClientInstanceID sets the "client_instance_id" field.
+func (_u *DeviceUpdateOne) SetClientInstanceID(v string) *DeviceUpdateOne {
+	_u.mutation.SetClientInstanceID(v)
+	return _u
+}
+
+// SetNillableClientInstanceID sets the "client_instance_id" field if the given value is not nil.
+func (_u *DeviceUpdateOne) SetNillableClientInstanceID(v *string) *DeviceUpdateOne {
+	if v != nil {
+		_u.SetClientInstanceID(*v)
+	}
+	return _u
+}
+
+// ClearClientInstanceID clears the value of the "client_instance_id" field.
+func (_u *DeviceUpdateOne) ClearClientInstanceID() *DeviceUpdateOne {
+	_u.mutation.ClearClientInstanceID()
 	return _u
 }
 
@@ -555,6 +601,12 @@ func (_u *DeviceUpdateOne) sqlSave(ctx context.Context) (_node *Device, err erro
 	}
 	if value, ok := _u.mutation.UserID(); ok {
 		_spec.SetField(device.FieldUserID, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ClientInstanceID(); ok {
+		_spec.SetField(device.FieldClientInstanceID, field.TypeString, value)
+	}
+	if _u.mutation.ClientInstanceIDCleared() {
+		_spec.ClearField(device.FieldClientInstanceID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Platform(); ok {
 		_spec.SetField(device.FieldPlatform, field.TypeEnum, value)

@@ -30,8 +30,13 @@ type envelopeShape struct {
 func newTestRouter(t *testing.T, appEnv string) (*gin.Engine, *store.Store) {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
-	cfg := config.Config{AppEnv: appEnv, JWTAccessSecret: "test-secret-very-long-please", JWTAccessTTL: 3600e9, JWTRefreshTTL: 720 * 3600e9}
+	cfg := config.Config{
+		AppEnv: appEnv, JWTAccessSecret: "test-secret-very-long-please",
+		JWTAccessTTL: 3600e9, JWTRefreshTTL: 720 * 3600e9,
+		JournalEncryptionKey: "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+	}
 	st := store.NewSeeded()
+	st.JournalEntries = nil
 	repo := repository.New(nil, st)
 	services := service.NewContainer(repo, cfg, zap.NewNop())
 	mid := middleware.New(services.Auth, zap.NewNop())

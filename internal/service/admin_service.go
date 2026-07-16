@@ -69,11 +69,19 @@ func (s *AdminService) GenerateEmergencyKey(ctx context.Context, createdBy strin
 	return "", fmt.Errorf("direct generation is disabled; request approval from a second platform administrator")
 }
 
-func (s *AdminService) RequestEmergencyKey(ctx context.Context, requestedBy string) (model.EmergencyKeyRequest, error) {
+func (s *AdminService) RequestEmergencyKey(ctx context.Context, requestedBy, deviceID string) (model.EmergencyKeyRequest, error) {
+	if !s.repo.IsDeviceOwnedBy(ctx, deviceID, requestedBy) {
+		return model.EmergencyKeyRequest{}, fmt.Errorf("device does not belong to user")
+	}
 	now := time.Now().UTC()
+	if current, err := s.repo.GetCurrentEmergencyKeyRequest(ctx, requestedBy, deviceID, now); err == nil &&
+		(current.Status == "pending" || current.Status == "reviewed" || current.Status == "approved") {
+		return model.EmergencyKeyRequest{}, fmt.Errorf("an active emergency request already exists")
+	}
 	request := model.EmergencyKeyRequest{
 		ID:               "ekr_" + uuid.NewString()[:8],
 		RequestedBy:      requestedBy,
+		DeviceID:         deviceID,
 		Status:           "pending",
 		RequestExpiresAt: now.Add(30 * time.Minute),
 		CreatedAt:        now,
@@ -87,8 +95,28 @@ func (s *AdminService) RequestEmergencyKey(ctx context.Context, requestedBy stri
 	return created, nil
 }
 
+func (s *AdminService) GetCurrentEmergencyKeyRequest(ctx context.Context, requestedBy, deviceID string) (model.EmergencyKeyRequest, error) {
+	if !s.repo.IsDeviceOwnedBy(ctx, deviceID, requestedBy) {
+		return model.EmergencyKeyRequest{}, fmt.Errorf("device does not belong to user")
+	}
+	return s.repo.GetCurrentEmergencyKeyRequest(ctx, requestedBy, deviceID, time.Now().UTC())
+}
+
 func (s *AdminService) GetPendingEmergencyKeyRequests(ctx context.Context) ([]model.EmergencyKeyRequest, error) {
 	return s.repo.GetPendingEmergencyKeyRequests(ctx, time.Now().UTC())
+}
+
+func (s *AdminService) ReviewEmergencyKeyRequest(ctx context.Context, requestID, reviewedBy string) (model.EmergencyKeyRequest, error) {
+	request, err := s.repo.ReviewEmergencyKeyRequest(ctx, requestID, reviewedBy, time.Now().UTC())
+	if err != nil {
+		return model.EmergencyKeyRequest{}, err
+	}
+	s.logger.Info("emergency key request reviewed",
+		zap.String("request_id", request.ID),
+		zap.String("requested_by", request.RequestedBy),
+		zap.String("reviewed_by", reviewedBy),
+	)
+	return request, nil
 }
 
 func (s *AdminService) ApproveEmergencyKeyRequest(ctx context.Context, requestID, approvedBy string) (model.EmergencyKeyRequest, string, error) {
@@ -111,15 +139,17 @@ func (s *AdminService) ApproveEmergencyKeyRequest(ctx context.Context, requestID
 	s.logger.Info("emergency key approved",
 		zap.String("request_id", request.ID),
 		zap.String("requested_by", request.RequestedBy),
+		zap.String("reviewed_by", request.ReviewedBy),
 		zap.String("approved_by", approvedBy),
 	)
 	return request, key, nil
 }
 
-func (s *AdminService) ValidateEmergencyKey(ctx context.Context, key, deviceID string) error {
-	request, err := s.repo.UseEmergencyKey(ctx, HashRefreshToken(key), time.Now().UTC())
+func (s *AdminService) ValidateEmergencyKey(ctx context.Context, key, deviceID string) (model.EmergencyGrant, error) {
+	now := time.Now().UTC()
+	request, err := s.repo.UseEmergencyKey(ctx, HashRefreshToken(key), deviceID, now)
 	if err != nil {
-		return err
+		return model.EmergencyGrant{}, err
 	}
 	s.logger.Info("emergency key used for device unlock",
 		zap.String("device_id", deviceID),
@@ -127,7 +157,10 @@ func (s *AdminService) ValidateEmergencyKey(ctx context.Context, key, deviceID s
 		zap.String("requested_by", request.RequestedBy),
 		zap.String("approved_by", request.ApprovedBy),
 	)
-	return nil
+	return model.EmergencyGrant{
+		RequestID: request.ID, DeviceID: deviceID,
+		GrantStartsAt: now, GrantExpiresAt: now.Add(10 * time.Minute),
+	}, nil
 }
 
 func generateEmergencyKeyString() (string, error) {

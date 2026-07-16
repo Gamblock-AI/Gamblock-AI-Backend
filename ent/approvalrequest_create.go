@@ -142,6 +142,34 @@ func (_c *ApprovalRequestCreate) SetNillableResolvedAt(v *time.Time) *ApprovalRe
 	return _c
 }
 
+// SetAppliedAt sets the "applied_at" field.
+func (_c *ApprovalRequestCreate) SetAppliedAt(v time.Time) *ApprovalRequestCreate {
+	_c.mutation.SetAppliedAt(v)
+	return _c
+}
+
+// SetNillableAppliedAt sets the "applied_at" field if the given value is not nil.
+func (_c *ApprovalRequestCreate) SetNillableAppliedAt(v *time.Time) *ApprovalRequestCreate {
+	if v != nil {
+		_c.SetAppliedAt(*v)
+	}
+	return _c
+}
+
+// SetGrantExpiresAt sets the "grant_expires_at" field.
+func (_c *ApprovalRequestCreate) SetGrantExpiresAt(v time.Time) *ApprovalRequestCreate {
+	_c.mutation.SetGrantExpiresAt(v)
+	return _c
+}
+
+// SetNillableGrantExpiresAt sets the "grant_expires_at" field if the given value is not nil.
+func (_c *ApprovalRequestCreate) SetNillableGrantExpiresAt(v *time.Time) *ApprovalRequestCreate {
+	if v != nil {
+		_c.SetGrantExpiresAt(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *ApprovalRequestCreate) SetCreatedAt(v time.Time) *ApprovalRequestCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -348,6 +376,14 @@ func (_c *ApprovalRequestCreate) createSpec() (*ApprovalRequest, *sqlgraph.Creat
 	if value, ok := _c.mutation.ResolvedAt(); ok {
 		_spec.SetField(approvalrequest.FieldResolvedAt, field.TypeTime, value)
 		_node.ResolvedAt = &value
+	}
+	if value, ok := _c.mutation.AppliedAt(); ok {
+		_spec.SetField(approvalrequest.FieldAppliedAt, field.TypeTime, value)
+		_node.AppliedAt = &value
+	}
+	if value, ok := _c.mutation.GrantExpiresAt(); ok {
+		_spec.SetField(approvalrequest.FieldGrantExpiresAt, field.TypeTime, value)
+		_node.GrantExpiresAt = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(approvalrequest.FieldCreatedAt, field.TypeTime, value)

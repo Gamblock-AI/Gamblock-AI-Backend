@@ -68,3 +68,15 @@ func (r *Repository) RevokeRefreshTokenByID(ctx context.Context, id string) erro
 	_, err := r.db.RefreshToken.UpdateOneID(id).SetRevokedAt(time.Now().UTC()).Save(ctx)
 	return err
 }
+
+func (r *Repository) RevokeRefreshTokensForUser(ctx context.Context, userID string) error {
+	if r.db == nil {
+		r.store.RevokeRefreshTokensForUser(userID)
+		return nil
+	}
+	_, err := r.db.RefreshToken.Update().
+		Where(refreshtoken.UserID(userID), refreshtoken.RevokedAtIsNil()).
+		SetRevokedAt(time.Now().UTC()).
+		Save(ctx)
+	return err
+}

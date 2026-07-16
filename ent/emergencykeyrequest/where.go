@@ -69,6 +69,16 @@ func RequestedBy(v string) predicate.EmergencyKeyRequest {
 	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldRequestedBy, v))
 }
 
+// DeviceID applies equality check predicate on the "device_id" field. It's identical to DeviceIDEQ.
+func DeviceID(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldDeviceID, v))
+}
+
+// ReviewedBy applies equality check predicate on the "reviewed_by" field. It's identical to ReviewedByEQ.
+func ReviewedBy(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldReviewedBy, v))
+}
+
 // ApprovedBy applies equality check predicate on the "approved_by" field. It's identical to ApprovedByEQ.
 func ApprovedBy(v string) predicate.EmergencyKeyRequest {
 	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldApprovedBy, v))
@@ -89,9 +99,19 @@ func KeyExpiresAt(v time.Time) predicate.EmergencyKeyRequest {
 	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldKeyExpiresAt, v))
 }
 
+// ReviewedAt applies equality check predicate on the "reviewed_at" field. It's identical to ReviewedAtEQ.
+func ReviewedAt(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldReviewedAt, v))
+}
+
 // ApprovedAt applies equality check predicate on the "approved_at" field. It's identical to ApprovedAtEQ.
 func ApprovedAt(v time.Time) predicate.EmergencyKeyRequest {
 	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldApprovedAt, v))
+}
+
+// UsedAt applies equality check predicate on the "used_at" field. It's identical to UsedAtEQ.
+func UsedAt(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldUsedAt, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -167,6 +187,156 @@ func RequestedByEqualFold(v string) predicate.EmergencyKeyRequest {
 // RequestedByContainsFold applies the ContainsFold predicate on the "requested_by" field.
 func RequestedByContainsFold(v string) predicate.EmergencyKeyRequest {
 	return predicate.EmergencyKeyRequest(sql.FieldContainsFold(FieldRequestedBy, v))
+}
+
+// DeviceIDEQ applies the EQ predicate on the "device_id" field.
+func DeviceIDEQ(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldDeviceID, v))
+}
+
+// DeviceIDNEQ applies the NEQ predicate on the "device_id" field.
+func DeviceIDNEQ(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNEQ(FieldDeviceID, v))
+}
+
+// DeviceIDIn applies the In predicate on the "device_id" field.
+func DeviceIDIn(vs ...string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIn(FieldDeviceID, vs...))
+}
+
+// DeviceIDNotIn applies the NotIn predicate on the "device_id" field.
+func DeviceIDNotIn(vs ...string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotIn(FieldDeviceID, vs...))
+}
+
+// DeviceIDGT applies the GT predicate on the "device_id" field.
+func DeviceIDGT(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGT(FieldDeviceID, v))
+}
+
+// DeviceIDGTE applies the GTE predicate on the "device_id" field.
+func DeviceIDGTE(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGTE(FieldDeviceID, v))
+}
+
+// DeviceIDLT applies the LT predicate on the "device_id" field.
+func DeviceIDLT(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLT(FieldDeviceID, v))
+}
+
+// DeviceIDLTE applies the LTE predicate on the "device_id" field.
+func DeviceIDLTE(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLTE(FieldDeviceID, v))
+}
+
+// DeviceIDContains applies the Contains predicate on the "device_id" field.
+func DeviceIDContains(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldContains(FieldDeviceID, v))
+}
+
+// DeviceIDHasPrefix applies the HasPrefix predicate on the "device_id" field.
+func DeviceIDHasPrefix(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldHasPrefix(FieldDeviceID, v))
+}
+
+// DeviceIDHasSuffix applies the HasSuffix predicate on the "device_id" field.
+func DeviceIDHasSuffix(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldHasSuffix(FieldDeviceID, v))
+}
+
+// DeviceIDIsNil applies the IsNil predicate on the "device_id" field.
+func DeviceIDIsNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIsNull(FieldDeviceID))
+}
+
+// DeviceIDNotNil applies the NotNil predicate on the "device_id" field.
+func DeviceIDNotNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotNull(FieldDeviceID))
+}
+
+// DeviceIDEqualFold applies the EqualFold predicate on the "device_id" field.
+func DeviceIDEqualFold(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEqualFold(FieldDeviceID, v))
+}
+
+// DeviceIDContainsFold applies the ContainsFold predicate on the "device_id" field.
+func DeviceIDContainsFold(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldContainsFold(FieldDeviceID, v))
+}
+
+// ReviewedByEQ applies the EQ predicate on the "reviewed_by" field.
+func ReviewedByEQ(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldReviewedBy, v))
+}
+
+// ReviewedByNEQ applies the NEQ predicate on the "reviewed_by" field.
+func ReviewedByNEQ(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNEQ(FieldReviewedBy, v))
+}
+
+// ReviewedByIn applies the In predicate on the "reviewed_by" field.
+func ReviewedByIn(vs ...string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIn(FieldReviewedBy, vs...))
+}
+
+// ReviewedByNotIn applies the NotIn predicate on the "reviewed_by" field.
+func ReviewedByNotIn(vs ...string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotIn(FieldReviewedBy, vs...))
+}
+
+// ReviewedByGT applies the GT predicate on the "reviewed_by" field.
+func ReviewedByGT(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGT(FieldReviewedBy, v))
+}
+
+// ReviewedByGTE applies the GTE predicate on the "reviewed_by" field.
+func ReviewedByGTE(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGTE(FieldReviewedBy, v))
+}
+
+// ReviewedByLT applies the LT predicate on the "reviewed_by" field.
+func ReviewedByLT(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLT(FieldReviewedBy, v))
+}
+
+// ReviewedByLTE applies the LTE predicate on the "reviewed_by" field.
+func ReviewedByLTE(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLTE(FieldReviewedBy, v))
+}
+
+// ReviewedByContains applies the Contains predicate on the "reviewed_by" field.
+func ReviewedByContains(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldContains(FieldReviewedBy, v))
+}
+
+// ReviewedByHasPrefix applies the HasPrefix predicate on the "reviewed_by" field.
+func ReviewedByHasPrefix(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldHasPrefix(FieldReviewedBy, v))
+}
+
+// ReviewedByHasSuffix applies the HasSuffix predicate on the "reviewed_by" field.
+func ReviewedByHasSuffix(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldHasSuffix(FieldReviewedBy, v))
+}
+
+// ReviewedByIsNil applies the IsNil predicate on the "reviewed_by" field.
+func ReviewedByIsNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIsNull(FieldReviewedBy))
+}
+
+// ReviewedByNotNil applies the NotNil predicate on the "reviewed_by" field.
+func ReviewedByNotNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotNull(FieldReviewedBy))
+}
+
+// ReviewedByEqualFold applies the EqualFold predicate on the "reviewed_by" field.
+func ReviewedByEqualFold(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEqualFold(FieldReviewedBy, v))
+}
+
+// ReviewedByContainsFold applies the ContainsFold predicate on the "reviewed_by" field.
+func ReviewedByContainsFold(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldContainsFold(FieldReviewedBy, v))
 }
 
 // ApprovedByEQ applies the EQ predicate on the "approved_by" field.
@@ -429,6 +599,56 @@ func KeyExpiresAtNotNil() predicate.EmergencyKeyRequest {
 	return predicate.EmergencyKeyRequest(sql.FieldNotNull(FieldKeyExpiresAt))
 }
 
+// ReviewedAtEQ applies the EQ predicate on the "reviewed_at" field.
+func ReviewedAtEQ(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldReviewedAt, v))
+}
+
+// ReviewedAtNEQ applies the NEQ predicate on the "reviewed_at" field.
+func ReviewedAtNEQ(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNEQ(FieldReviewedAt, v))
+}
+
+// ReviewedAtIn applies the In predicate on the "reviewed_at" field.
+func ReviewedAtIn(vs ...time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIn(FieldReviewedAt, vs...))
+}
+
+// ReviewedAtNotIn applies the NotIn predicate on the "reviewed_at" field.
+func ReviewedAtNotIn(vs ...time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotIn(FieldReviewedAt, vs...))
+}
+
+// ReviewedAtGT applies the GT predicate on the "reviewed_at" field.
+func ReviewedAtGT(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGT(FieldReviewedAt, v))
+}
+
+// ReviewedAtGTE applies the GTE predicate on the "reviewed_at" field.
+func ReviewedAtGTE(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGTE(FieldReviewedAt, v))
+}
+
+// ReviewedAtLT applies the LT predicate on the "reviewed_at" field.
+func ReviewedAtLT(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLT(FieldReviewedAt, v))
+}
+
+// ReviewedAtLTE applies the LTE predicate on the "reviewed_at" field.
+func ReviewedAtLTE(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLTE(FieldReviewedAt, v))
+}
+
+// ReviewedAtIsNil applies the IsNil predicate on the "reviewed_at" field.
+func ReviewedAtIsNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIsNull(FieldReviewedAt))
+}
+
+// ReviewedAtNotNil applies the NotNil predicate on the "reviewed_at" field.
+func ReviewedAtNotNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotNull(FieldReviewedAt))
+}
+
 // ApprovedAtEQ applies the EQ predicate on the "approved_at" field.
 func ApprovedAtEQ(v time.Time) predicate.EmergencyKeyRequest {
 	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldApprovedAt, v))
@@ -477,6 +697,56 @@ func ApprovedAtIsNil() predicate.EmergencyKeyRequest {
 // ApprovedAtNotNil applies the NotNil predicate on the "approved_at" field.
 func ApprovedAtNotNil() predicate.EmergencyKeyRequest {
 	return predicate.EmergencyKeyRequest(sql.FieldNotNull(FieldApprovedAt))
+}
+
+// UsedAtEQ applies the EQ predicate on the "used_at" field.
+func UsedAtEQ(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldUsedAt, v))
+}
+
+// UsedAtNEQ applies the NEQ predicate on the "used_at" field.
+func UsedAtNEQ(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNEQ(FieldUsedAt, v))
+}
+
+// UsedAtIn applies the In predicate on the "used_at" field.
+func UsedAtIn(vs ...time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIn(FieldUsedAt, vs...))
+}
+
+// UsedAtNotIn applies the NotIn predicate on the "used_at" field.
+func UsedAtNotIn(vs ...time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotIn(FieldUsedAt, vs...))
+}
+
+// UsedAtGT applies the GT predicate on the "used_at" field.
+func UsedAtGT(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGT(FieldUsedAt, v))
+}
+
+// UsedAtGTE applies the GTE predicate on the "used_at" field.
+func UsedAtGTE(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGTE(FieldUsedAt, v))
+}
+
+// UsedAtLT applies the LT predicate on the "used_at" field.
+func UsedAtLT(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLT(FieldUsedAt, v))
+}
+
+// UsedAtLTE applies the LTE predicate on the "used_at" field.
+func UsedAtLTE(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLTE(FieldUsedAt, v))
+}
+
+// UsedAtIsNil applies the IsNil predicate on the "used_at" field.
+func UsedAtIsNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIsNull(FieldUsedAt))
+}
+
+// UsedAtNotNil applies the NotNil predicate on the "used_at" field.
+func UsedAtNotNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotNull(FieldUsedAt))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

@@ -28,7 +28,7 @@ func newKey(t *testing.T) string {
 // and retrieval must return the original plaintext (PRD §4 / §7.1).
 func TestReflectionService_EncryptionRoundTrip(t *testing.T) {
 	cfg := config.Config{JournalEncryptionKey: newKey(t)}
-	st := store.NewSeeded()
+	st := store.New()
 	repo := repository.New(nil, st)
 	svc := NewReflectionService(repo, cfg, zap.NewNop())
 
@@ -50,15 +50,15 @@ func TestReflectionService_EncryptionRoundTrip(t *testing.T) {
 	assert.True(t, found, "created entry must be retrievable")
 }
 
-// Without a key, text is stored as-is (no encryption).
-func TestReflectionService_NoKeyStoresPlaintext(t *testing.T) {
+// Without a key, the service fails closed rather than storing plaintext.
+func TestReflectionService_NoKeyFailsClosed(t *testing.T) {
 	cfg := config.Config{}
 	st := store.NewSeeded()
 	repo := repository.New(nil, st)
 	svc := NewReflectionService(repo, cfg, zap.NewNop())
 
 	plain := "refleksi tanpa enkripsi"
-	created, err := svc.CreateReflection(context.Background(), "usr_gading", plain, "baik")
-	require.NoError(t, err)
-	assert.Equal(t, plain, created.Text, "without a key, text is stored plaintext")
+	_, err := svc.CreateReflection(context.Background(), "usr_gading", plain, "baik")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "encryption is required")
 }

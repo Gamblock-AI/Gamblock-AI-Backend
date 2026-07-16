@@ -54,6 +54,16 @@ func (s *ClientService) UpdateProfile(ctx context.Context, userID, displayName s
 	return s.repo.UpdateUserDisplayName(ctx, userID, displayName)
 }
 
+func (s *ClientService) ProtectionAnalytics(ctx context.Context, userID, deviceID string, days int) (model.ProtectionAnalytics, error) {
+	if days != 7 && days != 30 {
+		return model.ProtectionAnalytics{}, fmt.Errorf("period must be 7 or 30 days")
+	}
+	if deviceID == "" {
+		return model.ProtectionAnalytics{}, fmt.Errorf("device id is required")
+	}
+	return s.repo.GetProtectionAnalytics(ctx, userID, deviceID, days, time.Now().UTC())
+}
+
 func NewClientService(repo *repository.Repository) *ClientService {
 	return &ClientService{repo: repo}
 }

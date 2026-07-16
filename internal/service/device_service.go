@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -19,7 +20,10 @@ func NewDeviceService(repo *repository.Repository, logger *zap.Logger) *DeviceSe
 	return &DeviceService{repo: repo, logger: logger}
 }
 
-func (s *DeviceService) CreateDevice(ctx context.Context, userID, platformVal, label, appVersion, osVersion string, modelVersion, rulesetVersion *string) (model.Device, error) {
+func (s *DeviceService) CreateDevice(ctx context.Context, userID, clientInstanceID, platformVal, label, appVersion, osVersion string, modelVersion, rulesetVersion *string) (model.Device, error) {
+	if clientInstanceID == "" {
+		return model.Device{}, fmt.Errorf("client instance id is required")
+	}
 	if platformVal == "" {
 		platformVal = "android"
 	}
@@ -33,7 +37,7 @@ func (s *DeviceService) CreateDevice(ctx context.Context, userID, platformVal, l
 		osVersion = "Unknown OS"
 	}
 	id := "dev_" + uuid.NewString()
-	return s.repo.CreateDevice(ctx, id, userID, platformVal, label, appVersion, osVersion, modelVersion, rulesetVersion)
+	return s.repo.UpsertDevice(ctx, id, userID, clientInstanceID, platformVal, label, appVersion, osVersion, modelVersion, rulesetVersion)
 }
 
 func (s *DeviceService) UpdateDevice(ctx context.Context, devID, label, appVersion, osVersion, status, modelVersion, rulesetVersion string) (model.Device, error) {

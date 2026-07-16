@@ -84,7 +84,7 @@ func (h *Handler) CreateApprovalRequest(c *gin.Context) {
 		return
 	}
 
-	err := h.services.Accountability.CreateApprovalRequest(
+	request, err := h.services.Accountability.CreateApprovalRequest(
 		c.Request.Context(),
 		h.currentUserID(c),
 		input.DeviceID,
@@ -97,7 +97,7 @@ func (h *Handler) CreateApprovalRequest(c *gin.Context) {
 		h.respondErrorErr(c, http.StatusBadRequest, "approval_request_failed", err)
 		return
 	}
-	h.respond(c, http.StatusCreated, gin.H{"requested": true})
+	h.respond(c, http.StatusCreated, request)
 }
 
 func (h *Handler) CancelApprovalRequest(c *gin.Context) {
@@ -125,4 +125,25 @@ func (h *Handler) DenyApprovalRequest(c *gin.Context) {
 		return
 	}
 	h.respond(c, http.StatusOK, gin.H{"denied": true})
+}
+
+func (h *Handler) ApplyApprovalRequest(c *gin.Context) {
+	var input struct {
+		DeviceID string `json:"device_id"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil || input.DeviceID == "" {
+		h.respondCode(c, http.StatusBadRequest, "device_id_required")
+		return
+	}
+	grant, err := h.services.Accountability.ApplyApprovedRequest(
+		c.Request.Context(),
+		c.Param("id"),
+		h.currentUserID(c),
+		input.DeviceID,
+	)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "approval_apply_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, grant)
 }

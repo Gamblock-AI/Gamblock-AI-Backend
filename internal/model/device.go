@@ -5,6 +5,7 @@ import "time"
 type Device struct {
 	ID               string    `json:"id"`
 	UserID           string    `json:"user_id"`
+	ClientInstanceID string    `json:"client_instance_id,omitempty"`
 	Platform         string    `json:"platform"`
 	Label            string    `json:"label"`
 	AppVersion       string    `json:"app_version"`

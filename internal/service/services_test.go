@@ -37,15 +37,25 @@ func TestAccountability_CreateApprovalRequestAndResolve(t *testing.T) {
 	svc := NewAccountabilityService(repo, testCfg(), NewWhatsAppService(testCfg(), zap.NewNop()), zap.NewNop())
 	ctx := context.Background()
 
-	err := svc.CreateApprovalRequest(ctx, "usr_gading", "dev_android", "pl_active", "pause_protection", "alasan", 30)
+	request, err := svc.CreateApprovalRequest(ctx, "usr_gading", "dev_android", "pl_active", "pause_protection", "alasan", 30)
 	require.NoError(t, err)
+	assert.Equal(t, "pause_protection", request.Action)
 
 	list, err := svc.GetApprovalRequests(ctx, "usr_gading")
 	require.NoError(t, err)
 	require.NotEmpty(t, list)
 
-	err = svc.ResolveApprovalAsPartner(ctx, list[0].ID, "approved", "usr_suci")
+	err = svc.ResolveApprovalAsPartner(ctx, request.ID, "approved", "usr_suci")
 	assert.NoError(t, err)
+
+	grant, err := svc.ApplyApprovedRequest(ctx, request.ID, "usr_gading", "dev_android")
+	require.NoError(t, err)
+	assert.Equal(t, "pause_protection", grant.Action)
+	assert.True(t, grant.GrantExpiresAt.After(grant.GrantStartsAt))
+
+	repeated, err := svc.ApplyApprovedRequest(ctx, request.ID, "usr_gading", "dev_android")
+	require.NoError(t, err)
+	assert.Equal(t, grant.GrantExpiresAt, repeated.GrantExpiresAt)
 }
 
 // --- MissionService ---
@@ -129,13 +139,23 @@ func TestAdmin_EmergencyKeyGenerateAndValidate(t *testing.T) {
 	svc := NewAdminService(repo, zap.NewNop())
 	ctx := context.Background()
 
-	key, err := svc.GenerateEmergencyKey(ctx, "usr_nasywa")
+	request, err := svc.RequestEmergencyKey(ctx, "usr_gading", "dev_android")
+	require.NoError(t, err)
+	_, err = svc.ReviewEmergencyKeyRequest(ctx, request.ID, "usr_suci")
+	require.NoError(t, err)
+	_, _, err = svc.ApproveEmergencyKeyRequest(ctx, request.ID, "usr_suci")
+	assert.Error(t, err)
+	_, key, err := svc.ApproveEmergencyKeyRequest(ctx, request.ID, "usr_nasywa")
 	require.NoError(t, err)
 	assert.NotEmpty(t, key)
 
 	// Wrong key fails.
-	err = svc.ValidateEmergencyKey(ctx, "wrong-key", "dev_android")
+	_, err = svc.ValidateEmergencyKey(ctx, "wrong-key", "dev_android")
 	assert.Error(t, err)
+
+	grant, err := svc.ValidateEmergencyKey(ctx, key, "dev_android")
+	require.NoError(t, err)
+	assert.Equal(t, "dev_android", grant.DeviceID)
 }
 
 // --- DeviceService ---
@@ -146,9 +166,15 @@ func TestDevice_CreateUpdateHeartbeat(t *testing.T) {
 	ctx := context.Background()
 
 	mv, rv := "artifact-v0.3.1", "ruleset-2026.05.1"
-	d, err := svc.CreateDevice(ctx, "usr_gading", "windows", "Gading PC", "1.0.0", "Windows 11", &mv, &rv)
+	d, err := svc.CreateDevice(ctx, "usr_gading", "instance-windows-test", "windows", "Gading PC", "1.0.0", "Windows 11", &mv, &rv)
 	require.NoError(t, err)
 	assert.Equal(t, "windows", d.Platform)
+	assert.Equal(t, "inactive", d.ProtectionStatus)
+
+	same, err := svc.CreateDevice(ctx, "usr_gading", "instance-windows-test", "windows", "Gading PC renamed", "1.0.1", "Windows 11", &mv, &rv)
+	require.NoError(t, err)
+	assert.Equal(t, d.ID, same.ID)
+	assert.Equal(t, "Gading PC renamed", same.Label)
 
 	d2, err := svc.UpdateDevice(ctx, d.ID, "Gading PC2", "1.0.1", "Windows 11", "active", mv, rv)
 	require.NoError(t, err)
@@ -183,7 +209,8 @@ func TestSupport_CreateSupportCaseAndDataRequest(t *testing.T) {
 // --- WhatsAppService ---
 
 func TestWhatsApp_DemoModeIsNoOp(t *testing.T) {
-	cfg := testCfg() // NotificationMode defaults to "" -> but service checks "demo"
+	cfg := testCfg()
+	cfg.NotificationMode = "demo"
 	svc := NewWhatsAppService(cfg, zap.NewNop())
 	// demo mode OR empty phone -> no error (no-op)
 	err := svc.SendSingleApproval(context.Background(), "", ApprovalSummary{MemberName: "x", Action: "pause"})
@@ -257,7 +284,7 @@ func TestAdmin_ReleasesCreateAndGet(t *testing.T) {
 func TestDevice_CreateMissingOptionalVersions(t *testing.T) {
 	repo, _ := newRepo(t)
 	svc := NewDeviceService(repo, zap.NewNop())
-	d, err := svc.CreateDevice(context.Background(), "usr_gading", "android", "Phone", "1.0.0", "Android 15", nil, nil)
+	d, err := svc.CreateDevice(context.Background(), "usr_gading", "instance-android-test", "android", "Phone", "1.0.0", "Android 15", nil, nil)
 	require.NoError(t, err)
 	assert.Equal(t, "android", d.Platform)
 }

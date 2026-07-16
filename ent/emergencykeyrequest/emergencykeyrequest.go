@@ -16,6 +16,10 @@ const (
 	FieldID = "id"
 	// FieldRequestedBy holds the string denoting the requested_by field in the database.
 	FieldRequestedBy = "requested_by"
+	// FieldDeviceID holds the string denoting the device_id field in the database.
+	FieldDeviceID = "device_id"
+	// FieldReviewedBy holds the string denoting the reviewed_by field in the database.
+	FieldReviewedBy = "reviewed_by"
 	// FieldApprovedBy holds the string denoting the approved_by field in the database.
 	FieldApprovedBy = "approved_by"
 	// FieldStatus holds the string denoting the status field in the database.
@@ -26,8 +30,12 @@ const (
 	FieldRequestExpiresAt = "request_expires_at"
 	// FieldKeyExpiresAt holds the string denoting the key_expires_at field in the database.
 	FieldKeyExpiresAt = "key_expires_at"
+	// FieldReviewedAt holds the string denoting the reviewed_at field in the database.
+	FieldReviewedAt = "reviewed_at"
 	// FieldApprovedAt holds the string denoting the approved_at field in the database.
 	FieldApprovedAt = "approved_at"
+	// FieldUsedAt holds the string denoting the used_at field in the database.
+	FieldUsedAt = "used_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -40,12 +48,16 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldRequestedBy,
+	FieldDeviceID,
+	FieldReviewedBy,
 	FieldApprovedBy,
 	FieldStatus,
 	FieldKeyHash,
 	FieldRequestExpiresAt,
 	FieldKeyExpiresAt,
+	FieldReviewedAt,
 	FieldApprovedAt,
+	FieldUsedAt,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -80,6 +92,7 @@ const DefaultStatus = StatusPending
 // Status values.
 const (
 	StatusPending  Status = "pending"
+	StatusReviewed Status = "reviewed"
 	StatusApproved Status = "approved"
 	StatusUsed     Status = "used"
 	StatusExpired  Status = "expired"
@@ -92,7 +105,7 @@ func (s Status) String() string {
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s Status) error {
 	switch s {
-	case StatusPending, StatusApproved, StatusUsed, StatusExpired:
+	case StatusPending, StatusReviewed, StatusApproved, StatusUsed, StatusExpired:
 		return nil
 	default:
 		return fmt.Errorf("emergencykeyrequest: invalid enum value for status field: %q", s)
@@ -110,6 +123,16 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByRequestedBy orders the results by the requested_by field.
 func ByRequestedBy(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRequestedBy, opts...).ToFunc()
+}
+
+// ByDeviceID orders the results by the device_id field.
+func ByDeviceID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDeviceID, opts...).ToFunc()
+}
+
+// ByReviewedBy orders the results by the reviewed_by field.
+func ByReviewedBy(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReviewedBy, opts...).ToFunc()
 }
 
 // ByApprovedBy orders the results by the approved_by field.
@@ -137,9 +160,19 @@ func ByKeyExpiresAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKeyExpiresAt, opts...).ToFunc()
 }
 
+// ByReviewedAt orders the results by the reviewed_at field.
+func ByReviewedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReviewedAt, opts...).ToFunc()
+}
+
 // ByApprovedAt orders the results by the approved_at field.
 func ByApprovedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldApprovedAt, opts...).ToFunc()
+}
+
+// ByUsedAt orders the results by the used_at field.
+func ByUsedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUsedAt, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

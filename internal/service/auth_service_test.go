@@ -24,7 +24,7 @@ func newAuthSvc(t *testing.T) (*AuthService, *store.Store) {
 
 func TestAuthService_LoginSeededUser(t *testing.T) {
 	svc, _ := newAuthSvc(t)
-	resp, err := svc.Login(context.Background(), "gading@gmail.com", "anything")
+	resp, err := svc.Login(context.Background(), "gading@gmail.com", "password")
 	require.NoError(t, err)
 	assert.NotEmpty(t, resp.AccessToken)
 	assert.NotEmpty(t, resp.RefreshToken)
@@ -39,14 +39,14 @@ func TestAuthService_LoginUnknownFails(t *testing.T) {
 
 func TestAuthService_RegisterDuplicateEmailFails(t *testing.T) {
 	svc, _ := newAuthSvc(t)
-	_, err := svc.Register(context.Background(), "gading@gmail.com", "pw", "Gading")
+	_, err := svc.Register(context.Background(), "gading@gmail.com", "password2", "Gading")
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "email already exists")
 }
 
 func TestAuthService_RegisterNewUser(t *testing.T) {
 	svc, _ := newAuthSvc(t)
-	resp, err := svc.Register(context.Background(), "newbie@example.com", "pw", "Newbie")
+	resp, err := svc.Register(context.Background(), "newbie@example.com", "password2", "Newbie")
 	require.NoError(t, err)
 	assert.NotEmpty(t, resp.AccessToken)
 	assert.Equal(t, "newbie@example.com", resp.User.Email)
@@ -87,4 +87,19 @@ func TestAuthService_ParseAccessTokenInvalid(t *testing.T) {
 	svc, _ := newAuthSvc(t)
 	_, err := svc.ParseAccessToken("not.a.valid.jwt")
 	require.Error(t, err)
+}
+
+func TestAuthService_UpdatePasswordRevokesRefreshTokens(t *testing.T) {
+	svc, _ := newAuthSvc(t)
+	ctx := context.Background()
+	session, err := svc.Login(ctx, "gading@gmail.com", "password")
+	require.NoError(t, err)
+
+	require.NoError(t, svc.UpdatePassword(ctx, "usr_gading", "password", "new-password"))
+	_, err = svc.Refresh(ctx, session.RefreshToken)
+	require.Error(t, err)
+	_, err = svc.Login(ctx, "gading@gmail.com", "password")
+	require.Error(t, err)
+	_, err = svc.Login(ctx, "gading@gmail.com", "new-password")
+	require.NoError(t, err)
 }

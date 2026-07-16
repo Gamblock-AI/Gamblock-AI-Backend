@@ -19,6 +19,8 @@ type Device struct {
 	ID string `json:"id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID string `json:"user_id,omitempty"`
+	// ClientInstanceID holds the value of the "client_instance_id" field.
+	ClientInstanceID *string `json:"client_instance_id,omitempty"`
 	// Platform holds the value of the "platform" field.
 	Platform device.Platform `json:"platform,omitempty"`
 	// Label holds the value of the "label" field.
@@ -47,7 +49,7 @@ func (*Device) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case device.FieldID, device.FieldUserID, device.FieldPlatform, device.FieldLabel, device.FieldAppVersion, device.FieldOsVersion, device.FieldModelVersion, device.FieldRulesetVersion, device.FieldProtectionStatus:
+		case device.FieldID, device.FieldUserID, device.FieldClientInstanceID, device.FieldPlatform, device.FieldLabel, device.FieldAppVersion, device.FieldOsVersion, device.FieldModelVersion, device.FieldRulesetVersion, device.FieldProtectionStatus:
 			values[i] = new(sql.NullString)
 		case device.FieldLastSeenAt, device.FieldCreatedAt, device.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -77,6 +79,13 @@ func (_m *Device) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value.Valid {
 				_m.UserID = value.String
+			}
+		case device.FieldClientInstanceID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field client_instance_id", values[i])
+			} else if value.Valid {
+				_m.ClientInstanceID = new(string)
+				*_m.ClientInstanceID = value.String
 			}
 		case device.FieldPlatform:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -179,6 +188,11 @@ func (_m *Device) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("user_id=")
 	builder.WriteString(_m.UserID)
+	builder.WriteString(", ")
+	if v := _m.ClientInstanceID; v != nil {
+		builder.WriteString("client_instance_id=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("platform=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Platform))

@@ -8,12 +8,13 @@ import (
 
 func (h *Handler) CreateDevice(c *gin.Context) {
 	var input struct {
-		Platform       string `json:"platform"`
-		Label          string `json:"label"`
-		AppVersion     string `json:"app_version"`
-		OSVersion      string `json:"os_version"`
-		ModelVersion   string `json:"model_version"`
-		RulesetVersion string `json:"ruleset_version"`
+		ClientInstanceID string `json:"client_instance_id"`
+		Platform         string `json:"platform"`
+		Label            string `json:"label"`
+		AppVersion       string `json:"app_version"`
+		OSVersion        string `json:"os_version"`
+		ModelVersion     string `json:"model_version"`
+		RulesetVersion   string `json:"ruleset_version"`
 	}
 	_ = c.ShouldBindJSON(&input)
 
@@ -28,6 +29,7 @@ func (h *Handler) CreateDevice(c *gin.Context) {
 	dev, err := h.services.Device.CreateDevice(
 		c.Request.Context(),
 		h.currentUserID(c),
+		input.ClientInstanceID,
 		input.Platform,
 		input.Label,
 		input.AppVersion,

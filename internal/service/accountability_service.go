@@ -79,27 +79,33 @@ func (s *AccountabilityService) GetApprovalRequests(ctx context.Context, userID 
 	return s.repo.GetApprovalRequests(ctx, userID)
 }
 
-func (s *AccountabilityService) CreateApprovalRequest(ctx context.Context, userID, deviceID, partnerLinkID, action, reason string, duration int) error {
+func (s *AccountabilityService) CreateApprovalRequest(ctx context.Context, userID, deviceID, partnerLinkID, action, reason string, duration int) (model.ApprovalRequest, error) {
 	allowedActions := map[string]bool{
 		"disable_protection": true, "remove_partner": true, "uninstall_detected": true,
 		"reset_settings": true, "pause_protection": true, "emergency_access": true,
 	}
 	if !allowedActions[action] || !s.repo.IsActivePartnerLinkOwnedBy(ctx, partnerLinkID, userID) {
-		return fmt.Errorf("invalid approval request relationship or action")
+		return model.ApprovalRequest{}, fmt.Errorf("invalid approval request relationship or action")
 	}
 	if !s.repo.IsDeviceOwnedBy(ctx, deviceID, userID) {
-		return fmt.Errorf("device does not belong to user")
+		return model.ApprovalRequest{}, fmt.Errorf("device does not belong to user")
 	}
-	if duration < 0 || duration > 24*60 {
-		return fmt.Errorf("requested duration is outside the allowed range")
+	if action == "pause_protection" {
+		allowedDurations := map[int]bool{15: true, 30: true, 60: true, 120: true}
+		if !allowedDurations[duration] {
+			return model.ApprovalRequest{}, fmt.Errorf("pause duration must be 15, 30, 60, or 120 minutes")
+		}
+	} else if duration != 0 {
+		return model.ApprovalRequest{}, fmt.Errorf("requested duration is only valid for pause protection")
 	}
 	reqID := "APR-" + uuid.NewString()[:8]
 	quickToken := generateQuickToken()
 	quickTokenHash := HashRefreshToken(quickToken)
 	expiresAt := time.Now().UTC().Add(24 * time.Hour)
 
-	if err := s.repo.CreateApprovalRequestWithToken(ctx, reqID, userID, deviceID, partnerLinkID, action, reason, duration, expiresAt, quickTokenHash); err != nil {
-		return err
+	request, err := s.repo.CreateApprovalRequestWithToken(ctx, reqID, userID, deviceID, partnerLinkID, action, reason, duration, expiresAt, quickTokenHash)
+	if err != nil {
+		return model.ApprovalRequest{}, err
 	}
 
 	// Generate Quick Link
@@ -118,7 +124,7 @@ func (s *AccountabilityService) CreateApprovalRequest(ctx context.Context, userI
 		}
 	}
 
-	return nil
+	return request, nil
 }
 
 func (s *AccountabilityService) CancelApprovalRequest(ctx context.Context, id, userID string) error {
@@ -127,6 +133,13 @@ func (s *AccountabilityService) CancelApprovalRequest(ctx context.Context, id, u
 
 func (s *AccountabilityService) ResolveApprovalAsPartner(ctx context.Context, id, status, partnerUserID string) error {
 	return s.repo.ResolveApprovalAsPartner(ctx, id, partnerUserID, status)
+}
+
+func (s *AccountabilityService) ApplyApprovedRequest(ctx context.Context, id, userID, deviceID string) (model.ApprovalGrant, error) {
+	if deviceID == "" {
+		return model.ApprovalGrant{}, fmt.Errorf("device id is required")
+	}
+	return s.repo.ApplyApprovedRequest(ctx, id, userID, deviceID, time.Now().UTC())
 }
 
 func (s *AccountabilityService) VerifyQuickToken(ctx context.Context, token string) (map[string]any, error) {

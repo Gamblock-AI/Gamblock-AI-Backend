@@ -5,6 +5,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -29,7 +30,11 @@ func (RefreshToken) Fields() []ent.Field {
 type Device struct{ ent.Schema }
 
 func (Device) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.Enum("platform").Values("android", "windows", "linux", "macos", "web"), field.String("label"), field.String("app_version").Default(""), field.String("os_version").Default(""), field.String("model_version").Optional().Nillable(), field.String("ruleset_version").Optional().Nillable(), field.Enum("protection_status").Values("active", "degraded", "paused", "inactive").Default("inactive"), field.Time("last_seen_at").Optional().Nillable(), createdAt(), updatedAt()}
+	return []ent.Field{idField(), field.String("user_id"), field.String("client_instance_id").Optional().Nillable(), field.Enum("platform").Values("android", "windows", "linux", "macos", "web"), field.String("label"), field.String("app_version").Default(""), field.String("os_version").Default(""), field.String("model_version").Optional().Nillable(), field.String("ruleset_version").Optional().Nillable(), field.Enum("protection_status").Values("active", "degraded", "paused", "inactive").Default("inactive"), field.Time("last_seen_at").Optional().Nillable(), createdAt(), updatedAt()}
+}
+
+func (Device) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("user_id", "client_instance_id").Unique()}
 }
 
 type PartnerLink struct{ ent.Schema }
@@ -41,7 +46,7 @@ func (PartnerLink) Fields() []ent.Field {
 type ApprovalRequest struct{ ent.Schema }
 
 func (ApprovalRequest) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.String("device_id").Optional().Nillable(), field.String("partner_link_id"), field.String("quick_token_hash").Optional().Nillable().Unique().Sensitive(), field.Enum("action").Values("disable_protection", "remove_partner", "uninstall_detected", "reset_settings", "pause_protection", "emergency_access"), field.Enum("status").Values("pending", "approved", "denied", "expired", "cancelled").Default("pending"), field.String("reason").Optional().Nillable(), field.Int("requested_duration_minutes").Optional().Nillable(), field.Time("expires_at"), field.String("resolved_by").Optional().Nillable(), field.Time("resolved_at").Optional().Nillable(), createdAt(), updatedAt()}
+	return []ent.Field{idField(), field.String("user_id"), field.String("device_id").Optional().Nillable(), field.String("partner_link_id"), field.String("quick_token_hash").Optional().Nillable().Unique().Sensitive(), field.Enum("action").Values("disable_protection", "remove_partner", "uninstall_detected", "reset_settings", "pause_protection", "emergency_access"), field.Enum("status").Values("pending", "approved", "denied", "expired", "cancelled").Default("pending"), field.String("reason").Optional().Nillable(), field.Int("requested_duration_minutes").Optional().Nillable(), field.Time("expires_at"), field.String("resolved_by").Optional().Nillable(), field.Time("resolved_at").Optional().Nillable(), field.Time("applied_at").Optional().Nillable(), field.Time("grant_expires_at").Optional().Nillable(), createdAt(), updatedAt()}
 }
 
 type NotificationDelivery struct{ ent.Schema }
@@ -125,7 +130,7 @@ func (SupportActionAudit) Fields() []ent.Field {
 type EmergencyKeyRequest struct{ ent.Schema }
 
 func (EmergencyKeyRequest) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("requested_by"), field.String("approved_by").Optional().Nillable(), field.Enum("status").Values("pending", "approved", "used", "expired").Default("pending"), field.String("key_hash").Optional().Nillable().Sensitive(), field.Time("request_expires_at"), field.Time("key_expires_at").Optional().Nillable(), field.Time("approved_at").Optional().Nillable(), createdAt(), updatedAt()}
+	return []ent.Field{idField(), field.String("requested_by"), field.String("device_id").Optional().Nillable(), field.String("reviewed_by").Optional().Nillable(), field.String("approved_by").Optional().Nillable(), field.Enum("status").Values("pending", "reviewed", "approved", "used", "expired").Default("pending"), field.String("key_hash").Optional().Nillable().Sensitive(), field.Time("request_expires_at"), field.Time("key_expires_at").Optional().Nillable(), field.Time("reviewed_at").Optional().Nillable(), field.Time("approved_at").Optional().Nillable(), field.Time("used_at").Optional().Nillable(), createdAt(), updatedAt()}
 }
 
 type DataRequest struct{ ent.Schema }

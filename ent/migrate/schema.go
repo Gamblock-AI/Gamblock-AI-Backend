@@ -40,6 +40,8 @@ var (
 		{Name: "expires_at", Type: field.TypeTime},
 		{Name: "resolved_by", Type: field.TypeString, Nullable: true},
 		{Name: "resolved_at", Type: field.TypeTime, Nullable: true},
+		{Name: "applied_at", Type: field.TypeTime, Nullable: true},
+		{Name: "grant_expires_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -132,6 +134,7 @@ var (
 	DevicesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
 		{Name: "user_id", Type: field.TypeString},
+		{Name: "client_instance_id", Type: field.TypeString, Nullable: true},
 		{Name: "platform", Type: field.TypeEnum, Enums: []string{"android", "windows", "linux", "macos", "web"}},
 		{Name: "label", Type: field.TypeString},
 		{Name: "app_version", Type: field.TypeString, Default: ""},
@@ -148,17 +151,28 @@ var (
 		Name:       "devices",
 		Columns:    DevicesColumns,
 		PrimaryKey: []*schema.Column{DevicesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "device_user_id_client_instance_id",
+				Unique:  true,
+				Columns: []*schema.Column{DevicesColumns[1], DevicesColumns[2]},
+			},
+		},
 	}
 	// EmergencyKeyRequestsColumns holds the columns for the "emergency_key_requests" table.
 	EmergencyKeyRequestsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
 		{Name: "requested_by", Type: field.TypeString},
+		{Name: "device_id", Type: field.TypeString, Nullable: true},
+		{Name: "reviewed_by", Type: field.TypeString, Nullable: true},
 		{Name: "approved_by", Type: field.TypeString, Nullable: true},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "approved", "used", "expired"}, Default: "pending"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "reviewed", "approved", "used", "expired"}, Default: "pending"},
 		{Name: "key_hash", Type: field.TypeString, Nullable: true},
 		{Name: "request_expires_at", Type: field.TypeTime},
 		{Name: "key_expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "reviewed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "approved_at", Type: field.TypeTime, Nullable: true},
+		{Name: "used_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}

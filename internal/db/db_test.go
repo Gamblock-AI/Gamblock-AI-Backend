@@ -64,7 +64,7 @@ func TestHumanPublished(t *testing.T) {
 
 func TestHumanApprovalStatus(t *testing.T) {
 	assert.Equal(t, "Pending partner approval", humanApprovalStatus("pending"))
-	assert.Equal(t, "Partner notified", humanApprovalStatus("approved"))
+	assert.Equal(t, "Approved", humanApprovalStatus("approved"))
 	assert.Equal(t, "weird", humanApprovalStatus("weird"))
 }
 

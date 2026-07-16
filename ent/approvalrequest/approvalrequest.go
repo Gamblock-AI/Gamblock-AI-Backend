@@ -36,6 +36,10 @@ const (
 	FieldResolvedBy = "resolved_by"
 	// FieldResolvedAt holds the string denoting the resolved_at field in the database.
 	FieldResolvedAt = "resolved_at"
+	// FieldAppliedAt holds the string denoting the applied_at field in the database.
+	FieldAppliedAt = "applied_at"
+	// FieldGrantExpiresAt holds the string denoting the grant_expires_at field in the database.
+	FieldGrantExpiresAt = "grant_expires_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -58,6 +62,8 @@ var Columns = []string{
 	FieldExpiresAt,
 	FieldResolvedBy,
 	FieldResolvedAt,
+	FieldAppliedAt,
+	FieldGrantExpiresAt,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -200,6 +206,16 @@ func ByResolvedBy(opts ...sql.OrderTermOption) OrderOption {
 // ByResolvedAt orders the results by the resolved_at field.
 func ByResolvedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldResolvedAt, opts...).ToFunc()
+}
+
+// ByAppliedAt orders the results by the applied_at field.
+func ByAppliedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAppliedAt, opts...).ToFunc()
+}
+
+// ByGrantExpiresAt orders the results by the grant_expires_at field.
+func ByGrantExpiresAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGrantExpiresAt, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

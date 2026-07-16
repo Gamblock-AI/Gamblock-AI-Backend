@@ -53,11 +53,11 @@ func init() {
 	approvalrequestFields := schema.ApprovalRequest{}.Fields()
 	_ = approvalrequestFields
 	// approvalrequestDescCreatedAt is the schema descriptor for created_at field.
-	approvalrequestDescCreatedAt := approvalrequestFields[12].Descriptor()
+	approvalrequestDescCreatedAt := approvalrequestFields[14].Descriptor()
 	// approvalrequest.DefaultCreatedAt holds the default value on creation for the created_at field.
 	approvalrequest.DefaultCreatedAt = approvalrequestDescCreatedAt.Default.(func() time.Time)
 	// approvalrequestDescUpdatedAt is the schema descriptor for updated_at field.
-	approvalrequestDescUpdatedAt := approvalrequestFields[13].Descriptor()
+	approvalrequestDescUpdatedAt := approvalrequestFields[15].Descriptor()
 	// approvalrequest.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	approvalrequest.DefaultUpdatedAt = approvalrequestDescUpdatedAt.Default.(func() time.Time)
 	// approvalrequest.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -125,19 +125,19 @@ func init() {
 	deviceFields := schema.Device{}.Fields()
 	_ = deviceFields
 	// deviceDescAppVersion is the schema descriptor for app_version field.
-	deviceDescAppVersion := deviceFields[4].Descriptor()
+	deviceDescAppVersion := deviceFields[5].Descriptor()
 	// device.DefaultAppVersion holds the default value on creation for the app_version field.
 	device.DefaultAppVersion = deviceDescAppVersion.Default.(string)
 	// deviceDescOsVersion is the schema descriptor for os_version field.
-	deviceDescOsVersion := deviceFields[5].Descriptor()
+	deviceDescOsVersion := deviceFields[6].Descriptor()
 	// device.DefaultOsVersion holds the default value on creation for the os_version field.
 	device.DefaultOsVersion = deviceDescOsVersion.Default.(string)
 	// deviceDescCreatedAt is the schema descriptor for created_at field.
-	deviceDescCreatedAt := deviceFields[10].Descriptor()
+	deviceDescCreatedAt := deviceFields[11].Descriptor()
 	// device.DefaultCreatedAt holds the default value on creation for the created_at field.
 	device.DefaultCreatedAt = deviceDescCreatedAt.Default.(func() time.Time)
 	// deviceDescUpdatedAt is the schema descriptor for updated_at field.
-	deviceDescUpdatedAt := deviceFields[11].Descriptor()
+	deviceDescUpdatedAt := deviceFields[12].Descriptor()
 	// device.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	device.DefaultUpdatedAt = deviceDescUpdatedAt.Default.(func() time.Time)
 	// device.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -149,11 +149,11 @@ func init() {
 	emergencykeyrequestFields := schema.EmergencyKeyRequest{}.Fields()
 	_ = emergencykeyrequestFields
 	// emergencykeyrequestDescCreatedAt is the schema descriptor for created_at field.
-	emergencykeyrequestDescCreatedAt := emergencykeyrequestFields[8].Descriptor()
+	emergencykeyrequestDescCreatedAt := emergencykeyrequestFields[12].Descriptor()
 	// emergencykeyrequest.DefaultCreatedAt holds the default value on creation for the created_at field.
 	emergencykeyrequest.DefaultCreatedAt = emergencykeyrequestDescCreatedAt.Default.(func() time.Time)
 	// emergencykeyrequestDescUpdatedAt is the schema descriptor for updated_at field.
-	emergencykeyrequestDescUpdatedAt := emergencykeyrequestFields[9].Descriptor()
+	emergencykeyrequestDescUpdatedAt := emergencykeyrequestFields[13].Descriptor()
 	// emergencykeyrequest.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	emergencykeyrequest.DefaultUpdatedAt = emergencykeyrequestDescUpdatedAt.Default.(func() time.Time)
 	// emergencykeyrequest.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

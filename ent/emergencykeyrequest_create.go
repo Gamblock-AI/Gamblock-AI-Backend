@@ -26,6 +26,34 @@ func (_c *EmergencyKeyRequestCreate) SetRequestedBy(v string) *EmergencyKeyReque
 	return _c
 }
 
+// SetDeviceID sets the "device_id" field.
+func (_c *EmergencyKeyRequestCreate) SetDeviceID(v string) *EmergencyKeyRequestCreate {
+	_c.mutation.SetDeviceID(v)
+	return _c
+}
+
+// SetNillableDeviceID sets the "device_id" field if the given value is not nil.
+func (_c *EmergencyKeyRequestCreate) SetNillableDeviceID(v *string) *EmergencyKeyRequestCreate {
+	if v != nil {
+		_c.SetDeviceID(*v)
+	}
+	return _c
+}
+
+// SetReviewedBy sets the "reviewed_by" field.
+func (_c *EmergencyKeyRequestCreate) SetReviewedBy(v string) *EmergencyKeyRequestCreate {
+	_c.mutation.SetReviewedBy(v)
+	return _c
+}
+
+// SetNillableReviewedBy sets the "reviewed_by" field if the given value is not nil.
+func (_c *EmergencyKeyRequestCreate) SetNillableReviewedBy(v *string) *EmergencyKeyRequestCreate {
+	if v != nil {
+		_c.SetReviewedBy(*v)
+	}
+	return _c
+}
+
 // SetApprovedBy sets the "approved_by" field.
 func (_c *EmergencyKeyRequestCreate) SetApprovedBy(v string) *EmergencyKeyRequestCreate {
 	_c.mutation.SetApprovedBy(v)
@@ -88,6 +116,20 @@ func (_c *EmergencyKeyRequestCreate) SetNillableKeyExpiresAt(v *time.Time) *Emer
 	return _c
 }
 
+// SetReviewedAt sets the "reviewed_at" field.
+func (_c *EmergencyKeyRequestCreate) SetReviewedAt(v time.Time) *EmergencyKeyRequestCreate {
+	_c.mutation.SetReviewedAt(v)
+	return _c
+}
+
+// SetNillableReviewedAt sets the "reviewed_at" field if the given value is not nil.
+func (_c *EmergencyKeyRequestCreate) SetNillableReviewedAt(v *time.Time) *EmergencyKeyRequestCreate {
+	if v != nil {
+		_c.SetReviewedAt(*v)
+	}
+	return _c
+}
+
 // SetApprovedAt sets the "approved_at" field.
 func (_c *EmergencyKeyRequestCreate) SetApprovedAt(v time.Time) *EmergencyKeyRequestCreate {
 	_c.mutation.SetApprovedAt(v)
@@ -98,6 +140,20 @@ func (_c *EmergencyKeyRequestCreate) SetApprovedAt(v time.Time) *EmergencyKeyReq
 func (_c *EmergencyKeyRequestCreate) SetNillableApprovedAt(v *time.Time) *EmergencyKeyRequestCreate {
 	if v != nil {
 		_c.SetApprovedAt(*v)
+	}
+	return _c
+}
+
+// SetUsedAt sets the "used_at" field.
+func (_c *EmergencyKeyRequestCreate) SetUsedAt(v time.Time) *EmergencyKeyRequestCreate {
+	_c.mutation.SetUsedAt(v)
+	return _c
+}
+
+// SetNillableUsedAt sets the "used_at" field if the given value is not nil.
+func (_c *EmergencyKeyRequestCreate) SetNillableUsedAt(v *time.Time) *EmergencyKeyRequestCreate {
+	if v != nil {
+		_c.SetUsedAt(*v)
 	}
 	return _c
 }
@@ -258,6 +314,14 @@ func (_c *EmergencyKeyRequestCreate) createSpec() (*EmergencyKeyRequest, *sqlgra
 		_spec.SetField(emergencykeyrequest.FieldRequestedBy, field.TypeString, value)
 		_node.RequestedBy = value
 	}
+	if value, ok := _c.mutation.DeviceID(); ok {
+		_spec.SetField(emergencykeyrequest.FieldDeviceID, field.TypeString, value)
+		_node.DeviceID = &value
+	}
+	if value, ok := _c.mutation.ReviewedBy(); ok {
+		_spec.SetField(emergencykeyrequest.FieldReviewedBy, field.TypeString, value)
+		_node.ReviewedBy = &value
+	}
 	if value, ok := _c.mutation.ApprovedBy(); ok {
 		_spec.SetField(emergencykeyrequest.FieldApprovedBy, field.TypeString, value)
 		_node.ApprovedBy = &value
@@ -278,9 +342,17 @@ func (_c *EmergencyKeyRequestCreate) createSpec() (*EmergencyKeyRequest, *sqlgra
 		_spec.SetField(emergencykeyrequest.FieldKeyExpiresAt, field.TypeTime, value)
 		_node.KeyExpiresAt = &value
 	}
+	if value, ok := _c.mutation.ReviewedAt(); ok {
+		_spec.SetField(emergencykeyrequest.FieldReviewedAt, field.TypeTime, value)
+		_node.ReviewedAt = &value
+	}
 	if value, ok := _c.mutation.ApprovedAt(); ok {
 		_spec.SetField(emergencykeyrequest.FieldApprovedAt, field.TypeTime, value)
 		_node.ApprovedAt = &value
+	}
+	if value, ok := _c.mutation.UsedAt(); ok {
+		_spec.SetField(emergencykeyrequest.FieldUsedAt, field.TypeTime, value)
+		_node.UsedAt = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(emergencykeyrequest.FieldCreatedAt, field.TypeTime, value)

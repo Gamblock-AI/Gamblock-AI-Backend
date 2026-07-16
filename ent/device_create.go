@@ -26,6 +26,20 @@ func (_c *DeviceCreate) SetUserID(v string) *DeviceCreate {
 	return _c
 }
 
+// SetClientInstanceID sets the "client_instance_id" field.
+func (_c *DeviceCreate) SetClientInstanceID(v string) *DeviceCreate {
+	_c.mutation.SetClientInstanceID(v)
+	return _c
+}
+
+// SetNillableClientInstanceID sets the "client_instance_id" field if the given value is not nil.
+func (_c *DeviceCreate) SetNillableClientInstanceID(v *string) *DeviceCreate {
+	if v != nil {
+		_c.SetClientInstanceID(*v)
+	}
+	return _c
+}
+
 // SetPlatform sets the "platform" field.
 func (_c *DeviceCreate) SetPlatform(v device.Platform) *DeviceCreate {
 	_c.mutation.SetPlatform(v)
@@ -299,6 +313,10 @@ func (_c *DeviceCreate) createSpec() (*Device, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.UserID(); ok {
 		_spec.SetField(device.FieldUserID, field.TypeString, value)
 		_node.UserID = value
+	}
+	if value, ok := _c.mutation.ClientInstanceID(); ok {
+		_spec.SetField(device.FieldClientInstanceID, field.TypeString, value)
+		_node.ClientInstanceID = &value
 	}
 	if value, ok := _c.mutation.Platform(); ok {
 		_spec.SetField(device.FieldPlatform, field.TypeEnum, value)

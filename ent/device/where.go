@@ -69,6 +69,11 @@ func UserID(v string) predicate.Device {
 	return predicate.Device(sql.FieldEQ(FieldUserID, v))
 }
 
+// ClientInstanceID applies equality check predicate on the "client_instance_id" field. It's identical to ClientInstanceIDEQ.
+func ClientInstanceID(v string) predicate.Device {
+	return predicate.Device(sql.FieldEQ(FieldClientInstanceID, v))
+}
+
 // AppVersion applies equality check predicate on the "app_version" field. It's identical to AppVersionEQ.
 func AppVersion(v string) predicate.Device {
 	return predicate.Device(sql.FieldEQ(FieldAppVersion, v))
@@ -167,6 +172,81 @@ func UserIDEqualFold(v string) predicate.Device {
 // UserIDContainsFold applies the ContainsFold predicate on the "user_id" field.
 func UserIDContainsFold(v string) predicate.Device {
 	return predicate.Device(sql.FieldContainsFold(FieldUserID, v))
+}
+
+// ClientInstanceIDEQ applies the EQ predicate on the "client_instance_id" field.
+func ClientInstanceIDEQ(v string) predicate.Device {
+	return predicate.Device(sql.FieldEQ(FieldClientInstanceID, v))
+}
+
+// ClientInstanceIDNEQ applies the NEQ predicate on the "client_instance_id" field.
+func ClientInstanceIDNEQ(v string) predicate.Device {
+	return predicate.Device(sql.FieldNEQ(FieldClientInstanceID, v))
+}
+
+// ClientInstanceIDIn applies the In predicate on the "client_instance_id" field.
+func ClientInstanceIDIn(vs ...string) predicate.Device {
+	return predicate.Device(sql.FieldIn(FieldClientInstanceID, vs...))
+}
+
+// ClientInstanceIDNotIn applies the NotIn predicate on the "client_instance_id" field.
+func ClientInstanceIDNotIn(vs ...string) predicate.Device {
+	return predicate.Device(sql.FieldNotIn(FieldClientInstanceID, vs...))
+}
+
+// ClientInstanceIDGT applies the GT predicate on the "client_instance_id" field.
+func ClientInstanceIDGT(v string) predicate.Device {
+	return predicate.Device(sql.FieldGT(FieldClientInstanceID, v))
+}
+
+// ClientInstanceIDGTE applies the GTE predicate on the "client_instance_id" field.
+func ClientInstanceIDGTE(v string) predicate.Device {
+	return predicate.Device(sql.FieldGTE(FieldClientInstanceID, v))
+}
+
+// ClientInstanceIDLT applies the LT predicate on the "client_instance_id" field.
+func ClientInstanceIDLT(v string) predicate.Device {
+	return predicate.Device(sql.FieldLT(FieldClientInstanceID, v))
+}
+
+// ClientInstanceIDLTE applies the LTE predicate on the "client_instance_id" field.
+func ClientInstanceIDLTE(v string) predicate.Device {
+	return predicate.Device(sql.FieldLTE(FieldClientInstanceID, v))
+}
+
+// ClientInstanceIDContains applies the Contains predicate on the "client_instance_id" field.
+func ClientInstanceIDContains(v string) predicate.Device {
+	return predicate.Device(sql.FieldContains(FieldClientInstanceID, v))
+}
+
+// ClientInstanceIDHasPrefix applies the HasPrefix predicate on the "client_instance_id" field.
+func ClientInstanceIDHasPrefix(v string) predicate.Device {
+	return predicate.Device(sql.FieldHasPrefix(FieldClientInstanceID, v))
+}
+
+// ClientInstanceIDHasSuffix applies the HasSuffix predicate on the "client_instance_id" field.
+func ClientInstanceIDHasSuffix(v string) predicate.Device {
+	return predicate.Device(sql.FieldHasSuffix(FieldClientInstanceID, v))
+}
+
+// ClientInstanceIDIsNil applies the IsNil predicate on the "client_instance_id" field.
+func ClientInstanceIDIsNil() predicate.Device {
+	return predicate.Device(sql.FieldIsNull(FieldClientInstanceID))
+}
+
+// ClientInstanceIDNotNil applies the NotNil predicate on the "client_instance_id" field.
+func ClientInstanceIDNotNil() predicate.Device {
+	return predicate.Device(sql.FieldNotNull(FieldClientInstanceID))
+}
+
+// ClientInstanceIDEqualFold applies the EqualFold predicate on the "client_instance_id" field.
+func ClientInstanceIDEqualFold(v string) predicate.Device {
+	return predicate.Device(sql.FieldEqualFold(FieldClientInstanceID, v))
+}
+
+// ClientInstanceIDContainsFold applies the ContainsFold predicate on the "client_instance_id" field.
+func ClientInstanceIDContainsFold(v string) predicate.Device {
+	return predicate.Device(sql.FieldContainsFold(FieldClientInstanceID, v))
 }
 
 // PlatformEQ applies the EQ predicate on the "platform" field.

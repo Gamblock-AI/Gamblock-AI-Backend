@@ -42,6 +42,46 @@ func (_u *EmergencyKeyRequestUpdate) SetNillableRequestedBy(v *string) *Emergenc
 	return _u
 }
 
+// SetDeviceID sets the "device_id" field.
+func (_u *EmergencyKeyRequestUpdate) SetDeviceID(v string) *EmergencyKeyRequestUpdate {
+	_u.mutation.SetDeviceID(v)
+	return _u
+}
+
+// SetNillableDeviceID sets the "device_id" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdate) SetNillableDeviceID(v *string) *EmergencyKeyRequestUpdate {
+	if v != nil {
+		_u.SetDeviceID(*v)
+	}
+	return _u
+}
+
+// ClearDeviceID clears the value of the "device_id" field.
+func (_u *EmergencyKeyRequestUpdate) ClearDeviceID() *EmergencyKeyRequestUpdate {
+	_u.mutation.ClearDeviceID()
+	return _u
+}
+
+// SetReviewedBy sets the "reviewed_by" field.
+func (_u *EmergencyKeyRequestUpdate) SetReviewedBy(v string) *EmergencyKeyRequestUpdate {
+	_u.mutation.SetReviewedBy(v)
+	return _u
+}
+
+// SetNillableReviewedBy sets the "reviewed_by" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdate) SetNillableReviewedBy(v *string) *EmergencyKeyRequestUpdate {
+	if v != nil {
+		_u.SetReviewedBy(*v)
+	}
+	return _u
+}
+
+// ClearReviewedBy clears the value of the "reviewed_by" field.
+func (_u *EmergencyKeyRequestUpdate) ClearReviewedBy() *EmergencyKeyRequestUpdate {
+	_u.mutation.ClearReviewedBy()
+	return _u
+}
+
 // SetApprovedBy sets the "approved_by" field.
 func (_u *EmergencyKeyRequestUpdate) SetApprovedBy(v string) *EmergencyKeyRequestUpdate {
 	_u.mutation.SetApprovedBy(v)
@@ -130,6 +170,26 @@ func (_u *EmergencyKeyRequestUpdate) ClearKeyExpiresAt() *EmergencyKeyRequestUpd
 	return _u
 }
 
+// SetReviewedAt sets the "reviewed_at" field.
+func (_u *EmergencyKeyRequestUpdate) SetReviewedAt(v time.Time) *EmergencyKeyRequestUpdate {
+	_u.mutation.SetReviewedAt(v)
+	return _u
+}
+
+// SetNillableReviewedAt sets the "reviewed_at" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdate) SetNillableReviewedAt(v *time.Time) *EmergencyKeyRequestUpdate {
+	if v != nil {
+		_u.SetReviewedAt(*v)
+	}
+	return _u
+}
+
+// ClearReviewedAt clears the value of the "reviewed_at" field.
+func (_u *EmergencyKeyRequestUpdate) ClearReviewedAt() *EmergencyKeyRequestUpdate {
+	_u.mutation.ClearReviewedAt()
+	return _u
+}
+
 // SetApprovedAt sets the "approved_at" field.
 func (_u *EmergencyKeyRequestUpdate) SetApprovedAt(v time.Time) *EmergencyKeyRequestUpdate {
 	_u.mutation.SetApprovedAt(v)
@@ -147,6 +207,26 @@ func (_u *EmergencyKeyRequestUpdate) SetNillableApprovedAt(v *time.Time) *Emerge
 // ClearApprovedAt clears the value of the "approved_at" field.
 func (_u *EmergencyKeyRequestUpdate) ClearApprovedAt() *EmergencyKeyRequestUpdate {
 	_u.mutation.ClearApprovedAt()
+	return _u
+}
+
+// SetUsedAt sets the "used_at" field.
+func (_u *EmergencyKeyRequestUpdate) SetUsedAt(v time.Time) *EmergencyKeyRequestUpdate {
+	_u.mutation.SetUsedAt(v)
+	return _u
+}
+
+// SetNillableUsedAt sets the "used_at" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdate) SetNillableUsedAt(v *time.Time) *EmergencyKeyRequestUpdate {
+	if v != nil {
+		_u.SetUsedAt(*v)
+	}
+	return _u
+}
+
+// ClearUsedAt clears the value of the "used_at" field.
+func (_u *EmergencyKeyRequestUpdate) ClearUsedAt() *EmergencyKeyRequestUpdate {
+	_u.mutation.ClearUsedAt()
 	return _u
 }
 
@@ -222,6 +302,18 @@ func (_u *EmergencyKeyRequestUpdate) sqlSave(ctx context.Context) (_node int, er
 	if value, ok := _u.mutation.RequestedBy(); ok {
 		_spec.SetField(emergencykeyrequest.FieldRequestedBy, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.DeviceID(); ok {
+		_spec.SetField(emergencykeyrequest.FieldDeviceID, field.TypeString, value)
+	}
+	if _u.mutation.DeviceIDCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldDeviceID, field.TypeString)
+	}
+	if value, ok := _u.mutation.ReviewedBy(); ok {
+		_spec.SetField(emergencykeyrequest.FieldReviewedBy, field.TypeString, value)
+	}
+	if _u.mutation.ReviewedByCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldReviewedBy, field.TypeString)
+	}
 	if value, ok := _u.mutation.ApprovedBy(); ok {
 		_spec.SetField(emergencykeyrequest.FieldApprovedBy, field.TypeString, value)
 	}
@@ -246,11 +338,23 @@ func (_u *EmergencyKeyRequestUpdate) sqlSave(ctx context.Context) (_node int, er
 	if _u.mutation.KeyExpiresAtCleared() {
 		_spec.ClearField(emergencykeyrequest.FieldKeyExpiresAt, field.TypeTime)
 	}
+	if value, ok := _u.mutation.ReviewedAt(); ok {
+		_spec.SetField(emergencykeyrequest.FieldReviewedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ReviewedAtCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldReviewedAt, field.TypeTime)
+	}
 	if value, ok := _u.mutation.ApprovedAt(); ok {
 		_spec.SetField(emergencykeyrequest.FieldApprovedAt, field.TypeTime, value)
 	}
 	if _u.mutation.ApprovedAtCleared() {
 		_spec.ClearField(emergencykeyrequest.FieldApprovedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.UsedAt(); ok {
+		_spec.SetField(emergencykeyrequest.FieldUsedAt, field.TypeTime, value)
+	}
+	if _u.mutation.UsedAtCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldUsedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(emergencykeyrequest.FieldUpdatedAt, field.TypeTime, value)
@@ -286,6 +390,46 @@ func (_u *EmergencyKeyRequestUpdateOne) SetNillableRequestedBy(v *string) *Emerg
 	if v != nil {
 		_u.SetRequestedBy(*v)
 	}
+	return _u
+}
+
+// SetDeviceID sets the "device_id" field.
+func (_u *EmergencyKeyRequestUpdateOne) SetDeviceID(v string) *EmergencyKeyRequestUpdateOne {
+	_u.mutation.SetDeviceID(v)
+	return _u
+}
+
+// SetNillableDeviceID sets the "device_id" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdateOne) SetNillableDeviceID(v *string) *EmergencyKeyRequestUpdateOne {
+	if v != nil {
+		_u.SetDeviceID(*v)
+	}
+	return _u
+}
+
+// ClearDeviceID clears the value of the "device_id" field.
+func (_u *EmergencyKeyRequestUpdateOne) ClearDeviceID() *EmergencyKeyRequestUpdateOne {
+	_u.mutation.ClearDeviceID()
+	return _u
+}
+
+// SetReviewedBy sets the "reviewed_by" field.
+func (_u *EmergencyKeyRequestUpdateOne) SetReviewedBy(v string) *EmergencyKeyRequestUpdateOne {
+	_u.mutation.SetReviewedBy(v)
+	return _u
+}
+
+// SetNillableReviewedBy sets the "reviewed_by" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdateOne) SetNillableReviewedBy(v *string) *EmergencyKeyRequestUpdateOne {
+	if v != nil {
+		_u.SetReviewedBy(*v)
+	}
+	return _u
+}
+
+// ClearReviewedBy clears the value of the "reviewed_by" field.
+func (_u *EmergencyKeyRequestUpdateOne) ClearReviewedBy() *EmergencyKeyRequestUpdateOne {
+	_u.mutation.ClearReviewedBy()
 	return _u
 }
 
@@ -377,6 +521,26 @@ func (_u *EmergencyKeyRequestUpdateOne) ClearKeyExpiresAt() *EmergencyKeyRequest
 	return _u
 }
 
+// SetReviewedAt sets the "reviewed_at" field.
+func (_u *EmergencyKeyRequestUpdateOne) SetReviewedAt(v time.Time) *EmergencyKeyRequestUpdateOne {
+	_u.mutation.SetReviewedAt(v)
+	return _u
+}
+
+// SetNillableReviewedAt sets the "reviewed_at" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdateOne) SetNillableReviewedAt(v *time.Time) *EmergencyKeyRequestUpdateOne {
+	if v != nil {
+		_u.SetReviewedAt(*v)
+	}
+	return _u
+}
+
+// ClearReviewedAt clears the value of the "reviewed_at" field.
+func (_u *EmergencyKeyRequestUpdateOne) ClearReviewedAt() *EmergencyKeyRequestUpdateOne {
+	_u.mutation.ClearReviewedAt()
+	return _u
+}
+
 // SetApprovedAt sets the "approved_at" field.
 func (_u *EmergencyKeyRequestUpdateOne) SetApprovedAt(v time.Time) *EmergencyKeyRequestUpdateOne {
 	_u.mutation.SetApprovedAt(v)
@@ -394,6 +558,26 @@ func (_u *EmergencyKeyRequestUpdateOne) SetNillableApprovedAt(v *time.Time) *Eme
 // ClearApprovedAt clears the value of the "approved_at" field.
 func (_u *EmergencyKeyRequestUpdateOne) ClearApprovedAt() *EmergencyKeyRequestUpdateOne {
 	_u.mutation.ClearApprovedAt()
+	return _u
+}
+
+// SetUsedAt sets the "used_at" field.
+func (_u *EmergencyKeyRequestUpdateOne) SetUsedAt(v time.Time) *EmergencyKeyRequestUpdateOne {
+	_u.mutation.SetUsedAt(v)
+	return _u
+}
+
+// SetNillableUsedAt sets the "used_at" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdateOne) SetNillableUsedAt(v *time.Time) *EmergencyKeyRequestUpdateOne {
+	if v != nil {
+		_u.SetUsedAt(*v)
+	}
+	return _u
+}
+
+// ClearUsedAt clears the value of the "used_at" field.
+func (_u *EmergencyKeyRequestUpdateOne) ClearUsedAt() *EmergencyKeyRequestUpdateOne {
+	_u.mutation.ClearUsedAt()
 	return _u
 }
 
@@ -499,6 +683,18 @@ func (_u *EmergencyKeyRequestUpdateOne) sqlSave(ctx context.Context) (_node *Eme
 	if value, ok := _u.mutation.RequestedBy(); ok {
 		_spec.SetField(emergencykeyrequest.FieldRequestedBy, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.DeviceID(); ok {
+		_spec.SetField(emergencykeyrequest.FieldDeviceID, field.TypeString, value)
+	}
+	if _u.mutation.DeviceIDCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldDeviceID, field.TypeString)
+	}
+	if value, ok := _u.mutation.ReviewedBy(); ok {
+		_spec.SetField(emergencykeyrequest.FieldReviewedBy, field.TypeString, value)
+	}
+	if _u.mutation.ReviewedByCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldReviewedBy, field.TypeString)
+	}
 	if value, ok := _u.mutation.ApprovedBy(); ok {
 		_spec.SetField(emergencykeyrequest.FieldApprovedBy, field.TypeString, value)
 	}
@@ -523,11 +719,23 @@ func (_u *EmergencyKeyRequestUpdateOne) sqlSave(ctx context.Context) (_node *Eme
 	if _u.mutation.KeyExpiresAtCleared() {
 		_spec.ClearField(emergencykeyrequest.FieldKeyExpiresAt, field.TypeTime)
 	}
+	if value, ok := _u.mutation.ReviewedAt(); ok {
+		_spec.SetField(emergencykeyrequest.FieldReviewedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ReviewedAtCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldReviewedAt, field.TypeTime)
+	}
 	if value, ok := _u.mutation.ApprovedAt(); ok {
 		_spec.SetField(emergencykeyrequest.FieldApprovedAt, field.TypeTime, value)
 	}
 	if _u.mutation.ApprovedAtCleared() {
 		_spec.ClearField(emergencykeyrequest.FieldApprovedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.UsedAt(); ok {
+		_spec.SetField(emergencykeyrequest.FieldUsedAt, field.TypeTime, value)
+	}
+	if _u.mutation.UsedAtCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldUsedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(emergencykeyrequest.FieldUpdatedAt, field.TypeTime, value)

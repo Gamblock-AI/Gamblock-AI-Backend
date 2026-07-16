@@ -12,12 +12,32 @@ type emergencyUnlockInput struct {
 }
 
 func (h *Handler) RequestEmergencyKey(c *gin.Context) {
-	request, err := h.services.Admin.RequestEmergencyKey(c.Request.Context(), h.currentUserID(c))
+	var input struct {
+		DeviceID string `json:"device_id"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil || input.DeviceID == "" {
+		h.respondCode(c, http.StatusBadRequest, "device_id_required")
+		return
+	}
+	request, err := h.services.Admin.RequestEmergencyKey(c.Request.Context(), h.currentUserID(c), input.DeviceID)
 	if err != nil {
-		h.respondErrorErr(c, http.StatusInternalServerError, "generate_key_failed", err)
+		h.respondErrorErr(c, http.StatusBadRequest, "emergency_request_failed", err)
 		return
 	}
 	h.respond(c, http.StatusCreated, request)
+}
+
+func (h *Handler) CurrentEmergencyKeyRequest(c *gin.Context) {
+	request, err := h.services.Admin.GetCurrentEmergencyKeyRequest(
+		c.Request.Context(),
+		h.currentUserID(c),
+		c.Query("device_id"),
+	)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusNotFound, "emergency_request_not_found", err)
+		return
+	}
+	h.respond(c, http.StatusOK, request)
 }
 
 func (h *Handler) PendingEmergencyKeyRequests(c *gin.Context) {
@@ -47,6 +67,19 @@ func (h *Handler) ApproveEmergencyKeyRequest(c *gin.Context) {
 	})
 }
 
+func (h *Handler) ReviewEmergencyKeyRequest(c *gin.Context) {
+	request, err := h.services.Admin.ReviewEmergencyKeyRequest(
+		c.Request.Context(),
+		c.Param("id"),
+		h.currentUserID(c),
+	)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "emergency_review_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, request)
+}
+
 func (h *Handler) EmergencyUnlock(c *gin.Context) {
 	var input emergencyUnlockInput
 	if err := c.ShouldBindJSON(&input); err != nil || input.EmergencyKey == "" {
@@ -54,13 +87,14 @@ func (h *Handler) EmergencyUnlock(c *gin.Context) {
 		return
 	}
 
-	err := h.services.Admin.ValidateEmergencyKey(c.Request.Context(), input.EmergencyKey, input.DeviceID)
+	if input.DeviceID == "" {
+		h.respondCode(c, http.StatusBadRequest, "device_id_required")
+		return
+	}
+	grant, err := h.services.Admin.ValidateEmergencyKey(c.Request.Context(), input.EmergencyKey, input.DeviceID)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "invalid_key", err)
 		return
 	}
-	h.respond(c, http.StatusOK, gin.H{
-		"unlocked": true,
-		"message":  "Perangkat berhasil dibuka. Kunci darurat hanya berlaku satu kali.",
-	})
+	h.respond(c, http.StatusOK, grant)
 }
