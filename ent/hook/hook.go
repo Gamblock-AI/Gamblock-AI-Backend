@@ -105,6 +105,18 @@ func (f DeviceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DeviceMutation", m)
 }
 
+// The EmergencyKeyRequestFunc type is an adapter to allow the use of ordinary
+// function as EmergencyKeyRequest mutator.
+type EmergencyKeyRequestFunc func(context.Context, *ent.EmergencyKeyRequestMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EmergencyKeyRequestFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EmergencyKeyRequestMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EmergencyKeyRequestMutation", m)
+}
+
 // The IntentionFunc type is an adapter to allow the use of ordinary
 // function as Intention mutator.
 type IntentionFunc func(context.Context, *ent.IntentionMutation) (ent.Value, error)

@@ -37,9 +37,11 @@ func (s *ReflectionService) GetReflections(ctx context.Context, userID string) (
 	if s.encryptMode {
 		for i := range entries {
 			decrypted, decErr := crypto.Decrypt(entries[i].Text, s.cfg.JournalEncryptionKey)
-			if decErr == nil {
-				entries[i].Text = decrypted
+			if decErr != nil {
+				s.logger.Error("failed to decrypt journal entry", zap.String("entry_id", entries[i].ID), zap.Error(decErr))
+				return nil, fmt.Errorf("failed to decrypt journal entry")
 			}
+			entries[i].Text = decrypted
 		}
 	}
 	return entries, nil
@@ -50,13 +52,13 @@ func (s *ReflectionService) CreateReflection(ctx context.Context, userID, text, 
 		s.logger.Error("encryption key is missing, refusing to store plaintext journal")
 		return model.JournalEntry{}, fmt.Errorf("encryption is required but not configured")
 	}
-	
+
 	encrypted, encErr := crypto.Encrypt(text, s.cfg.JournalEncryptionKey)
 	if encErr != nil {
 		s.logger.Error("failed to encrypt journal, refusing to store plaintext", zap.Error(encErr))
 		return model.JournalEntry{}, fmt.Errorf("failed to encrypt journal entry")
 	}
-	
+
 	return s.repo.CreateReflection(ctx, userID, encrypted, mood)
 }
 

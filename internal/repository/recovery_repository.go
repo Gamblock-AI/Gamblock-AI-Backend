@@ -4,6 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/ent"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/checkin"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
 	"github.com/google/uuid"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
@@ -11,6 +14,19 @@ import (
 )
 
 func (r *Repository) GetIntention(ctx context.Context, userID string) (model.Intention, bool) {
+	if r.db != nil {
+		item, err := r.db.Intention.Query().
+			Where(intention.UserID(userID), intention.StatusEQ(intention.StatusActive)).
+			Order(ent.Desc(intention.FieldUpdatedAt)).
+			First(ctx)
+		if err != nil {
+			return model.Intention{}, false
+		}
+		return model.Intention{
+			ID: item.ID, UserID: item.UserID, Text: item.IntentionText,
+			Status: item.Status.String(), CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt,
+		}, true
+	}
 	r.store.RLock()
 	defer r.store.RUnlock()
 	for _, intn := range r.store.Intentions {
@@ -23,6 +39,31 @@ func (r *Repository) GetIntention(ctx context.Context, userID string) (model.Int
 
 func (r *Repository) SaveIntention(ctx context.Context, userID, text, status string) (model.Intention, error) {
 	now := time.Now().UTC()
+	if r.db != nil {
+		item, err := r.db.Intention.Query().
+			Where(intention.UserID(userID), intention.StatusEQ(intention.StatusActive)).
+			Order(ent.Desc(intention.FieldUpdatedAt)).
+			First(ctx)
+		if err == nil {
+			item, err = item.Update().SetIntentionText(text).SetStatus(intention.Status(status)).Save(ctx)
+			if err != nil {
+				return model.Intention{}, err
+			}
+			r.RefreshStore(ctx)
+			return model.Intention{ID: item.ID, UserID: item.UserID, Text: item.IntentionText, Status: item.Status.String(), CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt}, nil
+		}
+		item, err = r.db.Intention.Create().
+			SetID("int_" + uuid.NewString()[:8]).
+			SetUserID(userID).
+			SetIntentionText(text).
+			SetStatus(intention.Status(status)).
+			Save(ctx)
+		if err != nil {
+			return model.Intention{}, err
+		}
+		r.RefreshStore(ctx)
+		return model.Intention{ID: item.ID, UserID: item.UserID, Text: item.IntentionText, Status: item.Status.String(), CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt}, nil
+	}
 	r.store.Lock()
 	defer r.store.Unlock()
 
@@ -49,6 +90,20 @@ func (r *Repository) SaveIntention(ctx context.Context, userID, text, status str
 }
 
 func (r *Repository) GetCheckIns(ctx context.Context, userID string) ([]model.CheckIn, error) {
+	if r.db != nil {
+		rows, err := r.db.CheckIn.Query().
+			Where(checkin.UserID(userID)).
+			Order(ent.Desc(checkin.FieldCreatedAt)).
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		list := make([]model.CheckIn, 0, len(rows))
+		for _, item := range rows {
+			list = append(list, model.CheckIn{ID: item.ID, UserID: item.UserID, Mood: item.MoodScore, Urge: item.UrgeScore, Context: value(item.ContextText), CreatedAt: item.CreatedAt})
+		}
+		return list, nil
+	}
 	r.store.RLock()
 	defer r.store.RUnlock()
 	var list []model.CheckIn
@@ -62,6 +117,20 @@ func (r *Repository) GetCheckIns(ctx context.Context, userID string) ([]model.Ch
 
 func (r *Repository) SaveCheckIn(ctx context.Context, userID string, mood, urge int, contextText string) (model.CheckIn, error) {
 	now := time.Now().UTC()
+	if r.db != nil {
+		item, err := r.db.CheckIn.Create().
+			SetID("chk_" + uuid.NewString()[:8]).
+			SetUserID(userID).
+			SetMoodScore(mood).
+			SetUrgeScore(urge).
+			SetNillableContextText(optional(contextText)).
+			Save(ctx)
+		if err != nil {
+			return model.CheckIn{}, err
+		}
+		r.RefreshStore(ctx)
+		return model.CheckIn{ID: item.ID, UserID: item.UserID, Mood: item.MoodScore, Urge: item.UrgeScore, Context: value(item.ContextText), CreatedAt: item.CreatedAt}, nil
+	}
 	newEntry := store.CheckIn{
 		ID:        "chk_" + uuid.NewString()[:8],
 		UserID:    userID,

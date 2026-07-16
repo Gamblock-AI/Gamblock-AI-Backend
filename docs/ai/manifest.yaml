@@ -1,5 +1,5 @@
 schema_version: 1
-context_version: 2026-07-15.2
+context_version: 2026-07-16.4
 component: backend
 contracts:
   proposal_authority: 1
@@ -7,6 +7,9 @@ contracts:
   local_ai_lint_policy: 1
   privacy_boundary: 1
   api_error_catalog: 1
+  accountability_state: 1
+  client_daily_aggregate: 1
+  emergency_two_operator: 1
 canonical_instruction: AGENTS.md
 proposal_requirements:
   - PKM-PRIV-001

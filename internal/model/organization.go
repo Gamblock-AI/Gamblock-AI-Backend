@@ -27,11 +27,11 @@ type OrganizationMember struct {
 }
 
 type OrganizationAnalytics struct {
-	TotalMembers       int     `json:"total_members"`
-	ActiveDevices      int     `json:"active_devices"`
-	AvgMoodScore       float64 `json:"avg_mood_score"`
-	TotalBlocks        int     `json:"total_blocks"`
-	CompletedMissions  int     `json:"completed_missions"`
-	PendingApprovals   int     `json:"pending_approvals"`
-	WeeklyBlockTrend   []int   `json:"weekly_block_trend"`
+	TotalMembers      int     `json:"total_members"`
+	ActiveDevices     int     `json:"active_devices"`
+	AvgMoodScore      float64 `json:"avg_mood_score"`
+	TotalBlocks       int     `json:"total_blocks"`
+	CompletedMissions int     `json:"completed_missions"`
+	PendingApprovals  int     `json:"pending_approvals"`
+	WeeklyBlockTrend  []int   `json:"weekly_block_trend"`
 }

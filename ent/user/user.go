@@ -18,6 +18,8 @@ const (
 	FieldEmail = "email"
 	// FieldDisplayName holds the string denoting the display_name field in the database.
 	FieldDisplayName = "display_name"
+	// FieldPasswordHash holds the string denoting the password_hash field in the database.
+	FieldPasswordHash = "password_hash"
 	// FieldAvatarURL holds the string denoting the avatar_url field in the database.
 	FieldAvatarURL = "avatar_url"
 	// FieldGoogleSubject holds the string denoting the google_subject field in the database.
@@ -39,6 +41,7 @@ var Columns = []string{
 	FieldID,
 	FieldEmail,
 	FieldDisplayName,
+	FieldPasswordHash,
 	FieldAvatarURL,
 	FieldGoogleSubject,
 	FieldRole,
@@ -83,6 +86,7 @@ const (
 	RoleContentAdmin         Role = "content_admin"
 	RoleModelReleaseOperator Role = "model_release_operator"
 	RoleSupportOperator      Role = "support_operator"
+	RoleResearchEvaluator    Role = "research_evaluator"
 	RolePlatformAdmin        Role = "platform_admin"
 )
 
@@ -93,7 +97,7 @@ func (r Role) String() string {
 // RoleValidator is a validator for the "role" field enum values. It is called by the builders before save.
 func RoleValidator(r Role) error {
 	switch r {
-	case RoleUser, RolePartner, RoleOrganizationOwner, RoleOrganizationAdmin, RoleContentAdmin, RoleModelReleaseOperator, RoleSupportOperator, RolePlatformAdmin:
+	case RoleUser, RolePartner, RoleOrganizationOwner, RoleOrganizationAdmin, RoleContentAdmin, RoleModelReleaseOperator, RoleSupportOperator, RoleResearchEvaluator, RolePlatformAdmin:
 		return nil
 	default:
 		return fmt.Errorf("user: invalid enum value for role field: %q", r)
@@ -116,6 +120,11 @@ func ByEmail(opts ...sql.OrderTermOption) OrderOption {
 // ByDisplayName orders the results by the display_name field.
 func ByDisplayName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDisplayName, opts...).ToFunc()
+}
+
+// ByPasswordHash orders the results by the password_hash field.
+func ByPasswordHash(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPasswordHash, opts...).ToFunc()
 }
 
 // ByAvatarURL orders the results by the avatar_url field.

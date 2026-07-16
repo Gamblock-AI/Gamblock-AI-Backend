@@ -40,7 +40,16 @@ func (s *DeviceService) UpdateDevice(ctx context.Context, devID, label, appVersi
 	return s.repo.UpdateDevice(ctx, devID, label, appVersion, osVersion, status, modelVersion, rulesetVersion)
 }
 
+func (s *DeviceService) UpdateOwnedDevice(ctx context.Context, userID, devID, label, appVersion, osVersion, status, modelVersion, rulesetVersion string) (model.Device, error) {
+	return s.repo.UpdateOwnedDevice(ctx, userID, devID, label, appVersion, osVersion, status, modelVersion, rulesetVersion)
+}
+
 func (s *DeviceService) RecordHeartbeat(ctx context.Context, deviceID string) error {
 	s.logger.Info("device heartbeat", zap.String("device_id", deviceID))
 	return s.repo.RecordHeartbeat(ctx, deviceID)
+}
+
+func (s *DeviceService) RecordOwnedHeartbeat(ctx context.Context, userID, deviceID string) error {
+	s.logger.Info("device heartbeat", zap.String("device_id", deviceID), zap.String("user_id", userID))
+	return s.repo.RecordOwnedHeartbeat(ctx, userID, deviceID)
 }

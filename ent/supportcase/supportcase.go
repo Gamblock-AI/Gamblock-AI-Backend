@@ -73,12 +73,15 @@ type Type string
 
 // Type values.
 const (
-	TypeAccountRecovery     Type = "account_recovery"
-	TypePartnerAbuse        Type = "partner_abuse"
-	TypeStuckApproval       Type = "stuck_approval"
-	TypeDeviceRecovery      Type = "device_recovery"
-	TypeNotificationFailure Type = "notification_failure"
-	TypeOrganizationDispute Type = "organization_dispute"
+	TypeTechnicalSupport       Type = "technical_support"
+	TypeAccountRecovery        Type = "account_recovery"
+	TypePartnerAbuse           Type = "partner_abuse"
+	TypeStuckApproval          Type = "stuck_approval"
+	TypeDeviceRecovery         Type = "device_recovery"
+	TypeNotificationFailure    Type = "notification_failure"
+	TypeOrganizationDispute    Type = "organization_dispute"
+	TypeAccountabilityGuidance Type = "accountability_guidance"
+	TypePrivacyRequest         Type = "privacy_request"
 )
 
 func (_type Type) String() string {
@@ -88,7 +91,7 @@ func (_type Type) String() string {
 // TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
 func TypeValidator(_type Type) error {
 	switch _type {
-	case TypeAccountRecovery, TypePartnerAbuse, TypeStuckApproval, TypeDeviceRecovery, TypeNotificationFailure, TypeOrganizationDispute:
+	case TypeTechnicalSupport, TypeAccountRecovery, TypePartnerAbuse, TypeStuckApproval, TypeDeviceRecovery, TypeNotificationFailure, TypeOrganizationDispute, TypeAccountabilityGuidance, TypePrivacyRequest:
 		return nil
 	default:
 		return fmt.Errorf("supportcase: invalid enum value for type field: %q", _type)

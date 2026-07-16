@@ -32,7 +32,7 @@ done
 grep -Fq '@./AGENTS.md' "$ROOT_DIR/CLAUDE.md"
 grep -Fq '@./AGENTS.md' "$ROOT_DIR/GEMINI.md"
 grep -Fq 'alwaysApply: true' "$ROOT_DIR/.cursor/rules/gamblock-ai.mdc"
-grep -Fq 'context_version: 2026-07-15.2' "$ROOT_DIR/docs/ai/manifest.yaml"
+grep -Fq 'context_version: 2026-07-16.3' "$ROOT_DIR/docs/ai/manifest.yaml"
 
 if git -C "$ROOT_DIR" ls-files --error-unmatch .env >/dev/null 2>&1; then
   echo '.env must not be tracked' >&2

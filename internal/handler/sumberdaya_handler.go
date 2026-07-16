@@ -54,7 +54,7 @@ func (h *Handler) GetModuleDetail(c *gin.Context) {
 }
 
 func (h *Handler) GetSupportCases(c *gin.Context) {
-	cases, err := h.services.Support.GetSupportCases(c.Request.Context())
+	cases, err := h.services.Support.GetSupportCasesForUser(c.Request.Context(), h.currentUserID(c))
 	if err != nil {
 		h.respondErrorErr(c, http.StatusInternalServerError, "fetch_support_cases_failed", err)
 		return

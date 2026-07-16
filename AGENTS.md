@@ -1,6 +1,6 @@
 # Gamblock-AI Backend Agent Rules
 
-Context version: `2026-07-15.2`
+Context version: `2026-07-16.4`
 
 This repository is the Go/Gin API for Gamblock-AI. It must remain safe and
 understandable as a standalone clone; no parent workspace files are required.
@@ -44,7 +44,9 @@ Every response uses `{ "data", "error", "request_id" }`. Use the helpers in
 `internal/handler/handler.go`; do not return raw ad-hoc shapes or leak
 `err.Error()` in production.
 
-- `respondErrorErr` logs technical detail and returns catalog-safe output.
+- `respondErrorErr` records expected 4xx rejections as metadata-only info,
+  retains technical error detail for 5xx faults, and returns catalog-safe
+  output.
 - `respondCode` resolves validation errors without an underlying Go error.
 - `internal/i18n/messages.go` owns stable backend error codes.
 - Every new stable code must also be added to the website and Flutter catalogs.
@@ -88,18 +90,18 @@ and release management are supporting/operational, not substitutes for core.
 
 ## Sensitive data and storage
 
-- Target invariant: encrypt journal/reflection text with AES-256-GCM before
-  persistence via `internal/crypto/aes.go`; never log/store plaintext. Current
-  `ReflectionService` falls back to plaintext when the key is absent or
-  encryption fails. Treat this as a documented P0 gap: do not broaden it or
-  claim encryption is fail-closed, and fix it only when implementation is in
-  scope.
+- Encrypt journal/reflection text with AES-256-GCM before persistence via
+  `internal/crypto/aes.go`; never log/store plaintext. `ReflectionService`
+  fails closed when the key, encryption, or decryption operation is invalid.
 - `.env` and credentials are local only. Update `.env.example` for config
   shape changes.
-- `cmd/api` can fall back to seeded in-memory data when PostgreSQL is missing or
-  fails. This is current prototype behavior, not a production durability
-  guarantee; do not describe it as persistent storage.
-- WhatsApp approval notifications are batched, not sent per event in real time.
+- Production validates JWT/AES configuration and fails closed if PostgreSQL
+  cannot open, migrate, or load. Non-production memory starts empty; contextual
+  demo records require `ENABLE_DEMO_DATA=true` and are forbidden in production.
+- Partner invitation/quick-approval/emergency tokens are secrets. Persist only
+  hashes, never log raw links, and preserve relationship/email/expiry checks.
+- WhatsApp is an optional delivery adapter; the persisted partner inbox and
+  backend transition are authoritative.
 
 ## Validation policy
 
@@ -114,7 +116,7 @@ make verify            # build all packages, vet, and race-test
 ```
 
 Tests live beside code as `*_test.go`, but the AI does not run them by default.
-The seeded in-memory store supports integration tests without PostgreSQL. Do
+The explicitly seeded in-memory store supports integration tests without PostgreSQL. Do
 not hit production services from tests.
 
 ## Protected and external actions

@@ -22,6 +22,8 @@ type AggregateEvent struct {
 	UserID string `json:"user_id,omitempty"`
 	// DeviceID holds the value of the "device_id" field.
 	DeviceID *string `json:"device_id,omitempty"`
+	// IdempotencyKey holds the value of the "idempotency_key" field.
+	IdempotencyKey string `json:"idempotency_key,omitempty"`
 	// EventType holds the value of the "event_type" field.
 	EventType aggregateevent.EventType `json:"event_type,omitempty"`
 	// EventDate holds the value of the "event_date" field.
@@ -44,7 +46,7 @@ func (*AggregateEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case aggregateevent.FieldCount:
 			values[i] = new(sql.NullInt64)
-		case aggregateevent.FieldID, aggregateevent.FieldUserID, aggregateevent.FieldDeviceID, aggregateevent.FieldEventType:
+		case aggregateevent.FieldID, aggregateevent.FieldUserID, aggregateevent.FieldDeviceID, aggregateevent.FieldIdempotencyKey, aggregateevent.FieldEventType:
 			values[i] = new(sql.NullString)
 		case aggregateevent.FieldEventDate, aggregateevent.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -81,6 +83,12 @@ func (_m *AggregateEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.DeviceID = new(string)
 				*_m.DeviceID = value.String
+			}
+		case aggregateevent.FieldIdempotencyKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field idempotency_key", values[i])
+			} else if value.Valid {
+				_m.IdempotencyKey = value.String
 			}
 		case aggregateevent.FieldEventType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -157,6 +165,9 @@ func (_m *AggregateEvent) String() string {
 		builder.WriteString("device_id=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("idempotency_key=")
+	builder.WriteString(_m.IdempotencyKey)
 	builder.WriteString(", ")
 	builder.WriteString("event_type=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EventType))

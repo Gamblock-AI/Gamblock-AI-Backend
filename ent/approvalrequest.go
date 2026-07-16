@@ -23,6 +23,8 @@ type ApprovalRequest struct {
 	DeviceID *string `json:"device_id,omitempty"`
 	// PartnerLinkID holds the value of the "partner_link_id" field.
 	PartnerLinkID string `json:"partner_link_id,omitempty"`
+	// QuickTokenHash holds the value of the "quick_token_hash" field.
+	QuickTokenHash *string `json:"-"`
 	// Action holds the value of the "action" field.
 	Action approvalrequest.Action `json:"action,omitempty"`
 	// Status holds the value of the "status" field.
@@ -51,7 +53,7 @@ func (*ApprovalRequest) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case approvalrequest.FieldRequestedDurationMinutes:
 			values[i] = new(sql.NullInt64)
-		case approvalrequest.FieldID, approvalrequest.FieldUserID, approvalrequest.FieldDeviceID, approvalrequest.FieldPartnerLinkID, approvalrequest.FieldAction, approvalrequest.FieldStatus, approvalrequest.FieldReason, approvalrequest.FieldResolvedBy:
+		case approvalrequest.FieldID, approvalrequest.FieldUserID, approvalrequest.FieldDeviceID, approvalrequest.FieldPartnerLinkID, approvalrequest.FieldQuickTokenHash, approvalrequest.FieldAction, approvalrequest.FieldStatus, approvalrequest.FieldReason, approvalrequest.FieldResolvedBy:
 			values[i] = new(sql.NullString)
 		case approvalrequest.FieldExpiresAt, approvalrequest.FieldResolvedAt, approvalrequest.FieldCreatedAt, approvalrequest.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -94,6 +96,13 @@ func (_m *ApprovalRequest) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field partner_link_id", values[i])
 			} else if value.Valid {
 				_m.PartnerLinkID = value.String
+			}
+		case approvalrequest.FieldQuickTokenHash:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field quick_token_hash", values[i])
+			} else if value.Valid {
+				_m.QuickTokenHash = new(string)
+				*_m.QuickTokenHash = value.String
 			}
 		case approvalrequest.FieldAction:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -199,6 +208,8 @@ func (_m *ApprovalRequest) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("partner_link_id=")
 	builder.WriteString(_m.PartnerLinkID)
+	builder.WriteString(", ")
+	builder.WriteString("quick_token_hash=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("action=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Action))

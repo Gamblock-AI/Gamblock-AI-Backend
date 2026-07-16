@@ -20,6 +20,8 @@ const (
 	FieldDeviceID = "device_id"
 	// FieldPartnerLinkID holds the string denoting the partner_link_id field in the database.
 	FieldPartnerLinkID = "partner_link_id"
+	// FieldQuickTokenHash holds the string denoting the quick_token_hash field in the database.
+	FieldQuickTokenHash = "quick_token_hash"
 	// FieldAction holds the string denoting the action field in the database.
 	FieldAction = "action"
 	// FieldStatus holds the string denoting the status field in the database.
@@ -48,6 +50,7 @@ var Columns = []string{
 	FieldUserID,
 	FieldDeviceID,
 	FieldPartnerLinkID,
+	FieldQuickTokenHash,
 	FieldAction,
 	FieldStatus,
 	FieldReason,
@@ -157,6 +160,11 @@ func ByDeviceID(opts ...sql.OrderTermOption) OrderOption {
 // ByPartnerLinkID orders the results by the partner_link_id field.
 func ByPartnerLinkID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPartnerLinkID, opts...).ToFunc()
+}
+
+// ByQuickTokenHash orders the results by the quick_token_hash field.
+func ByQuickTokenHash(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldQuickTokenHash, opts...).ToFunc()
 }
 
 // ByAction orders the results by the action field.

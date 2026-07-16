@@ -61,7 +61,7 @@ func TestAuthService_DevLoginDefaultEmail(t *testing.T) {
 
 func TestAuthService_RefreshAndLogout(t *testing.T) {
 	svc, _ := newAuthSvc(t)
-	resp, err := svc.Login(context.Background(), "gading@gmail.com", "x")
+	resp, err := svc.Login(context.Background(), "gading@gmail.com", "password")
 	require.NoError(t, err)
 
 	// Refresh returns a new pair.
@@ -76,7 +76,7 @@ func TestAuthService_RefreshAndLogout(t *testing.T) {
 
 func TestAuthService_ParseAccessTokenRoundTrip(t *testing.T) {
 	svc, _ := newAuthSvc(t)
-	resp, err := svc.Login(context.Background(), "gading@gmail.com", "x")
+	resp, err := svc.Login(context.Background(), "gading@gmail.com", "password")
 	require.NoError(t, err)
 	claims, err := svc.ParseAccessToken(resp.AccessToken)
 	require.NoError(t, err)

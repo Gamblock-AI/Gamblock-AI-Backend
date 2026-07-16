@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"net/http"
 	"time"
 
@@ -44,48 +43,5 @@ func New(cfg config.Config, st *store.Store, logger *zap.Logger, clients ...*ent
 
 	routes.Register(r, h, mid)
 
-	// Start notification batch scheduler
-	whatsapp := service.NewWhatsAppService(cfg, logger)
-	go startNotificationBatcher(repo, whatsapp, cfg, logger)
-
 	return r
-}
-
-func startNotificationBatcher(repo *repository.Repository, whatsapp *service.WhatsAppService, cfg config.Config, logger *zap.Logger) {
-	interval := 6 * time.Hour
-	if cfg.NotificationMode == "demo" {
-		interval = 5 * time.Minute // faster in demo mode for testing
-	}
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-
-	logger.Info("notification batcher started", zap.Duration("interval", interval))
-
-	for range ticker.C {
-		ctx := context.Background()
-		pending, err := repo.GetPendingBatchApprovals(ctx)
-		if err != nil {
-			logger.Warn("batcher: failed to fetch pending approvals", zap.Error(err))
-			continue
-		}
-		if len(pending) == 0 {
-			continue
-		}
-
-		byPartner := make(map[string][]service.ApprovalSummary)
-		for _, req := range pending {
-			byPartner[req.PartnerPhone] = append(byPartner[req.PartnerPhone], service.ApprovalSummary{
-				MemberName: req.MemberName,
-				Action:     req.Action,
-				QuickLink:  req.QuickLink,
-			})
-		}
-
-		for phone, summaries := range byPartner {
-			if err := whatsapp.SendApprovalBatch(ctx, phone, summaries); err != nil {
-				logger.Warn("batcher: send failed", zap.String("phone", phone), zap.Error(err))
-			}
-		}
-		logger.Info("batcher: sent", zap.Int("partners", len(byPartner)), zap.Int("requests", len(pending)))
-	}
 }

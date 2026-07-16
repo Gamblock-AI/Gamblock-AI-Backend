@@ -12,7 +12,7 @@ func (h *Handler) Login(c *gin.Context) {
 		Password string `json:"password"`
 	}
 	_ = c.ShouldBindJSON(&input)
-	if input.Email == "" {
+	if input.Email == "" || input.Password == "" {
 		h.respondCode(c, http.StatusBadRequest, "email_required")
 		return
 	}
@@ -31,7 +31,7 @@ func (h *Handler) Register(c *gin.Context) {
 		Name     string `json:"name"`
 	}
 	_ = c.ShouldBindJSON(&input)
-	if input.Email == "" || input.Name == "" {
+	if input.Email == "" || input.Name == "" || len(input.Password) < 8 {
 		h.respondCode(c, http.StatusBadRequest, "validation_failed")
 		return
 	}
@@ -52,7 +52,7 @@ func (h *Handler) DevLogin(c *gin.Context) {
 	_ = c.ShouldBindJSON(&input)
 	response, err := h.services.Auth.DevLogin(c.Request.Context(), input.Email, input.Role, input.DeviceID)
 	if err != nil {
-		h.respondErrorErr(c, http.StatusInternalServerError, "dev_login_failed", err)
+		h.respondErrorErr(c, http.StatusForbidden, "dev_login_failed", err)
 		return
 	}
 	h.respond(c, http.StatusOK, response)

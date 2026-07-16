@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
-	"go.uber.org/zap"
+	"fmt"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"strings"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/repository"
@@ -22,7 +24,21 @@ func (s *SupportService) GetSupportCases(ctx context.Context) ([]model.SupportCa
 	return s.repo.GetSupportCases(ctx)
 }
 
+func (s *SupportService) GetSupportCasesForUser(ctx context.Context, userID string) ([]model.SupportCase, error) {
+	return s.repo.GetSupportCasesForUser(ctx, userID)
+}
+
 func (s *SupportService) CreateSupportCase(ctx context.Context, userID, title, cType, priority string) error {
+	title = strings.TrimSpace(title)
+	allowedTypes := map[string]bool{
+		"technical_support": true, "account_recovery": true, "partner_abuse": true,
+		"stuck_approval": true, "device_recovery": true, "notification_failure": true,
+		"organization_dispute": true, "accountability_guidance": true, "privacy_request": true,
+	}
+	allowedPriorities := map[string]bool{"low": true, "normal": true, "high": true, "urgent": true}
+	if title == "" || !allowedTypes[cType] || !allowedPriorities[priority] {
+		return fmt.Errorf("invalid support case input")
+	}
 	id := "CASE-" + uuid.NewString()[:8]
 	return s.repo.CreateSupportCase(ctx, id, userID, title, cType, priority)
 }

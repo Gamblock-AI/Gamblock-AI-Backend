@@ -13,6 +13,7 @@ var (
 		{Name: "id", Type: field.TypeString},
 		{Name: "user_id", Type: field.TypeString},
 		{Name: "device_id", Type: field.TypeString, Nullable: true},
+		{Name: "idempotency_key", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "event_type", Type: field.TypeEnum, Enums: []string{"intervention_shown", "block_count_sync", "tamper_detected", "permission_revoked", "model_updated", "ruleset_updated"}},
 		{Name: "event_date", Type: field.TypeTime},
 		{Name: "count", Type: field.TypeInt},
@@ -31,6 +32,7 @@ var (
 		{Name: "user_id", Type: field.TypeString},
 		{Name: "device_id", Type: field.TypeString, Nullable: true},
 		{Name: "partner_link_id", Type: field.TypeString},
+		{Name: "quick_token_hash", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "action", Type: field.TypeEnum, Enums: []string{"disable_protection", "remove_partner", "uninstall_detected", "reset_settings", "pause_protection", "emergency_access"}},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "approved", "denied", "expired", "cancelled"}, Default: "pending"},
 		{Name: "reason", Type: field.TypeString, Nullable: true},
@@ -146,6 +148,25 @@ var (
 		Name:       "devices",
 		Columns:    DevicesColumns,
 		PrimaryKey: []*schema.Column{DevicesColumns[0]},
+	}
+	// EmergencyKeyRequestsColumns holds the columns for the "emergency_key_requests" table.
+	EmergencyKeyRequestsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "requested_by", Type: field.TypeString},
+		{Name: "approved_by", Type: field.TypeString, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "approved", "used", "expired"}, Default: "pending"},
+		{Name: "key_hash", Type: field.TypeString, Nullable: true},
+		{Name: "request_expires_at", Type: field.TypeTime},
+		{Name: "key_expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "approved_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// EmergencyKeyRequestsTable holds the schema information for the "emergency_key_requests" table.
+	EmergencyKeyRequestsTable = &schema.Table{
+		Name:       "emergency_key_requests",
+		Columns:    EmergencyKeyRequestsColumns,
+		PrimaryKey: []*schema.Column{EmergencyKeyRequestsColumns[0]},
 	}
 	// IntentionsColumns holds the columns for the "intentions" table.
 	IntentionsColumns = []*schema.Column{
@@ -445,7 +466,7 @@ var (
 		{Name: "id", Type: field.TypeString},
 		{Name: "user_id", Type: field.TypeString},
 		{Name: "organization_id", Type: field.TypeString, Nullable: true},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"account_recovery", "partner_abuse", "stuck_approval", "device_recovery", "notification_failure", "organization_dispute"}},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"technical_support", "account_recovery", "partner_abuse", "stuck_approval", "device_recovery", "notification_failure", "organization_dispute", "accountability_guidance", "privacy_request"}},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"open", "waiting_user", "waiting_internal", "resolved", "closed"}, Default: "open"},
 		{Name: "priority", Type: field.TypeEnum, Enums: []string{"low", "normal", "high", "urgent"}, Default: "normal"},
 		{Name: "summary", Type: field.TypeString},
@@ -463,9 +484,10 @@ var (
 		{Name: "id", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "display_name", Type: field.TypeString},
+		{Name: "password_hash", Type: field.TypeString, Nullable: true},
 		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
 		{Name: "google_subject", Type: field.TypeString, Unique: true, Nullable: true},
-		{Name: "role", Type: field.TypeEnum, Enums: []string{"user", "partner", "organization_owner", "organization_admin", "content_admin", "model_release_operator", "support_operator", "platform_admin"}, Default: "user"},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"user", "partner", "organization_owner", "organization_admin", "content_admin", "model_release_operator", "support_operator", "research_evaluator", "platform_admin"}, Default: "user"},
 		{Name: "disabled_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
@@ -486,6 +508,7 @@ var (
 		DailyMissionsTable,
 		DataRequestsTable,
 		DevicesTable,
+		EmergencyKeyRequestsTable,
 		IntentionsTable,
 		ModelReleasesTable,
 		ModelRolloutsTable,

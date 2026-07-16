@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"entgo.io/ent/dialect"
@@ -11,6 +13,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/organizationmember"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/seed"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
 )
@@ -36,23 +39,25 @@ func Seed(ctx context.Context, client *ent.Client) error {
 }
 
 func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
-	seedData := store.NewSeeded()
 	users, err := client.User.Query().All(ctx)
 	if err != nil {
 		return nil, err
 	}
 	if len(users) == 0 {
-		return seedData, nil
+		return store.New(), nil
 	}
 	out := &store.Store{}
 	for _, item := range users {
 		out.Users = append(out.Users, store.User{
-			ID:          item.ID,
-			Email:       item.Email,
-			DisplayName: item.DisplayName,
-			Role:        item.Role.String(),
-			CreatedAt:   item.CreatedAt,
-			UpdatedAt:   item.UpdatedAt,
+			ID:            item.ID,
+			Email:         item.Email,
+			DisplayName:   item.DisplayName,
+			Role:          item.Role.String(),
+			PasswordHash:  value(item.PasswordHash),
+			GoogleSubject: value(item.GoogleSubject),
+			DisabledAt:    item.DisabledAt,
+			CreatedAt:     item.CreatedAt,
+			UpdatedAt:     item.UpdatedAt,
 		})
 	}
 	devices, err := client.Device.Query().All(ctx)
@@ -84,14 +89,21 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 		return nil, err
 	}
 	for _, item := range partners {
+		contact := item.PartnerEmail
+		if phone := value(item.PartnerPhone); phone != "" {
+			contact += " | " + phone
+		}
 		out.Partners = append(out.Partners, store.Partner{
-			ID:           item.ID,
-			Name:         "Suci Maisaa",
-			Contact:      item.PartnerEmail + " | " + value(item.PartnerPhone),
-			Status:       "Active partner",
-			PartnerEmail: item.PartnerEmail,
-			CreatedAt:    item.CreatedAt,
-			UpdatedAt:    item.UpdatedAt,
+			ID:              item.ID,
+			UserID:          item.UserID,
+			PartnerUserID:   value(item.PartnerUserID),
+			InviteTokenHash: value(item.InviteTokenHash),
+			Name:            item.PartnerEmail,
+			Contact:         contact,
+			Status:          item.Status.String(),
+			PartnerEmail:    item.PartnerEmail,
+			CreatedAt:       item.CreatedAt,
+			UpdatedAt:       item.UpdatedAt,
 		})
 	}
 	approvals, err := client.ApprovalRequest.Query().All(ctx)
@@ -105,6 +117,10 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 		}
 		out.Approvals = append(out.Approvals, store.ApprovalRequest{
 			ID:                       item.ID,
+			UserID:                   item.UserID,
+			DeviceID:                 value(item.DeviceID),
+			PartnerLinkID:            item.PartnerLinkID,
+			QuickTokenHash:           value(item.QuickTokenHash),
 			Action:                   humanApprovalAction(item.Action.String(), duration),
 			ExpiresIn:                humanExpiry(item.ExpiresAt),
 			Status:                   humanApprovalStatus(item.Status.String()),
@@ -112,6 +128,7 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 			RequestedDurationMinutes: duration,
 			CreatedAt:                item.CreatedAt,
 			UpdatedAt:                item.UpdatedAt,
+			ExpiresAt:                item.ExpiresAt,
 		})
 	}
 	modules, err := client.PsychoeducationModule.Query().All(ctx)
@@ -126,7 +143,7 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 			Summary:          item.Summary,
 			BodyMarkdown:     item.BodyMarkdown,
 			EstimatedMinutes: item.EstimatedMinutes,
-			Progress:         moduleProgress(item.Slug),
+			Progress:         0,
 			Status:           item.Status.String(),
 			CreatedAt:        item.CreatedAt,
 			UpdatedAt:        item.UpdatedAt,
@@ -142,6 +159,9 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 			Version:         item.Version,
 			Platform:        item.Platform.String(),
 			SHA256:          item.Sha256,
+			ArtifactPath:    item.ArtifactPath,
+			ContractVersion: item.ContractVersion,
+			Threshold:       item.Threshold,
 			Status:          item.Status.String(),
 			DownloadURL:     "/v1/releases/model/" + item.Version + "/download",
 			Metrics:         item.MetricsJSON,
@@ -160,6 +180,7 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 			Version:         item.Version,
 			Platform:        "all",
 			SHA256:          item.Sha256,
+			ArtifactPath:    item.ArtifactPath,
 			Status:          item.Status.String(),
 			DownloadURL:     "/v1/releases/ruleset/" + item.Version + "/download",
 			Metrics:         item.RulesJSON,
@@ -178,6 +199,7 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 			Version:         item.Version,
 			Platform:        "all",
 			SHA256:          item.Sha256,
+			ArtifactPath:    item.ArtifactPath,
 			Status:          item.Status.String(),
 			DownloadURL:     "/v1/releases/network-rulesets/" + item.Version + "/download",
 			Metrics:         item.RulesJSON,
@@ -191,12 +213,16 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 		return nil, err
 	}
 	for _, item := range orgs {
+		members, countErr := client.OrganizationMember.Query().Where(organizationmember.OrganizationIDEQ(item.ID)).Count(ctx)
+		if countErr != nil {
+			return nil, countErr
+		}
 		out.Organizations = append(out.Organizations, store.Organization{
 			ID:        item.ID,
 			Name:      item.Name,
 			Slug:      item.Slug,
 			Status:    item.Status.String(),
-			Members:   128,
+			Members:   members,
 			CreatedAt: item.CreatedAt,
 			UpdatedAt: item.UpdatedAt,
 		})
@@ -208,11 +234,12 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 	for _, item := range supportCases {
 		out.SupportCases = append(out.SupportCases, store.SupportCase{
 			ID:        item.ID,
+			UserID:    item.UserID,
 			Title:     item.Summary,
 			Type:      item.Type.String(),
 			Status:    item.Status.String(),
 			Priority:  item.Priority.String(),
-			Owner:     "Alfian",
+			Owner:     "",
 			CreatedAt: item.CreatedAt,
 			UpdatedAt: item.UpdatedAt,
 		})
@@ -224,6 +251,7 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 	for _, item := range dataRequests {
 		out.DataRequests = append(out.DataRequests, store.DataRequest{
 			ID:        item.ID,
+			UserID:    item.UserID,
 			Title:     humanDataRequestTitle(item.Type.String()),
 			Type:      item.Type.String(),
 			Status:    item.Status.String(),
@@ -266,7 +294,7 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 			out.JournalEntries = append(out.JournalEntries, store.JournalEntry{
 				ID:        item.ID,
 				UserID:    item.UserID,
-				Text:      item.ContentEncrypted, // Text stores the encrypted content payload in ent model 
+				Text:      item.ContentEncrypted, // Text stores the encrypted content payload in ent model
 				Mood:      value(item.PromptKey),
 				CreatedAt: item.CreatedAt,
 				UpdatedAt: item.UpdatedAt,
@@ -275,9 +303,23 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 	}
 	missions, err := client.DailyMission.Query().All(ctx)
 	if err == nil {
-		// Convert flat ent missions to DailyMission grouped per day (as prototype mock does)
-		// Assuming for prototype we just load seed data if empty
-		_ = missions 
+		byDay := make(map[string]*store.DailyMission)
+		for _, item := range missions {
+			date := item.CreatedAt.UTC().Format("2006-01-02")
+			key := item.UserID + ":" + date
+			day, ok := byDay[key]
+			if !ok {
+				day = &store.DailyMission{ID: "day_" + date, UserID: item.UserID, Date: date, CreatedAt: item.CreatedAt, UpdatedAt: item.CreatedAt}
+				byDay[key] = day
+			}
+			setMissionCompleted(day, missionKeyNumber(item.MissionKey), item.Status.String() == "completed")
+			if item.CreatedAt.After(day.UpdatedAt) {
+				day.UpdatedAt = item.CreatedAt
+			}
+		}
+		for _, day := range byDay {
+			out.Missions = append(out.Missions, *day)
+		}
 	}
 	intentions, err := client.Intention.Query().All(ctx)
 	if err == nil {
@@ -305,8 +347,48 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 			})
 		}
 	}
-	ensureDefaults(out, seedData)
+	aggregates, err := client.AggregateEvent.Query().All(ctx)
+	if err == nil {
+		for _, item := range aggregates {
+			out.AggregateEvents = append(out.AggregateEvents, store.AggregateEvent{
+				ID: item.ID, UserID: item.UserID, DeviceID: value(item.DeviceID),
+				IdempotencyKey: item.IdempotencyKey, EventType: item.EventType.String(),
+				EventDate: item.EventDate, Count: item.Count, CreatedAt: item.CreatedAt,
+			})
+		}
+	}
+	emergencyRequests, err := client.EmergencyKeyRequest.Query().All(ctx)
+	if err == nil {
+		for _, item := range emergencyRequests {
+			out.EmergencyKeyRequests = append(out.EmergencyKeyRequests, store.EmergencyKeyRequest{
+				ID: item.ID, RequestedBy: item.RequestedBy, ApprovedBy: value(item.ApprovedBy),
+				Status: item.Status.String(), RequestExpiresAt: item.RequestExpiresAt,
+				KeyExpiresAt: item.KeyExpiresAt, ApprovedAt: item.ApprovedAt,
+				CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt, KeyHash: value(item.KeyHash),
+			})
+		}
+	}
 	return out, nil
+}
+
+func missionKeyNumber(key string) int {
+	number, _ := strconv.Atoi(strings.TrimPrefix(key, "mission_"))
+	return number
+}
+
+func setMissionCompleted(day *store.DailyMission, number int, completed bool) {
+	switch number {
+	case 1:
+		day.Mission1 = completed
+	case 2:
+		day.Mission2 = completed
+	case 3:
+		day.Mission3 = completed
+	case 4:
+		day.Mission4 = completed
+	case 5:
+		day.Mission5 = completed
+	}
 }
 
 func value(v *string) string {
@@ -314,16 +396,6 @@ func value(v *string) string {
 		return ""
 	}
 	return *v
-}
-
-func moduleProgress(slug string) float64 {
-	if slug == "pause-before-impulse" {
-		return 0.7
-	}
-	if slug == "financial-reality-check" {
-		return 0.35
-	}
-	return 0
 }
 
 func humanExpiry(t time.Time) string {
@@ -368,31 +440,4 @@ func humanDataRequestTitle(kind string) string {
 		return "Delete archived support notes"
 	}
 	return "Data request"
-}
-
-func ensureDefaults(out *store.Store, seed *store.Store) {
-	if len(out.ModelReleases) == 0 {
-		out.ModelReleases = seed.ModelReleases
-	}
-	if len(out.RulesetReleases) == 0 {
-		out.RulesetReleases = seed.RulesetReleases
-	}
-	if len(out.NetworkRulesets) == 0 {
-		out.NetworkRulesets = seed.NetworkRulesets
-	}
-	if len(out.Modules) == 0 {
-		out.Modules = seed.Modules
-	}
-	if len(out.JournalEntries) == 0 {
-		out.JournalEntries = seed.JournalEntries
-	}
-	if len(out.Missions) == 0 {
-		out.Missions = seed.Missions
-	}
-	if len(out.Intentions) == 0 {
-		out.Intentions = seed.Intentions
-	}
-	if len(out.CheckIns) == 0 {
-		out.CheckIns = seed.CheckIns
-	}
 }

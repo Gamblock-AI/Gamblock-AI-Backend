@@ -73,17 +73,21 @@ func (h *Handler) respondCode(c *gin.Context, status int, code string) {
 //
 // Production: the friendly catalog message for [code] (never [err].Error()),
 // so internal details never leak to clients. Development: the technical
-// err.Error() for debugging. The full technical error is always logged with the
-// request id so it is never lost.
+// err.Error() for debugging. Expected 4xx rejections are logged without the
+// underlying error; 5xx faults retain the full technical error and stack.
 func (h *Handler) respondErrorErr(c *gin.Context, status int, code string, err error) {
 	reqID := h.requestID(c)
 	if h.logger != nil && err != nil {
-		h.logger.Warn("request failed",
+		fields := []zap.Field{
 			zap.String("request_id", reqID),
 			zap.String("code", code),
 			zap.Int("status", status),
-			zap.Error(err),
-		)
+		}
+		if status >= http.StatusInternalServerError {
+			h.logger.Error("request failed", append(fields, zap.Error(err))...)
+		} else {
+			h.logger.Info("request rejected", fields...)
+		}
 	}
 	msg := i18n.Friendly(code)
 	if !h.cfg.IsProduction() && err != nil {

@@ -4,6 +4,7 @@ import "time"
 
 type DataRequest struct {
 	ID        string    `json:"id"`
+	UserID    string    `json:"-"`
 	Title     string    `json:"title"`
 	Type      string    `json:"type"`
 	Status    string    `json:"status"`

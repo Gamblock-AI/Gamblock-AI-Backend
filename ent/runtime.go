@@ -13,6 +13,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
@@ -42,7 +43,7 @@ func init() {
 	aggregateeventFields := schema.AggregateEvent{}.Fields()
 	_ = aggregateeventFields
 	// aggregateeventDescCreatedAt is the schema descriptor for created_at field.
-	aggregateeventDescCreatedAt := aggregateeventFields[7].Descriptor()
+	aggregateeventDescCreatedAt := aggregateeventFields[8].Descriptor()
 	// aggregateevent.DefaultCreatedAt holds the default value on creation for the created_at field.
 	aggregateevent.DefaultCreatedAt = aggregateeventDescCreatedAt.Default.(func() time.Time)
 	// aggregateeventDescID is the schema descriptor for id field.
@@ -52,11 +53,11 @@ func init() {
 	approvalrequestFields := schema.ApprovalRequest{}.Fields()
 	_ = approvalrequestFields
 	// approvalrequestDescCreatedAt is the schema descriptor for created_at field.
-	approvalrequestDescCreatedAt := approvalrequestFields[11].Descriptor()
+	approvalrequestDescCreatedAt := approvalrequestFields[12].Descriptor()
 	// approvalrequest.DefaultCreatedAt holds the default value on creation for the created_at field.
 	approvalrequest.DefaultCreatedAt = approvalrequestDescCreatedAt.Default.(func() time.Time)
 	// approvalrequestDescUpdatedAt is the schema descriptor for updated_at field.
-	approvalrequestDescUpdatedAt := approvalrequestFields[12].Descriptor()
+	approvalrequestDescUpdatedAt := approvalrequestFields[13].Descriptor()
 	// approvalrequest.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	approvalrequest.DefaultUpdatedAt = approvalrequestDescUpdatedAt.Default.(func() time.Time)
 	// approvalrequest.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -145,6 +146,22 @@ func init() {
 	deviceDescID := deviceFields[0].Descriptor()
 	// device.DefaultID holds the default value on creation for the id field.
 	device.DefaultID = deviceDescID.Default.(func() string)
+	emergencykeyrequestFields := schema.EmergencyKeyRequest{}.Fields()
+	_ = emergencykeyrequestFields
+	// emergencykeyrequestDescCreatedAt is the schema descriptor for created_at field.
+	emergencykeyrequestDescCreatedAt := emergencykeyrequestFields[8].Descriptor()
+	// emergencykeyrequest.DefaultCreatedAt holds the default value on creation for the created_at field.
+	emergencykeyrequest.DefaultCreatedAt = emergencykeyrequestDescCreatedAt.Default.(func() time.Time)
+	// emergencykeyrequestDescUpdatedAt is the schema descriptor for updated_at field.
+	emergencykeyrequestDescUpdatedAt := emergencykeyrequestFields[9].Descriptor()
+	// emergencykeyrequest.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	emergencykeyrequest.DefaultUpdatedAt = emergencykeyrequestDescUpdatedAt.Default.(func() time.Time)
+	// emergencykeyrequest.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	emergencykeyrequest.UpdateDefaultUpdatedAt = emergencykeyrequestDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// emergencykeyrequestDescID is the schema descriptor for id field.
+	emergencykeyrequestDescID := emergencykeyrequestFields[0].Descriptor()
+	// emergencykeyrequest.DefaultID holds the default value on creation for the id field.
+	emergencykeyrequest.DefaultID = emergencykeyrequestDescID.Default.(func() string)
 	intentionFields := schema.Intention{}.Fields()
 	_ = intentionFields
 	// intentionDescCreatedAt is the schema descriptor for created_at field.
@@ -402,11 +419,11 @@ func init() {
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[7].Descriptor()
+	userDescCreatedAt := userFields[8].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[8].Descriptor()
+	userDescUpdatedAt := userFields[9].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

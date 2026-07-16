@@ -29,12 +29,17 @@ func (h *Handler) CreatePartnerInvitation(c *gin.Context) {
 		return
 	}
 
-	invite, err := h.services.Accountability.CreatePartnerInvitation(c.Request.Context(), h.currentUserID(c), input.Email, input.Phone)
+	invite, inviteURL, err := h.services.Accountability.CreatePartnerInvitation(c.Request.Context(), h.currentUserID(c), input.Email, input.Phone)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "partner_invite_failed", err)
 		return
 	}
-	h.respond(c, http.StatusCreated, invite)
+	h.respond(c, http.StatusCreated, gin.H{
+		"id":         invite.ID,
+		"status":     invite.Status,
+		"invite_url": inviteURL,
+		"expires_in": "7 days",
+	})
 }
 
 func (h *Handler) AcceptPartnerInvitation(c *gin.Context) {
@@ -48,7 +53,7 @@ func (h *Handler) AcceptPartnerInvitation(c *gin.Context) {
 }
 
 func (h *Handler) RevokePartner(c *gin.Context) {
-	err := h.services.Accountability.RevokePartner(c.Request.Context(), c.Param("partner_link_id"))
+	err := h.services.Accountability.RevokePartner(c.Request.Context(), c.Param("partner_link_id"), h.currentUserID(c))
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "partner_revoke_failed", err)
 		return
@@ -96,7 +101,7 @@ func (h *Handler) CreateApprovalRequest(c *gin.Context) {
 }
 
 func (h *Handler) CancelApprovalRequest(c *gin.Context) {
-	err := h.services.Accountability.ResolveApprovalRequest(c.Request.Context(), c.Param("id"), "cancelled", h.currentUserID(c))
+	err := h.services.Accountability.CancelApprovalRequest(c.Request.Context(), c.Param("id"), h.currentUserID(c))
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "approval_cancel_failed", err)
 		return
@@ -105,7 +110,7 @@ func (h *Handler) CancelApprovalRequest(c *gin.Context) {
 }
 
 func (h *Handler) ApproveApprovalRequest(c *gin.Context) {
-	err := h.services.Accountability.ResolveApprovalRequest(c.Request.Context(), c.Param("id"), "approved", h.currentUserID(c))
+	err := h.services.Accountability.ResolveApprovalAsPartner(c.Request.Context(), c.Param("id"), "approved", h.currentUserID(c))
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "approval_approve_failed", err)
 		return
@@ -114,7 +119,7 @@ func (h *Handler) ApproveApprovalRequest(c *gin.Context) {
 }
 
 func (h *Handler) DenyApprovalRequest(c *gin.Context) {
-	err := h.services.Accountability.ResolveApprovalRequest(c.Request.Context(), c.Param("id"), "denied", h.currentUserID(c))
+	err := h.services.Accountability.ResolveApprovalAsPartner(c.Request.Context(), c.Param("id"), "denied", h.currentUserID(c))
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "approval_deny_failed", err)
 		return

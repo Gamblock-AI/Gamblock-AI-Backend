@@ -16,7 +16,7 @@ func (h *Handler) CreateDevice(c *gin.Context) {
 		RulesetVersion string `json:"ruleset_version"`
 	}
 	_ = c.ShouldBindJSON(&input)
-	
+
 	var modelVal, rulesetVal *string
 	if input.ModelVersion != "" {
 		modelVal = &input.ModelVersion
@@ -53,8 +53,9 @@ func (h *Handler) UpdateDevice(c *gin.Context) {
 	}
 	_ = c.ShouldBindJSON(&input)
 
-	dev, err := h.services.Device.UpdateDevice(
+	dev, err := h.services.Device.UpdateOwnedDevice(
 		c.Request.Context(),
+		h.currentUserID(c),
 		c.Param("device_id"),
 		input.Label,
 		input.AppVersion,
@@ -72,7 +73,7 @@ func (h *Handler) UpdateDevice(c *gin.Context) {
 
 func (h *Handler) DeviceHeartbeat(c *gin.Context) {
 	deviceID := c.Param("device_id")
-	err := h.services.Device.RecordHeartbeat(c.Request.Context(), deviceID)
+	err := h.services.Device.RecordOwnedHeartbeat(c.Request.Context(), h.currentUserID(c), deviceID)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusInternalServerError, "heartbeat_failed", err)
 		return

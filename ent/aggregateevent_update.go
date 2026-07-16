@@ -62,6 +62,26 @@ func (_u *AggregateEventUpdate) ClearDeviceID() *AggregateEventUpdate {
 	return _u
 }
 
+// SetIdempotencyKey sets the "idempotency_key" field.
+func (_u *AggregateEventUpdate) SetIdempotencyKey(v string) *AggregateEventUpdate {
+	_u.mutation.SetIdempotencyKey(v)
+	return _u
+}
+
+// SetNillableIdempotencyKey sets the "idempotency_key" field if the given value is not nil.
+func (_u *AggregateEventUpdate) SetNillableIdempotencyKey(v *string) *AggregateEventUpdate {
+	if v != nil {
+		_u.SetIdempotencyKey(*v)
+	}
+	return _u
+}
+
+// ClearIdempotencyKey clears the value of the "idempotency_key" field.
+func (_u *AggregateEventUpdate) ClearIdempotencyKey() *AggregateEventUpdate {
+	_u.mutation.ClearIdempotencyKey()
+	return _u
+}
+
 // SetEventType sets the "event_type" field.
 func (_u *AggregateEventUpdate) SetEventType(v aggregateevent.EventType) *AggregateEventUpdate {
 	_u.mutation.SetEventType(v)
@@ -186,6 +206,12 @@ func (_u *AggregateEventUpdate) sqlSave(ctx context.Context) (_node int, err err
 	if _u.mutation.DeviceIDCleared() {
 		_spec.ClearField(aggregateevent.FieldDeviceID, field.TypeString)
 	}
+	if value, ok := _u.mutation.IdempotencyKey(); ok {
+		_spec.SetField(aggregateevent.FieldIdempotencyKey, field.TypeString, value)
+	}
+	if _u.mutation.IdempotencyKeyCleared() {
+		_spec.ClearField(aggregateevent.FieldIdempotencyKey, field.TypeString)
+	}
 	if value, ok := _u.mutation.EventType(); ok {
 		_spec.SetField(aggregateevent.FieldEventType, field.TypeEnum, value)
 	}
@@ -255,6 +281,26 @@ func (_u *AggregateEventUpdateOne) SetNillableDeviceID(v *string) *AggregateEven
 // ClearDeviceID clears the value of the "device_id" field.
 func (_u *AggregateEventUpdateOne) ClearDeviceID() *AggregateEventUpdateOne {
 	_u.mutation.ClearDeviceID()
+	return _u
+}
+
+// SetIdempotencyKey sets the "idempotency_key" field.
+func (_u *AggregateEventUpdateOne) SetIdempotencyKey(v string) *AggregateEventUpdateOne {
+	_u.mutation.SetIdempotencyKey(v)
+	return _u
+}
+
+// SetNillableIdempotencyKey sets the "idempotency_key" field if the given value is not nil.
+func (_u *AggregateEventUpdateOne) SetNillableIdempotencyKey(v *string) *AggregateEventUpdateOne {
+	if v != nil {
+		_u.SetIdempotencyKey(*v)
+	}
+	return _u
+}
+
+// ClearIdempotencyKey clears the value of the "idempotency_key" field.
+func (_u *AggregateEventUpdateOne) ClearIdempotencyKey() *AggregateEventUpdateOne {
+	_u.mutation.ClearIdempotencyKey()
 	return _u
 }
 
@@ -411,6 +457,12 @@ func (_u *AggregateEventUpdateOne) sqlSave(ctx context.Context) (_node *Aggregat
 	}
 	if _u.mutation.DeviceIDCleared() {
 		_spec.ClearField(aggregateevent.FieldDeviceID, field.TypeString)
+	}
+	if value, ok := _u.mutation.IdempotencyKey(); ok {
+		_spec.SetField(aggregateevent.FieldIdempotencyKey, field.TypeString, value)
+	}
+	if _u.mutation.IdempotencyKeyCleared() {
+		_spec.ClearField(aggregateevent.FieldIdempotencyKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.EventType(); ok {
 		_spec.SetField(aggregateevent.FieldEventType, field.TypeEnum, value)

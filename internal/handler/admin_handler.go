@@ -5,7 +5,9 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
-	"time"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -14,30 +16,12 @@ import (
 )
 
 func (h *Handler) PortalOverview(c *gin.Context) {
-	releases, _ := h.services.Admin.GetModelReleases(c.Request.Context())
-	rulesets, _ := h.services.Admin.GetRulesetReleases(c.Request.Context())
-	supportCount := 0
-	cases, err := h.services.Support.GetSupportCases(c.Request.Context())
-	if err == nil {
-		supportCount = len(cases)
+	overview, err := h.services.Admin.GetPortalOverview(c.Request.Context())
+	if err != nil {
+		h.respondErrorErr(c, http.StatusInternalServerError, "portal_overview_failed", err)
+		return
 	}
-	latestModel := "artifact-v0.3.1"
-	if len(releases) > 0 {
-		latestModel = releases[0].Version
-	}
-	latestRuleset := "ruleset-2026.05.1"
-	if len(rulesets) > 0 {
-		latestRuleset = rulesets[0].Version
-	}
-
-	h.respond(c, http.StatusOK, gin.H{
-		"protected_users":         128,
-		"partner_approvals":       4,
-		"healthy_devices_percent": 94,
-		"open_support":            supportCount,
-		"model_release":           latestModel,
-		"ruleset_release":         latestRuleset,
-	})
+	h.respond(c, http.StatusOK, overview)
 }
 
 func (h *Handler) AdminModules(c *gin.Context) {
@@ -56,8 +40,15 @@ func (h *Handler) CreateAdminModule(c *gin.Context) {
 		return
 	}
 
-	if input.Status == "" {
-		input.Status = "published" // Default directly to published for prototyping
+	if strings.TrimSpace(input.Slug) == "" || strings.TrimSpace(input.Title) == "" ||
+		strings.TrimSpace(input.Summary) == "" || strings.TrimSpace(input.BodyMarkdown) == "" ||
+		input.EstimatedMinutes < 1 {
+		h.respondCode(c, http.StatusBadRequest, "err_validation")
+		return
+	}
+	input.Status = "draft"
+	if input.ID == "" {
+		input.ID = "mod_" + uuid.NewString()[:8]
 	}
 
 	err := h.services.Admin.CreateEducationModule(c.Request.Context(), input)
@@ -65,7 +56,7 @@ func (h *Handler) CreateAdminModule(c *gin.Context) {
 		h.respondErrorErr(c, http.StatusInternalServerError, "create_admin_module_failed", err)
 		return
 	}
-	h.respond(c, http.StatusCreated, gin.H{"id": input.ID, "published": true})
+	h.respond(c, http.StatusCreated, gin.H{"id": input.ID, "status": "draft"})
 }
 
 func (h *Handler) AdminModelReleases(c *gin.Context) {
@@ -87,43 +78,30 @@ func (h *Handler) AdminSupportCases(c *gin.Context) {
 }
 
 func (h *Handler) ClientDashboardSummary(c *gin.Context) {
-	h.respond(c, http.StatusOK, gin.H{
-		"user_name":        "Gading",
-		"protection_label": "High",
-		"blocked_attempts": 142,
-		"active_days":      12,
-		"current_streak":   7,
-	})
+	summary, _, _, err := h.services.Client.Dashboard(c.Request.Context(), h.currentUserID(c))
+	if err != nil {
+		h.respondErrorErr(c, http.StatusInternalServerError, "dashboard_summary_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, summary)
 }
 
 func (h *Handler) ClientProtectionStatus(c *gin.Context) {
-	releases, _ := h.services.Admin.GetModelReleases(c.Request.Context())
-	rulesets, _ := h.services.Admin.GetRulesetReleases(c.Request.Context())
-	latestModel := "artifact-v0.3.1"
-	if len(releases) > 0 {
-		latestModel = releases[0].Version
+	_, protection, _, err := h.services.Client.Dashboard(c.Request.Context(), h.currentUserID(c))
+	if err != nil {
+		h.respondErrorErr(c, http.StatusInternalServerError, "protection_status_failed", err)
+		return
 	}
-	latestRuleset := "ruleset-2026.05.1"
-	if len(rulesets) > 0 {
-		latestRuleset = rulesets[0].Version
-	}
-
-	h.respond(c, http.StatusOK, gin.H{
-		"mode":            "Active",
-		"runtime_status":  "Local runtime ready",
-		"ruleset_version": latestRuleset,
-		"model_version":   latestModel,
-		"last_sync":       "API sync: 2 minutes ago",
-	})
+	h.respond(c, http.StatusOK, protection)
 }
 
 func (h *Handler) ClientProgressSnapshot(c *gin.Context) {
-	h.respond(c, http.StatusOK, gin.H{
-		"weekly_blocks": []int{3, 1, 4, 2, 0, 5, 3},
-		"moods":         []string{"Calm", "Tense", "Focused", "Tired"},
-		"active_days":   12,
-		"reflections":   7,
-	})
+	_, _, progress, err := h.services.Client.Dashboard(c.Request.Context(), h.currentUserID(c))
+	if err != nil {
+		h.respondErrorErr(c, http.StatusInternalServerError, "progress_snapshot_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, progress)
 }
 
 type releaseInput struct {
@@ -139,8 +117,10 @@ type releaseInput struct {
 
 func (h *Handler) CreateModelRelease(c *gin.Context) {
 	var input releaseInput
-	_ = c.ShouldBindJSON(&input)
-	defaultsForRelease(&input, "model", "artifacts/model/fallback.onnx")
+	if err := c.ShouldBindJSON(&input); err != nil || h.validateReleaseInput(&input, true) != nil {
+		h.respondCode(c, http.StatusBadRequest, "release_validation_failed")
+		return
+	}
 
 	err := h.services.Admin.CreateModelRelease(
 		c.Request.Context(),
@@ -156,13 +136,15 @@ func (h *Handler) CreateModelRelease(c *gin.Context) {
 		h.respondErrorErr(c, http.StatusBadRequest, "create_model_release_failed", err)
 		return
 	}
-	h.respond(c, http.StatusCreated, gin.H{"id": input.Version, "published": true})
+	h.respond(c, http.StatusCreated, gin.H{"id": input.Version, "status": "validated"})
 }
 
 func (h *Handler) CreateRulesetRelease(c *gin.Context) {
 	var input releaseInput
-	_ = c.ShouldBindJSON(&input)
-	defaultsForRelease(&input, "ruleset", "artifacts/ruleset/default.json")
+	if err := c.ShouldBindJSON(&input); err != nil || h.validateReleaseInput(&input, false) != nil {
+		h.respondCode(c, http.StatusBadRequest, "release_validation_failed")
+		return
+	}
 
 	err := h.services.Admin.CreateRulesetRelease(
 		c.Request.Context(),
@@ -175,13 +157,15 @@ func (h *Handler) CreateRulesetRelease(c *gin.Context) {
 		h.respondErrorErr(c, http.StatusBadRequest, "create_ruleset_release_failed", err)
 		return
 	}
-	h.respond(c, http.StatusCreated, gin.H{"id": input.Version, "published": true})
+	h.respond(c, http.StatusCreated, gin.H{"id": input.Version, "status": "validated"})
 }
 
 func (h *Handler) CreateNetworkRulesetRelease(c *gin.Context) {
 	var input releaseInput
-	_ = c.ShouldBindJSON(&input)
-	defaultsForRelease(&input, "network-rulesets", "artifacts/network/dns-blocklist.txt")
+	if err := c.ShouldBindJSON(&input); err != nil || h.validateReleaseInput(&input, false) != nil {
+		h.respondCode(c, http.StatusBadRequest, "release_validation_failed")
+		return
+	}
 
 	err := h.services.Admin.CreateNetworkRulesetRelease(
 		c.Request.Context(),
@@ -194,7 +178,7 @@ func (h *Handler) CreateNetworkRulesetRelease(c *gin.Context) {
 		h.respondErrorErr(c, http.StatusBadRequest, "create_network_release_failed", err)
 		return
 	}
-	h.respond(c, http.StatusCreated, gin.H{"id": input.Version, "published": true})
+	h.respond(c, http.StatusCreated, gin.H{"id": input.Version, "status": "validated"})
 }
 
 func (h *Handler) DownloadModelRelease(c *gin.Context) {
@@ -222,88 +206,119 @@ func (h *Handler) LatestNetworkRulesetRelease(c *gin.Context) {
 }
 
 func (h *Handler) downloadArtifact(c *gin.Context, kind, version string) {
-	artifact := demoArtifactBytes(kind, version)
+	release, found := h.findRelease(c, kind, version)
+	if !found || release.Status != "published" {
+		h.respondCode(c, http.StatusNotFound, "release_not_found")
+		return
+	}
+	path, err := h.safeArtifactPath(release.ArtifactPath)
+	if err != nil {
+		h.respondCode(c, http.StatusNotFound, "release_not_found")
+		return
+	}
+	artifact, err := os.ReadFile(path)
+	if err != nil || sha256Hex(artifact) != strings.ToLower(release.SHA256) {
+		h.respondCode(c, http.StatusServiceUnavailable, "artifact_unavailable")
+		return
+	}
 	c.Header("X-Artifact-Version", version)
 	c.Header("X-Artifact-Kind", kind)
-	c.Header("X-Artifact-SHA256", demoArtifactSHA256(kind, version))
+	c.Header("X-Artifact-SHA256", release.SHA256)
 	c.Header("Cache-Control", "no-store")
 	c.Data(http.StatusOK, "application/octet-stream", artifact)
 }
 
 func (h *Handler) latestRelease(c *gin.Context, kind string) {
-	var release model.Release
-	var found bool
-	
-	switch kind {
-	case "model":
-		list, _ := h.services.Admin.GetModelReleases(c.Request.Context())
-		if len(list) > 0 {
-			release = list[0]
-			found = true
-		}
-	case "ruleset":
-		list, _ := h.services.Admin.GetRulesetReleases(c.Request.Context())
-		if len(list) > 0 {
-			release = list[0]
-			found = true
-		}
-	case "network-rulesets":
-		list, _ := h.services.Admin.GetNetworkRulesets(c.Request.Context())
-		if len(list) > 0 {
-			release = list[0]
-			found = true
-		}
-	}
-
+	release, found := h.findRelease(c, kind, "")
 	if !found {
 		h.respondCode(c, http.StatusNotFound, "release_not_found")
 		return
 	}
 
+	size := int64(0)
+	if path, err := h.safeArtifactPath(release.ArtifactPath); err == nil {
+		if info, statErr := os.Stat(path); statErr == nil {
+			size = info.Size()
+		}
+	}
 	h.respond(c, http.StatusOK, gin.H{
 		"id":               release.ID,
 		"version":          release.Version,
 		"platform":         release.Platform,
-		"sha256":           demoArtifactSHA256(kind, release.Version),
+		"sha256":           release.SHA256,
 		"status":           release.Status,
 		"download_url":     release.DownloadURL,
-		"size_bytes":       len(demoArtifactBytes(kind, release.Version)),
-		"contract_version": "v1",
-		"threshold":        0.72,
+		"size_bytes":       size,
+		"contract_version": release.ContractVersion,
+		"threshold":        release.Threshold,
 		"metrics":          release.Metrics,
-		"expires_at":       time.Now().UTC().Add(15 * time.Minute),
 	})
 }
 
-func defaultsForRelease(input *releaseInput, version, artifactPath string) {
-	if input.Version == "" {
-		input.Version = version + "-" + uuid.NewString()[:6]
+func (h *Handler) validateReleaseInput(input *releaseInput, modelRelease bool) error {
+	input.Version = strings.TrimSpace(input.Version)
+	input.ArtifactPath = strings.TrimSpace(input.ArtifactPath)
+	input.SHA256 = strings.ToLower(strings.TrimSpace(input.SHA256))
+	if input.Version == "" || input.ArtifactPath == "" || len(input.SHA256) != 64 {
+		return fmt.Errorf("version, artifact path, and SHA-256 are required")
 	}
-	if input.ArtifactPath == "" {
-		input.ArtifactPath = artifactPath
-	}
-	if input.SHA256 == "" {
-		input.SHA256 = "pending-checksum"
+	if _, err := hex.DecodeString(input.SHA256); err != nil {
+		return fmt.Errorf("invalid SHA-256")
 	}
 	if input.ContractVersion == "" {
 		input.ContractVersion = "v1"
 	}
-	if input.Threshold <= 0 {
-		input.Threshold = 0.72
+	if modelRelease && (input.Platform == "" || input.Threshold <= 0 || input.Threshold > 1) {
+		return fmt.Errorf("platform and threshold are required")
 	}
 	if input.Metrics == nil {
-		input.Metrics = map[string]any{"source": "admin"}
+		input.Metrics = map[string]any{}
 	}
 	if input.Rules == nil {
-		input.Rules = map[string]any{"source": "admin"}
+		input.Rules = map[string]any{}
 	}
+	path, err := h.safeArtifactPath(input.ArtifactPath)
+	if err != nil {
+		return err
+	}
+	content, err := os.ReadFile(path)
+	if err != nil || sha256Hex(content) != input.SHA256 {
+		return fmt.Errorf("artifact missing or checksum mismatch")
+	}
+	return nil
 }
 
-func demoArtifactBytes(kind, version string) []byte {
-	return []byte(fmt.Sprintf("Demo binary payload for kind: %s, version: %s", kind, version))
-}
-
-func demoArtifactSHA256(kind, version string) string {
-	sum := sha256.Sum256(demoArtifactBytes(kind, version))
+func sha256Hex(content []byte) string {
+	sum := sha256.Sum256(content)
 	return hex.EncodeToString(sum[:])
+}
+
+func (h *Handler) safeArtifactPath(relative string) (string, error) {
+	root, err := filepath.Abs(h.cfg.ArtifactStoragePath)
+	if err != nil {
+		return "", err
+	}
+	candidate, err := filepath.Abs(filepath.Join(root, relative))
+	if err != nil || (candidate != root && !strings.HasPrefix(candidate, root+string(os.PathSeparator))) {
+		return "", fmt.Errorf("artifact path escapes storage root")
+	}
+	return candidate, nil
+}
+
+func (h *Handler) findRelease(c *gin.Context, kind, version string) (model.Release, bool) {
+	var list []model.Release
+	switch kind {
+	case "model":
+		list, _ = h.services.Admin.GetModelReleases(c.Request.Context())
+	case "ruleset":
+		list, _ = h.services.Admin.GetRulesetReleases(c.Request.Context())
+	case "network-rulesets":
+		list, _ = h.services.Admin.GetNetworkRulesets(c.Request.Context())
+	}
+	for _, release := range list {
+		if release.Status == "published" && (version == "" || release.Version == version) {
+			return release, true
+		}
+	}
+	return model.Release{}, false
 }

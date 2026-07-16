@@ -74,6 +74,11 @@ func DeviceID(v string) predicate.AggregateEvent {
 	return predicate.AggregateEvent(sql.FieldEQ(FieldDeviceID, v))
 }
 
+// IdempotencyKey applies equality check predicate on the "idempotency_key" field. It's identical to IdempotencyKeyEQ.
+func IdempotencyKey(v string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldEQ(FieldIdempotencyKey, v))
+}
+
 // EventDate applies equality check predicate on the "event_date" field. It's identical to EventDateEQ.
 func EventDate(v time.Time) predicate.AggregateEvent {
 	return predicate.AggregateEvent(sql.FieldEQ(FieldEventDate, v))
@@ -227,6 +232,81 @@ func DeviceIDEqualFold(v string) predicate.AggregateEvent {
 // DeviceIDContainsFold applies the ContainsFold predicate on the "device_id" field.
 func DeviceIDContainsFold(v string) predicate.AggregateEvent {
 	return predicate.AggregateEvent(sql.FieldContainsFold(FieldDeviceID, v))
+}
+
+// IdempotencyKeyEQ applies the EQ predicate on the "idempotency_key" field.
+func IdempotencyKeyEQ(v string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldEQ(FieldIdempotencyKey, v))
+}
+
+// IdempotencyKeyNEQ applies the NEQ predicate on the "idempotency_key" field.
+func IdempotencyKeyNEQ(v string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldNEQ(FieldIdempotencyKey, v))
+}
+
+// IdempotencyKeyIn applies the In predicate on the "idempotency_key" field.
+func IdempotencyKeyIn(vs ...string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldIn(FieldIdempotencyKey, vs...))
+}
+
+// IdempotencyKeyNotIn applies the NotIn predicate on the "idempotency_key" field.
+func IdempotencyKeyNotIn(vs ...string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldNotIn(FieldIdempotencyKey, vs...))
+}
+
+// IdempotencyKeyGT applies the GT predicate on the "idempotency_key" field.
+func IdempotencyKeyGT(v string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldGT(FieldIdempotencyKey, v))
+}
+
+// IdempotencyKeyGTE applies the GTE predicate on the "idempotency_key" field.
+func IdempotencyKeyGTE(v string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldGTE(FieldIdempotencyKey, v))
+}
+
+// IdempotencyKeyLT applies the LT predicate on the "idempotency_key" field.
+func IdempotencyKeyLT(v string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldLT(FieldIdempotencyKey, v))
+}
+
+// IdempotencyKeyLTE applies the LTE predicate on the "idempotency_key" field.
+func IdempotencyKeyLTE(v string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldLTE(FieldIdempotencyKey, v))
+}
+
+// IdempotencyKeyContains applies the Contains predicate on the "idempotency_key" field.
+func IdempotencyKeyContains(v string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldContains(FieldIdempotencyKey, v))
+}
+
+// IdempotencyKeyHasPrefix applies the HasPrefix predicate on the "idempotency_key" field.
+func IdempotencyKeyHasPrefix(v string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldHasPrefix(FieldIdempotencyKey, v))
+}
+
+// IdempotencyKeyHasSuffix applies the HasSuffix predicate on the "idempotency_key" field.
+func IdempotencyKeyHasSuffix(v string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldHasSuffix(FieldIdempotencyKey, v))
+}
+
+// IdempotencyKeyIsNil applies the IsNil predicate on the "idempotency_key" field.
+func IdempotencyKeyIsNil() predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldIsNull(FieldIdempotencyKey))
+}
+
+// IdempotencyKeyNotNil applies the NotNil predicate on the "idempotency_key" field.
+func IdempotencyKeyNotNil() predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldNotNull(FieldIdempotencyKey))
+}
+
+// IdempotencyKeyEqualFold applies the EqualFold predicate on the "idempotency_key" field.
+func IdempotencyKeyEqualFold(v string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldEqualFold(FieldIdempotencyKey, v))
+}
+
+// IdempotencyKeyContainsFold applies the ContainsFold predicate on the "idempotency_key" field.
+func IdempotencyKeyContainsFold(v string) predicate.AggregateEvent {
+	return predicate.AggregateEvent(sql.FieldContainsFold(FieldIdempotencyKey, v))
 }
 
 // EventTypeEQ applies the EQ predicate on the "event_type" field.

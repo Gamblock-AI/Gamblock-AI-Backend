@@ -11,12 +11,24 @@ import (
 )
 
 func (r *Repository) GetSupportCases(ctx context.Context) ([]model.SupportCase, error) {
+	return r.getSupportCases(ctx, "")
+}
+
+func (r *Repository) GetSupportCasesForUser(ctx context.Context, userID string) ([]model.SupportCase, error) {
+	return r.getSupportCases(ctx, userID)
+}
+
+func (r *Repository) getSupportCases(ctx context.Context, userID string) ([]model.SupportCase, error) {
 	if r.db == nil {
 		snapshot := r.store.Snapshot()
 		var list []model.SupportCase
 		for _, c := range snapshot.SupportCases {
+			if userID != "" && c.UserID != userID {
+				continue
+			}
 			list = append(list, model.SupportCase{
 				ID:        c.ID,
+				UserID:    c.UserID,
 				Title:     c.Title,
 				Type:      c.Type,
 				Status:    c.Status,
@@ -29,20 +41,29 @@ func (r *Repository) GetSupportCases(ctx context.Context) ([]model.SupportCase, 
 		return list, nil
 	}
 
-	rows, err := r.db.SupportCase.Query().All(ctx)
+	query := r.db.SupportCase.Query()
+	if userID != "" {
+		query.Where(supportcase.UserID(userID))
+	}
+	rows, err := query.All(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var list []model.SupportCase
 	for _, item := range rows {
+		owner := ""
+		if userID == "" {
+			owner = item.UserID
+		}
 		list = append(list, model.SupportCase{
 			ID:        item.ID,
+			UserID:    item.UserID,
 			Title:     item.Summary,
 			Type:      item.Type.String(),
 			Status:    item.Status.String(),
 			Priority:  item.Priority.String(),
-			Owner:     "Alfian",
+			Owner:     owner,
 			CreatedAt: item.CreatedAt,
 			UpdatedAt: item.UpdatedAt,
 		})
@@ -55,7 +76,7 @@ func (r *Repository) CreateSupportCase(ctx context.Context, id, userID, title, c
 		r.store.Lock()
 		defer r.store.Unlock()
 		r.store.SupportCases = append(r.store.SupportCases, store.SupportCase{
-			ID: id, Title: title, Type: cType,
+			ID: id, UserID: userID, Title: title, Type: cType,
 			Priority: priorityVal, Status: "open",
 			CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
 		})
@@ -81,8 +102,12 @@ func (r *Repository) GetDataRequests(ctx context.Context, userID string) ([]mode
 		snapshot := r.store.Snapshot()
 		var list []model.DataRequest
 		for _, dr := range snapshot.DataRequests {
+			if dr.UserID != userID {
+				continue
+			}
 			list = append(list, model.DataRequest{
 				ID:        dr.ID,
+				UserID:    dr.UserID,
 				Title:     dr.Title,
 				Type:      dr.Type,
 				Status:    dr.Status,
@@ -102,6 +127,7 @@ func (r *Repository) GetDataRequests(ctx context.Context, userID string) ([]mode
 	for _, item := range rows {
 		list = append(list, model.DataRequest{
 			ID:        item.ID,
+			UserID:    item.UserID,
 			Title:     humanDataRequestTitle(item.Type.String()),
 			Type:      item.Type.String(),
 			Status:    item.Status.String(),
@@ -117,7 +143,7 @@ func (r *Repository) CreateDataRequest(ctx context.Context, id, userID, reqType 
 		r.store.Lock()
 		defer r.store.Unlock()
 		r.store.DataRequests = append(r.store.DataRequests, store.DataRequest{
-			ID: id, Title: reqType, Type: reqType, Status: "pending",
+			ID: id, UserID: userID, Title: humanDataRequestTitle(reqType), Type: reqType, Status: "pending",
 			CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
 		})
 		return nil

@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 	entsql "entgo.io/ent/dialect/sql"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 	_ "modernc.org/sqlite" // CGO-free sqlite driver
 )
 
@@ -78,12 +78,6 @@ func TestHumanDataRequestTitle(t *testing.T) {
 	assert.Equal(t, "Export account data", humanDataRequestTitle("export"))
 	assert.Equal(t, "Delete archived support notes", humanDataRequestTitle("delete"))
 	assert.Equal(t, "Data request", humanDataRequestTitle("x"))
-}
-
-func TestModuleProgress(t *testing.T) {
-	assert.Equal(t, 0.7, moduleProgress("pause-before-impulse"))
-	assert.Equal(t, 0.35, moduleProgress("financial-reality-check"))
-	assert.Equal(t, 0.0, moduleProgress("unknown"))
 }
 
 func TestValueAndEnsureDefaults(t *testing.T) {

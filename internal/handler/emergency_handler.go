@@ -11,15 +11,38 @@ type emergencyUnlockInput struct {
 	DeviceID     string `json:"device_id"`
 }
 
-func (h *Handler) GenerateEmergencyKey(c *gin.Context) {
-	key, err := h.services.Admin.GenerateEmergencyKey(c.Request.Context(), h.currentUserID(c))
+func (h *Handler) RequestEmergencyKey(c *gin.Context) {
+	request, err := h.services.Admin.RequestEmergencyKey(c.Request.Context(), h.currentUserID(c))
 	if err != nil {
 		h.respondErrorErr(c, http.StatusInternalServerError, "generate_key_failed", err)
 		return
 	}
-	h.respond(c, http.StatusCreated, gin.H{
+	h.respond(c, http.StatusCreated, request)
+}
+
+func (h *Handler) PendingEmergencyKeyRequests(c *gin.Context) {
+	requests, err := h.services.Admin.GetPendingEmergencyKeyRequests(c.Request.Context())
+	if err != nil {
+		h.respondErrorErr(c, http.StatusInternalServerError, "generate_key_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, requests)
+}
+
+func (h *Handler) ApproveEmergencyKeyRequest(c *gin.Context) {
+	request, key, err := h.services.Admin.ApproveEmergencyKeyRequest(
+		c.Request.Context(),
+		c.Param("id"),
+		h.currentUserID(c),
+	)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "generate_key_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, gin.H{
+		"request":       request,
 		"emergency_key": key,
-		"expires_in":    "24 jam",
+		"expires_in":    "24 hours",
 		"single_use":    true,
 	})
 }

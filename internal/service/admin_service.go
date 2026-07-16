@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -57,61 +56,76 @@ func (s *AdminService) GetNetworkRulesets(ctx context.Context) ([]model.Release,
 	return s.repo.GetNetworkRulesets(ctx)
 }
 
+func (s *AdminService) GetPortalOverview(ctx context.Context) (model.PortalOverview, error) {
+	return s.repo.GetPortalOverview(ctx)
+}
+
 func (s *AdminService) CreateNetworkRulesetRelease(ctx context.Context, version, artifactPath, sha256Val string, rules map[string]any) error {
 	id := "rel_net_" + uuid.NewString()[:8]
 	return s.repo.CreateNetworkRulesetRelease(ctx, id, version, artifactPath, sha256Val, rules)
 }
 
-type emergencyKey struct {
-	KeyHash   string
-	CreatedAt time.Time
-	CreatedBy string
-	Used      bool
+func (s *AdminService) GenerateEmergencyKey(ctx context.Context, createdBy string) (string, error) {
+	return "", fmt.Errorf("direct generation is disabled; request approval from a second platform administrator")
 }
 
-var (
-	emergencyKeys   = make(map[string]*emergencyKey)
-	emergencyKeysMu sync.RWMutex
-)
+func (s *AdminService) RequestEmergencyKey(ctx context.Context, requestedBy string) (model.EmergencyKeyRequest, error) {
+	now := time.Now().UTC()
+	request := model.EmergencyKeyRequest{
+		ID:               "ekr_" + uuid.NewString()[:8],
+		RequestedBy:      requestedBy,
+		Status:           "pending",
+		RequestExpiresAt: now.Add(30 * time.Minute),
+		CreatedAt:        now,
+		UpdatedAt:        now,
+	}
+	created, err := s.repo.CreateEmergencyKeyRequest(ctx, request)
+	if err != nil {
+		return model.EmergencyKeyRequest{}, err
+	}
+	s.logger.Info("emergency key requested", zap.String("requested_by", requestedBy), zap.String("request_id", created.ID))
+	return created, nil
+}
 
-func (s *AdminService) GenerateEmergencyKey(ctx context.Context, createdBy string) (string, error) {
+func (s *AdminService) GetPendingEmergencyKeyRequests(ctx context.Context) ([]model.EmergencyKeyRequest, error) {
+	return s.repo.GetPendingEmergencyKeyRequests(ctx, time.Now().UTC())
+}
+
+func (s *AdminService) ApproveEmergencyKeyRequest(ctx context.Context, requestID, approvedBy string) (model.EmergencyKeyRequest, string, error) {
 	key, err := generateEmergencyKeyString()
 	if err != nil {
-		return "", err
+		return model.EmergencyKeyRequest{}, "", err
 	}
-	keyHash := HashRefreshToken(key)
-	emergencyKeysMu.Lock()
-	emergencyKeys[keyHash] = &emergencyKey{
-		KeyHash:   keyHash,
-		CreatedAt: time.Now().UTC(),
-		CreatedBy: createdBy,
-		Used:      false,
+	now := time.Now().UTC()
+	request, err := s.repo.ApproveEmergencyKeyRequest(
+		ctx,
+		requestID,
+		approvedBy,
+		HashRefreshToken(key),
+		now,
+		now.Add(24*time.Hour),
+	)
+	if err != nil {
+		return model.EmergencyKeyRequest{}, "", err
 	}
-	emergencyKeysMu.Unlock()
-	s.logger.Info("emergency key generated", zap.String("created_by", createdBy))
-	return key, nil
+	s.logger.Info("emergency key approved",
+		zap.String("request_id", request.ID),
+		zap.String("requested_by", request.RequestedBy),
+		zap.String("approved_by", approvedBy),
+	)
+	return request, key, nil
 }
 
 func (s *AdminService) ValidateEmergencyKey(ctx context.Context, key, deviceID string) error {
-	keyHash := HashRefreshToken(key)
-	emergencyKeysMu.Lock()
-	defer emergencyKeysMu.Unlock()
-
-	ek, ok := emergencyKeys[keyHash]
-	if !ok {
-		return fmt.Errorf("kunci darurat tidak valid")
+	request, err := s.repo.UseEmergencyKey(ctx, HashRefreshToken(key), time.Now().UTC())
+	if err != nil {
+		return err
 	}
-	if ek.Used {
-		return fmt.Errorf("kunci darurat sudah digunakan")
-	}
-	if time.Since(ek.CreatedAt) > 24*time.Hour {
-		return fmt.Errorf("kunci darurat sudah kadaluarsa (berlaku 24 jam)")
-	}
-
-	ek.Used = true
 	s.logger.Info("emergency key used for device unlock",
 		zap.String("device_id", deviceID),
-		zap.String("created_by", ek.CreatedBy),
+		zap.String("request_id", request.ID),
+		zap.String("requested_by", request.RequestedBy),
+		zap.String("approved_by", request.ApprovedBy),
 	)
 	return nil
 }

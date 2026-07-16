@@ -79,6 +79,11 @@ func PartnerLinkID(v string) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldEQ(FieldPartnerLinkID, v))
 }
 
+// QuickTokenHash applies equality check predicate on the "quick_token_hash" field. It's identical to QuickTokenHashEQ.
+func QuickTokenHash(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEQ(FieldQuickTokenHash, v))
+}
+
 // Reason applies equality check predicate on the "reason" field. It's identical to ReasonEQ.
 func Reason(v string) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldEQ(FieldReason, v))
@@ -317,6 +322,81 @@ func PartnerLinkIDEqualFold(v string) predicate.ApprovalRequest {
 // PartnerLinkIDContainsFold applies the ContainsFold predicate on the "partner_link_id" field.
 func PartnerLinkIDContainsFold(v string) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldContainsFold(FieldPartnerLinkID, v))
+}
+
+// QuickTokenHashEQ applies the EQ predicate on the "quick_token_hash" field.
+func QuickTokenHashEQ(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEQ(FieldQuickTokenHash, v))
+}
+
+// QuickTokenHashNEQ applies the NEQ predicate on the "quick_token_hash" field.
+func QuickTokenHashNEQ(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNEQ(FieldQuickTokenHash, v))
+}
+
+// QuickTokenHashIn applies the In predicate on the "quick_token_hash" field.
+func QuickTokenHashIn(vs ...string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldIn(FieldQuickTokenHash, vs...))
+}
+
+// QuickTokenHashNotIn applies the NotIn predicate on the "quick_token_hash" field.
+func QuickTokenHashNotIn(vs ...string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNotIn(FieldQuickTokenHash, vs...))
+}
+
+// QuickTokenHashGT applies the GT predicate on the "quick_token_hash" field.
+func QuickTokenHashGT(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldGT(FieldQuickTokenHash, v))
+}
+
+// QuickTokenHashGTE applies the GTE predicate on the "quick_token_hash" field.
+func QuickTokenHashGTE(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldGTE(FieldQuickTokenHash, v))
+}
+
+// QuickTokenHashLT applies the LT predicate on the "quick_token_hash" field.
+func QuickTokenHashLT(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldLT(FieldQuickTokenHash, v))
+}
+
+// QuickTokenHashLTE applies the LTE predicate on the "quick_token_hash" field.
+func QuickTokenHashLTE(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldLTE(FieldQuickTokenHash, v))
+}
+
+// QuickTokenHashContains applies the Contains predicate on the "quick_token_hash" field.
+func QuickTokenHashContains(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldContains(FieldQuickTokenHash, v))
+}
+
+// QuickTokenHashHasPrefix applies the HasPrefix predicate on the "quick_token_hash" field.
+func QuickTokenHashHasPrefix(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldHasPrefix(FieldQuickTokenHash, v))
+}
+
+// QuickTokenHashHasSuffix applies the HasSuffix predicate on the "quick_token_hash" field.
+func QuickTokenHashHasSuffix(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldHasSuffix(FieldQuickTokenHash, v))
+}
+
+// QuickTokenHashIsNil applies the IsNil predicate on the "quick_token_hash" field.
+func QuickTokenHashIsNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldIsNull(FieldQuickTokenHash))
+}
+
+// QuickTokenHashNotNil applies the NotNil predicate on the "quick_token_hash" field.
+func QuickTokenHashNotNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNotNull(FieldQuickTokenHash))
+}
+
+// QuickTokenHashEqualFold applies the EqualFold predicate on the "quick_token_hash" field.
+func QuickTokenHashEqualFold(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEqualFold(FieldQuickTokenHash, v))
+}
+
+// QuickTokenHashContainsFold applies the ContainsFold predicate on the "quick_token_hash" field.
+func QuickTokenHashContainsFold(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldContainsFold(FieldQuickTokenHash, v))
 }
 
 // ActionEQ applies the EQ predicate on the "action" field.

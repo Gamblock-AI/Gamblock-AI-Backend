@@ -5,7 +5,8 @@
 // request_id }`. Handlers resolve messages through [Friendly] so that:
 //   - production responses always show a friendly, non-leaking message;
 //   - development responses may surface technical detail for debugging;
-//   - the server log keeps the full technical error (see Handler.respondErrorErr).
+//   - server faults retain technical detail, while expected 4xx rejections log
+//     only safe request metadata (see Handler.respondErrorErr).
 //
 // The frontend mirrors these codes in its own catalog (Next.js lib/messages.ts,
 // Flutter lib/core/messaging/app_messages.dart). Keep the codes in sync.
@@ -17,44 +18,50 @@ const Generic = "Terjadi kendala, silakan coba beberapa saat lagi."
 // messages maps error code -> friendly end-user message (Bahasa Indonesia).
 var messages = map[string]string{
 	// auth
-	"email_required":            "Email wajib diisi.",
-	"validation_failed":         "Email dan nama wajib diisi.",
-	"invalid_credentials":       "Email atau kata sandi salah. Silakan periksa kembali.",
-	"registration_failed":       "Pendaftaran gagal. Email mungkin sudah terdaftar.",
-	"dev_login_failed":          "Gagal masuk sebagai pengguna demo.",
-	"google_token_required":     "Token Google wajib diisi.",
+	"email_required":             "Email wajib diisi.",
+	"validation_failed":          "Email dan nama wajib diisi.",
+	"invalid_credentials":        "Email atau kata sandi salah. Silakan periksa kembali.",
+	"registration_failed":        "Pendaftaran gagal. Email mungkin sudah terdaftar.",
+	"dev_login_failed":           "Gagal masuk sebagai pengguna demo.",
+	"google_token_required":      "Token Google wajib diisi.",
 	"google_verification_failed": "Verifikasi Google gagal. Silakan coba lagi.",
-	"refresh_token_required":    "Sesi telah berakhir. Silakan masuk kembali.",
-	"invalid_refresh_token":     "Sesi tidak valid. Silakan masuk kembali.",
-	"logout_failed":             "Gagal keluar. Silakan coba lagi.",
+	"refresh_token_required":     "Sesi telah berakhir. Silakan masuk kembali.",
+	"invalid_refresh_token":      "Sesi tidak valid. Silakan masuk kembali.",
+	"logout_failed":              "Gagal keluar. Silakan coba lagi.",
 
 	// devices
-	"device_create_failed": "Gagal mendaftarkan perangkat.",
-	"device_update_failed": "Gagal memperbarui perangkat.",
-	"heartbeat_failed":     "Gagal mengirim sinyal aktif perangkat.",
+	"device_create_failed":     "Gagal mendaftarkan perangkat.",
+	"device_update_failed":     "Gagal memperbarui perangkat.",
+	"heartbeat_failed":         "Gagal mengirim sinyal aktif perangkat.",
+	"dashboard_summary_failed": "Gagal memuat ringkasan dashboard.",
+	"protection_status_failed": "Gagal memuat status perlindungan.",
+	"progress_snapshot_failed": "Gagal memuat ringkasan progres.",
+	"aggregate_event_rejected": "Agregat perangkat tidak dapat diterima.",
+	"profile_not_found":        "Profil tidak ditemukan.",
+	"profile_update_failed":    "Gagal memperbarui profil.",
 
 	// partners / accountability
-	"partner_email_required":      "Email pendamping wajib diisi.",
-	"fetch_partners_failed":       "Gagal memuat data pendamping.",
-	"partner_invite_failed":      "Gagal mengirim undangan pendamping.",
-	"partner_accept_failed":      "Gagal menerima undangan pendamping.",
-	"partner_revoke_failed":      "Gagal memutuskan hubungan pendamping.",
+	"partner_email_required":         "Email pendamping wajib diisi.",
+	"fetch_partners_failed":          "Gagal memuat data pendamping.",
+	"partner_invite_failed":          "Gagal mengirim undangan pendamping.",
+	"partner_accept_failed":          "Gagal menerima undangan pendamping.",
+	"partner_revoke_failed":          "Gagal memutuskan hubungan pendamping.",
 	"fetch_approval_requests_failed": "Gagal memuat daftar permohonan.",
-	"action_required":            "Jenis tindakan wajib dipilih.",
-	"approval_request_failed":    "Gagal mengajukan permohonan.",
-	"approval_cancel_failed":     "Gagal membatalkan permohonan.",
-	"approval_approve_failed":    "Gagal menyetujui permohonan.",
-	"approval_deny_failed":       "Gagal menolak permohonan.",
+	"action_required":                "Jenis tindakan wajib dipilih.",
+	"approval_request_failed":        "Gagal mengajukan permohonan.",
+	"approval_cancel_failed":         "Gagal membatalkan permohonan.",
+	"approval_approve_failed":        "Gagal menyetujui permohonan.",
+	"approval_deny_failed":           "Gagal menolak permohonan.",
 
 	// organizations
-	"name_required":       "Nama grup wajib diisi.",
-	"create_org_failed":   "Gagal membuat grup.",
-	"org_not_found":       "Grup tidak ditemukan.",
-	"group_code_required": "Kode grup wajib diisi.",
-	"join_failed":         "Kode grup tidak valid. Coba lagi.",
-	"no_org":              "Anda belum bergabung dengan grup mana pun.",
-	"list_members_failed": "Gagal memuat daftar anggota.",
-	"analytics_failed":    "Gagal memuat analitik grup.",
+	"name_required":        "Nama grup wajib diisi.",
+	"create_org_failed":    "Gagal membuat grup.",
+	"org_not_found":        "Grup tidak ditemukan.",
+	"group_code_required":  "Kode grup wajib diisi.",
+	"join_failed":          "Kode grup tidak valid. Coba lagi.",
+	"no_org":               "Anda belum bergabung dengan grup mana pun.",
+	"list_members_failed":  "Gagal memuat daftar anggota.",
+	"analytics_failed":     "Gagal memuat analitik grup.",
 	"remove_member_failed": "Gagal mengeluarkan anggota.",
 
 	// missions
@@ -91,6 +98,9 @@ var messages = map[string]string{
 	"create_ruleset_release_failed":     "Gagal merilis ruleset.",
 	"create_network_release_failed":     "Gagal merilis ruleset jaringan.",
 	"release_not_found":                 "Rilis tidak ditemukan.",
+	"release_validation_failed":         "Artefak rilis belum lengkap atau checksum tidak cocok.",
+	"artifact_unavailable":              "Artefak rilis belum tersedia atau gagal diverifikasi.",
+	"portal_overview_failed":            "Gagal memuat ringkasan operasional.",
 	"generate_key_failed":               "Gagal membuat kunci darurat.",
 	"emergency_key_required":            "Kunci darurat wajib diisi.",
 	"invalid_key":                       "Kunci darurat tidak valid.",

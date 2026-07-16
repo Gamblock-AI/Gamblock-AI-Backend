@@ -12,11 +12,17 @@ go run ./cmd/seed         # (optional) seed demo data
 go run ./cmd/api          # start the API (default 127.0.0.1:8080)
 ```
 
-The service uses ent/PostgreSQL by default and currently falls back to seeded
-in-memory data when the database cannot be reached. That fallback is useful for
-prototype development and tests, but it is not durable production storage. The
-default local URL is
+The service uses ent/PostgreSQL by default. Development may fall back to an
+empty in-memory store when the database cannot be reached; contextual demo
+records appear only when `ENABLE_DEMO_DATA=true` outside production.
+Production validates its JWT/journal configuration and fails closed when
+PostgreSQL is unavailable. The default local URL is
 `postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable`.
+
+PostgreSQL seed data and the optional in-memory demo store use the shared dummy
+password `password` for `gading@gmail.com`, `dery@gmail.com`,
+`suci@gmail.com`, and `nasywa@gmail.com`. These credentials are development
+fixtures only and demo data is forbidden in production.
 
 Useful Makefile targets: `make dev` (air live-reload), `make lint`,
 `make migrate`, `make seed`, and opt-in `make verify`. `make migrate-fresh` drops the
@@ -29,9 +35,12 @@ database schema and must never be run against shared or production data.
 - `POST /v1/auth/dev-login`
 - `GET  /v1/client/dashboard-summary`
 - `GET  /v1/client/protection-status`
+- `POST /v1/client/aggregate-events`
+- `GET/PATCH /v1/me`
 - `GET  /v1/psychoeducation/modules`
 - `GET  /v1/partners`
 - `GET  /v1/approval-requests`
+- `GET/POST /v1/admin/emergency-key-requests`
 - `GET  /v1/portal/overview`
 
 All responses use the envelope `{ "data", "error", "request_id" }` produced in
@@ -56,7 +65,9 @@ See `AGENTS.md` for conventions and the privacy/AES/RBAC invariants.
   request. CI may retain its automatic gates.
 - `./scripts/verify-ai-context.sh` checks versioned agent context and adapters.
 
-Target policy requires AES-256-GCM before reflection/journal persistence. The
-current service still falls back to plaintext when its encryption key is
-missing or encryption fails; this is a documented prototype gap, not a secure
-production mode.
+Reflection/journal writes fail closed unless a valid AES-256-GCM key is
+configured; decryption failures never expose ciphertext as user content.
+Password login uses Argon2id. Google sign-in is enabled only when
+`GOOGLE_CLIENT_ID` matches the website's public OAuth client ID. Development
+login and contextual demo records are separately opt-in and forbidden in
+production.

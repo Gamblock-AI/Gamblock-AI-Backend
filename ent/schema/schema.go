@@ -17,7 +17,7 @@ func updatedAt() ent.Field { return field.Time("updated_at").Default(time.Now).U
 type User struct{ ent.Schema }
 
 func (User) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("email").Unique(), field.String("display_name"), field.String("avatar_url").Optional().Nillable(), field.String("google_subject").Optional().Nillable().Unique(), field.Enum("role").Values("user", "partner", "organization_owner", "organization_admin", "content_admin", "model_release_operator", "support_operator", "platform_admin").Default("user"), field.Time("disabled_at").Optional().Nillable(), createdAt(), updatedAt()}
+	return []ent.Field{idField(), field.String("email").Unique(), field.String("display_name"), field.String("password_hash").Optional().Nillable().Sensitive(), field.String("avatar_url").Optional().Nillable(), field.String("google_subject").Optional().Nillable().Unique(), field.Enum("role").Values("user", "partner", "organization_owner", "organization_admin", "content_admin", "model_release_operator", "support_operator", "research_evaluator", "platform_admin").Default("user"), field.Time("disabled_at").Optional().Nillable(), createdAt(), updatedAt()}
 }
 
 type RefreshToken struct{ ent.Schema }
@@ -41,7 +41,7 @@ func (PartnerLink) Fields() []ent.Field {
 type ApprovalRequest struct{ ent.Schema }
 
 func (ApprovalRequest) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.String("device_id").Optional().Nillable(), field.String("partner_link_id"), field.Enum("action").Values("disable_protection", "remove_partner", "uninstall_detected", "reset_settings", "pause_protection", "emergency_access"), field.Enum("status").Values("pending", "approved", "denied", "expired", "cancelled").Default("pending"), field.String("reason").Optional().Nillable(), field.Int("requested_duration_minutes").Optional().Nillable(), field.Time("expires_at"), field.String("resolved_by").Optional().Nillable(), field.Time("resolved_at").Optional().Nillable(), createdAt(), updatedAt()}
+	return []ent.Field{idField(), field.String("user_id"), field.String("device_id").Optional().Nillable(), field.String("partner_link_id"), field.String("quick_token_hash").Optional().Nillable().Unique().Sensitive(), field.Enum("action").Values("disable_protection", "remove_partner", "uninstall_detected", "reset_settings", "pause_protection", "emergency_access"), field.Enum("status").Values("pending", "approved", "denied", "expired", "cancelled").Default("pending"), field.String("reason").Optional().Nillable(), field.Int("requested_duration_minutes").Optional().Nillable(), field.Time("expires_at"), field.String("resolved_by").Optional().Nillable(), field.Time("resolved_at").Optional().Nillable(), createdAt(), updatedAt()}
 }
 
 type NotificationDelivery struct{ ent.Schema }
@@ -77,7 +77,7 @@ func (NetworkRulesetRelease) Fields() []ent.Field {
 type AggregateEvent struct{ ent.Schema }
 
 func (AggregateEvent) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.String("device_id").Optional().Nillable(), field.Enum("event_type").Values("intervention_shown", "block_count_sync", "tamper_detected", "permission_revoked", "model_updated", "ruleset_updated"), field.Time("event_date"), field.Int("count"), field.JSON("metadata_json", map[string]any{}).Optional(), createdAt()}
+	return []ent.Field{idField(), field.String("user_id"), field.String("device_id").Optional().Nillable(), field.String("idempotency_key").Optional().Unique(), field.Enum("event_type").Values("intervention_shown", "block_count_sync", "tamper_detected", "permission_revoked", "model_updated", "ruleset_updated"), field.Time("event_date"), field.Int("count"), field.JSON("metadata_json", map[string]any{}).Optional(), createdAt()}
 }
 
 type Organization struct{ ent.Schema }
@@ -113,13 +113,19 @@ func (ReportRollup) Fields() []ent.Field {
 type SupportCase struct{ ent.Schema }
 
 func (SupportCase) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.String("organization_id").Optional().Nillable(), field.Enum("type").Values("account_recovery", "partner_abuse", "stuck_approval", "device_recovery", "notification_failure", "organization_dispute"), field.Enum("status").Values("open", "waiting_user", "waiting_internal", "resolved", "closed").Default("open"), field.Enum("priority").Values("low", "normal", "high", "urgent").Default("normal"), field.String("summary"), createdAt(), updatedAt()}
+	return []ent.Field{idField(), field.String("user_id"), field.String("organization_id").Optional().Nillable(), field.Enum("type").Values("technical_support", "account_recovery", "partner_abuse", "stuck_approval", "device_recovery", "notification_failure", "organization_dispute", "accountability_guidance", "privacy_request"), field.Enum("status").Values("open", "waiting_user", "waiting_internal", "resolved", "closed").Default("open"), field.Enum("priority").Values("low", "normal", "high", "urgent").Default("normal"), field.String("summary"), createdAt(), updatedAt()}
 }
 
 type SupportActionAudit struct{ ent.Schema }
 
 func (SupportActionAudit) Fields() []ent.Field {
 	return []ent.Field{idField(), field.String("support_case_id"), field.String("operator_id"), field.String("action"), field.String("reason"), field.JSON("before_json", map[string]any{}).Optional(), field.JSON("after_json", map[string]any{}).Optional(), createdAt()}
+}
+
+type EmergencyKeyRequest struct{ ent.Schema }
+
+func (EmergencyKeyRequest) Fields() []ent.Field {
+	return []ent.Field{idField(), field.String("requested_by"), field.String("approved_by").Optional().Nillable(), field.Enum("status").Values("pending", "approved", "used", "expired").Default("pending"), field.String("key_hash").Optional().Nillable().Sensitive(), field.Time("request_expires_at"), field.Time("key_expires_at").Optional().Nillable(), field.Time("approved_at").Optional().Nillable(), createdAt(), updatedAt()}
 }
 
 type DataRequest struct{ ent.Schema }

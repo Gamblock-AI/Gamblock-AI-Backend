@@ -12,26 +12,29 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/authn"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 )
 
 // Domain type aliases (single source of truth: internal/model).
 type (
-	User             = model.User
-	Device           = model.Device
-	Partner          = model.Partner
-	ApprovalRequest  = model.ApprovalRequest
-	EducationModule  = model.EducationModule
-	SupportCase      = model.SupportCase
-	DataRequest      = model.DataRequest
-	Organization     = model.Organization
-	Release          = model.Release
-	AuditEvent       = model.AuditEvent
-	NotificationItem = model.NotificationItem
-	JournalEntry     = model.JournalEntry
-	DailyMission     = model.DailyMission
-	Intention        = model.Intention
-	CheckIn          = model.CheckIn
+	User                = model.User
+	Device              = model.Device
+	Partner             = model.Partner
+	ApprovalRequest     = model.ApprovalRequest
+	EducationModule     = model.EducationModule
+	SupportCase         = model.SupportCase
+	DataRequest         = model.DataRequest
+	Organization        = model.Organization
+	Release             = model.Release
+	AuditEvent          = model.AuditEvent
+	NotificationItem    = model.NotificationItem
+	JournalEntry        = model.JournalEntry
+	DailyMission        = model.DailyMission
+	Intention           = model.Intention
+	CheckIn             = model.CheckIn
+	AggregateEvent      = model.AggregateEvent
+	EmergencyKeyRequest = model.EmergencyKeyRequest
 )
 
 // Store is a concurrency-safe in-memory backing store. It is used as a
@@ -40,42 +43,49 @@ type (
 type Store struct {
 	mu sync.RWMutex
 
-	Users              []User             `json:"users"`
-	Devices            []Device           `json:"devices"`
-	Partners           []Partner          `json:"partners"`
-	Approvals          []ApprovalRequest  `json:"approvals"`
-	Modules            []EducationModule  `json:"modules"`
-	SupportCases       []SupportCase      `json:"support_cases"`
-	DataRequests       []DataRequest      `json:"data_requests"`
-	Organizations      []Organization     `json:"organizations"`
-	ModelReleases      []Release          `json:"model_releases"`
-	RulesetReleases    []Release          `json:"ruleset_releases"`
-	NetworkRulesets    []Release          `json:"network_rulesets"`
-	AuditEvents        []AuditEvent       `json:"audit_events"`
-	NotificationEvents []NotificationItem `json:"notification_events"`
-	JournalEntries     []JournalEntry     `json:"journal_entries"`
-	Missions           []DailyMission     `json:"missions"`
-	Intentions         []Intention        `json:"intentions"`
-	CheckIns           []CheckIn          `json:"check_ins"`
+	Users                []User                `json:"users"`
+	Devices              []Device              `json:"devices"`
+	Partners             []Partner             `json:"partners"`
+	Approvals            []ApprovalRequest     `json:"approvals"`
+	Modules              []EducationModule     `json:"modules"`
+	SupportCases         []SupportCase         `json:"support_cases"`
+	DataRequests         []DataRequest         `json:"data_requests"`
+	Organizations        []Organization        `json:"organizations"`
+	ModelReleases        []Release             `json:"model_releases"`
+	RulesetReleases      []Release             `json:"ruleset_releases"`
+	NetworkRulesets      []Release             `json:"network_rulesets"`
+	AuditEvents          []AuditEvent          `json:"audit_events"`
+	NotificationEvents   []NotificationItem    `json:"notification_events"`
+	JournalEntries       []JournalEntry        `json:"journal_entries"`
+	Missions             []DailyMission        `json:"missions"`
+	Intentions           []Intention           `json:"intentions"`
+	CheckIns             []CheckIn             `json:"check_ins"`
+	AggregateEvents      []AggregateEvent      `json:"aggregate_events"`
+	EmergencyKeyRequests []EmergencyKeyRequest `json:"emergency_key_requests"`
+}
+
+func New() *Store {
+	return &Store{}
 }
 
 func NewSeeded() *Store {
 	now := time.Now().UTC()
+	demoPasswordHash, _ := authn.HashPassword("password")
 	return &Store{
 		Users: []User{
-			{ID: "usr_gading", Email: "gading@gmail.com", DisplayName: "Gading", Role: "user", CreatedAt: now, UpdatedAt: now},
-			{ID: "usr_dery", Email: "dery@gmail.com", DisplayName: "Dery", Role: "user", CreatedAt: now, UpdatedAt: now},
-			{ID: "usr_suci", Email: "suci@gmail.com", DisplayName: "Suci", Role: "partner", CreatedAt: now, UpdatedAt: now},
-			{ID: "usr_nasywa", Email: "nasywa@gmail.com", DisplayName: "Nasywa", Role: "platform_admin", CreatedAt: now, UpdatedAt: now},
+			{ID: "usr_gading", Email: "gading@gmail.com", DisplayName: "Gading", Role: "user", PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
+			{ID: "usr_dery", Email: "dery@gmail.com", DisplayName: "Dery", Role: "user", PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
+			{ID: "usr_suci", Email: "suci@gmail.com", DisplayName: "Suci", Role: "partner", PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
+			{ID: "usr_nasywa", Email: "nasywa@gmail.com", DisplayName: "Nasywa", Role: "platform_admin", PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
 		},
 		Devices: []Device{
 			{ID: "dev_android", UserID: "usr_gading", Platform: "android", Label: "Gading Android", AppVersion: "1.0.0", OSVersion: "Android 15", ModelVersion: "artifact-v0.3.1", RulesetVersion: "ruleset-2026.05.1", ProtectionStatus: "active", LastSeenAt: now.Add(-2 * time.Minute), CreatedAt: now, UpdatedAt: now},
 			{ID: "dev_windows", UserID: "usr_gading", Platform: "windows", Label: "Gading Windows", AppVersion: "1.0.0", OSVersion: "Windows 11", ModelVersion: "artifact-v0.3.1", RulesetVersion: "ruleset-2026.05.1", ProtectionStatus: "degraded", LastSeenAt: now.Add(-38 * time.Minute), CreatedAt: now, UpdatedAt: now},
 		},
-		Partners: []Partner{{ID: "pl_active", Name: "Suci", Contact: "suci@gmail.com | +62 812-0000-0000", Status: "Active partner", PartnerEmail: "suci@gmail.com", CreatedAt: now, UpdatedAt: now}},
+		Partners: []Partner{{ID: "pl_active", UserID: "usr_gading", PartnerUserID: "usr_suci", Name: "Suci", Contact: "suci@gmail.com | +62 812-0000-0000", Status: "active", PartnerEmail: "suci@gmail.com", CreatedAt: now, UpdatedAt: now}},
 		Approvals: []ApprovalRequest{
-			{ID: "APR-2401", Action: "Pause protection for 15 minutes", ExpiresIn: "Expires in 23 minutes", Status: "Pending partner approval", Reason: "Troubleshooting app setup", RequestedDurationMinutes: 15, CreatedAt: now.Add(-7 * time.Minute), UpdatedAt: now.Add(-7 * time.Minute)},
-			{ID: "APR-2398", Action: "Permission revoked detected", ExpiresIn: "Reviewed yesterday", Status: "Partner notified", Reason: "Accessibility service disabled", CreatedAt: now.Add(-24 * time.Hour), UpdatedAt: now.Add(-24 * time.Hour)},
+			{ID: "APR-2401", UserID: "usr_gading", DeviceID: "dev_android", PartnerLinkID: "pl_active", Action: "pause_protection", ExpiresIn: "Expires in 23 minutes", Status: "pending", Reason: "Troubleshooting app setup", RequestedDurationMinutes: 15, CreatedAt: now.Add(-7 * time.Minute), UpdatedAt: now.Add(-7 * time.Minute), ExpiresAt: now.Add(23 * time.Minute)},
+			{ID: "APR-2398", UserID: "usr_gading", DeviceID: "dev_android", PartnerLinkID: "pl_active", Action: "uninstall_detected", ExpiresIn: "Reviewed yesterday", Status: "approved", Reason: "Accessibility service disabled", CreatedAt: now.Add(-24 * time.Hour), UpdatedAt: now.Add(-24 * time.Hour), ExpiresAt: now.Add(-23 * time.Hour)},
 		},
 		Modules: []EducationModule{
 			{ID: "mod_pause", Slug: "pause-before-impulse", Title: "Pause before impulse", Summary: "A short exercise to identify triggers and choose one safer action.", BodyMarkdown: "## Pause\n\nName the impulse, breathe for ten seconds, and choose one safe next action.", EstimatedMinutes: 4, Progress: 0.7, Status: "published", CreatedAt: now, UpdatedAt: now},
@@ -83,12 +93,12 @@ func NewSeeded() *Store {
 			{ID: "mod_support", Slug: "ask-for-support", Title: "Ask for support", Summary: "How to talk with your partner without shame or blame.", BodyMarkdown: "## Ask\n\nUse a short, concrete message and state the help you need now.", EstimatedMinutes: 5, Progress: 0, Status: "published", CreatedAt: now, UpdatedAt: now},
 		},
 		SupportCases: []SupportCase{
-			{ID: "CASE-1087", Title: "Setup and permissions", Type: "device_recovery", Status: "waiting_user", Priority: "normal", Owner: "Gading", CreatedAt: now, UpdatedAt: now},
-			{ID: "CASE-1084", Title: "Partner approval issue", Type: "stuck_approval", Status: "open", Priority: "high", Owner: "Suci", CreatedAt: now, UpdatedAt: now},
+			{ID: "CASE-1087", UserID: "usr_gading", Title: "Setup and permissions", Type: "device_recovery", Status: "waiting_user", Priority: "normal", Owner: "Gading", CreatedAt: now, UpdatedAt: now},
+			{ID: "CASE-1084", UserID: "usr_dery", Title: "Partner approval issue", Type: "stuck_approval", Status: "open", Priority: "high", Owner: "Suci", CreatedAt: now, UpdatedAt: now},
 		},
 		DataRequests: []DataRequest{
-			{ID: "DR-1042", Title: "Export account data", Type: "export", Status: "ready", CreatedAt: now, UpdatedAt: now},
-			{ID: "DR-1035", Title: "Delete archived support notes", Type: "delete", Status: "review", CreatedAt: now, UpdatedAt: now},
+			{ID: "DR-1042", UserID: "usr_gading", Title: "Export account data", Type: "export", Status: "completed", CreatedAt: now, UpdatedAt: now},
+			{ID: "DR-1035", UserID: "usr_dery", Title: "Delete archived support notes", Type: "delete", Status: "processing", CreatedAt: now, UpdatedAt: now},
 		},
 		Organizations:   []Organization{{ID: "org_community", Name: "Gamblock Community Pilot", Slug: "community-pilot", Status: "active", Members: 128, CreatedAt: now, UpdatedAt: now}},
 		ModelReleases:   []Release{{ID: "rel_model_031", Version: "artifact-v0.3.1", Platform: "all", SHA256: "c3a12b939f2923c21d3e729a514610a3989cab321c895c9d2f63ac8eb8a0199c", Status: "published", DownloadURL: "/v1/releases/model/artifact-v0.3.1/download", Metrics: map[string]any{"false_positive_reviewed": true, "latency_ms_p95": 42}, PublishedAtText: "Published 2 days ago", CreatedAt: now, UpdatedAt: now}},
@@ -136,23 +146,25 @@ func (s *Store) Snapshot() Store {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return Store{
-		Users:              append([]User(nil), s.Users...),
-		Devices:            append([]Device(nil), s.Devices...),
-		Partners:           append([]Partner(nil), s.Partners...),
-		Approvals:          append([]ApprovalRequest(nil), s.Approvals...),
-		Modules:            append([]EducationModule(nil), s.Modules...),
-		SupportCases:       append([]SupportCase(nil), s.SupportCases...),
-		DataRequests:       append([]DataRequest(nil), s.DataRequests...),
-		Organizations:      append([]Organization(nil), s.Organizations...),
-		ModelReleases:      append([]Release(nil), s.ModelReleases...),
-		RulesetReleases:    append([]Release(nil), s.RulesetReleases...),
-		NetworkRulesets:    append([]Release(nil), s.NetworkRulesets...),
-		AuditEvents:        append([]AuditEvent(nil), s.AuditEvents...),
-		NotificationEvents: append([]NotificationItem(nil), s.NotificationEvents...),
-		JournalEntries:     append([]JournalEntry(nil), s.JournalEntries...),
-		Missions:           append([]DailyMission(nil), s.Missions...),
-		Intentions:         append([]Intention(nil), s.Intentions...),
-		CheckIns:           append([]CheckIn(nil), s.CheckIns...),
+		Users:                append([]User(nil), s.Users...),
+		Devices:              append([]Device(nil), s.Devices...),
+		Partners:             append([]Partner(nil), s.Partners...),
+		Approvals:            append([]ApprovalRequest(nil), s.Approvals...),
+		Modules:              append([]EducationModule(nil), s.Modules...),
+		SupportCases:         append([]SupportCase(nil), s.SupportCases...),
+		DataRequests:         append([]DataRequest(nil), s.DataRequests...),
+		Organizations:        append([]Organization(nil), s.Organizations...),
+		ModelReleases:        append([]Release(nil), s.ModelReleases...),
+		RulesetReleases:      append([]Release(nil), s.RulesetReleases...),
+		NetworkRulesets:      append([]Release(nil), s.NetworkRulesets...),
+		AuditEvents:          append([]AuditEvent(nil), s.AuditEvents...),
+		NotificationEvents:   append([]NotificationItem(nil), s.NotificationEvents...),
+		JournalEntries:       append([]JournalEntry(nil), s.JournalEntries...),
+		Missions:             append([]DailyMission(nil), s.Missions...),
+		Intentions:           append([]Intention(nil), s.Intentions...),
+		CheckIns:             append([]CheckIn(nil), s.CheckIns...),
+		AggregateEvents:      append([]AggregateEvent(nil), s.AggregateEvents...),
+		EmergencyKeyRequests: append([]EmergencyKeyRequest(nil), s.EmergencyKeyRequests...),
 	}
 }
 
@@ -193,7 +205,6 @@ func (s *Store) GetTokenMapping(tokenHash string) (ApprovalRequest, bool) {
 	req, ok := globalTokenMap[tokenHash]
 	return req, ok
 }
-
 
 // RefreshTokenRecord is the in-memory backing for refresh tokens (used when the
 // DB is unavailable). Mirrors the ent RefreshToken fields used by the auth flow.

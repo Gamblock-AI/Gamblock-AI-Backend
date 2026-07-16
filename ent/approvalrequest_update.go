@@ -76,6 +76,26 @@ func (_u *ApprovalRequestUpdate) SetNillablePartnerLinkID(v *string) *ApprovalRe
 	return _u
 }
 
+// SetQuickTokenHash sets the "quick_token_hash" field.
+func (_u *ApprovalRequestUpdate) SetQuickTokenHash(v string) *ApprovalRequestUpdate {
+	_u.mutation.SetQuickTokenHash(v)
+	return _u
+}
+
+// SetNillableQuickTokenHash sets the "quick_token_hash" field if the given value is not nil.
+func (_u *ApprovalRequestUpdate) SetNillableQuickTokenHash(v *string) *ApprovalRequestUpdate {
+	if v != nil {
+		_u.SetQuickTokenHash(*v)
+	}
+	return _u
+}
+
+// ClearQuickTokenHash clears the value of the "quick_token_hash" field.
+func (_u *ApprovalRequestUpdate) ClearQuickTokenHash() *ApprovalRequestUpdate {
+	_u.mutation.ClearQuickTokenHash()
+	return _u
+}
+
 // SetAction sets the "action" field.
 func (_u *ApprovalRequestUpdate) SetAction(v approvalrequest.Action) *ApprovalRequestUpdate {
 	_u.mutation.SetAction(v)
@@ -291,6 +311,12 @@ func (_u *ApprovalRequestUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.PartnerLinkID(); ok {
 		_spec.SetField(approvalrequest.FieldPartnerLinkID, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.QuickTokenHash(); ok {
+		_spec.SetField(approvalrequest.FieldQuickTokenHash, field.TypeString, value)
+	}
+	if _u.mutation.QuickTokenHashCleared() {
+		_spec.ClearField(approvalrequest.FieldQuickTokenHash, field.TypeString)
+	}
 	if value, ok := _u.mutation.Action(); ok {
 		_spec.SetField(approvalrequest.FieldAction, field.TypeEnum, value)
 	}
@@ -395,6 +421,26 @@ func (_u *ApprovalRequestUpdateOne) SetNillablePartnerLinkID(v *string) *Approva
 	if v != nil {
 		_u.SetPartnerLinkID(*v)
 	}
+	return _u
+}
+
+// SetQuickTokenHash sets the "quick_token_hash" field.
+func (_u *ApprovalRequestUpdateOne) SetQuickTokenHash(v string) *ApprovalRequestUpdateOne {
+	_u.mutation.SetQuickTokenHash(v)
+	return _u
+}
+
+// SetNillableQuickTokenHash sets the "quick_token_hash" field if the given value is not nil.
+func (_u *ApprovalRequestUpdateOne) SetNillableQuickTokenHash(v *string) *ApprovalRequestUpdateOne {
+	if v != nil {
+		_u.SetQuickTokenHash(*v)
+	}
+	return _u
+}
+
+// ClearQuickTokenHash clears the value of the "quick_token_hash" field.
+func (_u *ApprovalRequestUpdateOne) ClearQuickTokenHash() *ApprovalRequestUpdateOne {
+	_u.mutation.ClearQuickTokenHash()
 	return _u
 }
 
@@ -642,6 +688,12 @@ func (_u *ApprovalRequestUpdateOne) sqlSave(ctx context.Context) (_node *Approva
 	}
 	if value, ok := _u.mutation.PartnerLinkID(); ok {
 		_spec.SetField(approvalrequest.FieldPartnerLinkID, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.QuickTokenHash(); ok {
+		_spec.SetField(approvalrequest.FieldQuickTokenHash, field.TypeString, value)
+	}
+	if _u.mutation.QuickTokenHashCleared() {
+		_spec.ClearField(approvalrequest.FieldQuickTokenHash, field.TypeString)
 	}
 	if value, ok := _u.mutation.Action(); ok {
 		_spec.SetField(approvalrequest.FieldAction, field.TypeEnum, value)

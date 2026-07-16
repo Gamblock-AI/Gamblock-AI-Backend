@@ -49,7 +49,7 @@ func newExtendedRouter(t *testing.T, appEnv string) (*gin.Engine, string) {
 // Login as the seeded member and return the bearer token.
 func loginAsGading(t *testing.T, r *gin.Engine) string {
 	t.Helper()
-	body := []byte(`{"email":"gading@gmail.com","password":"x"}`)
+	body := []byte(`{"email":"gading@gmail.com","password":"password"}`)
 	req := httptest.NewRequest(http.MethodPost, "/v1/auth/login", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()

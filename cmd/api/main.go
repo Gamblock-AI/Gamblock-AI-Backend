@@ -28,25 +28,53 @@ func main() {
 		panic(err)
 	}
 	defer logger.Sync() //nolint:errcheck
+	if err := cfg.Validate(); err != nil {
+		logger.Fatal("invalid service configuration", zap.Error(err))
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	backendStore := store.NewSeeded()
+	backendStore := store.New()
+	if cfg.EnableDemoData && !cfg.IsProduction() {
+		backendStore = store.NewSeeded()
+	}
 	var entClient *ent.Client
 	var closeDB func() error
 	storageMode := "in_memory"
 	if cfg.DatabaseURL != "" {
 		client, closer, err := db.Open(cfg.DatabaseURL)
 		if err != nil {
+			if cfg.IsProduction() {
+				logger.Fatal("database open failed", zap.Error(err))
+			}
 			logger.Warn("database open failed; using in-memory store", zap.Error(err))
 		} else if err := db.Migrate(ctx, client); err != nil {
+			if cfg.IsProduction() {
+				logger.Fatal("database migration failed", zap.Error(err))
+			}
 			logger.Warn("database migration failed; using in-memory store", zap.Error(err))
 			_ = closer()
-		} else if err := db.Seed(ctx, client); err != nil {
-			logger.Warn("database seed failed; using in-memory store", zap.Error(err))
-			_ = closer()
+		} else if cfg.EnableDemoData && !cfg.IsProduction() {
+			if err := db.Seed(ctx, client); err != nil {
+				logger.Warn("database demo seed failed; using in-memory store", zap.Error(err))
+				_ = closer()
+			} else {
+				loaded, err := db.LoadStore(ctx, client)
+				if err != nil {
+					logger.Warn("database load failed; using in-memory store", zap.Error(err))
+					_ = closer()
+				} else {
+					backendStore = loaded
+					entClient = client
+					closeDB = closer
+					storageMode = "postgres"
+				}
+			}
 		} else if loaded, err := db.LoadStore(ctx, client); err != nil {
+			if cfg.IsProduction() {
+				logger.Fatal("database load failed", zap.Error(err))
+			}
 			logger.Warn("database load failed; using in-memory store", zap.Error(err))
 			_ = closer()
 		} else {

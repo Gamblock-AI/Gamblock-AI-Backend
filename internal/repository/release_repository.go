@@ -21,6 +21,9 @@ func (r *Repository) GetModelReleases(ctx context.Context) ([]model.Release, err
 				Version:         rel.Version,
 				Platform:        rel.Platform,
 				SHA256:          rel.SHA256,
+				ArtifactPath:    rel.ArtifactPath,
+				ContractVersion: rel.ContractVersion,
+				Threshold:       rel.Threshold,
 				Status:          rel.Status,
 				DownloadURL:     rel.DownloadURL,
 				Metrics:         rel.Metrics,
@@ -44,6 +47,9 @@ func (r *Repository) GetModelReleases(ctx context.Context) ([]model.Release, err
 			Version:         item.Version,
 			Platform:        item.Platform.String(),
 			SHA256:          item.Sha256,
+			ArtifactPath:    item.ArtifactPath,
+			ContractVersion: item.ContractVersion,
+			Threshold:       item.Threshold,
 			Status:          item.Status.String(),
 			DownloadURL:     "/v1/releases/model/" + item.Version + "/download",
 			Metrics:         item.MetricsJSON,
@@ -61,8 +67,9 @@ func (r *Repository) CreateModelRelease(ctx context.Context, id, version, platfo
 		defer r.store.Unlock()
 		r.store.ModelReleases = append(r.store.ModelReleases, store.Release{
 			ID: id, Version: version, Platform: platformVal, SHA256: sha256Val,
-			Status: "published", DownloadURL: "/v1/releases/model/" + version + "/download",
-			Metrics: metrics, PublishedAtText: "Published",
+			ArtifactPath: artifactPath, ContractVersion: contract, Threshold: threshold,
+			Status: "validated", DownloadURL: "/v1/releases/model/" + version + "/download",
+			Metrics: metrics, PublishedAtText: "Not published",
 			CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
 		})
 		return nil
@@ -95,6 +102,7 @@ func (r *Repository) GetRulesetReleases(ctx context.Context) ([]model.Release, e
 				Version:         rel.Version,
 				Platform:        rel.Platform,
 				SHA256:          rel.SHA256,
+				ArtifactPath:    rel.ArtifactPath,
 				Status:          rel.Status,
 				DownloadURL:     rel.DownloadURL,
 				Metrics:         rel.Metrics,
@@ -118,6 +126,7 @@ func (r *Repository) GetRulesetReleases(ctx context.Context) ([]model.Release, e
 			Version:         item.Version,
 			Platform:        "all",
 			SHA256:          item.Sha256,
+			ArtifactPath:    item.ArtifactPath,
 			Status:          item.Status.String(),
 			DownloadURL:     "/v1/releases/ruleset/" + item.Version + "/download",
 			Metrics:         item.RulesJSON,
@@ -135,8 +144,9 @@ func (r *Repository) CreateRulesetRelease(ctx context.Context, id, version, arti
 		defer r.store.Unlock()
 		r.store.RulesetReleases = append(r.store.RulesetReleases, store.Release{
 			ID: id, Version: version, Platform: "all", SHA256: sha256Val,
-			Status: "published", DownloadURL: "/v1/releases/ruleset/" + version + "/download",
-			Metrics: rules, PublishedAtText: "Published",
+			ArtifactPath: artifactPath,
+			Status:       "validated", DownloadURL: "/v1/releases/ruleset/" + version + "/download",
+			Metrics: rules, PublishedAtText: "Not published",
 			CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
 		})
 		return nil
@@ -166,6 +176,7 @@ func (r *Repository) GetNetworkRulesets(ctx context.Context) ([]model.Release, e
 				Version:         rel.Version,
 				Platform:        rel.Platform,
 				SHA256:          rel.SHA256,
+				ArtifactPath:    rel.ArtifactPath,
 				Status:          rel.Status,
 				DownloadURL:     rel.DownloadURL,
 				Metrics:         rel.Metrics,
@@ -189,6 +200,7 @@ func (r *Repository) GetNetworkRulesets(ctx context.Context) ([]model.Release, e
 			Version:         item.Version,
 			Platform:        "all",
 			SHA256:          item.Sha256,
+			ArtifactPath:    item.ArtifactPath,
 			Status:          item.Status.String(),
 			DownloadURL:     "/v1/releases/network-rulesets/" + item.Version + "/download",
 			Metrics:         item.RulesJSON,
@@ -206,7 +218,8 @@ func (r *Repository) CreateNetworkRulesetRelease(ctx context.Context, id, versio
 		defer r.store.Unlock()
 		r.store.NetworkRulesets = append(r.store.NetworkRulesets, store.Release{
 			ID: id, Version: version, Platform: "all", SHA256: sha256Val,
-			Status: "validated", DownloadURL: "/v1/releases/network-rulesets/" + version + "/download",
+			ArtifactPath: artifactPath,
+			Status:       "validated", DownloadURL: "/v1/releases/network-rulesets/" + version + "/download",
 			Metrics: rules, PublishedAtText: "Validated",
 			CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
 		})

@@ -40,6 +40,20 @@ func (_c *AggregateEventCreate) SetNillableDeviceID(v *string) *AggregateEventCr
 	return _c
 }
 
+// SetIdempotencyKey sets the "idempotency_key" field.
+func (_c *AggregateEventCreate) SetIdempotencyKey(v string) *AggregateEventCreate {
+	_c.mutation.SetIdempotencyKey(v)
+	return _c
+}
+
+// SetNillableIdempotencyKey sets the "idempotency_key" field if the given value is not nil.
+func (_c *AggregateEventCreate) SetNillableIdempotencyKey(v *string) *AggregateEventCreate {
+	if v != nil {
+		_c.SetIdempotencyKey(*v)
+	}
+	return _c
+}
+
 // SetEventType sets the "event_type" field.
 func (_c *AggregateEventCreate) SetEventType(v aggregateevent.EventType) *AggregateEventCreate {
 	_c.mutation.SetEventType(v)
@@ -201,6 +215,10 @@ func (_c *AggregateEventCreate) createSpec() (*AggregateEvent, *sqlgraph.CreateS
 	if value, ok := _c.mutation.DeviceID(); ok {
 		_spec.SetField(aggregateevent.FieldDeviceID, field.TypeString, value)
 		_node.DeviceID = &value
+	}
+	if value, ok := _c.mutation.IdempotencyKey(); ok {
+		_spec.SetField(aggregateevent.FieldIdempotencyKey, field.TypeString, value)
+		_node.IdempotencyKey = value
 	}
 	if value, ok := _c.mutation.EventType(); ok {
 		_spec.SetField(aggregateevent.FieldEventType, field.TypeEnum, value)

@@ -18,6 +18,8 @@ const (
 	FieldUserID = "user_id"
 	// FieldDeviceID holds the string denoting the device_id field in the database.
 	FieldDeviceID = "device_id"
+	// FieldIdempotencyKey holds the string denoting the idempotency_key field in the database.
+	FieldIdempotencyKey = "idempotency_key"
 	// FieldEventType holds the string denoting the event_type field in the database.
 	FieldEventType = "event_type"
 	// FieldEventDate holds the string denoting the event_date field in the database.
@@ -37,6 +39,7 @@ var Columns = []string{
 	FieldID,
 	FieldUserID,
 	FieldDeviceID,
+	FieldIdempotencyKey,
 	FieldEventType,
 	FieldEventDate,
 	FieldCount,
@@ -104,6 +107,11 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 // ByDeviceID orders the results by the device_id field.
 func ByDeviceID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeviceID, opts...).ToFunc()
+}
+
+// ByIdempotencyKey orders the results by the idempotency_key field.
+func ByIdempotencyKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIdempotencyKey, opts...).ToFunc()
 }
 
 // ByEventType orders the results by the event_type field.

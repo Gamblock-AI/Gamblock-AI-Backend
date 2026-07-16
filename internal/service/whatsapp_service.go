@@ -34,19 +34,20 @@ type ApprovalSummary struct {
 }
 
 func (s *WhatsAppService) SendApprovalBatch(ctx context.Context, phone string, summaries []ApprovalSummary) error {
-	if s.cfg.NotificationMode == "demo" || phone == "" {
+	if s.cfg.NotificationMode == "demo" {
 		s.logger.Info("whatsapp: demo mode - logging instead of sending",
-			zap.String("recipient", phone),
 			zap.Int("pending_requests", len(summaries)),
 		)
 		for _, summary := range summaries {
 			s.logger.Info("whatsapp: pending approval",
 				zap.String("member", summary.MemberName),
 				zap.String("action", summary.Action),
-				zap.String("quick_link", summary.QuickLink),
 			)
 		}
 		return nil
+	}
+	if phone == "" {
+		return fmt.Errorf("partner phone is not configured")
 	}
 
 	if s.cfg.WhatsAppAPIKey == "" || s.cfg.WhatsAppPhoneID == "" {
@@ -54,7 +55,7 @@ func (s *WhatsAppService) SendApprovalBatch(ctx context.Context, phone string, s
 	}
 
 	messageBody := buildBatchMessage(summaries)
-	
+
 	payload := map[string]interface{}{
 		"messaging_product": "whatsapp",
 		"to":                phone,

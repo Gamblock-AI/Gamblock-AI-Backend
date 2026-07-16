@@ -103,7 +103,7 @@ func TestReflection_CreateAndGet(t *testing.T) {
 	r, _ := newTestRouter(t, "development")
 
 	// Login as the seeded member to obtain a bearer token.
-	loginBody := []byte(`{"email":"gading@gmail.com","password":"x"}`)
+	loginBody := []byte(`{"email":"gading@gmail.com","password":"password"}`)
 	lreq := httptest.NewRequest(http.MethodPost, "/v1/auth/login", bytes.NewReader(loginBody))
 	lreq.Header.Set("Content-Type", "application/json")
 	lw := httptest.NewRecorder()

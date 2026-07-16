@@ -44,7 +44,7 @@ func TestAccountability_CreateApprovalRequestAndResolve(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, list)
 
-	err = svc.ResolveApprovalRequest(ctx, list[0].ID, "approved", "usr_suci")
+	err = svc.ResolveApprovalAsPartner(ctx, list[0].ID, "approved", "usr_suci")
 	assert.NoError(t, err)
 }
 

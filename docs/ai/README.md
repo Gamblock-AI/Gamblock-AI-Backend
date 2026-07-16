@@ -1,6 +1,6 @@
 # Backend AI Context
 
-Context version: `2026-07-15.2`
+Context version: `2026-07-16.4`
 
 ## Product capsule
 
@@ -22,10 +22,8 @@ are supporting/operational features.
 
 - Raw DOM, URLs, domains, screenshots, keystrokes, and browsing history never
   enter this API. Accept privacy-preserving aggregates only.
-- **Target invariant:** journal/reflection text must be AES-256-GCM encrypted
-  before persistence. The current `ReflectionService` violates this invariant
-  when the key is absent or encryption fails by falling back to plaintext;
-  treat that path as a P0 gap and do not reproduce it.
+- Journal/reflection writes require AES-256-GCM and fail closed when the key or
+  encryption operation is invalid. Decryption failure also fails closed.
 - The browser extension is only a passive sensor; the client owns blocking.
 - Anti-tamper never uses critical-process APIs.
 - API responses use `{ data, error, request_id }` and stable error codes.
@@ -34,12 +32,15 @@ are supporting/operational features.
 
 | Area | State | Evidence/limit |
 |---|---|---|
-| Auth, token rotation, RBAC | Implemented | handlers/services/tests exist |
-| Organization and partner approvals | Implemented | route and service coverage exists |
+| Auth, token rotation, RBAC | Implemented | Argon2id password verification, Google ID-token audience validation, refresh rotation, disabled-user checks, and per-route roles are wired; self-service password reset remains planned |
+| Partner consent and approvals | Implemented supporting workflow | seven-day email-bound invitations, multiple relationship records, 24-hour approvals, hashed persistent quick tokens, owner/partner scoping, and revoke/leave paths are wired; native uninstall enforcement still needs device proof |
 | PrivacyGuard | Implemented | forbidden-key regression tests; values are not censored |
-| Journal encryption | Prototype with P0 gap | AES helper/path exists, but missing key or encryption error currently stores plaintext; target must fail closed |
-| PostgreSQL/ent persistence | Implemented with prototype fallback | API falls back to seeded memory on DB failure |
-| WhatsApp approval batching | Implemented service logic | external provider behavior still needs environment integration evidence |
+| Journal encryption | Implemented server invariant | AES-256-GCM write/read paths fail closed; production validates a 32-byte hex key |
+| PostgreSQL/ent persistence | Implemented production path | production fails closed on open/migration/load failure; development can use empty memory and explicitly enabled contextual demo data |
+| Dashboard/profile/aggregate API | Implemented | user-scoped summaries derive from owned records; Flutter sends only bounded daily aggregate categories with idempotency |
+| Emergency recovery | Implemented operational workflow | first platform admin requests, a distinct second admin approves within 30 minutes, then a hashed single-use key lasts 24 hours |
+| Content/release gates | Prototype | modules are forced to draft and artifact creation validates storage path plus SHA-256; review/publish/rollback actions are not yet wired |
+| WhatsApp delivery | Prototype adapter | immediate delivery can use configured partner phone/provider; demo logs omit tokens and the partner inbox remains authoritative |
 | Model training/inference | Outside this repository | proposal-required training belongs to a governed model workstream; inference is client-side |
 
 Do not infer production readiness from a handler or schema existing. Verify the

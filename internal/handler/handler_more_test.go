@@ -49,7 +49,7 @@ func newFullRouter(t *testing.T, appEnv string) (*gin.Engine, string) {
 
 func loginToken(t *testing.T, r *gin.Engine) string {
 	t.Helper()
-	body := []byte(`{"email":"gading@gmail.com","password":"x"}`)
+	body := []byte(`{"email":"gading@gmail.com","password":"password"}`)
 	req := httptest.NewRequest(http.MethodPost, "/v1/auth/login", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()

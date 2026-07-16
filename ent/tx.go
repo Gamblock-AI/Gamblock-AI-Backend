@@ -28,6 +28,8 @@ type Tx struct {
 	DataRequest *DataRequestClient
 	// Device is the client for interacting with the Device builders.
 	Device *DeviceClient
+	// EmergencyKeyRequest is the client for interacting with the EmergencyKeyRequest builders.
+	EmergencyKeyRequest *EmergencyKeyRequestClient
 	// Intention is the client for interacting with the Intention builders.
 	Intention *IntentionClient
 	// ModelRelease is the client for interacting with the ModelRelease builders.
@@ -205,6 +207,7 @@ func (tx *Tx) init() {
 	tx.DailyMission = NewDailyMissionClient(tx.config)
 	tx.DataRequest = NewDataRequestClient(tx.config)
 	tx.Device = NewDeviceClient(tx.config)
+	tx.EmergencyKeyRequest = NewEmergencyKeyRequestClient(tx.config)
 	tx.Intention = NewIntentionClient(tx.config)
 	tx.ModelRelease = NewModelReleaseClient(tx.config)
 	tx.ModelRollout = NewModelRolloutClient(tx.config)

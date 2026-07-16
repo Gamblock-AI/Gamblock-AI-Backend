@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -14,6 +15,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/api/idtoken"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/authn"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/repository"
@@ -30,19 +32,28 @@ func NewAuthService(repo *repository.Repository, cfg config.Config, logger *zap.
 }
 
 func (s *AuthService) Login(ctx context.Context, email, password string) (model.AuthResponse, error) {
-	u, ok := s.repo.UserByEmail(ctx, email)
-	if !ok {
+	u, ok := s.repo.UserByEmail(ctx, strings.TrimSpace(email))
+	if !ok || u.DisabledAt != nil || !authn.VerifyPassword(password, u.PasswordHash) {
 		return model.AuthResponse{}, fmt.Errorf("user not found or invalid credentials")
 	}
 	return s.authPair(ctx, u, nil)
 }
 
 func (s *AuthService) Register(ctx context.Context, email, password, name string) (model.AuthResponse, error) {
+	email = strings.TrimSpace(strings.ToLower(email))
+	name = strings.TrimSpace(name)
+	if len(password) < 8 {
+		return model.AuthResponse{}, fmt.Errorf("password must contain at least 8 characters")
+	}
 	if _, ok := s.repo.UserByEmail(ctx, email); ok {
 		return model.AuthResponse{}, fmt.Errorf("email already exists")
 	}
+	passwordHash, err := authn.HashPassword(password)
+	if err != nil {
+		return model.AuthResponse{}, err
+	}
 	id := "usr_" + uuid.NewString()[:8]
-	u, err := s.repo.CreateUser(ctx, id, email, name)
+	u, err := s.repo.CreateUserWithPassword(ctx, id, email, name, passwordHash)
 	if err != nil {
 		return model.AuthResponse{}, err
 	}
@@ -50,14 +61,17 @@ func (s *AuthService) Register(ctx context.Context, email, password, name string
 }
 
 func (s *AuthService) DevLogin(ctx context.Context, email, role, deviceID string) (model.AuthResponse, error) {
+	if s.cfg.IsProduction() || (!s.cfg.EnableDevLogin && s.cfg.AppEnv != "test") {
+		return model.AuthResponse{}, fmt.Errorf("development login is disabled")
+	}
 	if email == "" {
 		email = "alfian@example.com"
 	}
 	u, ok := s.repo.UserByEmail(ctx, email)
-	if !ok {
-		u = model.User{ID: "usr_demo", Email: "alfian@example.com", DisplayName: "Alfian Gading Saputra", Role: "user"}
+	if !ok || u.DisabledAt != nil {
+		return model.AuthResponse{}, fmt.Errorf("development user not found")
 	}
-	if role != "" {
+	if role != "" && s.cfg.AppEnv == "test" {
 		u.Role = role
 	}
 	var devID *string
@@ -78,8 +92,12 @@ func (s *AuthService) GoogleLogin(ctx context.Context, rawIDToken, deviceID stri
 	email, _ := payload.Claims["email"].(string)
 	name, _ := payload.Claims["name"].(string)
 	picture, _ := payload.Claims["picture"].(string)
+	emailVerified, _ := payload.Claims["email_verified"].(bool)
 	if email == "" {
 		return model.AuthResponse{}, fmt.Errorf("google token has no email claim")
+	}
+	if !emailVerified {
+		return model.AuthResponse{}, fmt.Errorf("google email is not verified")
 	}
 	if name == "" {
 		name = email
@@ -88,12 +106,8 @@ func (s *AuthService) GoogleLogin(ctx context.Context, rawIDToken, deviceID stri
 	var u model.User
 	u, err = s.repo.GetUserByGoogleSubject(ctx, payload.Subject)
 	if err != nil {
-		if row, ok := s.repo.UserByEmail(ctx, email); ok {
-			var pic *string
-			if picture != "" {
-				pic = &picture
-			}
-			u, err = s.repo.UpdateUserGoogle(ctx, row.ID, name, pic, payload.Subject)
+		if _, ok := s.repo.UserByEmail(ctx, email); ok {
+			return model.AuthResponse{}, fmt.Errorf("an existing account must link Google after password authentication")
 		} else {
 			var pic *string
 			if picture != "" {
@@ -117,14 +131,10 @@ func (s *AuthService) GoogleLogin(ctx context.Context, rawIDToken, deviceID stri
 func (s *AuthService) Refresh(ctx context.Context, rawRefresh string) (model.AuthResponse, error) {
 	rtID, userID, deviceID, err := s.repo.GetActiveRefreshToken(ctx, HashRefreshToken(rawRefresh))
 	if err != nil {
-		u, ok := s.repo.UserByID(ctx, "usr_demo")
-		if !ok {
-			return model.AuthResponse{}, fmt.Errorf("invalid refresh token")
-		}
-		return s.authPair(ctx, u, nil)
+		return model.AuthResponse{}, fmt.Errorf("invalid refresh token")
 	}
 	u, ok := s.repo.UserByID(ctx, userID)
-	if !ok {
+	if !ok || u.DisabledAt != nil {
 		return model.AuthResponse{}, fmt.Errorf("refresh token user not found")
 	}
 	if err := s.repo.RevokeRefreshTokenByID(ctx, rtID); err != nil {

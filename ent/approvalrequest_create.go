@@ -46,6 +46,20 @@ func (_c *ApprovalRequestCreate) SetPartnerLinkID(v string) *ApprovalRequestCrea
 	return _c
 }
 
+// SetQuickTokenHash sets the "quick_token_hash" field.
+func (_c *ApprovalRequestCreate) SetQuickTokenHash(v string) *ApprovalRequestCreate {
+	_c.mutation.SetQuickTokenHash(v)
+	return _c
+}
+
+// SetNillableQuickTokenHash sets the "quick_token_hash" field if the given value is not nil.
+func (_c *ApprovalRequestCreate) SetNillableQuickTokenHash(v *string) *ApprovalRequestCreate {
+	if v != nil {
+		_c.SetQuickTokenHash(*v)
+	}
+	return _c
+}
+
 // SetAction sets the "action" field.
 func (_c *ApprovalRequestCreate) SetAction(v approvalrequest.Action) *ApprovalRequestCreate {
 	_c.mutation.SetAction(v)
@@ -302,6 +316,10 @@ func (_c *ApprovalRequestCreate) createSpec() (*ApprovalRequest, *sqlgraph.Creat
 	if value, ok := _c.mutation.PartnerLinkID(); ok {
 		_spec.SetField(approvalrequest.FieldPartnerLinkID, field.TypeString, value)
 		_node.PartnerLinkID = value
+	}
+	if value, ok := _c.mutation.QuickTokenHash(); ok {
+		_spec.SetField(approvalrequest.FieldQuickTokenHash, field.TypeString, value)
+		_node.QuickTokenHash = &value
 	}
 	if value, ok := _c.mutation.Action(); ok {
 		_spec.SetField(approvalrequest.FieldAction, field.TypeEnum, value)

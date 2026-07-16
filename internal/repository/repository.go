@@ -48,6 +48,8 @@ func (r *Repository) RefreshStore(ctx context.Context) {
 	r.store.Missions = loaded.Missions
 	r.store.Intentions = loaded.Intentions
 	r.store.CheckIns = loaded.CheckIns
+	r.store.AggregateEvents = loaded.AggregateEvents
+	r.store.EmergencyKeyRequests = loaded.EmergencyKeyRequests
 }
 
 func value(v *string) string {
@@ -103,16 +105,6 @@ func humanDataRequestTitle(kind string) string {
 		return "Delete archived support notes"
 	}
 	return "Data request"
-}
-
-func moduleProgress(slug string) float64 {
-	if slug == "pause-before-impulse" {
-		return 0.7
-	}
-	if slug == "financial-reality-check" {
-		return 0.35
-	}
-	return 0
 }
 
 func humanApprovalAction(action string, duration int) string {

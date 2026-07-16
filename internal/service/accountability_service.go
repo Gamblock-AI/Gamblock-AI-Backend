@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,7 +29,24 @@ func (s *AccountabilityService) GetPartners(ctx context.Context, userID string) 
 	return s.repo.GetPartners(ctx, userID)
 }
 
-func (s *AccountabilityService) CreatePartnerInvitation(ctx context.Context, userID, email, phone string) (model.Partner, error) {
+func (s *AccountabilityService) CreatePartnerInvitation(ctx context.Context, userID, email, phone string) (model.Partner, string, error) {
+	email = strings.ToLower(strings.TrimSpace(email))
+	if email == "" {
+		return model.Partner{}, "", fmt.Errorf("partner email is required")
+	}
+	owner, ok := s.repo.UserByID(ctx, userID)
+	if !ok || strings.EqualFold(owner.Email, email) {
+		return model.Partner{}, "", fmt.Errorf("partner must use a different account")
+	}
+	_, existing, err := s.repo.GetPartners(ctx, userID)
+	if err != nil {
+		return model.Partner{}, "", err
+	}
+	for _, relationship := range existing {
+		if strings.EqualFold(relationship.PartnerEmail, email) && (relationship.Status == "active" || relationship.Status == "invited") {
+			return model.Partner{}, "", fmt.Errorf("an active relationship or invitation already exists for this email")
+		}
+	}
 	plID := "pl_" + uuid.NewString()
 	rawToken := "pinv_" + uuid.NewString()
 	tokenHash := HashRefreshToken(rawToken)
@@ -38,9 +56,10 @@ func (s *AccountabilityService) CreatePartnerInvitation(ctx context.Context, use
 	}
 	partner, err := s.repo.CreatePartnerInvitation(ctx, plID, userID, email, pVal, tokenHash)
 	if err != nil {
-		return model.Partner{}, err
+		return model.Partner{}, "", err
 	}
-	return partner, nil
+	inviteURL := fmt.Sprintf("%s/partner/invitations/%s", s.cfg.PublicWebBaseURL, rawToken)
+	return partner, inviteURL, nil
 }
 
 func (s *AccountabilityService) AcceptInvitation(ctx context.Context, token, partnerUserID string) error {
@@ -52,8 +71,8 @@ func (s *AccountabilityService) AcceptInvitation(ctx context.Context, token, par
 	return s.repo.AcceptPartnerInvitation(ctx, linkID, partnerUserID)
 }
 
-func (s *AccountabilityService) RevokePartner(ctx context.Context, partnerLinkID string) error {
-	return s.repo.RevokePartner(ctx, partnerLinkID)
+func (s *AccountabilityService) RevokePartner(ctx context.Context, partnerLinkID, userID string) error {
+	return s.repo.RevokePartner(ctx, partnerLinkID, userID)
 }
 
 func (s *AccountabilityService) GetApprovalRequests(ctx context.Context, userID string) ([]model.ApprovalRequest, error) {
@@ -61,10 +80,23 @@ func (s *AccountabilityService) GetApprovalRequests(ctx context.Context, userID 
 }
 
 func (s *AccountabilityService) CreateApprovalRequest(ctx context.Context, userID, deviceID, partnerLinkID, action, reason string, duration int) error {
+	allowedActions := map[string]bool{
+		"disable_protection": true, "remove_partner": true, "uninstall_detected": true,
+		"reset_settings": true, "pause_protection": true, "emergency_access": true,
+	}
+	if !allowedActions[action] || !s.repo.IsActivePartnerLinkOwnedBy(ctx, partnerLinkID, userID) {
+		return fmt.Errorf("invalid approval request relationship or action")
+	}
+	if !s.repo.IsDeviceOwnedBy(ctx, deviceID, userID) {
+		return fmt.Errorf("device does not belong to user")
+	}
+	if duration < 0 || duration > 24*60 {
+		return fmt.Errorf("requested duration is outside the allowed range")
+	}
 	reqID := "APR-" + uuid.NewString()[:8]
 	quickToken := generateQuickToken()
 	quickTokenHash := HashRefreshToken(quickToken)
-	expiresAt := time.Now().UTC().Add(30 * time.Minute)
+	expiresAt := time.Now().UTC().Add(24 * time.Hour)
 
 	if err := s.repo.CreateApprovalRequestWithToken(ctx, reqID, userID, deviceID, partnerLinkID, action, reason, duration, expiresAt, quickTokenHash); err != nil {
 		return err
@@ -79,13 +111,22 @@ func (s *AccountabilityService) CreateApprovalRequest(ctx context.Context, userI
 		Action:     action,
 		QuickLink:  quickLink,
 	}
-	_ = s.whatsapp.SendSingleApproval(ctx, "", summary)
+	phone := s.repo.GetActivePartnerPhone(ctx, partnerLinkID, userID)
+	if phone != "" {
+		if err := s.whatsapp.SendSingleApproval(ctx, phone, summary); err != nil {
+			s.logger.Warn("approval notification was not delivered", zap.String("request_id", reqID), zap.Error(err))
+		}
+	}
 
 	return nil
 }
 
-func (s *AccountabilityService) ResolveApprovalRequest(ctx context.Context, id, status, resolvedBy string) error {
-	return s.repo.UpdateApprovalRequest(ctx, id, status, resolvedBy)
+func (s *AccountabilityService) CancelApprovalRequest(ctx context.Context, id, userID string) error {
+	return s.repo.CancelApprovalRequest(ctx, id, userID)
+}
+
+func (s *AccountabilityService) ResolveApprovalAsPartner(ctx context.Context, id, status, partnerUserID string) error {
+	return s.repo.ResolveApprovalAsPartner(ctx, id, partnerUserID, status)
 }
 
 func (s *AccountabilityService) VerifyQuickToken(ctx context.Context, token string) (map[string]any, error) {
@@ -94,14 +135,17 @@ func (s *AccountabilityService) VerifyQuickToken(ctx context.Context, token stri
 	if err != nil {
 		return nil, fmt.Errorf("token tidak valid atau sudah digunakan")
 	}
+	if req.Status != "pending" || req.ExpiresAt.IsZero() || !time.Now().UTC().Before(req.ExpiresAt) {
+		return nil, fmt.Errorf("token tidak valid atau sudah kedaluwarsa")
+	}
 
 	return map[string]any{
-		"request_id":                req.ID,
-		"action":                    req.Action,
-		"reason":                    req.Reason,
+		"request_id":                 req.ID,
+		"action":                     req.Action,
+		"reason":                     req.Reason,
 		"requested_duration_minutes": req.RequestedDurationMinutes,
-		"status":                    req.Status,
-		"created_at":                req.CreatedAt,
+		"status":                     req.Status,
+		"created_at":                 req.CreatedAt,
 	}, nil
 }
 
@@ -114,7 +158,15 @@ func (s *AccountabilityService) ResolveByToken(ctx context.Context, token, statu
 	if req.Status != "pending" {
 		return fmt.Errorf("permohonan sudah diproses sebelumnya")
 	}
-	return s.repo.UpdateApprovalRequest(ctx, req.ID, status, "quick_token")
+	if req.ExpiresAt.IsZero() || !time.Now().UTC().Before(req.ExpiresAt) {
+		return fmt.Errorf("permohonan sudah kedaluwarsa")
+	}
+	if err := s.repo.UpdateApprovalRequest(ctx, req.ID, status, "quick_token"); err != nil {
+		return err
+	}
+	req.Status = status
+	s.repo.UpdateQuickTokenState(tokenHash, req)
+	return nil
 }
 
 func generateQuickToken() string {

@@ -30,6 +30,9 @@ type DataRequest func(*sql.Selector)
 // Device is the predicate function for device builders.
 type Device func(*sql.Selector)
 
+// EmergencyKeyRequest is the predicate function for emergencykeyrequest builders.
+type EmergencyKeyRequest func(*sql.Selector)
+
 // Intention is the predicate function for intention builders.
 type Intention func(*sql.Selector)
 

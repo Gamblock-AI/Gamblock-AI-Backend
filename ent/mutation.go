@@ -19,6 +19,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
@@ -58,6 +59,7 @@ const (
 	TypeDailyMission          = "DailyMission"
 	TypeDataRequest           = "DataRequest"
 	TypeDevice                = "Device"
+	TypeEmergencyKeyRequest   = "EmergencyKeyRequest"
 	TypeIntention             = "Intention"
 	TypeModelRelease          = "ModelRelease"
 	TypeModelRollout          = "ModelRollout"
@@ -82,21 +84,22 @@ const (
 // AggregateEventMutation represents an operation that mutates the AggregateEvent nodes in the graph.
 type AggregateEventMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *string
-	user_id       *string
-	device_id     *string
-	event_type    *aggregateevent.EventType
-	event_date    *time.Time
-	count         *int
-	addcount      *int
-	metadata_json *map[string]interface{}
-	created_at    *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*AggregateEvent, error)
-	predicates    []predicate.AggregateEvent
+	op              Op
+	typ             string
+	id              *string
+	user_id         *string
+	device_id       *string
+	idempotency_key *string
+	event_type      *aggregateevent.EventType
+	event_date      *time.Time
+	count           *int
+	addcount        *int
+	metadata_json   *map[string]interface{}
+	created_at      *time.Time
+	clearedFields   map[string]struct{}
+	done            bool
+	oldValue        func(context.Context) (*AggregateEvent, error)
+	predicates      []predicate.AggregateEvent
 }
 
 var _ ent.Mutation = (*AggregateEventMutation)(nil)
@@ -286,6 +289,55 @@ func (m *AggregateEventMutation) DeviceIDCleared() bool {
 func (m *AggregateEventMutation) ResetDeviceID() {
 	m.device_id = nil
 	delete(m.clearedFields, aggregateevent.FieldDeviceID)
+}
+
+// SetIdempotencyKey sets the "idempotency_key" field.
+func (m *AggregateEventMutation) SetIdempotencyKey(s string) {
+	m.idempotency_key = &s
+}
+
+// IdempotencyKey returns the value of the "idempotency_key" field in the mutation.
+func (m *AggregateEventMutation) IdempotencyKey() (r string, exists bool) {
+	v := m.idempotency_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIdempotencyKey returns the old "idempotency_key" field's value of the AggregateEvent entity.
+// If the AggregateEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AggregateEventMutation) OldIdempotencyKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIdempotencyKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIdempotencyKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIdempotencyKey: %w", err)
+	}
+	return oldValue.IdempotencyKey, nil
+}
+
+// ClearIdempotencyKey clears the value of the "idempotency_key" field.
+func (m *AggregateEventMutation) ClearIdempotencyKey() {
+	m.idempotency_key = nil
+	m.clearedFields[aggregateevent.FieldIdempotencyKey] = struct{}{}
+}
+
+// IdempotencyKeyCleared returns if the "idempotency_key" field was cleared in this mutation.
+func (m *AggregateEventMutation) IdempotencyKeyCleared() bool {
+	_, ok := m.clearedFields[aggregateevent.FieldIdempotencyKey]
+	return ok
+}
+
+// ResetIdempotencyKey resets all changes to the "idempotency_key" field.
+func (m *AggregateEventMutation) ResetIdempotencyKey() {
+	m.idempotency_key = nil
+	delete(m.clearedFields, aggregateevent.FieldIdempotencyKey)
 }
 
 // SetEventType sets the "event_type" field.
@@ -535,12 +587,15 @@ func (m *AggregateEventMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AggregateEventMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.user_id != nil {
 		fields = append(fields, aggregateevent.FieldUserID)
 	}
 	if m.device_id != nil {
 		fields = append(fields, aggregateevent.FieldDeviceID)
+	}
+	if m.idempotency_key != nil {
+		fields = append(fields, aggregateevent.FieldIdempotencyKey)
 	}
 	if m.event_type != nil {
 		fields = append(fields, aggregateevent.FieldEventType)
@@ -569,6 +624,8 @@ func (m *AggregateEventMutation) Field(name string) (ent.Value, bool) {
 		return m.UserID()
 	case aggregateevent.FieldDeviceID:
 		return m.DeviceID()
+	case aggregateevent.FieldIdempotencyKey:
+		return m.IdempotencyKey()
 	case aggregateevent.FieldEventType:
 		return m.EventType()
 	case aggregateevent.FieldEventDate:
@@ -592,6 +649,8 @@ func (m *AggregateEventMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldUserID(ctx)
 	case aggregateevent.FieldDeviceID:
 		return m.OldDeviceID(ctx)
+	case aggregateevent.FieldIdempotencyKey:
+		return m.OldIdempotencyKey(ctx)
 	case aggregateevent.FieldEventType:
 		return m.OldEventType(ctx)
 	case aggregateevent.FieldEventDate:
@@ -624,6 +683,13 @@ func (m *AggregateEventMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDeviceID(v)
+		return nil
+	case aggregateevent.FieldIdempotencyKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIdempotencyKey(v)
 		return nil
 	case aggregateevent.FieldEventType:
 		v, ok := value.(aggregateevent.EventType)
@@ -708,6 +774,9 @@ func (m *AggregateEventMutation) ClearedFields() []string {
 	if m.FieldCleared(aggregateevent.FieldDeviceID) {
 		fields = append(fields, aggregateevent.FieldDeviceID)
 	}
+	if m.FieldCleared(aggregateevent.FieldIdempotencyKey) {
+		fields = append(fields, aggregateevent.FieldIdempotencyKey)
+	}
 	if m.FieldCleared(aggregateevent.FieldMetadataJSON) {
 		fields = append(fields, aggregateevent.FieldMetadataJSON)
 	}
@@ -728,6 +797,9 @@ func (m *AggregateEventMutation) ClearField(name string) error {
 	case aggregateevent.FieldDeviceID:
 		m.ClearDeviceID()
 		return nil
+	case aggregateevent.FieldIdempotencyKey:
+		m.ClearIdempotencyKey()
+		return nil
 	case aggregateevent.FieldMetadataJSON:
 		m.ClearMetadataJSON()
 		return nil
@@ -744,6 +816,9 @@ func (m *AggregateEventMutation) ResetField(name string) error {
 		return nil
 	case aggregateevent.FieldDeviceID:
 		m.ResetDeviceID()
+		return nil
+	case aggregateevent.FieldIdempotencyKey:
+		m.ResetIdempotencyKey()
 		return nil
 	case aggregateevent.FieldEventType:
 		m.ResetEventType()
@@ -821,6 +896,7 @@ type ApprovalRequestMutation struct {
 	user_id                       *string
 	device_id                     *string
 	partner_link_id               *string
+	quick_token_hash              *string
 	action                        *approvalrequest.Action
 	status                        *approvalrequest.Status
 	reason                        *string
@@ -1060,6 +1136,55 @@ func (m *ApprovalRequestMutation) OldPartnerLinkID(ctx context.Context) (v strin
 // ResetPartnerLinkID resets all changes to the "partner_link_id" field.
 func (m *ApprovalRequestMutation) ResetPartnerLinkID() {
 	m.partner_link_id = nil
+}
+
+// SetQuickTokenHash sets the "quick_token_hash" field.
+func (m *ApprovalRequestMutation) SetQuickTokenHash(s string) {
+	m.quick_token_hash = &s
+}
+
+// QuickTokenHash returns the value of the "quick_token_hash" field in the mutation.
+func (m *ApprovalRequestMutation) QuickTokenHash() (r string, exists bool) {
+	v := m.quick_token_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldQuickTokenHash returns the old "quick_token_hash" field's value of the ApprovalRequest entity.
+// If the ApprovalRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ApprovalRequestMutation) OldQuickTokenHash(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldQuickTokenHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldQuickTokenHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldQuickTokenHash: %w", err)
+	}
+	return oldValue.QuickTokenHash, nil
+}
+
+// ClearQuickTokenHash clears the value of the "quick_token_hash" field.
+func (m *ApprovalRequestMutation) ClearQuickTokenHash() {
+	m.quick_token_hash = nil
+	m.clearedFields[approvalrequest.FieldQuickTokenHash] = struct{}{}
+}
+
+// QuickTokenHashCleared returns if the "quick_token_hash" field was cleared in this mutation.
+func (m *ApprovalRequestMutation) QuickTokenHashCleared() bool {
+	_, ok := m.clearedFields[approvalrequest.FieldQuickTokenHash]
+	return ok
+}
+
+// ResetQuickTokenHash resets all changes to the "quick_token_hash" field.
+func (m *ApprovalRequestMutation) ResetQuickTokenHash() {
+	m.quick_token_hash = nil
+	delete(m.clearedFields, approvalrequest.FieldQuickTokenHash)
 }
 
 // SetAction sets the "action" field.
@@ -1493,7 +1618,7 @@ func (m *ApprovalRequestMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ApprovalRequestMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.user_id != nil {
 		fields = append(fields, approvalrequest.FieldUserID)
 	}
@@ -1502,6 +1627,9 @@ func (m *ApprovalRequestMutation) Fields() []string {
 	}
 	if m.partner_link_id != nil {
 		fields = append(fields, approvalrequest.FieldPartnerLinkID)
+	}
+	if m.quick_token_hash != nil {
+		fields = append(fields, approvalrequest.FieldQuickTokenHash)
 	}
 	if m.action != nil {
 		fields = append(fields, approvalrequest.FieldAction)
@@ -1544,6 +1672,8 @@ func (m *ApprovalRequestMutation) Field(name string) (ent.Value, bool) {
 		return m.DeviceID()
 	case approvalrequest.FieldPartnerLinkID:
 		return m.PartnerLinkID()
+	case approvalrequest.FieldQuickTokenHash:
+		return m.QuickTokenHash()
 	case approvalrequest.FieldAction:
 		return m.Action()
 	case approvalrequest.FieldStatus:
@@ -1577,6 +1707,8 @@ func (m *ApprovalRequestMutation) OldField(ctx context.Context, name string) (en
 		return m.OldDeviceID(ctx)
 	case approvalrequest.FieldPartnerLinkID:
 		return m.OldPartnerLinkID(ctx)
+	case approvalrequest.FieldQuickTokenHash:
+		return m.OldQuickTokenHash(ctx)
 	case approvalrequest.FieldAction:
 		return m.OldAction(ctx)
 	case approvalrequest.FieldStatus:
@@ -1624,6 +1756,13 @@ func (m *ApprovalRequestMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPartnerLinkID(v)
+		return nil
+	case approvalrequest.FieldQuickTokenHash:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetQuickTokenHash(v)
 		return nil
 	case approvalrequest.FieldAction:
 		v, ok := value.(approvalrequest.Action)
@@ -1736,6 +1875,9 @@ func (m *ApprovalRequestMutation) ClearedFields() []string {
 	if m.FieldCleared(approvalrequest.FieldDeviceID) {
 		fields = append(fields, approvalrequest.FieldDeviceID)
 	}
+	if m.FieldCleared(approvalrequest.FieldQuickTokenHash) {
+		fields = append(fields, approvalrequest.FieldQuickTokenHash)
+	}
 	if m.FieldCleared(approvalrequest.FieldReason) {
 		fields = append(fields, approvalrequest.FieldReason)
 	}
@@ -1765,6 +1907,9 @@ func (m *ApprovalRequestMutation) ClearField(name string) error {
 	case approvalrequest.FieldDeviceID:
 		m.ClearDeviceID()
 		return nil
+	case approvalrequest.FieldQuickTokenHash:
+		m.ClearQuickTokenHash()
+		return nil
 	case approvalrequest.FieldReason:
 		m.ClearReason()
 		return nil
@@ -1793,6 +1938,9 @@ func (m *ApprovalRequestMutation) ResetField(name string) error {
 		return nil
 	case approvalrequest.FieldPartnerLinkID:
 		m.ResetPartnerLinkID()
+		return nil
+	case approvalrequest.FieldQuickTokenHash:
+		m.ResetQuickTokenHash()
 		return nil
 	case approvalrequest.FieldAction:
 		m.ResetAction()
@@ -5993,6 +6141,849 @@ func (m *DeviceMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *DeviceMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Device edge %s", name)
+}
+
+// EmergencyKeyRequestMutation represents an operation that mutates the EmergencyKeyRequest nodes in the graph.
+type EmergencyKeyRequestMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *string
+	requested_by       *string
+	approved_by        *string
+	status             *emergencykeyrequest.Status
+	key_hash           *string
+	request_expires_at *time.Time
+	key_expires_at     *time.Time
+	approved_at        *time.Time
+	created_at         *time.Time
+	updated_at         *time.Time
+	clearedFields      map[string]struct{}
+	done               bool
+	oldValue           func(context.Context) (*EmergencyKeyRequest, error)
+	predicates         []predicate.EmergencyKeyRequest
+}
+
+var _ ent.Mutation = (*EmergencyKeyRequestMutation)(nil)
+
+// emergencykeyrequestOption allows management of the mutation configuration using functional options.
+type emergencykeyrequestOption func(*EmergencyKeyRequestMutation)
+
+// newEmergencyKeyRequestMutation creates new mutation for the EmergencyKeyRequest entity.
+func newEmergencyKeyRequestMutation(c config, op Op, opts ...emergencykeyrequestOption) *EmergencyKeyRequestMutation {
+	m := &EmergencyKeyRequestMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeEmergencyKeyRequest,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withEmergencyKeyRequestID sets the ID field of the mutation.
+func withEmergencyKeyRequestID(id string) emergencykeyrequestOption {
+	return func(m *EmergencyKeyRequestMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *EmergencyKeyRequest
+		)
+		m.oldValue = func(ctx context.Context) (*EmergencyKeyRequest, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().EmergencyKeyRequest.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withEmergencyKeyRequest sets the old EmergencyKeyRequest of the mutation.
+func withEmergencyKeyRequest(node *EmergencyKeyRequest) emergencykeyrequestOption {
+	return func(m *EmergencyKeyRequestMutation) {
+		m.oldValue = func(context.Context) (*EmergencyKeyRequest, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m EmergencyKeyRequestMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m EmergencyKeyRequestMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of EmergencyKeyRequest entities.
+func (m *EmergencyKeyRequestMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *EmergencyKeyRequestMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *EmergencyKeyRequestMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().EmergencyKeyRequest.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetRequestedBy sets the "requested_by" field.
+func (m *EmergencyKeyRequestMutation) SetRequestedBy(s string) {
+	m.requested_by = &s
+}
+
+// RequestedBy returns the value of the "requested_by" field in the mutation.
+func (m *EmergencyKeyRequestMutation) RequestedBy() (r string, exists bool) {
+	v := m.requested_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequestedBy returns the old "requested_by" field's value of the EmergencyKeyRequest entity.
+// If the EmergencyKeyRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmergencyKeyRequestMutation) OldRequestedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequestedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequestedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequestedBy: %w", err)
+	}
+	return oldValue.RequestedBy, nil
+}
+
+// ResetRequestedBy resets all changes to the "requested_by" field.
+func (m *EmergencyKeyRequestMutation) ResetRequestedBy() {
+	m.requested_by = nil
+}
+
+// SetApprovedBy sets the "approved_by" field.
+func (m *EmergencyKeyRequestMutation) SetApprovedBy(s string) {
+	m.approved_by = &s
+}
+
+// ApprovedBy returns the value of the "approved_by" field in the mutation.
+func (m *EmergencyKeyRequestMutation) ApprovedBy() (r string, exists bool) {
+	v := m.approved_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldApprovedBy returns the old "approved_by" field's value of the EmergencyKeyRequest entity.
+// If the EmergencyKeyRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmergencyKeyRequestMutation) OldApprovedBy(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldApprovedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldApprovedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldApprovedBy: %w", err)
+	}
+	return oldValue.ApprovedBy, nil
+}
+
+// ClearApprovedBy clears the value of the "approved_by" field.
+func (m *EmergencyKeyRequestMutation) ClearApprovedBy() {
+	m.approved_by = nil
+	m.clearedFields[emergencykeyrequest.FieldApprovedBy] = struct{}{}
+}
+
+// ApprovedByCleared returns if the "approved_by" field was cleared in this mutation.
+func (m *EmergencyKeyRequestMutation) ApprovedByCleared() bool {
+	_, ok := m.clearedFields[emergencykeyrequest.FieldApprovedBy]
+	return ok
+}
+
+// ResetApprovedBy resets all changes to the "approved_by" field.
+func (m *EmergencyKeyRequestMutation) ResetApprovedBy() {
+	m.approved_by = nil
+	delete(m.clearedFields, emergencykeyrequest.FieldApprovedBy)
+}
+
+// SetStatus sets the "status" field.
+func (m *EmergencyKeyRequestMutation) SetStatus(e emergencykeyrequest.Status) {
+	m.status = &e
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *EmergencyKeyRequestMutation) Status() (r emergencykeyrequest.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the EmergencyKeyRequest entity.
+// If the EmergencyKeyRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmergencyKeyRequestMutation) OldStatus(ctx context.Context) (v emergencykeyrequest.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *EmergencyKeyRequestMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetKeyHash sets the "key_hash" field.
+func (m *EmergencyKeyRequestMutation) SetKeyHash(s string) {
+	m.key_hash = &s
+}
+
+// KeyHash returns the value of the "key_hash" field in the mutation.
+func (m *EmergencyKeyRequestMutation) KeyHash() (r string, exists bool) {
+	v := m.key_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKeyHash returns the old "key_hash" field's value of the EmergencyKeyRequest entity.
+// If the EmergencyKeyRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmergencyKeyRequestMutation) OldKeyHash(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKeyHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKeyHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKeyHash: %w", err)
+	}
+	return oldValue.KeyHash, nil
+}
+
+// ClearKeyHash clears the value of the "key_hash" field.
+func (m *EmergencyKeyRequestMutation) ClearKeyHash() {
+	m.key_hash = nil
+	m.clearedFields[emergencykeyrequest.FieldKeyHash] = struct{}{}
+}
+
+// KeyHashCleared returns if the "key_hash" field was cleared in this mutation.
+func (m *EmergencyKeyRequestMutation) KeyHashCleared() bool {
+	_, ok := m.clearedFields[emergencykeyrequest.FieldKeyHash]
+	return ok
+}
+
+// ResetKeyHash resets all changes to the "key_hash" field.
+func (m *EmergencyKeyRequestMutation) ResetKeyHash() {
+	m.key_hash = nil
+	delete(m.clearedFields, emergencykeyrequest.FieldKeyHash)
+}
+
+// SetRequestExpiresAt sets the "request_expires_at" field.
+func (m *EmergencyKeyRequestMutation) SetRequestExpiresAt(t time.Time) {
+	m.request_expires_at = &t
+}
+
+// RequestExpiresAt returns the value of the "request_expires_at" field in the mutation.
+func (m *EmergencyKeyRequestMutation) RequestExpiresAt() (r time.Time, exists bool) {
+	v := m.request_expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequestExpiresAt returns the old "request_expires_at" field's value of the EmergencyKeyRequest entity.
+// If the EmergencyKeyRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmergencyKeyRequestMutation) OldRequestExpiresAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequestExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequestExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequestExpiresAt: %w", err)
+	}
+	return oldValue.RequestExpiresAt, nil
+}
+
+// ResetRequestExpiresAt resets all changes to the "request_expires_at" field.
+func (m *EmergencyKeyRequestMutation) ResetRequestExpiresAt() {
+	m.request_expires_at = nil
+}
+
+// SetKeyExpiresAt sets the "key_expires_at" field.
+func (m *EmergencyKeyRequestMutation) SetKeyExpiresAt(t time.Time) {
+	m.key_expires_at = &t
+}
+
+// KeyExpiresAt returns the value of the "key_expires_at" field in the mutation.
+func (m *EmergencyKeyRequestMutation) KeyExpiresAt() (r time.Time, exists bool) {
+	v := m.key_expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKeyExpiresAt returns the old "key_expires_at" field's value of the EmergencyKeyRequest entity.
+// If the EmergencyKeyRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmergencyKeyRequestMutation) OldKeyExpiresAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKeyExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKeyExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKeyExpiresAt: %w", err)
+	}
+	return oldValue.KeyExpiresAt, nil
+}
+
+// ClearKeyExpiresAt clears the value of the "key_expires_at" field.
+func (m *EmergencyKeyRequestMutation) ClearKeyExpiresAt() {
+	m.key_expires_at = nil
+	m.clearedFields[emergencykeyrequest.FieldKeyExpiresAt] = struct{}{}
+}
+
+// KeyExpiresAtCleared returns if the "key_expires_at" field was cleared in this mutation.
+func (m *EmergencyKeyRequestMutation) KeyExpiresAtCleared() bool {
+	_, ok := m.clearedFields[emergencykeyrequest.FieldKeyExpiresAt]
+	return ok
+}
+
+// ResetKeyExpiresAt resets all changes to the "key_expires_at" field.
+func (m *EmergencyKeyRequestMutation) ResetKeyExpiresAt() {
+	m.key_expires_at = nil
+	delete(m.clearedFields, emergencykeyrequest.FieldKeyExpiresAt)
+}
+
+// SetApprovedAt sets the "approved_at" field.
+func (m *EmergencyKeyRequestMutation) SetApprovedAt(t time.Time) {
+	m.approved_at = &t
+}
+
+// ApprovedAt returns the value of the "approved_at" field in the mutation.
+func (m *EmergencyKeyRequestMutation) ApprovedAt() (r time.Time, exists bool) {
+	v := m.approved_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldApprovedAt returns the old "approved_at" field's value of the EmergencyKeyRequest entity.
+// If the EmergencyKeyRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmergencyKeyRequestMutation) OldApprovedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldApprovedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldApprovedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldApprovedAt: %w", err)
+	}
+	return oldValue.ApprovedAt, nil
+}
+
+// ClearApprovedAt clears the value of the "approved_at" field.
+func (m *EmergencyKeyRequestMutation) ClearApprovedAt() {
+	m.approved_at = nil
+	m.clearedFields[emergencykeyrequest.FieldApprovedAt] = struct{}{}
+}
+
+// ApprovedAtCleared returns if the "approved_at" field was cleared in this mutation.
+func (m *EmergencyKeyRequestMutation) ApprovedAtCleared() bool {
+	_, ok := m.clearedFields[emergencykeyrequest.FieldApprovedAt]
+	return ok
+}
+
+// ResetApprovedAt resets all changes to the "approved_at" field.
+func (m *EmergencyKeyRequestMutation) ResetApprovedAt() {
+	m.approved_at = nil
+	delete(m.clearedFields, emergencykeyrequest.FieldApprovedAt)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *EmergencyKeyRequestMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *EmergencyKeyRequestMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the EmergencyKeyRequest entity.
+// If the EmergencyKeyRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmergencyKeyRequestMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *EmergencyKeyRequestMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *EmergencyKeyRequestMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *EmergencyKeyRequestMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the EmergencyKeyRequest entity.
+// If the EmergencyKeyRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmergencyKeyRequestMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *EmergencyKeyRequestMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the EmergencyKeyRequestMutation builder.
+func (m *EmergencyKeyRequestMutation) Where(ps ...predicate.EmergencyKeyRequest) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the EmergencyKeyRequestMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *EmergencyKeyRequestMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.EmergencyKeyRequest, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *EmergencyKeyRequestMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *EmergencyKeyRequestMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (EmergencyKeyRequest).
+func (m *EmergencyKeyRequestMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *EmergencyKeyRequestMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.requested_by != nil {
+		fields = append(fields, emergencykeyrequest.FieldRequestedBy)
+	}
+	if m.approved_by != nil {
+		fields = append(fields, emergencykeyrequest.FieldApprovedBy)
+	}
+	if m.status != nil {
+		fields = append(fields, emergencykeyrequest.FieldStatus)
+	}
+	if m.key_hash != nil {
+		fields = append(fields, emergencykeyrequest.FieldKeyHash)
+	}
+	if m.request_expires_at != nil {
+		fields = append(fields, emergencykeyrequest.FieldRequestExpiresAt)
+	}
+	if m.key_expires_at != nil {
+		fields = append(fields, emergencykeyrequest.FieldKeyExpiresAt)
+	}
+	if m.approved_at != nil {
+		fields = append(fields, emergencykeyrequest.FieldApprovedAt)
+	}
+	if m.created_at != nil {
+		fields = append(fields, emergencykeyrequest.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, emergencykeyrequest.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *EmergencyKeyRequestMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case emergencykeyrequest.FieldRequestedBy:
+		return m.RequestedBy()
+	case emergencykeyrequest.FieldApprovedBy:
+		return m.ApprovedBy()
+	case emergencykeyrequest.FieldStatus:
+		return m.Status()
+	case emergencykeyrequest.FieldKeyHash:
+		return m.KeyHash()
+	case emergencykeyrequest.FieldRequestExpiresAt:
+		return m.RequestExpiresAt()
+	case emergencykeyrequest.FieldKeyExpiresAt:
+		return m.KeyExpiresAt()
+	case emergencykeyrequest.FieldApprovedAt:
+		return m.ApprovedAt()
+	case emergencykeyrequest.FieldCreatedAt:
+		return m.CreatedAt()
+	case emergencykeyrequest.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *EmergencyKeyRequestMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case emergencykeyrequest.FieldRequestedBy:
+		return m.OldRequestedBy(ctx)
+	case emergencykeyrequest.FieldApprovedBy:
+		return m.OldApprovedBy(ctx)
+	case emergencykeyrequest.FieldStatus:
+		return m.OldStatus(ctx)
+	case emergencykeyrequest.FieldKeyHash:
+		return m.OldKeyHash(ctx)
+	case emergencykeyrequest.FieldRequestExpiresAt:
+		return m.OldRequestExpiresAt(ctx)
+	case emergencykeyrequest.FieldKeyExpiresAt:
+		return m.OldKeyExpiresAt(ctx)
+	case emergencykeyrequest.FieldApprovedAt:
+		return m.OldApprovedAt(ctx)
+	case emergencykeyrequest.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case emergencykeyrequest.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown EmergencyKeyRequest field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *EmergencyKeyRequestMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case emergencykeyrequest.FieldRequestedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequestedBy(v)
+		return nil
+	case emergencykeyrequest.FieldApprovedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetApprovedBy(v)
+		return nil
+	case emergencykeyrequest.FieldStatus:
+		v, ok := value.(emergencykeyrequest.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case emergencykeyrequest.FieldKeyHash:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKeyHash(v)
+		return nil
+	case emergencykeyrequest.FieldRequestExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequestExpiresAt(v)
+		return nil
+	case emergencykeyrequest.FieldKeyExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKeyExpiresAt(v)
+		return nil
+	case emergencykeyrequest.FieldApprovedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetApprovedAt(v)
+		return nil
+	case emergencykeyrequest.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case emergencykeyrequest.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown EmergencyKeyRequest field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *EmergencyKeyRequestMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *EmergencyKeyRequestMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *EmergencyKeyRequestMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown EmergencyKeyRequest numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *EmergencyKeyRequestMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(emergencykeyrequest.FieldApprovedBy) {
+		fields = append(fields, emergencykeyrequest.FieldApprovedBy)
+	}
+	if m.FieldCleared(emergencykeyrequest.FieldKeyHash) {
+		fields = append(fields, emergencykeyrequest.FieldKeyHash)
+	}
+	if m.FieldCleared(emergencykeyrequest.FieldKeyExpiresAt) {
+		fields = append(fields, emergencykeyrequest.FieldKeyExpiresAt)
+	}
+	if m.FieldCleared(emergencykeyrequest.FieldApprovedAt) {
+		fields = append(fields, emergencykeyrequest.FieldApprovedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *EmergencyKeyRequestMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *EmergencyKeyRequestMutation) ClearField(name string) error {
+	switch name {
+	case emergencykeyrequest.FieldApprovedBy:
+		m.ClearApprovedBy()
+		return nil
+	case emergencykeyrequest.FieldKeyHash:
+		m.ClearKeyHash()
+		return nil
+	case emergencykeyrequest.FieldKeyExpiresAt:
+		m.ClearKeyExpiresAt()
+		return nil
+	case emergencykeyrequest.FieldApprovedAt:
+		m.ClearApprovedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown EmergencyKeyRequest nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *EmergencyKeyRequestMutation) ResetField(name string) error {
+	switch name {
+	case emergencykeyrequest.FieldRequestedBy:
+		m.ResetRequestedBy()
+		return nil
+	case emergencykeyrequest.FieldApprovedBy:
+		m.ResetApprovedBy()
+		return nil
+	case emergencykeyrequest.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case emergencykeyrequest.FieldKeyHash:
+		m.ResetKeyHash()
+		return nil
+	case emergencykeyrequest.FieldRequestExpiresAt:
+		m.ResetRequestExpiresAt()
+		return nil
+	case emergencykeyrequest.FieldKeyExpiresAt:
+		m.ResetKeyExpiresAt()
+		return nil
+	case emergencykeyrequest.FieldApprovedAt:
+		m.ResetApprovedAt()
+		return nil
+	case emergencykeyrequest.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case emergencykeyrequest.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown EmergencyKeyRequest field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *EmergencyKeyRequestMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *EmergencyKeyRequestMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *EmergencyKeyRequestMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *EmergencyKeyRequestMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *EmergencyKeyRequestMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *EmergencyKeyRequestMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *EmergencyKeyRequestMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown EmergencyKeyRequest unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *EmergencyKeyRequestMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown EmergencyKeyRequest edge %s", name)
 }
 
 // IntentionMutation represents an operation that mutates the Intention nodes in the graph.
@@ -18834,6 +19825,7 @@ type UserMutation struct {
 	id             *string
 	email          *string
 	display_name   *string
+	password_hash  *string
 	avatar_url     *string
 	google_subject *string
 	role           *user.Role
@@ -19020,6 +20012,55 @@ func (m *UserMutation) OldDisplayName(ctx context.Context) (v string, err error)
 // ResetDisplayName resets all changes to the "display_name" field.
 func (m *UserMutation) ResetDisplayName() {
 	m.display_name = nil
+}
+
+// SetPasswordHash sets the "password_hash" field.
+func (m *UserMutation) SetPasswordHash(s string) {
+	m.password_hash = &s
+}
+
+// PasswordHash returns the value of the "password_hash" field in the mutation.
+func (m *UserMutation) PasswordHash() (r string, exists bool) {
+	v := m.password_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPasswordHash returns the old "password_hash" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldPasswordHash(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPasswordHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPasswordHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPasswordHash: %w", err)
+	}
+	return oldValue.PasswordHash, nil
+}
+
+// ClearPasswordHash clears the value of the "password_hash" field.
+func (m *UserMutation) ClearPasswordHash() {
+	m.password_hash = nil
+	m.clearedFields[user.FieldPasswordHash] = struct{}{}
+}
+
+// PasswordHashCleared returns if the "password_hash" field was cleared in this mutation.
+func (m *UserMutation) PasswordHashCleared() bool {
+	_, ok := m.clearedFields[user.FieldPasswordHash]
+	return ok
+}
+
+// ResetPasswordHash resets all changes to the "password_hash" field.
+func (m *UserMutation) ResetPasswordHash() {
+	m.password_hash = nil
+	delete(m.clearedFields, user.FieldPasswordHash)
 }
 
 // SetAvatarURL sets the "avatar_url" field.
@@ -19311,12 +20352,15 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
 	if m.display_name != nil {
 		fields = append(fields, user.FieldDisplayName)
+	}
+	if m.password_hash != nil {
+		fields = append(fields, user.FieldPasswordHash)
 	}
 	if m.avatar_url != nil {
 		fields = append(fields, user.FieldAvatarURL)
@@ -19348,6 +20392,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Email()
 	case user.FieldDisplayName:
 		return m.DisplayName()
+	case user.FieldPasswordHash:
+		return m.PasswordHash()
 	case user.FieldAvatarURL:
 		return m.AvatarURL()
 	case user.FieldGoogleSubject:
@@ -19373,6 +20419,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldEmail(ctx)
 	case user.FieldDisplayName:
 		return m.OldDisplayName(ctx)
+	case user.FieldPasswordHash:
+		return m.OldPasswordHash(ctx)
 	case user.FieldAvatarURL:
 		return m.OldAvatarURL(ctx)
 	case user.FieldGoogleSubject:
@@ -19407,6 +20455,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDisplayName(v)
+		return nil
+	case user.FieldPasswordHash:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPasswordHash(v)
 		return nil
 	case user.FieldAvatarURL:
 		v, ok := value.(string)
@@ -19480,6 +20535,9 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *UserMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(user.FieldPasswordHash) {
+		fields = append(fields, user.FieldPasswordHash)
+	}
 	if m.FieldCleared(user.FieldAvatarURL) {
 		fields = append(fields, user.FieldAvatarURL)
 	}
@@ -19503,6 +20561,9 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
 	switch name {
+	case user.FieldPasswordHash:
+		m.ClearPasswordHash()
+		return nil
 	case user.FieldAvatarURL:
 		m.ClearAvatarURL()
 		return nil
@@ -19525,6 +20586,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldDisplayName:
 		m.ResetDisplayName()
+		return nil
+	case user.FieldPasswordHash:
+		m.ResetPasswordHash()
 		return nil
 	case user.FieldAvatarURL:
 		m.ResetAvatarURL()

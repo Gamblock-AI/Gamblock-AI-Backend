@@ -1,6 +1,8 @@
 package config
 
 import (
+	"encoding/hex"
+	"fmt"
 	"strings"
 	"time"
 
@@ -24,6 +26,31 @@ type Config struct {
 	WhatsAppAPIKey       string
 	WhatsAppPhoneID      string
 	WhatsAppBaseURL      string
+	EnableDevLogin       bool
+	EnableDemoData       bool
+}
+
+func (c Config) Validate() error {
+	if !c.IsProduction() {
+		return nil
+	}
+	if c.DatabaseURL == "" {
+		return fmt.Errorf("DATABASE_URL is required in production")
+	}
+	if len(c.JWTAccessSecret) < 32 || c.JWTAccessSecret == "dev-only-change-me" {
+		return fmt.Errorf("JWT_ACCESS_SECRET must be a production secret of at least 32 characters")
+	}
+	key, err := hex.DecodeString(c.JournalEncryptionKey)
+	if err != nil || len(key) != 32 {
+		return fmt.Errorf("JOURNAL_ENCRYPTION_KEY must be a 64-character AES-256 hex key")
+	}
+	if c.EnableDevLogin || c.EnableDemoData {
+		return fmt.Errorf("development login and demo data must be disabled in production")
+	}
+	if c.NotificationMode == "demo" {
+		return fmt.Errorf("NOTIFICATION_MODE=demo is not allowed in production")
+	}
+	return nil
 }
 
 func Load() Config {
@@ -31,7 +58,7 @@ func Load() Config {
 	viper.SetDefault("HTTP_ADDR", ":8080")
 	viper.SetDefault("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable")
 	viper.SetDefault("GOOGLE_CLIENT_ID", "")
-	viper.SetDefault("PUBLIC_WEB_BASE_URL", "http://localhost:8080")
+	viper.SetDefault("PUBLIC_WEB_BASE_URL", "http://localhost:3000")
 	viper.SetDefault("NOTIFICATION_MODE", "demo")
 	viper.SetDefault("JWT_ACCESS_SECRET", "dev-only-change-me")
 	viper.SetDefault("JWT_ACCESS_TTL", "24h")
@@ -43,6 +70,8 @@ func Load() Config {
 	viper.SetDefault("WHATSAPP_API_KEY", "")
 	viper.SetDefault("WHATSAPP_PHONE_ID", "")
 	viper.SetDefault("WHATSAPP_BASE_URL", "https://graph.facebook.com/v18.0")
+	viper.SetDefault("ENABLE_DEV_LOGIN", false)
+	viper.SetDefault("ENABLE_DEMO_DATA", false)
 	viper.AutomaticEnv()
 
 	ttl, err := time.ParseDuration(viper.GetString("JWT_ACCESS_TTL"))
@@ -71,6 +100,8 @@ func Load() Config {
 		WhatsAppAPIKey:       viper.GetString("WHATSAPP_API_KEY"),
 		WhatsAppPhoneID:      viper.GetString("WHATSAPP_PHONE_ID"),
 		WhatsAppBaseURL:      viper.GetString("WHATSAPP_BASE_URL"),
+		EnableDevLogin:       viper.GetBool("ENABLE_DEV_LOGIN"),
+		EnableDemoData:       viper.GetBool("ENABLE_DEMO_DATA"),
 	}
 }
 

@@ -22,6 +22,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
@@ -64,6 +65,8 @@ type Client struct {
 	DataRequest *DataRequestClient
 	// Device is the client for interacting with the Device builders.
 	Device *DeviceClient
+	// EmergencyKeyRequest is the client for interacting with the EmergencyKeyRequest builders.
+	EmergencyKeyRequest *EmergencyKeyRequestClient
 	// Intention is the client for interacting with the Intention builders.
 	Intention *IntentionClient
 	// ModelRelease is the client for interacting with the ModelRelease builders.
@@ -121,6 +124,7 @@ func (c *Client) init() {
 	c.DailyMission = NewDailyMissionClient(c.config)
 	c.DataRequest = NewDataRequestClient(c.config)
 	c.Device = NewDeviceClient(c.config)
+	c.EmergencyKeyRequest = NewEmergencyKeyRequestClient(c.config)
 	c.Intention = NewIntentionClient(c.config)
 	c.ModelRelease = NewModelReleaseClient(c.config)
 	c.ModelRollout = NewModelRolloutClient(c.config)
@@ -240,6 +244,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		DailyMission:          NewDailyMissionClient(cfg),
 		DataRequest:           NewDataRequestClient(cfg),
 		Device:                NewDeviceClient(cfg),
+		EmergencyKeyRequest:   NewEmergencyKeyRequestClient(cfg),
 		Intention:             NewIntentionClient(cfg),
 		ModelRelease:          NewModelReleaseClient(cfg),
 		ModelRollout:          NewModelRolloutClient(cfg),
@@ -286,6 +291,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		DailyMission:          NewDailyMissionClient(cfg),
 		DataRequest:           NewDataRequestClient(cfg),
 		Device:                NewDeviceClient(cfg),
+		EmergencyKeyRequest:   NewEmergencyKeyRequestClient(cfg),
 		Intention:             NewIntentionClient(cfg),
 		ModelRelease:          NewModelReleaseClient(cfg),
 		ModelRollout:          NewModelRolloutClient(cfg),
@@ -335,12 +341,12 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.CheckIn, c.ContentProgress,
-		c.DailyMission, c.DataRequest, c.Device, c.Intention, c.ModelRelease,
-		c.ModelRollout, c.NetworkRulesetRelease, c.NotificationDelivery,
-		c.Organization, c.OrganizationInvite, c.OrganizationMember,
-		c.OrganizationPolicy, c.PartnerLink, c.PsychoeducationModule, c.Reflection,
-		c.RefreshToken, c.ReleaseCohort, c.ReportRollup, c.RulesetRelease,
-		c.SupportActionAudit, c.SupportCase, c.User,
+		c.DailyMission, c.DataRequest, c.Device, c.EmergencyKeyRequest, c.Intention,
+		c.ModelRelease, c.ModelRollout, c.NetworkRulesetRelease,
+		c.NotificationDelivery, c.Organization, c.OrganizationInvite,
+		c.OrganizationMember, c.OrganizationPolicy, c.PartnerLink,
+		c.PsychoeducationModule, c.Reflection, c.RefreshToken, c.ReleaseCohort,
+		c.ReportRollup, c.RulesetRelease, c.SupportActionAudit, c.SupportCase, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -351,12 +357,12 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.CheckIn, c.ContentProgress,
-		c.DailyMission, c.DataRequest, c.Device, c.Intention, c.ModelRelease,
-		c.ModelRollout, c.NetworkRulesetRelease, c.NotificationDelivery,
-		c.Organization, c.OrganizationInvite, c.OrganizationMember,
-		c.OrganizationPolicy, c.PartnerLink, c.PsychoeducationModule, c.Reflection,
-		c.RefreshToken, c.ReleaseCohort, c.ReportRollup, c.RulesetRelease,
-		c.SupportActionAudit, c.SupportCase, c.User,
+		c.DailyMission, c.DataRequest, c.Device, c.EmergencyKeyRequest, c.Intention,
+		c.ModelRelease, c.ModelRollout, c.NetworkRulesetRelease,
+		c.NotificationDelivery, c.Organization, c.OrganizationInvite,
+		c.OrganizationMember, c.OrganizationPolicy, c.PartnerLink,
+		c.PsychoeducationModule, c.Reflection, c.RefreshToken, c.ReleaseCohort,
+		c.ReportRollup, c.RulesetRelease, c.SupportActionAudit, c.SupportCase, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -381,6 +387,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.DataRequest.mutate(ctx, m)
 	case *DeviceMutation:
 		return c.Device.mutate(ctx, m)
+	case *EmergencyKeyRequestMutation:
+		return c.EmergencyKeyRequest.mutate(ctx, m)
 	case *IntentionMutation:
 		return c.Intention.mutate(ctx, m)
 	case *ModelReleaseMutation:
@@ -1485,6 +1493,139 @@ func (c *DeviceClient) mutate(ctx context.Context, m *DeviceMutation) (Value, er
 		return (&DeviceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Device mutation op: %q", m.Op())
+	}
+}
+
+// EmergencyKeyRequestClient is a client for the EmergencyKeyRequest schema.
+type EmergencyKeyRequestClient struct {
+	config
+}
+
+// NewEmergencyKeyRequestClient returns a client for the EmergencyKeyRequest from the given config.
+func NewEmergencyKeyRequestClient(c config) *EmergencyKeyRequestClient {
+	return &EmergencyKeyRequestClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `emergencykeyrequest.Hooks(f(g(h())))`.
+func (c *EmergencyKeyRequestClient) Use(hooks ...Hook) {
+	c.hooks.EmergencyKeyRequest = append(c.hooks.EmergencyKeyRequest, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `emergencykeyrequest.Intercept(f(g(h())))`.
+func (c *EmergencyKeyRequestClient) Intercept(interceptors ...Interceptor) {
+	c.inters.EmergencyKeyRequest = append(c.inters.EmergencyKeyRequest, interceptors...)
+}
+
+// Create returns a builder for creating a EmergencyKeyRequest entity.
+func (c *EmergencyKeyRequestClient) Create() *EmergencyKeyRequestCreate {
+	mutation := newEmergencyKeyRequestMutation(c.config, OpCreate)
+	return &EmergencyKeyRequestCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of EmergencyKeyRequest entities.
+func (c *EmergencyKeyRequestClient) CreateBulk(builders ...*EmergencyKeyRequestCreate) *EmergencyKeyRequestCreateBulk {
+	return &EmergencyKeyRequestCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *EmergencyKeyRequestClient) MapCreateBulk(slice any, setFunc func(*EmergencyKeyRequestCreate, int)) *EmergencyKeyRequestCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &EmergencyKeyRequestCreateBulk{err: fmt.Errorf("calling to EmergencyKeyRequestClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*EmergencyKeyRequestCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &EmergencyKeyRequestCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for EmergencyKeyRequest.
+func (c *EmergencyKeyRequestClient) Update() *EmergencyKeyRequestUpdate {
+	mutation := newEmergencyKeyRequestMutation(c.config, OpUpdate)
+	return &EmergencyKeyRequestUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EmergencyKeyRequestClient) UpdateOne(_m *EmergencyKeyRequest) *EmergencyKeyRequestUpdateOne {
+	mutation := newEmergencyKeyRequestMutation(c.config, OpUpdateOne, withEmergencyKeyRequest(_m))
+	return &EmergencyKeyRequestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EmergencyKeyRequestClient) UpdateOneID(id string) *EmergencyKeyRequestUpdateOne {
+	mutation := newEmergencyKeyRequestMutation(c.config, OpUpdateOne, withEmergencyKeyRequestID(id))
+	return &EmergencyKeyRequestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for EmergencyKeyRequest.
+func (c *EmergencyKeyRequestClient) Delete() *EmergencyKeyRequestDelete {
+	mutation := newEmergencyKeyRequestMutation(c.config, OpDelete)
+	return &EmergencyKeyRequestDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *EmergencyKeyRequestClient) DeleteOne(_m *EmergencyKeyRequest) *EmergencyKeyRequestDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *EmergencyKeyRequestClient) DeleteOneID(id string) *EmergencyKeyRequestDeleteOne {
+	builder := c.Delete().Where(emergencykeyrequest.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EmergencyKeyRequestDeleteOne{builder}
+}
+
+// Query returns a query builder for EmergencyKeyRequest.
+func (c *EmergencyKeyRequestClient) Query() *EmergencyKeyRequestQuery {
+	return &EmergencyKeyRequestQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeEmergencyKeyRequest},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a EmergencyKeyRequest entity by its id.
+func (c *EmergencyKeyRequestClient) Get(ctx context.Context, id string) (*EmergencyKeyRequest, error) {
+	return c.Query().Where(emergencykeyrequest.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EmergencyKeyRequestClient) GetX(ctx context.Context, id string) *EmergencyKeyRequest {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *EmergencyKeyRequestClient) Hooks() []Hook {
+	return c.hooks.EmergencyKeyRequest
+}
+
+// Interceptors returns the client interceptors.
+func (c *EmergencyKeyRequestClient) Interceptors() []Interceptor {
+	return c.inters.EmergencyKeyRequest
+}
+
+func (c *EmergencyKeyRequestClient) mutate(ctx context.Context, m *EmergencyKeyRequestMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EmergencyKeyRequestCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EmergencyKeyRequestUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EmergencyKeyRequestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EmergencyKeyRequestDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown EmergencyKeyRequest mutation op: %q", m.Op())
 	}
 }
 
@@ -4019,18 +4160,19 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 type (
 	hooks struct {
 		AggregateEvent, ApprovalRequest, AuditLog, CheckIn, ContentProgress,
-		DailyMission, DataRequest, Device, Intention, ModelRelease, ModelRollout,
-		NetworkRulesetRelease, NotificationDelivery, Organization, OrganizationInvite,
-		OrganizationMember, OrganizationPolicy, PartnerLink, PsychoeducationModule,
-		Reflection, RefreshToken, ReleaseCohort, ReportRollup, RulesetRelease,
-		SupportActionAudit, SupportCase, User []ent.Hook
+		DailyMission, DataRequest, Device, EmergencyKeyRequest, Intention,
+		ModelRelease, ModelRollout, NetworkRulesetRelease, NotificationDelivery,
+		Organization, OrganizationInvite, OrganizationMember, OrganizationPolicy,
+		PartnerLink, PsychoeducationModule, Reflection, RefreshToken, ReleaseCohort,
+		ReportRollup, RulesetRelease, SupportActionAudit, SupportCase, User []ent.Hook
 	}
 	inters struct {
 		AggregateEvent, ApprovalRequest, AuditLog, CheckIn, ContentProgress,
-		DailyMission, DataRequest, Device, Intention, ModelRelease, ModelRollout,
-		NetworkRulesetRelease, NotificationDelivery, Organization, OrganizationInvite,
-		OrganizationMember, OrganizationPolicy, PartnerLink, PsychoeducationModule,
-		Reflection, RefreshToken, ReleaseCohort, ReportRollup, RulesetRelease,
-		SupportActionAudit, SupportCase, User []ent.Interceptor
+		DailyMission, DataRequest, Device, EmergencyKeyRequest, Intention,
+		ModelRelease, ModelRollout, NetworkRulesetRelease, NotificationDelivery,
+		Organization, OrganizationInvite, OrganizationMember, OrganizationPolicy,
+		PartnerLink, PsychoeducationModule, Reflection, RefreshToken, ReleaseCohort,
+		ReportRollup, RulesetRelease, SupportActionAudit, SupportCase,
+		User []ent.Interceptor
 	}
 )

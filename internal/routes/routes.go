@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/handler"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
@@ -36,8 +36,8 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	v1.GET("/approval-requests", mid.AuthRequired(), h.GetApprovalRequests)
 	v1.POST("/approval-requests", mid.AuthRequired(), h.CreateApprovalRequest)
 	v1.POST("/approval-requests/:id/cancel", mid.AuthRequired(), h.CancelApprovalRequest)
-	v1.POST("/approval-requests/:id/approve", mid.AuthRequired(), mid.RequireRoles("partner", "platform_admin"), h.ApproveApprovalRequest)
-	v1.POST("/approval-requests/:id/deny", mid.AuthRequired(), mid.RequireRoles("partner", "platform_admin"), h.DenyApprovalRequest)
+	v1.POST("/approval-requests/:id/approve", mid.AuthRequired(), h.ApproveApprovalRequest)
+	v1.POST("/approval-requests/:id/deny", mid.AuthRequired(), h.DenyApprovalRequest)
 
 	// Quick Approval (no auth)
 	v1.GET("/approval-requests/verify/:token", h.VerifyApprovalToken)
@@ -81,22 +81,27 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	v1.POST("/devices/unlock", h.EmergencyUnlock)
 
 	// Client Dashboard / Protection Info
+	v1.GET("/me", mid.AuthRequired(), h.GetProfile)
+	v1.PATCH("/me", mid.AuthRequired(), h.UpdateProfile)
 	v1.GET("/client/dashboard-summary", mid.AuthRequired(), h.ClientDashboardSummary)
 	v1.GET("/client/protection-status", mid.AuthRequired(), h.ClientProtectionStatus)
 	v1.GET("/client/progress", mid.AuthRequired(), h.ClientProgressSnapshot)
+	v1.POST("/client/aggregate-events", mid.AuthRequired(), h.RecordAggregateEvent)
 
 	// Portal Overview
-	v1.GET("/portal/overview", mid.AuthRequired(), h.PortalOverview)
+	v1.GET("/portal/overview", mid.AuthRequired(), mid.RequireRoles("platform_admin", "support_operator", "model_release_operator", "content_admin"), h.PortalOverview)
 
 	// Admin Control Portal
 	admin := v1.Group("/admin")
-	admin.Use(mid.AuthRequired(), mid.RequireRoles("platform_admin", "support_operator", "model_release_operator", "content_admin"))
+	admin.Use(mid.AuthRequired())
 	{
-		admin.GET("/content/modules", h.AdminModules)
-		admin.POST("/content/modules", h.CreateAdminModule)
-		admin.GET("/model-releases", h.AdminModelReleases)
-		admin.GET("/support-cases", h.AdminSupportCases)
-		admin.POST("/emergency-key", h.GenerateEmergencyKey)
+		admin.GET("/content/modules", mid.RequireRoles("content_admin", "platform_admin"), h.AdminModules)
+		admin.POST("/content/modules", mid.RequireRoles("content_admin", "platform_admin"), h.CreateAdminModule)
+		admin.GET("/model-releases", mid.RequireRoles("model_release_operator", "platform_admin"), h.AdminModelReleases)
+		admin.GET("/support-cases", mid.RequireRoles("support_operator", "platform_admin"), h.AdminSupportCases)
+		admin.GET("/emergency-key-requests", mid.RequireRoles("platform_admin"), h.PendingEmergencyKeyRequests)
+		admin.POST("/emergency-key-requests", mid.RequireRoles("platform_admin"), h.RequestEmergencyKey)
+		admin.POST("/emergency-key-requests/:id/approve", mid.RequireRoles("platform_admin"), h.ApproveEmergencyKeyRequest)
 	}
 
 	// Releases Creation

@@ -285,7 +285,7 @@ func TestPartner_InvitationAcceptRevoke(t *testing.T) {
 	_ = err
 
 	// Revoke.
-	err = repo.RevokePartner(ctx, "pl_t")
+	err = repo.RevokePartner(ctx, "pl_t", "usr_gading")
 	_ = err
 }
 
