@@ -22,9 +22,9 @@ func TestEducation_CreateAppendsToStore(t *testing.T) {
 
 func TestGetEducationModuleBySlug(t *testing.T) {
 	repo, _ := newRepo(t)
-	module, err := repo.GetEducationModuleBySlug(context.Background(), "pause-before-impulse")
+	module, err := repo.GetEducationModuleBySlug(context.Background(), "memahami-siklus-dorongan")
 	require.NoError(t, err)
-	assert.Equal(t, "pause-before-impulse", module.Slug)
+	assert.Equal(t, "memahami-siklus-dorongan", module.Slug)
 }
 
 func TestGetEducationModuleBySlug_NotFound(t *testing.T) {

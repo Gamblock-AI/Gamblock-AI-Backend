@@ -15,6 +15,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/api"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/db"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/seed"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
 )
 
@@ -38,6 +39,9 @@ func main() {
 	backendStore := store.New()
 	if cfg.EnableDemoData && !cfg.IsProduction() {
 		backendStore = store.NewSeeded()
+		if err := seed.InstallEducationAssets(cfg.MediaStoragePath); err != nil {
+			logger.Warn("education demo assets unavailable", zap.Error(err))
+		}
 	}
 	var entClient *ent.Client
 	var closeDB func() error
@@ -56,7 +60,7 @@ func main() {
 			logger.Warn("database migration failed; using in-memory store", zap.Error(err))
 			_ = closer()
 		} else if cfg.EnableDemoData && !cfg.IsProduction() {
-			if err := db.Seed(ctx, client); err != nil {
+			if err := db.Seed(ctx, client, cfg.MediaStoragePath); err != nil {
 				logger.Warn("database demo seed failed; using in-memory store", zap.Error(err))
 				_ = closer()
 			} else {

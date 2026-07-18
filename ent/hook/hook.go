@@ -105,6 +105,18 @@ func (f DeviceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DeviceMutation", m)
 }
 
+// The EducationMediaFunc type is an adapter to allow the use of ordinary
+// function as EducationMedia mutator.
+type EducationMediaFunc func(context.Context, *ent.EducationMediaMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EducationMediaFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EducationMediaMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EducationMediaMutation", m)
+}
+
 // The EmergencyKeyRequestFunc type is an adapter to allow the use of ordinary
 // function as EmergencyKeyRequest mutator.
 type EmergencyKeyRequestFunc func(context.Context, *ent.EmergencyKeyRequestMutation) (ent.Value, error)
@@ -247,6 +259,18 @@ func (f PsychoeducationModuleFunc) Mutate(ctx context.Context, m ent.Mutation) (
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PsychoeducationModuleMutation", m)
+}
+
+// The PsychoeducationProgressFunc type is an adapter to allow the use of ordinary
+// function as PsychoeducationProgress mutator.
+type PsychoeducationProgressFunc func(context.Context, *ent.PsychoeducationProgressMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PsychoeducationProgressFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PsychoeducationProgressMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PsychoeducationProgressMutation", m)
 }
 
 // The ReflectionFunc type is an adapter to allow the use of ordinary

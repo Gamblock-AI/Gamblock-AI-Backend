@@ -103,16 +103,26 @@ var (
 	DailyMissionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
 		{Name: "user_id", Type: field.TypeString},
+		{Name: "mission_date", Type: field.TypeString, Nullable: true},
 		{Name: "mission_key", Type: field.TypeString},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"completed", "skipped", "pending"}, Default: "completed"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"completed", "skipped", "pending"}, Default: "pending"},
+		{Name: "exp_reward", Type: field.TypeInt, Default: 0},
 		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// DailyMissionsTable holds the schema information for the "daily_missions" table.
 	DailyMissionsTable = &schema.Table{
 		Name:       "daily_missions",
 		Columns:    DailyMissionsColumns,
 		PrimaryKey: []*schema.Column{DailyMissionsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "dailymission_user_id_mission_date_mission_key",
+				Unique:  true,
+				Columns: []*schema.Column{DailyMissionsColumns[1], DailyMissionsColumns[2], DailyMissionsColumns[3]},
+			},
+		},
 	}
 	// DataRequestsColumns holds the columns for the "data_requests" table.
 	DataRequestsColumns = []*schema.Column{
@@ -158,6 +168,31 @@ var (
 				Columns: []*schema.Column{DevicesColumns[1], DevicesColumns[2]},
 			},
 		},
+	}
+	// EducationMediaColumns holds the columns for the "education_media" table.
+	EducationMediaColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"upload", "external"}},
+		{Name: "purpose", Type: field.TypeEnum, Enums: []string{"thumbnail", "content"}},
+		{Name: "media_type", Type: field.TypeEnum, Enums: []string{"image", "video", "pdf"}},
+		{Name: "mime_type", Type: field.TypeString},
+		{Name: "storage_key", Type: field.TypeString, Nullable: true},
+		{Name: "external_url", Type: field.TypeString, Nullable: true},
+		{Name: "original_name", Type: field.TypeString, Nullable: true},
+		{Name: "size_bytes", Type: field.TypeInt64, Default: 0},
+		{Name: "width", Type: field.TypeInt, Default: 0},
+		{Name: "height", Type: field.TypeInt, Default: 0},
+		{Name: "sha256", Type: field.TypeString, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "published"}, Default: "draft"},
+		{Name: "created_by", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// EducationMediaTable holds the schema information for the "education_media" table.
+	EducationMediaTable = &schema.Table{
+		Name:       "education_media",
+		Columns:    EducationMediaColumns,
+		PrimaryKey: []*schema.Column{EducationMediaColumns[0]},
 	}
 	// EmergencyKeyRequestsColumns holds the columns for the "emergency_key_requests" table.
 	EmergencyKeyRequestsColumns = []*schema.Column{
@@ -367,7 +402,15 @@ var (
 		{Name: "summary", Type: field.TypeString},
 		{Name: "body_markdown", Type: field.TypeString, Size: 2147483647},
 		{Name: "estimated_minutes", Type: field.TypeInt},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "published", "archived"}, Default: "draft"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "in_review", "published", "archived"}, Default: "draft"},
+		{Name: "draft_document_json", Type: field.TypeJSON, Nullable: true},
+		{Name: "published_document_json", Type: field.TypeJSON, Nullable: true},
+		{Name: "draft_revision", Type: field.TypeInt, Default: 1},
+		{Name: "published_revision", Type: field.TypeInt, Default: 0},
+		{Name: "published_at", Type: field.TypeTime, Nullable: true},
+		{Name: "archived_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_by", Type: field.TypeString, Nullable: true},
+		{Name: "updated_by", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -376,6 +419,33 @@ var (
 		Name:       "psychoeducation_modules",
 		Columns:    PsychoeducationModulesColumns,
 		PrimaryKey: []*schema.Column{PsychoeducationModulesColumns[0]},
+	}
+	// PsychoeducationProgressesColumns holds the columns for the "psychoeducation_progresses" table.
+	PsychoeducationProgressesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "module_id", Type: field.TypeString},
+		{Name: "revision", Type: field.TypeInt},
+		{Name: "completed_section_ids", Type: field.TypeJSON},
+		{Name: "opened_media_ids", Type: field.TypeJSON},
+		{Name: "correct_check_ids", Type: field.TypeJSON},
+		{Name: "progress_percent", Type: field.TypeInt, Default: 0},
+		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// PsychoeducationProgressesTable holds the schema information for the "psychoeducation_progresses" table.
+	PsychoeducationProgressesTable = &schema.Table{
+		Name:       "psychoeducation_progresses",
+		Columns:    PsychoeducationProgressesColumns,
+		PrimaryKey: []*schema.Column{PsychoeducationProgressesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "psychoeducationprogress_user_id_module_id_revision",
+				Unique:  true,
+				Columns: []*schema.Column{PsychoeducationProgressesColumns[1], PsychoeducationProgressesColumns[2], PsychoeducationProgressesColumns[3]},
+			},
+		},
 	}
 	// ReflectionsColumns holds the columns for the "reflections" table.
 	ReflectionsColumns = []*schema.Column{
@@ -502,6 +572,7 @@ var (
 		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
 		{Name: "google_subject", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"user", "partner", "organization_owner", "organization_admin", "content_admin", "model_release_operator", "support_operator", "research_evaluator", "platform_admin"}, Default: "user"},
+		{Name: "experience_points", Type: field.TypeInt, Default: 0},
 		{Name: "disabled_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
@@ -522,6 +593,7 @@ var (
 		DailyMissionsTable,
 		DataRequestsTable,
 		DevicesTable,
+		EducationMediaTable,
 		EmergencyKeyRequestsTable,
 		IntentionsTable,
 		ModelReleasesTable,
@@ -534,6 +606,7 @@ var (
 		OrganizationPoliciesTable,
 		PartnerLinksTable,
 		PsychoeducationModulesTable,
+		PsychoeducationProgressesTable,
 		ReflectionsTable,
 		RefreshTokensTable,
 		ReleaseCohortsTable,

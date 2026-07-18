@@ -61,20 +61,47 @@ func TestAccountability_CreateApprovalRequestAndResolve(t *testing.T) {
 // --- MissionService ---
 
 func TestMission_GetTodayEmptyThenUpdate(t *testing.T) {
-	repo, _ := newRepo(t)
+	repo, st := newRepo(t)
 	svc := NewMissionService(repo, zap.NewNop())
 	ctx := context.Background()
+	now := time.Now().UTC()
+	completedAt := now
+	st.Lock()
+	st.Devices = append(st.Devices, model.Device{
+		ID: "dev_dery", UserID: "usr_dery", ProtectionStatus: "active", LastSeenAt: now,
+	})
+	st.CheckIns = append(st.CheckIns, model.CheckIn{
+		ID: "chk_dery", UserID: "usr_dery", Mood: 4, CreatedAt: now,
+	})
+	st.EducationProgress = append(st.EducationProgress, model.EducationProgress{
+		ID: "edp_dery", UserID: "usr_dery", ModuleID: "mod_test", Revision: 1,
+		CompletedSectionIDs: []string{"section_1"}, CompletedAt: &completedAt,
+		CreatedAt: now, UpdatedAt: now,
+	})
+	st.Partners = append(st.Partners, model.Partner{
+		ID: "pl_dery", UserID: "usr_dery", Status: "active", CreatedAt: now, UpdatedAt: now,
+	})
+	st.Unlock()
 
-	// New user -> empty mission for today.
-	m, err := svc.GetToday(ctx, "usr_newbie")
+	m, err := svc.GetToday(ctx, "usr_dery")
 	require.NoError(t, err)
-	assert.Equal(t, "usr_newbie", m.UserID)
-	assert.False(t, m.Mission1)
+	assert.Equal(t, "usr_dery", m.UserID)
+	require.Len(t, m.Tasks, 3)
+	assert.Equal(t, "primary", m.Tasks[0].Role)
+	assert.Equal(t, 0, m.Experience.TotalEXP)
 
-	// Update mission 2 -> true.
-	m2, err := svc.UpdateMission(ctx, "usr_newbie", 2, true)
+	primary := m.Tasks[0]
+	m2, err := svc.ClaimMission(ctx, "usr_dery", primary.Number)
 	require.NoError(t, err)
-	assert.True(t, m2.Mission2)
+	assert.Equal(t, 1, m2.CompletedCount)
+	assert.Equal(t, primary.EXPReward, m2.Experience.TotalEXP)
+
+	repeated, err := svc.ClaimMission(ctx, "usr_dery", primary.Number)
+	require.NoError(t, err)
+	assert.Equal(t, primary.EXPReward, repeated.Experience.TotalEXP)
+
+	_, err = svc.UpdateMission(ctx, "usr_dery", primary.Number, false)
+	require.ErrorIs(t, err, ErrMissionNotClaimable)
 }
 
 // --- OrganizationService ---

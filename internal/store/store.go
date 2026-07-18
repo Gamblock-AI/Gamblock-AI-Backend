@@ -20,6 +20,8 @@ type (
 	Partner             = model.Partner
 	ApprovalRequest     = model.ApprovalRequest
 	EducationModule     = model.EducationModule
+	EducationMedia      = model.EducationMedia
+	EducationProgress   = model.EducationProgress
 	SupportCase         = model.SupportCase
 	DataRequest         = model.DataRequest
 	Organization        = model.Organization
@@ -45,6 +47,8 @@ type Store struct {
 	Partners             []Partner             `json:"partners"`
 	Approvals            []ApprovalRequest     `json:"approvals"`
 	Modules              []EducationModule     `json:"modules"`
+	EducationMedia       []EducationMedia      `json:"education_media"`
+	EducationProgress    []EducationProgress   `json:"education_progress"`
 	SupportCases         []SupportCase         `json:"support_cases"`
 	DataRequests         []DataRequest         `json:"data_requests"`
 	Organizations        []Organization        `json:"organizations"`

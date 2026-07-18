@@ -28,6 +28,8 @@ func (s *Store) Snapshot() Store {
 		Partners:             append([]Partner(nil), s.Partners...),
 		Approvals:            append([]ApprovalRequest(nil), s.Approvals...),
 		Modules:              append([]EducationModule(nil), s.Modules...),
+		EducationMedia:       append([]EducationMedia(nil), s.EducationMedia...),
+		EducationProgress:    append([]EducationProgress(nil), s.EducationProgress...),
 		SupportCases:         append([]SupportCase(nil), s.SupportCases...),
 		DataRequests:         append([]DataRequest(nil), s.DataRequests...),
 		Organizations:        append([]Organization(nil), s.Organizations...),

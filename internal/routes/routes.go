@@ -57,12 +57,16 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	// Daily Missions
 	v1.GET("/missions/today", mid.AuthRequired(), h.GetTodayMission)
 	v1.PATCH("/missions", mid.AuthRequired(), h.UpdateMission)
+	v1.POST("/missions/claim", mid.AuthRequired(), h.ClaimMission)
 
 	// Reflections / Psychoeducation
 	v1.GET("/reflections", mid.AuthRequired(), h.GetReflections)
 	v1.POST("/reflections", mid.AuthRequired(), h.CreateReflection)
 	v1.GET("/psychoeducation/modules", mid.AuthRequired(), h.GetModules)
 	v1.GET("/psychoeducation/modules/:slug", mid.AuthRequired(), h.GetModuleDetail)
+	v1.PUT("/psychoeducation/modules/:id/revisions/:revision/progress", mid.AuthRequired(), h.UpdateEducationProgress)
+	v1.POST("/psychoeducation/modules/:id/revisions/:revision/checks/:check_id/answer", mid.AuthRequired(), h.AnswerEducationCheck)
+	v1.GET("/education/media/:id", h.PublishedEducationMedia)
 
 	// Recovery (Intentions & Check-ins)
 	v1.GET("/intentions", mid.AuthRequired(), h.GetIntention)
@@ -102,6 +106,14 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	{
 		admin.GET("/content/modules", mid.RequireRoles("content_admin", "platform_admin"), h.AdminModules)
 		admin.POST("/content/modules", mid.RequireRoles("content_admin", "platform_admin"), h.CreateAdminModule)
+		admin.GET("/content/modules/:id", mid.RequireRoles("content_admin", "platform_admin"), h.AdminModuleDetail)
+		admin.PUT("/content/modules/:id", mid.RequireRoles("content_admin", "platform_admin"), h.UpdateAdminModule)
+		admin.POST("/content/modules/:id/submit-review", mid.RequireRoles("content_admin", "platform_admin"), h.SubmitAdminModuleReview)
+		admin.POST("/content/modules/:id/publish", mid.RequireRoles("content_admin", "platform_admin"), h.PublishAdminModule)
+		admin.POST("/content/modules/:id/archive", mid.RequireRoles("content_admin", "platform_admin"), h.ArchiveAdminModule)
+		admin.POST("/content/media", mid.RequireRoles("content_admin", "platform_admin"), h.UploadAdminEducationMedia)
+		admin.POST("/content/media/external", mid.RequireRoles("content_admin", "platform_admin"), h.RegisterAdminExternalMedia)
+		admin.GET("/content/media/:id", mid.RequireRoles("content_admin", "platform_admin"), h.AdminEducationMedia)
 		admin.GET("/model-releases", mid.RequireRoles("model_release_operator", "platform_admin"), h.AdminModelReleases)
 		admin.GET("/support-cases", mid.RequireRoles("support_operator", "platform_admin"), h.AdminSupportCases)
 		admin.GET("/emergency-key-requests", mid.RequireRoles("platform_admin"), h.PendingEmergencyKeyRequests)

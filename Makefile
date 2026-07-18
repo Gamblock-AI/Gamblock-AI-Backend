@@ -3,7 +3,7 @@ ifneq (,$(wildcard .env))
     export
 endif
 
-.PHONY: dev run build start generate migrate migrate-fresh seed lint test test-cover verify
+.PHONY: dev run build start generate migrate migrate-fresh seed seed-education lint test test-cover verify
 
 APP_NAME := api
 BUILD_DIR := ./bin
@@ -34,6 +34,9 @@ migrate-fresh:
 
 seed:
 	go run ./cmd/seed
+
+seed-education:
+	go run ./cmd/seed-education
 
 lint:
 	go vet ./...

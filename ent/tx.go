@@ -28,6 +28,8 @@ type Tx struct {
 	DataRequest *DataRequestClient
 	// Device is the client for interacting with the Device builders.
 	Device *DeviceClient
+	// EducationMedia is the client for interacting with the EducationMedia builders.
+	EducationMedia *EducationMediaClient
 	// EmergencyKeyRequest is the client for interacting with the EmergencyKeyRequest builders.
 	EmergencyKeyRequest *EmergencyKeyRequestClient
 	// Intention is the client for interacting with the Intention builders.
@@ -52,6 +54,8 @@ type Tx struct {
 	PartnerLink *PartnerLinkClient
 	// PsychoeducationModule is the client for interacting with the PsychoeducationModule builders.
 	PsychoeducationModule *PsychoeducationModuleClient
+	// PsychoeducationProgress is the client for interacting with the PsychoeducationProgress builders.
+	PsychoeducationProgress *PsychoeducationProgressClient
 	// Reflection is the client for interacting with the Reflection builders.
 	Reflection *ReflectionClient
 	// RefreshToken is the client for interacting with the RefreshToken builders.
@@ -207,6 +211,7 @@ func (tx *Tx) init() {
 	tx.DailyMission = NewDailyMissionClient(tx.config)
 	tx.DataRequest = NewDataRequestClient(tx.config)
 	tx.Device = NewDeviceClient(tx.config)
+	tx.EducationMedia = NewEducationMediaClient(tx.config)
 	tx.EmergencyKeyRequest = NewEmergencyKeyRequestClient(tx.config)
 	tx.Intention = NewIntentionClient(tx.config)
 	tx.ModelRelease = NewModelReleaseClient(tx.config)
@@ -219,6 +224,7 @@ func (tx *Tx) init() {
 	tx.OrganizationPolicy = NewOrganizationPolicyClient(tx.config)
 	tx.PartnerLink = NewPartnerLinkClient(tx.config)
 	tx.PsychoeducationModule = NewPsychoeducationModuleClient(tx.config)
+	tx.PsychoeducationProgress = NewPsychoeducationProgressClient(tx.config)
 	tx.Reflection = NewReflectionClient(tx.config)
 	tx.RefreshToken = NewRefreshTokenClient(tx.config)
 	tx.ReleaseCohort = NewReleaseCohortClient(tx.config)

@@ -1,6 +1,6 @@
 # Backend AI Context
 
-Context version: `2026-07-16.5`
+Context version: `2026-07-18.3`
 
 ## Product capsule
 
@@ -38,9 +38,12 @@ are supporting/operational features.
 | PrivacyGuard | Implemented | forbidden-key regression tests; values are not censored |
 | Journal encryption | Implemented server invariant | AES-256-GCM write/read paths fail closed; production validates a 32-byte hex key |
 | PostgreSQL/ent persistence | Implemented production path | production fails closed on open/migration/load failure; development can use empty memory and explicitly enabled contextual demo data |
+| Structured check-ins | Implemented for account persistence | authenticated users save a 1-5 mood and optional 1-5 urge (`0` means not disclosed); no browsing data is accepted and partner visibility remains planned pending explicit consent design |
+| Daily mission EXP | Implemented supporting PKM-WEB-005 workflow | `Asia/Jakarta` deterministic one-primary/two-bonus assignment, fixed effort-based rewards, server-derived eligibility from existing account state, idempotent claim-only grants, and per-user level progress are wired; self-completion/undo cannot grant or remove EXP, skip/replace/reflection remain incomplete PKM-core work, and no partner projection exists |
 | Dashboard/profile/aggregate API | Implemented | user-scoped summaries derive from owned records; Flutter sends only bounded daily aggregate categories with idempotency |
 | Emergency recovery | Implemented operational workflow | protected user requests for an owned device; one platform admin reviews and a distinct second admin issues within 30 minutes; hashed device-bound key is single-use for 24 hours and produces a ten-minute grant |
-| Content/release gates | Prototype | modules are forced to draft and artifact creation validates storage path plus SHA-256; review/publish/rollback actions are not yet wired |
+| Psychoeducation authoring and progress | Implemented supporting PKM-WEB-003 workflow | bilingual revisioned rich-text documents, 1–8 thumbnails, allowlisted image/video/PDF media, reviewer/source metadata, review/publish/archive lifecycle, and revision-scoped section/media/check progress are wired; editorial and clinical governance remain operational responsibilities |
+| Release gates | Prototype | artifact creation validates storage path plus SHA-256; release review/publish/rollback actions are not yet wired |
 | WhatsApp delivery | Prototype adapter | immediate delivery can use configured partner phone/provider; demo logs omit tokens and the partner inbox remains authoritative |
 | Model training/inference | Outside this repository | proposal-required training belongs to a governed model workstream; inference is client-side |
 

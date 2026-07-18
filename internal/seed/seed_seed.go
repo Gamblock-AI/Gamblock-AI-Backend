@@ -7,15 +7,18 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 )
 
-func Seed(ctx context.Context, client *ent.Client) error {
+func Seed(ctx context.Context, client *ent.Client, mediaPath ...string) error {
 	count, err := client.User.Query().Count(ctx)
 	if err != nil {
+		return err
+	}
+	if err := SeedEducationModules(ctx, client, mediaPath...); err != nil {
 		return err
 	}
 	if count > 0 {
 		return nil
 	}
-	
+
 	now := time.Now().UTC()
 	if err := SeedUsers(ctx, client); err != nil {
 		return err
@@ -27,9 +30,6 @@ func Seed(ctx context.Context, client *ent.Client) error {
 		return err
 	}
 	if err := SeedApprovals(ctx, client, now); err != nil {
-		return err
-	}
-	if err := SeedEducationModules(ctx, client); err != nil {
 		return err
 	}
 	if err := SeedReleases(ctx, client, now); err != nil {

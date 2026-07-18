@@ -79,11 +79,15 @@ var messages = map[string]string{
 	"mission_update_failed": "Gagal memperbarui misi harian.",
 
 	// reflections / psychoeducation
-	"fetch_reflections_failed": "Gagal memuat jurnal refleksi.",
-	"reflection_create_failed": "Gagal menyimpan jurnal refleksi.",
-	"fetch_modules_failed":     "Gagal memuat modul psikoedukasi.",
-	"module_not_found":         "Modul tidak ditemukan.",
-	"text_required":            "Teks refleksi wajib diisi.",
+	"fetch_reflections_failed":    "Gagal memuat jurnal refleksi.",
+	"reflection_create_failed":    "Gagal menyimpan jurnal refleksi.",
+	"fetch_modules_failed":        "Gagal memuat modul psikoedukasi.",
+	"module_not_found":            "Modul tidak ditemukan.",
+	"education_conflict":          "Draf berubah di sesi lain. Muat ulang sebelum melanjutkan.",
+	"education_validation_failed": "Modul belum memenuhi syarat untuk disimpan atau diterbitkan.",
+	"education_media_invalid":     "Media tidak didukung, terlalu besar, atau sumbernya tidak diizinkan.",
+	"education_media_not_found":   "Media pembelajaran tidak ditemukan.",
+	"text_required":               "Teks refleksi wajib diisi.",
 
 	// quick approval
 	"token_required": "Token validasi wajib diisi.",

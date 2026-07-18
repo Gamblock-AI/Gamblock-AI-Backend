@@ -16,14 +16,20 @@ const (
 	FieldID = "id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
+	// FieldMissionDate holds the string denoting the mission_date field in the database.
+	FieldMissionDate = "mission_date"
 	// FieldMissionKey holds the string denoting the mission_key field in the database.
 	FieldMissionKey = "mission_key"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldExpReward holds the string denoting the exp_reward field in the database.
+	FieldExpReward = "exp_reward"
 	// FieldCompletedAt holds the string denoting the completed_at field in the database.
 	FieldCompletedAt = "completed_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the dailymission in the database.
 	Table = "daily_missions"
 )
@@ -32,10 +38,13 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldUserID,
+	FieldMissionDate,
 	FieldMissionKey,
 	FieldStatus,
+	FieldExpReward,
 	FieldCompletedAt,
 	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -49,8 +58,16 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultExpReward holds the default value on creation for the "exp_reward" field.
+	DefaultExpReward int
+	// ExpRewardValidator is a validator for the "exp_reward" field. It is called by the builders before save.
+	ExpRewardValidator func(int) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() string
 )
@@ -58,8 +75,8 @@ var (
 // Status defines the type for the "status" enum field.
 type Status string
 
-// StatusCompleted is the default value of the Status enum.
-const DefaultStatus = StatusCompleted
+// StatusPending is the default value of the Status enum.
+const DefaultStatus = StatusPending
 
 // Status values.
 const (
@@ -95,6 +112,11 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
+// ByMissionDate orders the results by the mission_date field.
+func ByMissionDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMissionDate, opts...).ToFunc()
+}
+
 // ByMissionKey orders the results by the mission_key field.
 func ByMissionKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMissionKey, opts...).ToFunc()
@@ -105,6 +127,11 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
+// ByExpReward orders the results by the exp_reward field.
+func ByExpReward(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExpReward, opts...).ToFunc()
+}
+
 // ByCompletedAt orders the results by the completed_at field.
 func ByCompletedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCompletedAt, opts...).ToFunc()
@@ -113,4 +140,9 @@ func ByCompletedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }

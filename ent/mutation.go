@@ -19,6 +19,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
@@ -32,6 +33,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/predicate"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationprogress"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
@@ -40,6 +42,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportactionaudit"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportcase"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/user"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 )
 
 const (
@@ -51,34 +54,36 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAggregateEvent        = "AggregateEvent"
-	TypeApprovalRequest       = "ApprovalRequest"
-	TypeAuditLog              = "AuditLog"
-	TypeCheckIn               = "CheckIn"
-	TypeContentProgress       = "ContentProgress"
-	TypeDailyMission          = "DailyMission"
-	TypeDataRequest           = "DataRequest"
-	TypeDevice                = "Device"
-	TypeEmergencyKeyRequest   = "EmergencyKeyRequest"
-	TypeIntention             = "Intention"
-	TypeModelRelease          = "ModelRelease"
-	TypeModelRollout          = "ModelRollout"
-	TypeNetworkRulesetRelease = "NetworkRulesetRelease"
-	TypeNotificationDelivery  = "NotificationDelivery"
-	TypeOrganization          = "Organization"
-	TypeOrganizationInvite    = "OrganizationInvite"
-	TypeOrganizationMember    = "OrganizationMember"
-	TypeOrganizationPolicy    = "OrganizationPolicy"
-	TypePartnerLink           = "PartnerLink"
-	TypePsychoeducationModule = "PsychoeducationModule"
-	TypeReflection            = "Reflection"
-	TypeRefreshToken          = "RefreshToken"
-	TypeReleaseCohort         = "ReleaseCohort"
-	TypeReportRollup          = "ReportRollup"
-	TypeRulesetRelease        = "RulesetRelease"
-	TypeSupportActionAudit    = "SupportActionAudit"
-	TypeSupportCase           = "SupportCase"
-	TypeUser                  = "User"
+	TypeAggregateEvent          = "AggregateEvent"
+	TypeApprovalRequest         = "ApprovalRequest"
+	TypeAuditLog                = "AuditLog"
+	TypeCheckIn                 = "CheckIn"
+	TypeContentProgress         = "ContentProgress"
+	TypeDailyMission            = "DailyMission"
+	TypeDataRequest             = "DataRequest"
+	TypeDevice                  = "Device"
+	TypeEducationMedia          = "EducationMedia"
+	TypeEmergencyKeyRequest     = "EmergencyKeyRequest"
+	TypeIntention               = "Intention"
+	TypeModelRelease            = "ModelRelease"
+	TypeModelRollout            = "ModelRollout"
+	TypeNetworkRulesetRelease   = "NetworkRulesetRelease"
+	TypeNotificationDelivery    = "NotificationDelivery"
+	TypeOrganization            = "Organization"
+	TypeOrganizationInvite      = "OrganizationInvite"
+	TypeOrganizationMember      = "OrganizationMember"
+	TypeOrganizationPolicy      = "OrganizationPolicy"
+	TypePartnerLink             = "PartnerLink"
+	TypePsychoeducationModule   = "PsychoeducationModule"
+	TypePsychoeducationProgress = "PsychoeducationProgress"
+	TypeReflection              = "Reflection"
+	TypeRefreshToken            = "RefreshToken"
+	TypeReleaseCohort           = "ReleaseCohort"
+	TypeReportRollup            = "ReportRollup"
+	TypeRulesetRelease          = "RulesetRelease"
+	TypeSupportActionAudit      = "SupportActionAudit"
+	TypeSupportCase             = "SupportCase"
+	TypeUser                    = "User"
 )
 
 // AggregateEventMutation represents an operation that mutates the AggregateEvent nodes in the graph.
@@ -4151,10 +4156,14 @@ type DailyMissionMutation struct {
 	typ           string
 	id            *string
 	user_id       *string
+	mission_date  *string
 	mission_key   *string
 	status        *dailymission.Status
+	exp_reward    *int
+	addexp_reward *int
 	completed_at  *time.Time
 	created_at    *time.Time
+	updated_at    *time.Time
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*DailyMission, error)
@@ -4301,6 +4310,55 @@ func (m *DailyMissionMutation) ResetUserID() {
 	m.user_id = nil
 }
 
+// SetMissionDate sets the "mission_date" field.
+func (m *DailyMissionMutation) SetMissionDate(s string) {
+	m.mission_date = &s
+}
+
+// MissionDate returns the value of the "mission_date" field in the mutation.
+func (m *DailyMissionMutation) MissionDate() (r string, exists bool) {
+	v := m.mission_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMissionDate returns the old "mission_date" field's value of the DailyMission entity.
+// If the DailyMission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyMissionMutation) OldMissionDate(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMissionDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMissionDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMissionDate: %w", err)
+	}
+	return oldValue.MissionDate, nil
+}
+
+// ClearMissionDate clears the value of the "mission_date" field.
+func (m *DailyMissionMutation) ClearMissionDate() {
+	m.mission_date = nil
+	m.clearedFields[dailymission.FieldMissionDate] = struct{}{}
+}
+
+// MissionDateCleared returns if the "mission_date" field was cleared in this mutation.
+func (m *DailyMissionMutation) MissionDateCleared() bool {
+	_, ok := m.clearedFields[dailymission.FieldMissionDate]
+	return ok
+}
+
+// ResetMissionDate resets all changes to the "mission_date" field.
+func (m *DailyMissionMutation) ResetMissionDate() {
+	m.mission_date = nil
+	delete(m.clearedFields, dailymission.FieldMissionDate)
+}
+
 // SetMissionKey sets the "mission_key" field.
 func (m *DailyMissionMutation) SetMissionKey(s string) {
 	m.mission_key = &s
@@ -4371,6 +4429,62 @@ func (m *DailyMissionMutation) OldStatus(ctx context.Context) (v dailymission.St
 // ResetStatus resets all changes to the "status" field.
 func (m *DailyMissionMutation) ResetStatus() {
 	m.status = nil
+}
+
+// SetExpReward sets the "exp_reward" field.
+func (m *DailyMissionMutation) SetExpReward(i int) {
+	m.exp_reward = &i
+	m.addexp_reward = nil
+}
+
+// ExpReward returns the value of the "exp_reward" field in the mutation.
+func (m *DailyMissionMutation) ExpReward() (r int, exists bool) {
+	v := m.exp_reward
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpReward returns the old "exp_reward" field's value of the DailyMission entity.
+// If the DailyMission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyMissionMutation) OldExpReward(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpReward is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpReward requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpReward: %w", err)
+	}
+	return oldValue.ExpReward, nil
+}
+
+// AddExpReward adds i to the "exp_reward" field.
+func (m *DailyMissionMutation) AddExpReward(i int) {
+	if m.addexp_reward != nil {
+		*m.addexp_reward += i
+	} else {
+		m.addexp_reward = &i
+	}
+}
+
+// AddedExpReward returns the value that was added to the "exp_reward" field in this mutation.
+func (m *DailyMissionMutation) AddedExpReward() (r int, exists bool) {
+	v := m.addexp_reward
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetExpReward resets all changes to the "exp_reward" field.
+func (m *DailyMissionMutation) ResetExpReward() {
+	m.exp_reward = nil
+	m.addexp_reward = nil
 }
 
 // SetCompletedAt sets the "completed_at" field.
@@ -4458,6 +4572,42 @@ func (m *DailyMissionMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (m *DailyMissionMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *DailyMissionMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the DailyMission entity.
+// If the DailyMission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyMissionMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *DailyMissionMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
 // Where appends a list predicates to the DailyMissionMutation builder.
 func (m *DailyMissionMutation) Where(ps ...predicate.DailyMission) {
 	m.predicates = append(m.predicates, ps...)
@@ -4492,9 +4642,12 @@ func (m *DailyMissionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DailyMissionMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 8)
 	if m.user_id != nil {
 		fields = append(fields, dailymission.FieldUserID)
+	}
+	if m.mission_date != nil {
+		fields = append(fields, dailymission.FieldMissionDate)
 	}
 	if m.mission_key != nil {
 		fields = append(fields, dailymission.FieldMissionKey)
@@ -4502,11 +4655,17 @@ func (m *DailyMissionMutation) Fields() []string {
 	if m.status != nil {
 		fields = append(fields, dailymission.FieldStatus)
 	}
+	if m.exp_reward != nil {
+		fields = append(fields, dailymission.FieldExpReward)
+	}
 	if m.completed_at != nil {
 		fields = append(fields, dailymission.FieldCompletedAt)
 	}
 	if m.created_at != nil {
 		fields = append(fields, dailymission.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, dailymission.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -4518,14 +4677,20 @@ func (m *DailyMissionMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case dailymission.FieldUserID:
 		return m.UserID()
+	case dailymission.FieldMissionDate:
+		return m.MissionDate()
 	case dailymission.FieldMissionKey:
 		return m.MissionKey()
 	case dailymission.FieldStatus:
 		return m.Status()
+	case dailymission.FieldExpReward:
+		return m.ExpReward()
 	case dailymission.FieldCompletedAt:
 		return m.CompletedAt()
 	case dailymission.FieldCreatedAt:
 		return m.CreatedAt()
+	case dailymission.FieldUpdatedAt:
+		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -4537,14 +4702,20 @@ func (m *DailyMissionMutation) OldField(ctx context.Context, name string) (ent.V
 	switch name {
 	case dailymission.FieldUserID:
 		return m.OldUserID(ctx)
+	case dailymission.FieldMissionDate:
+		return m.OldMissionDate(ctx)
 	case dailymission.FieldMissionKey:
 		return m.OldMissionKey(ctx)
 	case dailymission.FieldStatus:
 		return m.OldStatus(ctx)
+	case dailymission.FieldExpReward:
+		return m.OldExpReward(ctx)
 	case dailymission.FieldCompletedAt:
 		return m.OldCompletedAt(ctx)
 	case dailymission.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case dailymission.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown DailyMission field %s", name)
 }
@@ -4561,6 +4732,13 @@ func (m *DailyMissionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUserID(v)
 		return nil
+	case dailymission.FieldMissionDate:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMissionDate(v)
+		return nil
 	case dailymission.FieldMissionKey:
 		v, ok := value.(string)
 		if !ok {
@@ -4574,6 +4752,13 @@ func (m *DailyMissionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
+		return nil
+	case dailymission.FieldExpReward:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpReward(v)
 		return nil
 	case dailymission.FieldCompletedAt:
 		v, ok := value.(time.Time)
@@ -4589,6 +4774,13 @@ func (m *DailyMissionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreatedAt(v)
 		return nil
+	case dailymission.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown DailyMission field %s", name)
 }
@@ -4596,13 +4788,21 @@ func (m *DailyMissionMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *DailyMissionMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addexp_reward != nil {
+		fields = append(fields, dailymission.FieldExpReward)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *DailyMissionMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case dailymission.FieldExpReward:
+		return m.AddedExpReward()
+	}
 	return nil, false
 }
 
@@ -4611,6 +4811,13 @@ func (m *DailyMissionMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *DailyMissionMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case dailymission.FieldExpReward:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddExpReward(v)
+		return nil
 	}
 	return fmt.Errorf("unknown DailyMission numeric field %s", name)
 }
@@ -4619,6 +4826,9 @@ func (m *DailyMissionMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *DailyMissionMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(dailymission.FieldMissionDate) {
+		fields = append(fields, dailymission.FieldMissionDate)
+	}
 	if m.FieldCleared(dailymission.FieldCompletedAt) {
 		fields = append(fields, dailymission.FieldCompletedAt)
 	}
@@ -4636,6 +4846,9 @@ func (m *DailyMissionMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *DailyMissionMutation) ClearField(name string) error {
 	switch name {
+	case dailymission.FieldMissionDate:
+		m.ClearMissionDate()
+		return nil
 	case dailymission.FieldCompletedAt:
 		m.ClearCompletedAt()
 		return nil
@@ -4650,17 +4863,26 @@ func (m *DailyMissionMutation) ResetField(name string) error {
 	case dailymission.FieldUserID:
 		m.ResetUserID()
 		return nil
+	case dailymission.FieldMissionDate:
+		m.ResetMissionDate()
+		return nil
 	case dailymission.FieldMissionKey:
 		m.ResetMissionKey()
 		return nil
 	case dailymission.FieldStatus:
 		m.ResetStatus()
 		return nil
+	case dailymission.FieldExpReward:
+		m.ResetExpReward()
+		return nil
 	case dailymission.FieldCompletedAt:
 		m.ResetCompletedAt()
 		return nil
 	case dailymission.FieldCreatedAt:
 		m.ResetCreatedAt()
+		return nil
+	case dailymission.FieldUpdatedAt:
+		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown DailyMission field %s", name)
@@ -6360,6 +6582,1294 @@ func (m *DeviceMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *DeviceMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Device edge %s", name)
+}
+
+// EducationMediaMutation represents an operation that mutates the EducationMedia nodes in the graph.
+type EducationMediaMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *string
+	kind          *educationmedia.Kind
+	purpose       *educationmedia.Purpose
+	media_type    *educationmedia.MediaType
+	mime_type     *string
+	storage_key   *string
+	external_url  *string
+	original_name *string
+	size_bytes    *int64
+	addsize_bytes *int64
+	width         *int
+	addwidth      *int
+	height        *int
+	addheight     *int
+	sha256        *string
+	status        *educationmedia.Status
+	created_by    *string
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*EducationMedia, error)
+	predicates    []predicate.EducationMedia
+}
+
+var _ ent.Mutation = (*EducationMediaMutation)(nil)
+
+// educationmediaOption allows management of the mutation configuration using functional options.
+type educationmediaOption func(*EducationMediaMutation)
+
+// newEducationMediaMutation creates new mutation for the EducationMedia entity.
+func newEducationMediaMutation(c config, op Op, opts ...educationmediaOption) *EducationMediaMutation {
+	m := &EducationMediaMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeEducationMedia,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withEducationMediaID sets the ID field of the mutation.
+func withEducationMediaID(id string) educationmediaOption {
+	return func(m *EducationMediaMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *EducationMedia
+		)
+		m.oldValue = func(ctx context.Context) (*EducationMedia, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().EducationMedia.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withEducationMedia sets the old EducationMedia of the mutation.
+func withEducationMedia(node *EducationMedia) educationmediaOption {
+	return func(m *EducationMediaMutation) {
+		m.oldValue = func(context.Context) (*EducationMedia, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m EducationMediaMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m EducationMediaMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of EducationMedia entities.
+func (m *EducationMediaMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *EducationMediaMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *EducationMediaMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().EducationMedia.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetKind sets the "kind" field.
+func (m *EducationMediaMutation) SetKind(e educationmedia.Kind) {
+	m.kind = &e
+}
+
+// Kind returns the value of the "kind" field in the mutation.
+func (m *EducationMediaMutation) Kind() (r educationmedia.Kind, exists bool) {
+	v := m.kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKind returns the old "kind" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldKind(ctx context.Context) (v educationmedia.Kind, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+	}
+	return oldValue.Kind, nil
+}
+
+// ResetKind resets all changes to the "kind" field.
+func (m *EducationMediaMutation) ResetKind() {
+	m.kind = nil
+}
+
+// SetPurpose sets the "purpose" field.
+func (m *EducationMediaMutation) SetPurpose(e educationmedia.Purpose) {
+	m.purpose = &e
+}
+
+// Purpose returns the value of the "purpose" field in the mutation.
+func (m *EducationMediaMutation) Purpose() (r educationmedia.Purpose, exists bool) {
+	v := m.purpose
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPurpose returns the old "purpose" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldPurpose(ctx context.Context) (v educationmedia.Purpose, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPurpose is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPurpose requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPurpose: %w", err)
+	}
+	return oldValue.Purpose, nil
+}
+
+// ResetPurpose resets all changes to the "purpose" field.
+func (m *EducationMediaMutation) ResetPurpose() {
+	m.purpose = nil
+}
+
+// SetMediaType sets the "media_type" field.
+func (m *EducationMediaMutation) SetMediaType(et educationmedia.MediaType) {
+	m.media_type = &et
+}
+
+// MediaType returns the value of the "media_type" field in the mutation.
+func (m *EducationMediaMutation) MediaType() (r educationmedia.MediaType, exists bool) {
+	v := m.media_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMediaType returns the old "media_type" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldMediaType(ctx context.Context) (v educationmedia.MediaType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMediaType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMediaType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMediaType: %w", err)
+	}
+	return oldValue.MediaType, nil
+}
+
+// ResetMediaType resets all changes to the "media_type" field.
+func (m *EducationMediaMutation) ResetMediaType() {
+	m.media_type = nil
+}
+
+// SetMimeType sets the "mime_type" field.
+func (m *EducationMediaMutation) SetMimeType(s string) {
+	m.mime_type = &s
+}
+
+// MimeType returns the value of the "mime_type" field in the mutation.
+func (m *EducationMediaMutation) MimeType() (r string, exists bool) {
+	v := m.mime_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMimeType returns the old "mime_type" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldMimeType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMimeType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMimeType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMimeType: %w", err)
+	}
+	return oldValue.MimeType, nil
+}
+
+// ResetMimeType resets all changes to the "mime_type" field.
+func (m *EducationMediaMutation) ResetMimeType() {
+	m.mime_type = nil
+}
+
+// SetStorageKey sets the "storage_key" field.
+func (m *EducationMediaMutation) SetStorageKey(s string) {
+	m.storage_key = &s
+}
+
+// StorageKey returns the value of the "storage_key" field in the mutation.
+func (m *EducationMediaMutation) StorageKey() (r string, exists bool) {
+	v := m.storage_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStorageKey returns the old "storage_key" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldStorageKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStorageKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStorageKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStorageKey: %w", err)
+	}
+	return oldValue.StorageKey, nil
+}
+
+// ClearStorageKey clears the value of the "storage_key" field.
+func (m *EducationMediaMutation) ClearStorageKey() {
+	m.storage_key = nil
+	m.clearedFields[educationmedia.FieldStorageKey] = struct{}{}
+}
+
+// StorageKeyCleared returns if the "storage_key" field was cleared in this mutation.
+func (m *EducationMediaMutation) StorageKeyCleared() bool {
+	_, ok := m.clearedFields[educationmedia.FieldStorageKey]
+	return ok
+}
+
+// ResetStorageKey resets all changes to the "storage_key" field.
+func (m *EducationMediaMutation) ResetStorageKey() {
+	m.storage_key = nil
+	delete(m.clearedFields, educationmedia.FieldStorageKey)
+}
+
+// SetExternalURL sets the "external_url" field.
+func (m *EducationMediaMutation) SetExternalURL(s string) {
+	m.external_url = &s
+}
+
+// ExternalURL returns the value of the "external_url" field in the mutation.
+func (m *EducationMediaMutation) ExternalURL() (r string, exists bool) {
+	v := m.external_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalURL returns the old "external_url" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldExternalURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalURL: %w", err)
+	}
+	return oldValue.ExternalURL, nil
+}
+
+// ClearExternalURL clears the value of the "external_url" field.
+func (m *EducationMediaMutation) ClearExternalURL() {
+	m.external_url = nil
+	m.clearedFields[educationmedia.FieldExternalURL] = struct{}{}
+}
+
+// ExternalURLCleared returns if the "external_url" field was cleared in this mutation.
+func (m *EducationMediaMutation) ExternalURLCleared() bool {
+	_, ok := m.clearedFields[educationmedia.FieldExternalURL]
+	return ok
+}
+
+// ResetExternalURL resets all changes to the "external_url" field.
+func (m *EducationMediaMutation) ResetExternalURL() {
+	m.external_url = nil
+	delete(m.clearedFields, educationmedia.FieldExternalURL)
+}
+
+// SetOriginalName sets the "original_name" field.
+func (m *EducationMediaMutation) SetOriginalName(s string) {
+	m.original_name = &s
+}
+
+// OriginalName returns the value of the "original_name" field in the mutation.
+func (m *EducationMediaMutation) OriginalName() (r string, exists bool) {
+	v := m.original_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOriginalName returns the old "original_name" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldOriginalName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOriginalName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOriginalName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOriginalName: %w", err)
+	}
+	return oldValue.OriginalName, nil
+}
+
+// ClearOriginalName clears the value of the "original_name" field.
+func (m *EducationMediaMutation) ClearOriginalName() {
+	m.original_name = nil
+	m.clearedFields[educationmedia.FieldOriginalName] = struct{}{}
+}
+
+// OriginalNameCleared returns if the "original_name" field was cleared in this mutation.
+func (m *EducationMediaMutation) OriginalNameCleared() bool {
+	_, ok := m.clearedFields[educationmedia.FieldOriginalName]
+	return ok
+}
+
+// ResetOriginalName resets all changes to the "original_name" field.
+func (m *EducationMediaMutation) ResetOriginalName() {
+	m.original_name = nil
+	delete(m.clearedFields, educationmedia.FieldOriginalName)
+}
+
+// SetSizeBytes sets the "size_bytes" field.
+func (m *EducationMediaMutation) SetSizeBytes(i int64) {
+	m.size_bytes = &i
+	m.addsize_bytes = nil
+}
+
+// SizeBytes returns the value of the "size_bytes" field in the mutation.
+func (m *EducationMediaMutation) SizeBytes() (r int64, exists bool) {
+	v := m.size_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSizeBytes returns the old "size_bytes" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldSizeBytes(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSizeBytes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSizeBytes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSizeBytes: %w", err)
+	}
+	return oldValue.SizeBytes, nil
+}
+
+// AddSizeBytes adds i to the "size_bytes" field.
+func (m *EducationMediaMutation) AddSizeBytes(i int64) {
+	if m.addsize_bytes != nil {
+		*m.addsize_bytes += i
+	} else {
+		m.addsize_bytes = &i
+	}
+}
+
+// AddedSizeBytes returns the value that was added to the "size_bytes" field in this mutation.
+func (m *EducationMediaMutation) AddedSizeBytes() (r int64, exists bool) {
+	v := m.addsize_bytes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSizeBytes resets all changes to the "size_bytes" field.
+func (m *EducationMediaMutation) ResetSizeBytes() {
+	m.size_bytes = nil
+	m.addsize_bytes = nil
+}
+
+// SetWidth sets the "width" field.
+func (m *EducationMediaMutation) SetWidth(i int) {
+	m.width = &i
+	m.addwidth = nil
+}
+
+// Width returns the value of the "width" field in the mutation.
+func (m *EducationMediaMutation) Width() (r int, exists bool) {
+	v := m.width
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWidth returns the old "width" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldWidth(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWidth is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWidth requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWidth: %w", err)
+	}
+	return oldValue.Width, nil
+}
+
+// AddWidth adds i to the "width" field.
+func (m *EducationMediaMutation) AddWidth(i int) {
+	if m.addwidth != nil {
+		*m.addwidth += i
+	} else {
+		m.addwidth = &i
+	}
+}
+
+// AddedWidth returns the value that was added to the "width" field in this mutation.
+func (m *EducationMediaMutation) AddedWidth() (r int, exists bool) {
+	v := m.addwidth
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWidth resets all changes to the "width" field.
+func (m *EducationMediaMutation) ResetWidth() {
+	m.width = nil
+	m.addwidth = nil
+}
+
+// SetHeight sets the "height" field.
+func (m *EducationMediaMutation) SetHeight(i int) {
+	m.height = &i
+	m.addheight = nil
+}
+
+// Height returns the value of the "height" field in the mutation.
+func (m *EducationMediaMutation) Height() (r int, exists bool) {
+	v := m.height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHeight returns the old "height" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldHeight(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHeight: %w", err)
+	}
+	return oldValue.Height, nil
+}
+
+// AddHeight adds i to the "height" field.
+func (m *EducationMediaMutation) AddHeight(i int) {
+	if m.addheight != nil {
+		*m.addheight += i
+	} else {
+		m.addheight = &i
+	}
+}
+
+// AddedHeight returns the value that was added to the "height" field in this mutation.
+func (m *EducationMediaMutation) AddedHeight() (r int, exists bool) {
+	v := m.addheight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetHeight resets all changes to the "height" field.
+func (m *EducationMediaMutation) ResetHeight() {
+	m.height = nil
+	m.addheight = nil
+}
+
+// SetSha256 sets the "sha256" field.
+func (m *EducationMediaMutation) SetSha256(s string) {
+	m.sha256 = &s
+}
+
+// Sha256 returns the value of the "sha256" field in the mutation.
+func (m *EducationMediaMutation) Sha256() (r string, exists bool) {
+	v := m.sha256
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSha256 returns the old "sha256" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldSha256(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSha256 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSha256 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSha256: %w", err)
+	}
+	return oldValue.Sha256, nil
+}
+
+// ClearSha256 clears the value of the "sha256" field.
+func (m *EducationMediaMutation) ClearSha256() {
+	m.sha256 = nil
+	m.clearedFields[educationmedia.FieldSha256] = struct{}{}
+}
+
+// Sha256Cleared returns if the "sha256" field was cleared in this mutation.
+func (m *EducationMediaMutation) Sha256Cleared() bool {
+	_, ok := m.clearedFields[educationmedia.FieldSha256]
+	return ok
+}
+
+// ResetSha256 resets all changes to the "sha256" field.
+func (m *EducationMediaMutation) ResetSha256() {
+	m.sha256 = nil
+	delete(m.clearedFields, educationmedia.FieldSha256)
+}
+
+// SetStatus sets the "status" field.
+func (m *EducationMediaMutation) SetStatus(e educationmedia.Status) {
+	m.status = &e
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *EducationMediaMutation) Status() (r educationmedia.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldStatus(ctx context.Context) (v educationmedia.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *EducationMediaMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *EducationMediaMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *EducationMediaMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *EducationMediaMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[educationmedia.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *EducationMediaMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[educationmedia.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *EducationMediaMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, educationmedia.FieldCreatedBy)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *EducationMediaMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *EducationMediaMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *EducationMediaMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *EducationMediaMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *EducationMediaMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the EducationMedia entity.
+// If the EducationMedia object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EducationMediaMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *EducationMediaMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the EducationMediaMutation builder.
+func (m *EducationMediaMutation) Where(ps ...predicate.EducationMedia) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the EducationMediaMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *EducationMediaMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.EducationMedia, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *EducationMediaMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *EducationMediaMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (EducationMedia).
+func (m *EducationMediaMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *EducationMediaMutation) Fields() []string {
+	fields := make([]string, 0, 15)
+	if m.kind != nil {
+		fields = append(fields, educationmedia.FieldKind)
+	}
+	if m.purpose != nil {
+		fields = append(fields, educationmedia.FieldPurpose)
+	}
+	if m.media_type != nil {
+		fields = append(fields, educationmedia.FieldMediaType)
+	}
+	if m.mime_type != nil {
+		fields = append(fields, educationmedia.FieldMimeType)
+	}
+	if m.storage_key != nil {
+		fields = append(fields, educationmedia.FieldStorageKey)
+	}
+	if m.external_url != nil {
+		fields = append(fields, educationmedia.FieldExternalURL)
+	}
+	if m.original_name != nil {
+		fields = append(fields, educationmedia.FieldOriginalName)
+	}
+	if m.size_bytes != nil {
+		fields = append(fields, educationmedia.FieldSizeBytes)
+	}
+	if m.width != nil {
+		fields = append(fields, educationmedia.FieldWidth)
+	}
+	if m.height != nil {
+		fields = append(fields, educationmedia.FieldHeight)
+	}
+	if m.sha256 != nil {
+		fields = append(fields, educationmedia.FieldSha256)
+	}
+	if m.status != nil {
+		fields = append(fields, educationmedia.FieldStatus)
+	}
+	if m.created_by != nil {
+		fields = append(fields, educationmedia.FieldCreatedBy)
+	}
+	if m.created_at != nil {
+		fields = append(fields, educationmedia.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, educationmedia.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *EducationMediaMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case educationmedia.FieldKind:
+		return m.Kind()
+	case educationmedia.FieldPurpose:
+		return m.Purpose()
+	case educationmedia.FieldMediaType:
+		return m.MediaType()
+	case educationmedia.FieldMimeType:
+		return m.MimeType()
+	case educationmedia.FieldStorageKey:
+		return m.StorageKey()
+	case educationmedia.FieldExternalURL:
+		return m.ExternalURL()
+	case educationmedia.FieldOriginalName:
+		return m.OriginalName()
+	case educationmedia.FieldSizeBytes:
+		return m.SizeBytes()
+	case educationmedia.FieldWidth:
+		return m.Width()
+	case educationmedia.FieldHeight:
+		return m.Height()
+	case educationmedia.FieldSha256:
+		return m.Sha256()
+	case educationmedia.FieldStatus:
+		return m.Status()
+	case educationmedia.FieldCreatedBy:
+		return m.CreatedBy()
+	case educationmedia.FieldCreatedAt:
+		return m.CreatedAt()
+	case educationmedia.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *EducationMediaMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case educationmedia.FieldKind:
+		return m.OldKind(ctx)
+	case educationmedia.FieldPurpose:
+		return m.OldPurpose(ctx)
+	case educationmedia.FieldMediaType:
+		return m.OldMediaType(ctx)
+	case educationmedia.FieldMimeType:
+		return m.OldMimeType(ctx)
+	case educationmedia.FieldStorageKey:
+		return m.OldStorageKey(ctx)
+	case educationmedia.FieldExternalURL:
+		return m.OldExternalURL(ctx)
+	case educationmedia.FieldOriginalName:
+		return m.OldOriginalName(ctx)
+	case educationmedia.FieldSizeBytes:
+		return m.OldSizeBytes(ctx)
+	case educationmedia.FieldWidth:
+		return m.OldWidth(ctx)
+	case educationmedia.FieldHeight:
+		return m.OldHeight(ctx)
+	case educationmedia.FieldSha256:
+		return m.OldSha256(ctx)
+	case educationmedia.FieldStatus:
+		return m.OldStatus(ctx)
+	case educationmedia.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case educationmedia.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case educationmedia.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown EducationMedia field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *EducationMediaMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case educationmedia.FieldKind:
+		v, ok := value.(educationmedia.Kind)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKind(v)
+		return nil
+	case educationmedia.FieldPurpose:
+		v, ok := value.(educationmedia.Purpose)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPurpose(v)
+		return nil
+	case educationmedia.FieldMediaType:
+		v, ok := value.(educationmedia.MediaType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMediaType(v)
+		return nil
+	case educationmedia.FieldMimeType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMimeType(v)
+		return nil
+	case educationmedia.FieldStorageKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStorageKey(v)
+		return nil
+	case educationmedia.FieldExternalURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalURL(v)
+		return nil
+	case educationmedia.FieldOriginalName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOriginalName(v)
+		return nil
+	case educationmedia.FieldSizeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSizeBytes(v)
+		return nil
+	case educationmedia.FieldWidth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWidth(v)
+		return nil
+	case educationmedia.FieldHeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHeight(v)
+		return nil
+	case educationmedia.FieldSha256:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSha256(v)
+		return nil
+	case educationmedia.FieldStatus:
+		v, ok := value.(educationmedia.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case educationmedia.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case educationmedia.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case educationmedia.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown EducationMedia field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *EducationMediaMutation) AddedFields() []string {
+	var fields []string
+	if m.addsize_bytes != nil {
+		fields = append(fields, educationmedia.FieldSizeBytes)
+	}
+	if m.addwidth != nil {
+		fields = append(fields, educationmedia.FieldWidth)
+	}
+	if m.addheight != nil {
+		fields = append(fields, educationmedia.FieldHeight)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *EducationMediaMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case educationmedia.FieldSizeBytes:
+		return m.AddedSizeBytes()
+	case educationmedia.FieldWidth:
+		return m.AddedWidth()
+	case educationmedia.FieldHeight:
+		return m.AddedHeight()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *EducationMediaMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case educationmedia.FieldSizeBytes:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSizeBytes(v)
+		return nil
+	case educationmedia.FieldWidth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWidth(v)
+		return nil
+	case educationmedia.FieldHeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddHeight(v)
+		return nil
+	}
+	return fmt.Errorf("unknown EducationMedia numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *EducationMediaMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(educationmedia.FieldStorageKey) {
+		fields = append(fields, educationmedia.FieldStorageKey)
+	}
+	if m.FieldCleared(educationmedia.FieldExternalURL) {
+		fields = append(fields, educationmedia.FieldExternalURL)
+	}
+	if m.FieldCleared(educationmedia.FieldOriginalName) {
+		fields = append(fields, educationmedia.FieldOriginalName)
+	}
+	if m.FieldCleared(educationmedia.FieldSha256) {
+		fields = append(fields, educationmedia.FieldSha256)
+	}
+	if m.FieldCleared(educationmedia.FieldCreatedBy) {
+		fields = append(fields, educationmedia.FieldCreatedBy)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *EducationMediaMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *EducationMediaMutation) ClearField(name string) error {
+	switch name {
+	case educationmedia.FieldStorageKey:
+		m.ClearStorageKey()
+		return nil
+	case educationmedia.FieldExternalURL:
+		m.ClearExternalURL()
+		return nil
+	case educationmedia.FieldOriginalName:
+		m.ClearOriginalName()
+		return nil
+	case educationmedia.FieldSha256:
+		m.ClearSha256()
+		return nil
+	case educationmedia.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	}
+	return fmt.Errorf("unknown EducationMedia nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *EducationMediaMutation) ResetField(name string) error {
+	switch name {
+	case educationmedia.FieldKind:
+		m.ResetKind()
+		return nil
+	case educationmedia.FieldPurpose:
+		m.ResetPurpose()
+		return nil
+	case educationmedia.FieldMediaType:
+		m.ResetMediaType()
+		return nil
+	case educationmedia.FieldMimeType:
+		m.ResetMimeType()
+		return nil
+	case educationmedia.FieldStorageKey:
+		m.ResetStorageKey()
+		return nil
+	case educationmedia.FieldExternalURL:
+		m.ResetExternalURL()
+		return nil
+	case educationmedia.FieldOriginalName:
+		m.ResetOriginalName()
+		return nil
+	case educationmedia.FieldSizeBytes:
+		m.ResetSizeBytes()
+		return nil
+	case educationmedia.FieldWidth:
+		m.ResetWidth()
+		return nil
+	case educationmedia.FieldHeight:
+		m.ResetHeight()
+		return nil
+	case educationmedia.FieldSha256:
+		m.ResetSha256()
+		return nil
+	case educationmedia.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case educationmedia.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case educationmedia.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case educationmedia.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown EducationMedia field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *EducationMediaMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *EducationMediaMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *EducationMediaMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *EducationMediaMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *EducationMediaMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *EducationMediaMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *EducationMediaMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown EducationMedia unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *EducationMediaMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown EducationMedia edge %s", name)
 }
 
 // EmergencyKeyRequestMutation represents an operation that mutates the EmergencyKeyRequest nodes in the graph.
@@ -14911,22 +16421,32 @@ func (m *PartnerLinkMutation) ResetEdge(name string) error {
 // PsychoeducationModuleMutation represents an operation that mutates the PsychoeducationModule nodes in the graph.
 type PsychoeducationModuleMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *string
-	slug                 *string
-	title                *string
-	summary              *string
-	body_markdown        *string
-	estimated_minutes    *int
-	addestimated_minutes *int
-	status               *psychoeducationmodule.Status
-	created_at           *time.Time
-	updated_at           *time.Time
-	clearedFields        map[string]struct{}
-	done                 bool
-	oldValue             func(context.Context) (*PsychoeducationModule, error)
-	predicates           []predicate.PsychoeducationModule
+	op                      Op
+	typ                     string
+	id                      *string
+	slug                    *string
+	title                   *string
+	summary                 *string
+	body_markdown           *string
+	estimated_minutes       *int
+	addestimated_minutes    *int
+	status                  *psychoeducationmodule.Status
+	draft_document_json     *model.EducationDocument
+	published_document_json *model.EducationDocument
+	draft_revision          *int
+	adddraft_revision       *int
+	published_revision      *int
+	addpublished_revision   *int
+	published_at            *time.Time
+	archived_at             *time.Time
+	created_by              *string
+	updated_by              *string
+	created_at              *time.Time
+	updated_at              *time.Time
+	clearedFields           map[string]struct{}
+	done                    bool
+	oldValue                func(context.Context) (*PsychoeducationModule, error)
+	predicates              []predicate.PsychoeducationModule
 }
 
 var _ ent.Mutation = (*PsychoeducationModuleMutation)(nil)
@@ -15269,6 +16789,412 @@ func (m *PsychoeducationModuleMutation) ResetStatus() {
 	m.status = nil
 }
 
+// SetDraftDocumentJSON sets the "draft_document_json" field.
+func (m *PsychoeducationModuleMutation) SetDraftDocumentJSON(md model.EducationDocument) {
+	m.draft_document_json = &md
+}
+
+// DraftDocumentJSON returns the value of the "draft_document_json" field in the mutation.
+func (m *PsychoeducationModuleMutation) DraftDocumentJSON() (r model.EducationDocument, exists bool) {
+	v := m.draft_document_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDraftDocumentJSON returns the old "draft_document_json" field's value of the PsychoeducationModule entity.
+// If the PsychoeducationModule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationModuleMutation) OldDraftDocumentJSON(ctx context.Context) (v model.EducationDocument, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDraftDocumentJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDraftDocumentJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDraftDocumentJSON: %w", err)
+	}
+	return oldValue.DraftDocumentJSON, nil
+}
+
+// ClearDraftDocumentJSON clears the value of the "draft_document_json" field.
+func (m *PsychoeducationModuleMutation) ClearDraftDocumentJSON() {
+	m.draft_document_json = nil
+	m.clearedFields[psychoeducationmodule.FieldDraftDocumentJSON] = struct{}{}
+}
+
+// DraftDocumentJSONCleared returns if the "draft_document_json" field was cleared in this mutation.
+func (m *PsychoeducationModuleMutation) DraftDocumentJSONCleared() bool {
+	_, ok := m.clearedFields[psychoeducationmodule.FieldDraftDocumentJSON]
+	return ok
+}
+
+// ResetDraftDocumentJSON resets all changes to the "draft_document_json" field.
+func (m *PsychoeducationModuleMutation) ResetDraftDocumentJSON() {
+	m.draft_document_json = nil
+	delete(m.clearedFields, psychoeducationmodule.FieldDraftDocumentJSON)
+}
+
+// SetPublishedDocumentJSON sets the "published_document_json" field.
+func (m *PsychoeducationModuleMutation) SetPublishedDocumentJSON(md model.EducationDocument) {
+	m.published_document_json = &md
+}
+
+// PublishedDocumentJSON returns the value of the "published_document_json" field in the mutation.
+func (m *PsychoeducationModuleMutation) PublishedDocumentJSON() (r model.EducationDocument, exists bool) {
+	v := m.published_document_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublishedDocumentJSON returns the old "published_document_json" field's value of the PsychoeducationModule entity.
+// If the PsychoeducationModule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationModuleMutation) OldPublishedDocumentJSON(ctx context.Context) (v model.EducationDocument, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublishedDocumentJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublishedDocumentJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublishedDocumentJSON: %w", err)
+	}
+	return oldValue.PublishedDocumentJSON, nil
+}
+
+// ClearPublishedDocumentJSON clears the value of the "published_document_json" field.
+func (m *PsychoeducationModuleMutation) ClearPublishedDocumentJSON() {
+	m.published_document_json = nil
+	m.clearedFields[psychoeducationmodule.FieldPublishedDocumentJSON] = struct{}{}
+}
+
+// PublishedDocumentJSONCleared returns if the "published_document_json" field was cleared in this mutation.
+func (m *PsychoeducationModuleMutation) PublishedDocumentJSONCleared() bool {
+	_, ok := m.clearedFields[psychoeducationmodule.FieldPublishedDocumentJSON]
+	return ok
+}
+
+// ResetPublishedDocumentJSON resets all changes to the "published_document_json" field.
+func (m *PsychoeducationModuleMutation) ResetPublishedDocumentJSON() {
+	m.published_document_json = nil
+	delete(m.clearedFields, psychoeducationmodule.FieldPublishedDocumentJSON)
+}
+
+// SetDraftRevision sets the "draft_revision" field.
+func (m *PsychoeducationModuleMutation) SetDraftRevision(i int) {
+	m.draft_revision = &i
+	m.adddraft_revision = nil
+}
+
+// DraftRevision returns the value of the "draft_revision" field in the mutation.
+func (m *PsychoeducationModuleMutation) DraftRevision() (r int, exists bool) {
+	v := m.draft_revision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDraftRevision returns the old "draft_revision" field's value of the PsychoeducationModule entity.
+// If the PsychoeducationModule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationModuleMutation) OldDraftRevision(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDraftRevision is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDraftRevision requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDraftRevision: %w", err)
+	}
+	return oldValue.DraftRevision, nil
+}
+
+// AddDraftRevision adds i to the "draft_revision" field.
+func (m *PsychoeducationModuleMutation) AddDraftRevision(i int) {
+	if m.adddraft_revision != nil {
+		*m.adddraft_revision += i
+	} else {
+		m.adddraft_revision = &i
+	}
+}
+
+// AddedDraftRevision returns the value that was added to the "draft_revision" field in this mutation.
+func (m *PsychoeducationModuleMutation) AddedDraftRevision() (r int, exists bool) {
+	v := m.adddraft_revision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDraftRevision resets all changes to the "draft_revision" field.
+func (m *PsychoeducationModuleMutation) ResetDraftRevision() {
+	m.draft_revision = nil
+	m.adddraft_revision = nil
+}
+
+// SetPublishedRevision sets the "published_revision" field.
+func (m *PsychoeducationModuleMutation) SetPublishedRevision(i int) {
+	m.published_revision = &i
+	m.addpublished_revision = nil
+}
+
+// PublishedRevision returns the value of the "published_revision" field in the mutation.
+func (m *PsychoeducationModuleMutation) PublishedRevision() (r int, exists bool) {
+	v := m.published_revision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublishedRevision returns the old "published_revision" field's value of the PsychoeducationModule entity.
+// If the PsychoeducationModule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationModuleMutation) OldPublishedRevision(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublishedRevision is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublishedRevision requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublishedRevision: %w", err)
+	}
+	return oldValue.PublishedRevision, nil
+}
+
+// AddPublishedRevision adds i to the "published_revision" field.
+func (m *PsychoeducationModuleMutation) AddPublishedRevision(i int) {
+	if m.addpublished_revision != nil {
+		*m.addpublished_revision += i
+	} else {
+		m.addpublished_revision = &i
+	}
+}
+
+// AddedPublishedRevision returns the value that was added to the "published_revision" field in this mutation.
+func (m *PsychoeducationModuleMutation) AddedPublishedRevision() (r int, exists bool) {
+	v := m.addpublished_revision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPublishedRevision resets all changes to the "published_revision" field.
+func (m *PsychoeducationModuleMutation) ResetPublishedRevision() {
+	m.published_revision = nil
+	m.addpublished_revision = nil
+}
+
+// SetPublishedAt sets the "published_at" field.
+func (m *PsychoeducationModuleMutation) SetPublishedAt(t time.Time) {
+	m.published_at = &t
+}
+
+// PublishedAt returns the value of the "published_at" field in the mutation.
+func (m *PsychoeducationModuleMutation) PublishedAt() (r time.Time, exists bool) {
+	v := m.published_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublishedAt returns the old "published_at" field's value of the PsychoeducationModule entity.
+// If the PsychoeducationModule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationModuleMutation) OldPublishedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublishedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublishedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublishedAt: %w", err)
+	}
+	return oldValue.PublishedAt, nil
+}
+
+// ClearPublishedAt clears the value of the "published_at" field.
+func (m *PsychoeducationModuleMutation) ClearPublishedAt() {
+	m.published_at = nil
+	m.clearedFields[psychoeducationmodule.FieldPublishedAt] = struct{}{}
+}
+
+// PublishedAtCleared returns if the "published_at" field was cleared in this mutation.
+func (m *PsychoeducationModuleMutation) PublishedAtCleared() bool {
+	_, ok := m.clearedFields[psychoeducationmodule.FieldPublishedAt]
+	return ok
+}
+
+// ResetPublishedAt resets all changes to the "published_at" field.
+func (m *PsychoeducationModuleMutation) ResetPublishedAt() {
+	m.published_at = nil
+	delete(m.clearedFields, psychoeducationmodule.FieldPublishedAt)
+}
+
+// SetArchivedAt sets the "archived_at" field.
+func (m *PsychoeducationModuleMutation) SetArchivedAt(t time.Time) {
+	m.archived_at = &t
+}
+
+// ArchivedAt returns the value of the "archived_at" field in the mutation.
+func (m *PsychoeducationModuleMutation) ArchivedAt() (r time.Time, exists bool) {
+	v := m.archived_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldArchivedAt returns the old "archived_at" field's value of the PsychoeducationModule entity.
+// If the PsychoeducationModule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationModuleMutation) OldArchivedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldArchivedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldArchivedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldArchivedAt: %w", err)
+	}
+	return oldValue.ArchivedAt, nil
+}
+
+// ClearArchivedAt clears the value of the "archived_at" field.
+func (m *PsychoeducationModuleMutation) ClearArchivedAt() {
+	m.archived_at = nil
+	m.clearedFields[psychoeducationmodule.FieldArchivedAt] = struct{}{}
+}
+
+// ArchivedAtCleared returns if the "archived_at" field was cleared in this mutation.
+func (m *PsychoeducationModuleMutation) ArchivedAtCleared() bool {
+	_, ok := m.clearedFields[psychoeducationmodule.FieldArchivedAt]
+	return ok
+}
+
+// ResetArchivedAt resets all changes to the "archived_at" field.
+func (m *PsychoeducationModuleMutation) ResetArchivedAt() {
+	m.archived_at = nil
+	delete(m.clearedFields, psychoeducationmodule.FieldArchivedAt)
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (m *PsychoeducationModuleMutation) SetCreatedBy(s string) {
+	m.created_by = &s
+}
+
+// CreatedBy returns the value of the "created_by" field in the mutation.
+func (m *PsychoeducationModuleMutation) CreatedBy() (r string, exists bool) {
+	v := m.created_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedBy returns the old "created_by" field's value of the PsychoeducationModule entity.
+// If the PsychoeducationModule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationModuleMutation) OldCreatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
+	}
+	return oldValue.CreatedBy, nil
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *PsychoeducationModuleMutation) ClearCreatedBy() {
+	m.created_by = nil
+	m.clearedFields[psychoeducationmodule.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *PsychoeducationModuleMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[psychoeducationmodule.FieldCreatedBy]
+	return ok
+}
+
+// ResetCreatedBy resets all changes to the "created_by" field.
+func (m *PsychoeducationModuleMutation) ResetCreatedBy() {
+	m.created_by = nil
+	delete(m.clearedFields, psychoeducationmodule.FieldCreatedBy)
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *PsychoeducationModuleMutation) SetUpdatedBy(s string) {
+	m.updated_by = &s
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *PsychoeducationModuleMutation) UpdatedBy() (r string, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the PsychoeducationModule entity.
+// If the PsychoeducationModule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationModuleMutation) OldUpdatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// ClearUpdatedBy clears the value of the "updated_by" field.
+func (m *PsychoeducationModuleMutation) ClearUpdatedBy() {
+	m.updated_by = nil
+	m.clearedFields[psychoeducationmodule.FieldUpdatedBy] = struct{}{}
+}
+
+// UpdatedByCleared returns if the "updated_by" field was cleared in this mutation.
+func (m *PsychoeducationModuleMutation) UpdatedByCleared() bool {
+	_, ok := m.clearedFields[psychoeducationmodule.FieldUpdatedBy]
+	return ok
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *PsychoeducationModuleMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+	delete(m.clearedFields, psychoeducationmodule.FieldUpdatedBy)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *PsychoeducationModuleMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -15375,7 +17301,7 @@ func (m *PsychoeducationModuleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PsychoeducationModuleMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 16)
 	if m.slug != nil {
 		fields = append(fields, psychoeducationmodule.FieldSlug)
 	}
@@ -15393,6 +17319,30 @@ func (m *PsychoeducationModuleMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, psychoeducationmodule.FieldStatus)
+	}
+	if m.draft_document_json != nil {
+		fields = append(fields, psychoeducationmodule.FieldDraftDocumentJSON)
+	}
+	if m.published_document_json != nil {
+		fields = append(fields, psychoeducationmodule.FieldPublishedDocumentJSON)
+	}
+	if m.draft_revision != nil {
+		fields = append(fields, psychoeducationmodule.FieldDraftRevision)
+	}
+	if m.published_revision != nil {
+		fields = append(fields, psychoeducationmodule.FieldPublishedRevision)
+	}
+	if m.published_at != nil {
+		fields = append(fields, psychoeducationmodule.FieldPublishedAt)
+	}
+	if m.archived_at != nil {
+		fields = append(fields, psychoeducationmodule.FieldArchivedAt)
+	}
+	if m.created_by != nil {
+		fields = append(fields, psychoeducationmodule.FieldCreatedBy)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, psychoeducationmodule.FieldUpdatedBy)
 	}
 	if m.created_at != nil {
 		fields = append(fields, psychoeducationmodule.FieldCreatedAt)
@@ -15420,6 +17370,22 @@ func (m *PsychoeducationModuleMutation) Field(name string) (ent.Value, bool) {
 		return m.EstimatedMinutes()
 	case psychoeducationmodule.FieldStatus:
 		return m.Status()
+	case psychoeducationmodule.FieldDraftDocumentJSON:
+		return m.DraftDocumentJSON()
+	case psychoeducationmodule.FieldPublishedDocumentJSON:
+		return m.PublishedDocumentJSON()
+	case psychoeducationmodule.FieldDraftRevision:
+		return m.DraftRevision()
+	case psychoeducationmodule.FieldPublishedRevision:
+		return m.PublishedRevision()
+	case psychoeducationmodule.FieldPublishedAt:
+		return m.PublishedAt()
+	case psychoeducationmodule.FieldArchivedAt:
+		return m.ArchivedAt()
+	case psychoeducationmodule.FieldCreatedBy:
+		return m.CreatedBy()
+	case psychoeducationmodule.FieldUpdatedBy:
+		return m.UpdatedBy()
 	case psychoeducationmodule.FieldCreatedAt:
 		return m.CreatedAt()
 	case psychoeducationmodule.FieldUpdatedAt:
@@ -15445,6 +17411,22 @@ func (m *PsychoeducationModuleMutation) OldField(ctx context.Context, name strin
 		return m.OldEstimatedMinutes(ctx)
 	case psychoeducationmodule.FieldStatus:
 		return m.OldStatus(ctx)
+	case psychoeducationmodule.FieldDraftDocumentJSON:
+		return m.OldDraftDocumentJSON(ctx)
+	case psychoeducationmodule.FieldPublishedDocumentJSON:
+		return m.OldPublishedDocumentJSON(ctx)
+	case psychoeducationmodule.FieldDraftRevision:
+		return m.OldDraftRevision(ctx)
+	case psychoeducationmodule.FieldPublishedRevision:
+		return m.OldPublishedRevision(ctx)
+	case psychoeducationmodule.FieldPublishedAt:
+		return m.OldPublishedAt(ctx)
+	case psychoeducationmodule.FieldArchivedAt:
+		return m.OldArchivedAt(ctx)
+	case psychoeducationmodule.FieldCreatedBy:
+		return m.OldCreatedBy(ctx)
+	case psychoeducationmodule.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
 	case psychoeducationmodule.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case psychoeducationmodule.FieldUpdatedAt:
@@ -15500,6 +17482,62 @@ func (m *PsychoeducationModuleMutation) SetField(name string, value ent.Value) e
 		}
 		m.SetStatus(v)
 		return nil
+	case psychoeducationmodule.FieldDraftDocumentJSON:
+		v, ok := value.(model.EducationDocument)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDraftDocumentJSON(v)
+		return nil
+	case psychoeducationmodule.FieldPublishedDocumentJSON:
+		v, ok := value.(model.EducationDocument)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublishedDocumentJSON(v)
+		return nil
+	case psychoeducationmodule.FieldDraftRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDraftRevision(v)
+		return nil
+	case psychoeducationmodule.FieldPublishedRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublishedRevision(v)
+		return nil
+	case psychoeducationmodule.FieldPublishedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublishedAt(v)
+		return nil
+	case psychoeducationmodule.FieldArchivedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetArchivedAt(v)
+		return nil
+	case psychoeducationmodule.FieldCreatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedBy(v)
+		return nil
+	case psychoeducationmodule.FieldUpdatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
 	case psychoeducationmodule.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -15525,6 +17563,12 @@ func (m *PsychoeducationModuleMutation) AddedFields() []string {
 	if m.addestimated_minutes != nil {
 		fields = append(fields, psychoeducationmodule.FieldEstimatedMinutes)
 	}
+	if m.adddraft_revision != nil {
+		fields = append(fields, psychoeducationmodule.FieldDraftRevision)
+	}
+	if m.addpublished_revision != nil {
+		fields = append(fields, psychoeducationmodule.FieldPublishedRevision)
+	}
 	return fields
 }
 
@@ -15535,6 +17579,10 @@ func (m *PsychoeducationModuleMutation) AddedField(name string) (ent.Value, bool
 	switch name {
 	case psychoeducationmodule.FieldEstimatedMinutes:
 		return m.AddedEstimatedMinutes()
+	case psychoeducationmodule.FieldDraftRevision:
+		return m.AddedDraftRevision()
+	case psychoeducationmodule.FieldPublishedRevision:
+		return m.AddedPublishedRevision()
 	}
 	return nil, false
 }
@@ -15551,6 +17599,20 @@ func (m *PsychoeducationModuleMutation) AddField(name string, value ent.Value) e
 		}
 		m.AddEstimatedMinutes(v)
 		return nil
+	case psychoeducationmodule.FieldDraftRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDraftRevision(v)
+		return nil
+	case psychoeducationmodule.FieldPublishedRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPublishedRevision(v)
+		return nil
 	}
 	return fmt.Errorf("unknown PsychoeducationModule numeric field %s", name)
 }
@@ -15558,7 +17620,26 @@ func (m *PsychoeducationModuleMutation) AddField(name string, value ent.Value) e
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *PsychoeducationModuleMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(psychoeducationmodule.FieldDraftDocumentJSON) {
+		fields = append(fields, psychoeducationmodule.FieldDraftDocumentJSON)
+	}
+	if m.FieldCleared(psychoeducationmodule.FieldPublishedDocumentJSON) {
+		fields = append(fields, psychoeducationmodule.FieldPublishedDocumentJSON)
+	}
+	if m.FieldCleared(psychoeducationmodule.FieldPublishedAt) {
+		fields = append(fields, psychoeducationmodule.FieldPublishedAt)
+	}
+	if m.FieldCleared(psychoeducationmodule.FieldArchivedAt) {
+		fields = append(fields, psychoeducationmodule.FieldArchivedAt)
+	}
+	if m.FieldCleared(psychoeducationmodule.FieldCreatedBy) {
+		fields = append(fields, psychoeducationmodule.FieldCreatedBy)
+	}
+	if m.FieldCleared(psychoeducationmodule.FieldUpdatedBy) {
+		fields = append(fields, psychoeducationmodule.FieldUpdatedBy)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -15571,6 +17652,26 @@ func (m *PsychoeducationModuleMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *PsychoeducationModuleMutation) ClearField(name string) error {
+	switch name {
+	case psychoeducationmodule.FieldDraftDocumentJSON:
+		m.ClearDraftDocumentJSON()
+		return nil
+	case psychoeducationmodule.FieldPublishedDocumentJSON:
+		m.ClearPublishedDocumentJSON()
+		return nil
+	case psychoeducationmodule.FieldPublishedAt:
+		m.ClearPublishedAt()
+		return nil
+	case psychoeducationmodule.FieldArchivedAt:
+		m.ClearArchivedAt()
+		return nil
+	case psychoeducationmodule.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	case psychoeducationmodule.FieldUpdatedBy:
+		m.ClearUpdatedBy()
+		return nil
+	}
 	return fmt.Errorf("unknown PsychoeducationModule nullable field %s", name)
 }
 
@@ -15595,6 +17696,30 @@ func (m *PsychoeducationModuleMutation) ResetField(name string) error {
 		return nil
 	case psychoeducationmodule.FieldStatus:
 		m.ResetStatus()
+		return nil
+	case psychoeducationmodule.FieldDraftDocumentJSON:
+		m.ResetDraftDocumentJSON()
+		return nil
+	case psychoeducationmodule.FieldPublishedDocumentJSON:
+		m.ResetPublishedDocumentJSON()
+		return nil
+	case psychoeducationmodule.FieldDraftRevision:
+		m.ResetDraftRevision()
+		return nil
+	case psychoeducationmodule.FieldPublishedRevision:
+		m.ResetPublishedRevision()
+		return nil
+	case psychoeducationmodule.FieldPublishedAt:
+		m.ResetPublishedAt()
+		return nil
+	case psychoeducationmodule.FieldArchivedAt:
+		m.ResetArchivedAt()
+		return nil
+	case psychoeducationmodule.FieldCreatedBy:
+		m.ResetCreatedBy()
+		return nil
+	case psychoeducationmodule.FieldUpdatedBy:
+		m.ResetUpdatedBy()
 		return nil
 	case psychoeducationmodule.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -15652,6 +17777,963 @@ func (m *PsychoeducationModuleMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *PsychoeducationModuleMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown PsychoeducationModule edge %s", name)
+}
+
+// PsychoeducationProgressMutation represents an operation that mutates the PsychoeducationProgress nodes in the graph.
+type PsychoeducationProgressMutation struct {
+	config
+	op                          Op
+	typ                         string
+	id                          *string
+	user_id                     *string
+	module_id                   *string
+	revision                    *int
+	addrevision                 *int
+	completed_section_ids       *[]string
+	appendcompleted_section_ids []string
+	opened_media_ids            *[]string
+	appendopened_media_ids      []string
+	correct_check_ids           *[]string
+	appendcorrect_check_ids     []string
+	progress_percent            *int
+	addprogress_percent         *int
+	completed_at                *time.Time
+	created_at                  *time.Time
+	updated_at                  *time.Time
+	clearedFields               map[string]struct{}
+	done                        bool
+	oldValue                    func(context.Context) (*PsychoeducationProgress, error)
+	predicates                  []predicate.PsychoeducationProgress
+}
+
+var _ ent.Mutation = (*PsychoeducationProgressMutation)(nil)
+
+// psychoeducationprogressOption allows management of the mutation configuration using functional options.
+type psychoeducationprogressOption func(*PsychoeducationProgressMutation)
+
+// newPsychoeducationProgressMutation creates new mutation for the PsychoeducationProgress entity.
+func newPsychoeducationProgressMutation(c config, op Op, opts ...psychoeducationprogressOption) *PsychoeducationProgressMutation {
+	m := &PsychoeducationProgressMutation{
+		config:        c,
+		op:            op,
+		typ:           TypePsychoeducationProgress,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withPsychoeducationProgressID sets the ID field of the mutation.
+func withPsychoeducationProgressID(id string) psychoeducationprogressOption {
+	return func(m *PsychoeducationProgressMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *PsychoeducationProgress
+		)
+		m.oldValue = func(ctx context.Context) (*PsychoeducationProgress, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().PsychoeducationProgress.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withPsychoeducationProgress sets the old PsychoeducationProgress of the mutation.
+func withPsychoeducationProgress(node *PsychoeducationProgress) psychoeducationprogressOption {
+	return func(m *PsychoeducationProgressMutation) {
+		m.oldValue = func(context.Context) (*PsychoeducationProgress, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m PsychoeducationProgressMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m PsychoeducationProgressMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of PsychoeducationProgress entities.
+func (m *PsychoeducationProgressMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *PsychoeducationProgressMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *PsychoeducationProgressMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().PsychoeducationProgress.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *PsychoeducationProgressMutation) SetUserID(s string) {
+	m.user_id = &s
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *PsychoeducationProgressMutation) UserID() (r string, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the PsychoeducationProgress entity.
+// If the PsychoeducationProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationProgressMutation) OldUserID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *PsychoeducationProgressMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetModuleID sets the "module_id" field.
+func (m *PsychoeducationProgressMutation) SetModuleID(s string) {
+	m.module_id = &s
+}
+
+// ModuleID returns the value of the "module_id" field in the mutation.
+func (m *PsychoeducationProgressMutation) ModuleID() (r string, exists bool) {
+	v := m.module_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldModuleID returns the old "module_id" field's value of the PsychoeducationProgress entity.
+// If the PsychoeducationProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationProgressMutation) OldModuleID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldModuleID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldModuleID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldModuleID: %w", err)
+	}
+	return oldValue.ModuleID, nil
+}
+
+// ResetModuleID resets all changes to the "module_id" field.
+func (m *PsychoeducationProgressMutation) ResetModuleID() {
+	m.module_id = nil
+}
+
+// SetRevision sets the "revision" field.
+func (m *PsychoeducationProgressMutation) SetRevision(i int) {
+	m.revision = &i
+	m.addrevision = nil
+}
+
+// Revision returns the value of the "revision" field in the mutation.
+func (m *PsychoeducationProgressMutation) Revision() (r int, exists bool) {
+	v := m.revision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRevision returns the old "revision" field's value of the PsychoeducationProgress entity.
+// If the PsychoeducationProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationProgressMutation) OldRevision(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRevision is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRevision requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRevision: %w", err)
+	}
+	return oldValue.Revision, nil
+}
+
+// AddRevision adds i to the "revision" field.
+func (m *PsychoeducationProgressMutation) AddRevision(i int) {
+	if m.addrevision != nil {
+		*m.addrevision += i
+	} else {
+		m.addrevision = &i
+	}
+}
+
+// AddedRevision returns the value that was added to the "revision" field in this mutation.
+func (m *PsychoeducationProgressMutation) AddedRevision() (r int, exists bool) {
+	v := m.addrevision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRevision resets all changes to the "revision" field.
+func (m *PsychoeducationProgressMutation) ResetRevision() {
+	m.revision = nil
+	m.addrevision = nil
+}
+
+// SetCompletedSectionIds sets the "completed_section_ids" field.
+func (m *PsychoeducationProgressMutation) SetCompletedSectionIds(s []string) {
+	m.completed_section_ids = &s
+	m.appendcompleted_section_ids = nil
+}
+
+// CompletedSectionIds returns the value of the "completed_section_ids" field in the mutation.
+func (m *PsychoeducationProgressMutation) CompletedSectionIds() (r []string, exists bool) {
+	v := m.completed_section_ids
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompletedSectionIds returns the old "completed_section_ids" field's value of the PsychoeducationProgress entity.
+// If the PsychoeducationProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationProgressMutation) OldCompletedSectionIds(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCompletedSectionIds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCompletedSectionIds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompletedSectionIds: %w", err)
+	}
+	return oldValue.CompletedSectionIds, nil
+}
+
+// AppendCompletedSectionIds adds s to the "completed_section_ids" field.
+func (m *PsychoeducationProgressMutation) AppendCompletedSectionIds(s []string) {
+	m.appendcompleted_section_ids = append(m.appendcompleted_section_ids, s...)
+}
+
+// AppendedCompletedSectionIds returns the list of values that were appended to the "completed_section_ids" field in this mutation.
+func (m *PsychoeducationProgressMutation) AppendedCompletedSectionIds() ([]string, bool) {
+	if len(m.appendcompleted_section_ids) == 0 {
+		return nil, false
+	}
+	return m.appendcompleted_section_ids, true
+}
+
+// ResetCompletedSectionIds resets all changes to the "completed_section_ids" field.
+func (m *PsychoeducationProgressMutation) ResetCompletedSectionIds() {
+	m.completed_section_ids = nil
+	m.appendcompleted_section_ids = nil
+}
+
+// SetOpenedMediaIds sets the "opened_media_ids" field.
+func (m *PsychoeducationProgressMutation) SetOpenedMediaIds(s []string) {
+	m.opened_media_ids = &s
+	m.appendopened_media_ids = nil
+}
+
+// OpenedMediaIds returns the value of the "opened_media_ids" field in the mutation.
+func (m *PsychoeducationProgressMutation) OpenedMediaIds() (r []string, exists bool) {
+	v := m.opened_media_ids
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOpenedMediaIds returns the old "opened_media_ids" field's value of the PsychoeducationProgress entity.
+// If the PsychoeducationProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationProgressMutation) OldOpenedMediaIds(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOpenedMediaIds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOpenedMediaIds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOpenedMediaIds: %w", err)
+	}
+	return oldValue.OpenedMediaIds, nil
+}
+
+// AppendOpenedMediaIds adds s to the "opened_media_ids" field.
+func (m *PsychoeducationProgressMutation) AppendOpenedMediaIds(s []string) {
+	m.appendopened_media_ids = append(m.appendopened_media_ids, s...)
+}
+
+// AppendedOpenedMediaIds returns the list of values that were appended to the "opened_media_ids" field in this mutation.
+func (m *PsychoeducationProgressMutation) AppendedOpenedMediaIds() ([]string, bool) {
+	if len(m.appendopened_media_ids) == 0 {
+		return nil, false
+	}
+	return m.appendopened_media_ids, true
+}
+
+// ResetOpenedMediaIds resets all changes to the "opened_media_ids" field.
+func (m *PsychoeducationProgressMutation) ResetOpenedMediaIds() {
+	m.opened_media_ids = nil
+	m.appendopened_media_ids = nil
+}
+
+// SetCorrectCheckIds sets the "correct_check_ids" field.
+func (m *PsychoeducationProgressMutation) SetCorrectCheckIds(s []string) {
+	m.correct_check_ids = &s
+	m.appendcorrect_check_ids = nil
+}
+
+// CorrectCheckIds returns the value of the "correct_check_ids" field in the mutation.
+func (m *PsychoeducationProgressMutation) CorrectCheckIds() (r []string, exists bool) {
+	v := m.correct_check_ids
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCorrectCheckIds returns the old "correct_check_ids" field's value of the PsychoeducationProgress entity.
+// If the PsychoeducationProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationProgressMutation) OldCorrectCheckIds(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCorrectCheckIds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCorrectCheckIds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCorrectCheckIds: %w", err)
+	}
+	return oldValue.CorrectCheckIds, nil
+}
+
+// AppendCorrectCheckIds adds s to the "correct_check_ids" field.
+func (m *PsychoeducationProgressMutation) AppendCorrectCheckIds(s []string) {
+	m.appendcorrect_check_ids = append(m.appendcorrect_check_ids, s...)
+}
+
+// AppendedCorrectCheckIds returns the list of values that were appended to the "correct_check_ids" field in this mutation.
+func (m *PsychoeducationProgressMutation) AppendedCorrectCheckIds() ([]string, bool) {
+	if len(m.appendcorrect_check_ids) == 0 {
+		return nil, false
+	}
+	return m.appendcorrect_check_ids, true
+}
+
+// ResetCorrectCheckIds resets all changes to the "correct_check_ids" field.
+func (m *PsychoeducationProgressMutation) ResetCorrectCheckIds() {
+	m.correct_check_ids = nil
+	m.appendcorrect_check_ids = nil
+}
+
+// SetProgressPercent sets the "progress_percent" field.
+func (m *PsychoeducationProgressMutation) SetProgressPercent(i int) {
+	m.progress_percent = &i
+	m.addprogress_percent = nil
+}
+
+// ProgressPercent returns the value of the "progress_percent" field in the mutation.
+func (m *PsychoeducationProgressMutation) ProgressPercent() (r int, exists bool) {
+	v := m.progress_percent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProgressPercent returns the old "progress_percent" field's value of the PsychoeducationProgress entity.
+// If the PsychoeducationProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationProgressMutation) OldProgressPercent(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProgressPercent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProgressPercent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProgressPercent: %w", err)
+	}
+	return oldValue.ProgressPercent, nil
+}
+
+// AddProgressPercent adds i to the "progress_percent" field.
+func (m *PsychoeducationProgressMutation) AddProgressPercent(i int) {
+	if m.addprogress_percent != nil {
+		*m.addprogress_percent += i
+	} else {
+		m.addprogress_percent = &i
+	}
+}
+
+// AddedProgressPercent returns the value that was added to the "progress_percent" field in this mutation.
+func (m *PsychoeducationProgressMutation) AddedProgressPercent() (r int, exists bool) {
+	v := m.addprogress_percent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetProgressPercent resets all changes to the "progress_percent" field.
+func (m *PsychoeducationProgressMutation) ResetProgressPercent() {
+	m.progress_percent = nil
+	m.addprogress_percent = nil
+}
+
+// SetCompletedAt sets the "completed_at" field.
+func (m *PsychoeducationProgressMutation) SetCompletedAt(t time.Time) {
+	m.completed_at = &t
+}
+
+// CompletedAt returns the value of the "completed_at" field in the mutation.
+func (m *PsychoeducationProgressMutation) CompletedAt() (r time.Time, exists bool) {
+	v := m.completed_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompletedAt returns the old "completed_at" field's value of the PsychoeducationProgress entity.
+// If the PsychoeducationProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationProgressMutation) OldCompletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCompletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCompletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompletedAt: %w", err)
+	}
+	return oldValue.CompletedAt, nil
+}
+
+// ClearCompletedAt clears the value of the "completed_at" field.
+func (m *PsychoeducationProgressMutation) ClearCompletedAt() {
+	m.completed_at = nil
+	m.clearedFields[psychoeducationprogress.FieldCompletedAt] = struct{}{}
+}
+
+// CompletedAtCleared returns if the "completed_at" field was cleared in this mutation.
+func (m *PsychoeducationProgressMutation) CompletedAtCleared() bool {
+	_, ok := m.clearedFields[psychoeducationprogress.FieldCompletedAt]
+	return ok
+}
+
+// ResetCompletedAt resets all changes to the "completed_at" field.
+func (m *PsychoeducationProgressMutation) ResetCompletedAt() {
+	m.completed_at = nil
+	delete(m.clearedFields, psychoeducationprogress.FieldCompletedAt)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *PsychoeducationProgressMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *PsychoeducationProgressMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the PsychoeducationProgress entity.
+// If the PsychoeducationProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationProgressMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *PsychoeducationProgressMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *PsychoeducationProgressMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *PsychoeducationProgressMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the PsychoeducationProgress entity.
+// If the PsychoeducationProgress object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PsychoeducationProgressMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *PsychoeducationProgressMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the PsychoeducationProgressMutation builder.
+func (m *PsychoeducationProgressMutation) Where(ps ...predicate.PsychoeducationProgress) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the PsychoeducationProgressMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *PsychoeducationProgressMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.PsychoeducationProgress, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *PsychoeducationProgressMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *PsychoeducationProgressMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (PsychoeducationProgress).
+func (m *PsychoeducationProgressMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *PsychoeducationProgressMutation) Fields() []string {
+	fields := make([]string, 0, 10)
+	if m.user_id != nil {
+		fields = append(fields, psychoeducationprogress.FieldUserID)
+	}
+	if m.module_id != nil {
+		fields = append(fields, psychoeducationprogress.FieldModuleID)
+	}
+	if m.revision != nil {
+		fields = append(fields, psychoeducationprogress.FieldRevision)
+	}
+	if m.completed_section_ids != nil {
+		fields = append(fields, psychoeducationprogress.FieldCompletedSectionIds)
+	}
+	if m.opened_media_ids != nil {
+		fields = append(fields, psychoeducationprogress.FieldOpenedMediaIds)
+	}
+	if m.correct_check_ids != nil {
+		fields = append(fields, psychoeducationprogress.FieldCorrectCheckIds)
+	}
+	if m.progress_percent != nil {
+		fields = append(fields, psychoeducationprogress.FieldProgressPercent)
+	}
+	if m.completed_at != nil {
+		fields = append(fields, psychoeducationprogress.FieldCompletedAt)
+	}
+	if m.created_at != nil {
+		fields = append(fields, psychoeducationprogress.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, psychoeducationprogress.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *PsychoeducationProgressMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case psychoeducationprogress.FieldUserID:
+		return m.UserID()
+	case psychoeducationprogress.FieldModuleID:
+		return m.ModuleID()
+	case psychoeducationprogress.FieldRevision:
+		return m.Revision()
+	case psychoeducationprogress.FieldCompletedSectionIds:
+		return m.CompletedSectionIds()
+	case psychoeducationprogress.FieldOpenedMediaIds:
+		return m.OpenedMediaIds()
+	case psychoeducationprogress.FieldCorrectCheckIds:
+		return m.CorrectCheckIds()
+	case psychoeducationprogress.FieldProgressPercent:
+		return m.ProgressPercent()
+	case psychoeducationprogress.FieldCompletedAt:
+		return m.CompletedAt()
+	case psychoeducationprogress.FieldCreatedAt:
+		return m.CreatedAt()
+	case psychoeducationprogress.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *PsychoeducationProgressMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case psychoeducationprogress.FieldUserID:
+		return m.OldUserID(ctx)
+	case psychoeducationprogress.FieldModuleID:
+		return m.OldModuleID(ctx)
+	case psychoeducationprogress.FieldRevision:
+		return m.OldRevision(ctx)
+	case psychoeducationprogress.FieldCompletedSectionIds:
+		return m.OldCompletedSectionIds(ctx)
+	case psychoeducationprogress.FieldOpenedMediaIds:
+		return m.OldOpenedMediaIds(ctx)
+	case psychoeducationprogress.FieldCorrectCheckIds:
+		return m.OldCorrectCheckIds(ctx)
+	case psychoeducationprogress.FieldProgressPercent:
+		return m.OldProgressPercent(ctx)
+	case psychoeducationprogress.FieldCompletedAt:
+		return m.OldCompletedAt(ctx)
+	case psychoeducationprogress.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case psychoeducationprogress.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown PsychoeducationProgress field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PsychoeducationProgressMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case psychoeducationprogress.FieldUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case psychoeducationprogress.FieldModuleID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetModuleID(v)
+		return nil
+	case psychoeducationprogress.FieldRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRevision(v)
+		return nil
+	case psychoeducationprogress.FieldCompletedSectionIds:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompletedSectionIds(v)
+		return nil
+	case psychoeducationprogress.FieldOpenedMediaIds:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOpenedMediaIds(v)
+		return nil
+	case psychoeducationprogress.FieldCorrectCheckIds:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCorrectCheckIds(v)
+		return nil
+	case psychoeducationprogress.FieldProgressPercent:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProgressPercent(v)
+		return nil
+	case psychoeducationprogress.FieldCompletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompletedAt(v)
+		return nil
+	case psychoeducationprogress.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case psychoeducationprogress.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown PsychoeducationProgress field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *PsychoeducationProgressMutation) AddedFields() []string {
+	var fields []string
+	if m.addrevision != nil {
+		fields = append(fields, psychoeducationprogress.FieldRevision)
+	}
+	if m.addprogress_percent != nil {
+		fields = append(fields, psychoeducationprogress.FieldProgressPercent)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *PsychoeducationProgressMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case psychoeducationprogress.FieldRevision:
+		return m.AddedRevision()
+	case psychoeducationprogress.FieldProgressPercent:
+		return m.AddedProgressPercent()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PsychoeducationProgressMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case psychoeducationprogress.FieldRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRevision(v)
+		return nil
+	case psychoeducationprogress.FieldProgressPercent:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddProgressPercent(v)
+		return nil
+	}
+	return fmt.Errorf("unknown PsychoeducationProgress numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *PsychoeducationProgressMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(psychoeducationprogress.FieldCompletedAt) {
+		fields = append(fields, psychoeducationprogress.FieldCompletedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *PsychoeducationProgressMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *PsychoeducationProgressMutation) ClearField(name string) error {
+	switch name {
+	case psychoeducationprogress.FieldCompletedAt:
+		m.ClearCompletedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown PsychoeducationProgress nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *PsychoeducationProgressMutation) ResetField(name string) error {
+	switch name {
+	case psychoeducationprogress.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case psychoeducationprogress.FieldModuleID:
+		m.ResetModuleID()
+		return nil
+	case psychoeducationprogress.FieldRevision:
+		m.ResetRevision()
+		return nil
+	case psychoeducationprogress.FieldCompletedSectionIds:
+		m.ResetCompletedSectionIds()
+		return nil
+	case psychoeducationprogress.FieldOpenedMediaIds:
+		m.ResetOpenedMediaIds()
+		return nil
+	case psychoeducationprogress.FieldCorrectCheckIds:
+		m.ResetCorrectCheckIds()
+		return nil
+	case psychoeducationprogress.FieldProgressPercent:
+		m.ResetProgressPercent()
+		return nil
+	case psychoeducationprogress.FieldCompletedAt:
+		m.ResetCompletedAt()
+		return nil
+	case psychoeducationprogress.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case psychoeducationprogress.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown PsychoeducationProgress field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *PsychoeducationProgressMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *PsychoeducationProgressMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *PsychoeducationProgressMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *PsychoeducationProgressMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *PsychoeducationProgressMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *PsychoeducationProgressMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *PsychoeducationProgressMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown PsychoeducationProgress unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *PsychoeducationProgressMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown PsychoeducationProgress edge %s", name)
 }
 
 // ReflectionMutation represents an operation that mutates the Reflection nodes in the graph.
@@ -20331,22 +23413,24 @@ func (m *SupportCaseMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *string
-	email          *string
-	display_name   *string
-	password_hash  *string
-	avatar_url     *string
-	google_subject *string
-	role           *user.Role
-	disabled_at    *time.Time
-	created_at     *time.Time
-	updated_at     *time.Time
-	clearedFields  map[string]struct{}
-	done           bool
-	oldValue       func(context.Context) (*User, error)
-	predicates     []predicate.User
+	op                   Op
+	typ                  string
+	id                   *string
+	email                *string
+	display_name         *string
+	password_hash        *string
+	avatar_url           *string
+	google_subject       *string
+	role                 *user.Role
+	experience_points    *int
+	addexperience_points *int
+	disabled_at          *time.Time
+	created_at           *time.Time
+	updated_at           *time.Time
+	clearedFields        map[string]struct{}
+	done                 bool
+	oldValue             func(context.Context) (*User, error)
+	predicates           []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -20708,6 +23792,62 @@ func (m *UserMutation) ResetRole() {
 	m.role = nil
 }
 
+// SetExperiencePoints sets the "experience_points" field.
+func (m *UserMutation) SetExperiencePoints(i int) {
+	m.experience_points = &i
+	m.addexperience_points = nil
+}
+
+// ExperiencePoints returns the value of the "experience_points" field in the mutation.
+func (m *UserMutation) ExperiencePoints() (r int, exists bool) {
+	v := m.experience_points
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExperiencePoints returns the old "experience_points" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldExperiencePoints(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExperiencePoints is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExperiencePoints requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExperiencePoints: %w", err)
+	}
+	return oldValue.ExperiencePoints, nil
+}
+
+// AddExperiencePoints adds i to the "experience_points" field.
+func (m *UserMutation) AddExperiencePoints(i int) {
+	if m.addexperience_points != nil {
+		*m.addexperience_points += i
+	} else {
+		m.addexperience_points = &i
+	}
+}
+
+// AddedExperiencePoints returns the value that was added to the "experience_points" field in this mutation.
+func (m *UserMutation) AddedExperiencePoints() (r int, exists bool) {
+	v := m.addexperience_points
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetExperiencePoints resets all changes to the "experience_points" field.
+func (m *UserMutation) ResetExperiencePoints() {
+	m.experience_points = nil
+	m.addexperience_points = nil
+}
+
 // SetDisabledAt sets the "disabled_at" field.
 func (m *UserMutation) SetDisabledAt(t time.Time) {
 	m.disabled_at = &t
@@ -20863,7 +24003,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -20881,6 +24021,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.role != nil {
 		fields = append(fields, user.FieldRole)
+	}
+	if m.experience_points != nil {
+		fields = append(fields, user.FieldExperiencePoints)
 	}
 	if m.disabled_at != nil {
 		fields = append(fields, user.FieldDisabledAt)
@@ -20911,6 +24054,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.GoogleSubject()
 	case user.FieldRole:
 		return m.Role()
+	case user.FieldExperiencePoints:
+		return m.ExperiencePoints()
 	case user.FieldDisabledAt:
 		return m.DisabledAt()
 	case user.FieldCreatedAt:
@@ -20938,6 +24083,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldGoogleSubject(ctx)
 	case user.FieldRole:
 		return m.OldRole(ctx)
+	case user.FieldExperiencePoints:
+		return m.OldExperiencePoints(ctx)
 	case user.FieldDisabledAt:
 		return m.OldDisabledAt(ctx)
 	case user.FieldCreatedAt:
@@ -20995,6 +24142,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetRole(v)
 		return nil
+	case user.FieldExperiencePoints:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExperiencePoints(v)
+		return nil
 	case user.FieldDisabledAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -21023,13 +24177,21 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *UserMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addexperience_points != nil {
+		fields = append(fields, user.FieldExperiencePoints)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case user.FieldExperiencePoints:
+		return m.AddedExperiencePoints()
+	}
 	return nil, false
 }
 
@@ -21038,6 +24200,13 @@ func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *UserMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case user.FieldExperiencePoints:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddExperiencePoints(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User numeric field %s", name)
 }
@@ -21109,6 +24278,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldRole:
 		m.ResetRole()
+		return nil
+	case user.FieldExperiencePoints:
+		m.ResetExperiencePoints()
 		return nil
 	case user.FieldDisabledAt:
 		m.ResetDisabledAt()

@@ -130,6 +130,27 @@ func (_u *UserUpdate) SetNillableRole(v *user.Role) *UserUpdate {
 	return _u
 }
 
+// SetExperiencePoints sets the "experience_points" field.
+func (_u *UserUpdate) SetExperiencePoints(v int) *UserUpdate {
+	_u.mutation.ResetExperiencePoints()
+	_u.mutation.SetExperiencePoints(v)
+	return _u
+}
+
+// SetNillableExperiencePoints sets the "experience_points" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableExperiencePoints(v *int) *UserUpdate {
+	if v != nil {
+		_u.SetExperiencePoints(*v)
+	}
+	return _u
+}
+
+// AddExperiencePoints adds value to the "experience_points" field.
+func (_u *UserUpdate) AddExperiencePoints(v int) *UserUpdate {
+	_u.mutation.AddExperiencePoints(v)
+	return _u
+}
+
 // SetDisabledAt sets the "disabled_at" field.
 func (_u *UserUpdate) SetDisabledAt(v time.Time) *UserUpdate {
 	_u.mutation.SetDisabledAt(v)
@@ -204,6 +225,11 @@ func (_u *UserUpdate) check() error {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ExperiencePoints(); ok {
+		if err := user.ExperiencePointsValidator(v); err != nil {
+			return &ValidationError{Name: "experience_points", err: fmt.Errorf(`ent: validator failed for field "User.experience_points": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -245,6 +271,12 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ExperiencePoints(); ok {
+		_spec.SetField(user.FieldExperiencePoints, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedExperiencePoints(); ok {
+		_spec.AddField(user.FieldExperiencePoints, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.DisabledAt(); ok {
 		_spec.SetField(user.FieldDisabledAt, field.TypeTime, value)
@@ -377,6 +409,27 @@ func (_u *UserUpdateOne) SetNillableRole(v *user.Role) *UserUpdateOne {
 	return _u
 }
 
+// SetExperiencePoints sets the "experience_points" field.
+func (_u *UserUpdateOne) SetExperiencePoints(v int) *UserUpdateOne {
+	_u.mutation.ResetExperiencePoints()
+	_u.mutation.SetExperiencePoints(v)
+	return _u
+}
+
+// SetNillableExperiencePoints sets the "experience_points" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableExperiencePoints(v *int) *UserUpdateOne {
+	if v != nil {
+		_u.SetExperiencePoints(*v)
+	}
+	return _u
+}
+
+// AddExperiencePoints adds value to the "experience_points" field.
+func (_u *UserUpdateOne) AddExperiencePoints(v int) *UserUpdateOne {
+	_u.mutation.AddExperiencePoints(v)
+	return _u
+}
+
 // SetDisabledAt sets the "disabled_at" field.
 func (_u *UserUpdateOne) SetDisabledAt(v time.Time) *UserUpdateOne {
 	_u.mutation.SetDisabledAt(v)
@@ -464,6 +517,11 @@ func (_u *UserUpdateOne) check() error {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ExperiencePoints(); ok {
+		if err := user.ExperiencePointsValidator(v); err != nil {
+			return &ValidationError{Name: "experience_points", err: fmt.Errorf(`ent: validator failed for field "User.experience_points": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -522,6 +580,12 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.ExperiencePoints(); ok {
+		_spec.SetField(user.FieldExperiencePoints, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedExperiencePoints(); ok {
+		_spec.AddField(user.FieldExperiencePoints, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.DisabledAt(); ok {
 		_spec.SetField(user.FieldDisabledAt, field.TypeTime, value)

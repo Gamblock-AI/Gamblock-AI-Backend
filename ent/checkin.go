@@ -21,7 +21,7 @@ type CheckIn struct {
 	UserID string `json:"user_id,omitempty"`
 	// 1-5 scale
 	MoodScore int `json:"mood_score,omitempty"`
-	// 1-5 scale
+	// 0 when not disclosed; otherwise 1-5 scale
 	UrgeScore int `json:"urge_score,omitempty"`
 	// ContextText holds the value of the "context_text" field.
 	ContextText *string `json:"context_text,omitempty"`

@@ -2,12 +2,14 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
 )
 
 func loadRecoveryStore(ctx context.Context, client *ent.Client, out *store.Store) {
+	jakarta := time.FixedZone("Asia/Jakarta", 7*60*60)
 	if reflections, err := client.Reflection.Query().All(ctx); err == nil {
 		for _, item := range reflections {
 			out.JournalEntries = append(out.JournalEntries, store.JournalEntry{
@@ -24,7 +26,10 @@ func loadRecoveryStore(ctx context.Context, client *ent.Client, out *store.Store
 	if missions, err := client.DailyMission.Query().All(ctx); err == nil {
 		byDay := make(map[string]*store.DailyMission)
 		for _, item := range missions {
-			date := item.CreatedAt.UTC().Format("2006-01-02")
+			date := item.CreatedAt.In(jakarta).Format("2006-01-02")
+			if item.MissionDate != nil {
+				date = *item.MissionDate
+			}
 			key := item.UserID + ":" + date
 			day, ok := byDay[key]
 			if !ok {
@@ -33,13 +38,13 @@ func loadRecoveryStore(ctx context.Context, client *ent.Client, out *store.Store
 					UserID:    item.UserID,
 					Date:      date,
 					CreatedAt: item.CreatedAt,
-					UpdatedAt: item.CreatedAt,
+					UpdatedAt: item.UpdatedAt,
 				}
 				byDay[key] = day
 			}
 			setMissionCompleted(day, missionKeyNumber(item.MissionKey), item.Status.String() == "completed")
-			if item.CreatedAt.After(day.UpdatedAt) {
-				day.UpdatedAt = item.CreatedAt
+			if item.UpdatedAt.After(day.UpdatedAt) {
+				day.UpdatedAt = item.UpdatedAt
 			}
 		}
 		for _, day := range byDay {

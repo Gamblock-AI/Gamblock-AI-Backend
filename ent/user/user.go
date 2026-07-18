@@ -26,6 +26,8 @@ const (
 	FieldGoogleSubject = "google_subject"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
+	// FieldExperiencePoints holds the string denoting the experience_points field in the database.
+	FieldExperiencePoints = "experience_points"
 	// FieldDisabledAt holds the string denoting the disabled_at field in the database.
 	FieldDisabledAt = "disabled_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -45,6 +47,7 @@ var Columns = []string{
 	FieldAvatarURL,
 	FieldGoogleSubject,
 	FieldRole,
+	FieldExperiencePoints,
 	FieldDisabledAt,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -61,6 +64,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultExperiencePoints holds the default value on creation for the "experience_points" field.
+	DefaultExperiencePoints int
+	// ExperiencePointsValidator is a validator for the "experience_points" field. It is called by the builders before save.
+	ExperiencePointsValidator func(int) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -140,6 +147,11 @@ func ByGoogleSubject(opts ...sql.OrderTermOption) OrderOption {
 // ByRole orders the results by the role field.
 func ByRole(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
+// ByExperiencePoints orders the results by the experience_points field.
+func ByExperiencePoints(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExperiencePoints, opts...).ToFunc()
 }
 
 // ByDisabledAt orders the results by the disabled_at field.

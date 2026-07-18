@@ -34,3 +34,26 @@ func (h *Handler) UpdateMission(c *gin.Context) {
 	}
 	h.respond(c, http.StatusOK, mission)
 }
+
+type claimMissionInput struct {
+	MissionNumber int `json:"mission_number" binding:"required"`
+}
+
+func (h *Handler) ClaimMission(c *gin.Context) {
+	var input claimMissionInput
+	if err := c.ShouldBindJSON(&input); err != nil || input.MissionNumber < 1 || input.MissionNumber > 5 {
+		h.respondCode(c, http.StatusBadRequest, "invalid_mission")
+		return
+	}
+
+	mission, err := h.services.Mission.ClaimMission(
+		c.Request.Context(),
+		h.currentUserID(c),
+		input.MissionNumber,
+	)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusConflict, "mission_update_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, mission)
+}

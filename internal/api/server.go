@@ -34,7 +34,7 @@ func New(cfg config.Config, st *store.Store, logger *zap.Logger, clients ...*ent
 	r.Use(gin.Recovery(), mid.RequestID(), mid.PrivacyGuard())
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.AllowedOrigins,
-		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPatch, http.MethodDelete, http.MethodOptions},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete, http.MethodOptions},
 		AllowHeaders:     []string{"Authorization", "Content-Type", "Accept", "X-Audit-Reason"},
 		ExposeHeaders:    []string{"X-Request-ID"},
 		AllowCredentials: true,

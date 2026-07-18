@@ -4,15 +4,17 @@ import (
 	"time"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/authn"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/seed"
 )
 
 // NewSeeded is explicit test/demo data. Production starts with New instead.
 func NewSeeded() *Store {
 	now := time.Now().UTC()
+	jakartaDate := now.In(time.FixedZone("Asia/Jakarta", 7*60*60)).Format("2006-01-02")
 	demoPasswordHash, _ := authn.HashPassword("password")
 	return &Store{
 		Users: []User{
-			{ID: "usr_gading", Email: "gading@gmail.com", DisplayName: "Gading", Role: "user", PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
+			{ID: "usr_gading", Email: "gading@gmail.com", DisplayName: "Gading", Role: "user", PasswordHash: demoPasswordHash, ExperiencePoints: 20, CreatedAt: now, UpdatedAt: now},
 			{ID: "usr_dery", Email: "dery@gmail.com", DisplayName: "Dery", Role: "user", PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
 			{ID: "usr_suci", Email: "suci@gmail.com", DisplayName: "Suci", Role: "partner", PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
 			{ID: "usr_nasywa", Email: "nasywa@gmail.com", DisplayName: "Nasywa", Role: "platform_admin", PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
@@ -26,11 +28,8 @@ func NewSeeded() *Store {
 			{ID: "APR-2401", UserID: "usr_gading", DeviceID: "dev_android", PartnerLinkID: "pl_active", Action: "pause_protection", ExpiresIn: "Expires in 23 minutes", Status: "pending", Reason: "Troubleshooting app setup", RequestedDurationMinutes: 15, CreatedAt: now.Add(-7 * time.Minute), UpdatedAt: now.Add(-7 * time.Minute), ExpiresAt: now.Add(23 * time.Minute)},
 			{ID: "APR-2398", UserID: "usr_gading", DeviceID: "dev_android", PartnerLinkID: "pl_active", Action: "uninstall_detected", ExpiresIn: "Reviewed yesterday", Status: "approved", Reason: "Accessibility service disabled", CreatedAt: now.Add(-24 * time.Hour), UpdatedAt: now.Add(-24 * time.Hour), ExpiresAt: now.Add(-23 * time.Hour)},
 		},
-		Modules: []EducationModule{
-			{ID: "mod_pause", Slug: "pause-before-impulse", Title: "Pause before impulse", Summary: "A short exercise to identify triggers and choose one safer action.", BodyMarkdown: "## Pause\n\nName the impulse, breathe for ten seconds, and choose one safe next action.", EstimatedMinutes: 4, Progress: 0.7, Status: "published", CreatedAt: now, UpdatedAt: now},
-			{ID: "mod_finance", Slug: "financial-reality-check", Title: "Financial reality check", Summary: "A simple reflection on losses, debt risk, and recovery support.", BodyMarkdown: "## Reality check\n\nWrite down the amount at risk and contact your accountability partner.", EstimatedMinutes: 6, Progress: 0.35, Status: "published", CreatedAt: now, UpdatedAt: now},
-			{ID: "mod_support", Slug: "ask-for-support", Title: "Ask for support", Summary: "How to talk with your partner without shame or blame.", BodyMarkdown: "## Ask\n\nUse a short, concrete message and state the help you need now.", EstimatedMinutes: 5, Progress: 0, Status: "published", CreatedAt: now, UpdatedAt: now},
-		},
+		Modules:        seed.DemoEducationModules(now),
+		EducationMedia: seed.DemoEducationMedia(now),
 		SupportCases: []SupportCase{
 			{ID: "CASE-1087", UserID: "usr_gading", Title: "Setup and permissions", Type: "device_recovery", Status: "waiting_user", Priority: "normal", Owner: "Gading", CreatedAt: now, UpdatedAt: now},
 			{ID: "CASE-1084", UserID: "usr_dery", Title: "Partner approval issue", Type: "stuck_approval", Status: "open", Priority: "high", Owner: "Suci", CreatedAt: now, UpdatedAt: now},
@@ -52,7 +51,7 @@ func NewSeeded() *Store {
 			{ID: "ref_1", UserID: "usr_gading", Text: "Hari ini saya berhasil menahan diri dari godaan untuk membuka aplikasi berkat Pattern Interrupt.", Mood: "😊 Baik", CreatedAt: now.Add(-24 * time.Hour), UpdatedAt: now.Add(-24 * time.Hour)},
 			{ID: "ref_2", UserID: "usr_gading", Text: "Merasa cemas di sore hari karena bosan, tapi berhasil mengalihkan perhatian dengan jalan kaki dan membaca modul kesadaran.", Mood: "😟 Cemas", CreatedAt: now.Add(-48 * time.Hour), UpdatedAt: now.Add(-48 * time.Hour)},
 		},
-		Missions:   []DailyMission{{ID: "mis_001", UserID: "usr_gading", Date: now.Format("2006-01-02"), Mission1: true, Mission2: true, Mission3: false, Mission4: false, Mission5: false, CreatedAt: now, UpdatedAt: now}},
+		Missions:   []DailyMission{{ID: "mis_001", UserID: "usr_gading", Date: jakartaDate, Mission1: true, Mission2: true, Mission3: false, Mission4: false, Mission5: false, CreatedAt: now, UpdatedAt: now}},
 		Intentions: []Intention{{ID: "int_1", UserID: "usr_gading", Text: "Saya ingin menyelesaikan kuliah dengan pikiran yang lebih tenang.", Status: "active", CreatedAt: now, UpdatedAt: now}},
 		CheckIns:   []CheckIn{{ID: "chk_1", UserID: "usr_gading", Mood: 4, Urge: 2, Context: "Merasa cukup tenang pagi ini.", CreatedAt: now}},
 	}

@@ -35,7 +35,7 @@ func (h *Handler) CreateReflection(c *gin.Context) {
 }
 
 func (h *Handler) GetModules(c *gin.Context) {
-	modules, err := h.services.Admin.GetEducationModules(c.Request.Context())
+	modules, err := h.services.Education.PublishedModules(c.Request.Context(), h.currentUserID(c), c.Query("locale"))
 	if err != nil {
 		h.respondErrorErr(c, http.StatusInternalServerError, "fetch_modules_failed", err)
 		return
@@ -45,7 +45,7 @@ func (h *Handler) GetModules(c *gin.Context) {
 
 func (h *Handler) GetModuleDetail(c *gin.Context) {
 	slug := c.Param("slug")
-	module, err := h.services.Reflection.GetEducationModuleBySlug(c.Request.Context(), slug)
+	module, err := h.services.Education.PublishedModule(c.Request.Context(), h.currentUserID(c), slug, c.Query("locale"))
 	if err != nil {
 		h.respondErrorErr(c, http.StatusNotFound, "module_not_found", err)
 		return

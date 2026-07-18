@@ -89,6 +89,36 @@ func EstimatedMinutes(v int) predicate.PsychoeducationModule {
 	return predicate.PsychoeducationModule(sql.FieldEQ(FieldEstimatedMinutes, v))
 }
 
+// DraftRevision applies equality check predicate on the "draft_revision" field. It's identical to DraftRevisionEQ.
+func DraftRevision(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEQ(FieldDraftRevision, v))
+}
+
+// PublishedRevision applies equality check predicate on the "published_revision" field. It's identical to PublishedRevisionEQ.
+func PublishedRevision(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEQ(FieldPublishedRevision, v))
+}
+
+// PublishedAt applies equality check predicate on the "published_at" field. It's identical to PublishedAtEQ.
+func PublishedAt(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEQ(FieldPublishedAt, v))
+}
+
+// ArchivedAt applies equality check predicate on the "archived_at" field. It's identical to ArchivedAtEQ.
+func ArchivedAt(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEQ(FieldArchivedAt, v))
+}
+
+// CreatedBy applies equality check predicate on the "created_by" field. It's identical to CreatedByEQ.
+func CreatedBy(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEQ(FieldCreatedBy, v))
+}
+
+// UpdatedBy applies equality check predicate on the "updated_by" field. It's identical to UpdatedByEQ.
+func UpdatedBy(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEQ(FieldUpdatedBy, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.PsychoeducationModule {
 	return predicate.PsychoeducationModule(sql.FieldEQ(FieldCreatedAt, v))
@@ -417,6 +447,356 @@ func StatusIn(vs ...Status) predicate.PsychoeducationModule {
 // StatusNotIn applies the NotIn predicate on the "status" field.
 func StatusNotIn(vs ...Status) predicate.PsychoeducationModule {
 	return predicate.PsychoeducationModule(sql.FieldNotIn(FieldStatus, vs...))
+}
+
+// DraftDocumentJSONIsNil applies the IsNil predicate on the "draft_document_json" field.
+func DraftDocumentJSONIsNil() predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldIsNull(FieldDraftDocumentJSON))
+}
+
+// DraftDocumentJSONNotNil applies the NotNil predicate on the "draft_document_json" field.
+func DraftDocumentJSONNotNil() predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNotNull(FieldDraftDocumentJSON))
+}
+
+// PublishedDocumentJSONIsNil applies the IsNil predicate on the "published_document_json" field.
+func PublishedDocumentJSONIsNil() predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldIsNull(FieldPublishedDocumentJSON))
+}
+
+// PublishedDocumentJSONNotNil applies the NotNil predicate on the "published_document_json" field.
+func PublishedDocumentJSONNotNil() predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNotNull(FieldPublishedDocumentJSON))
+}
+
+// DraftRevisionEQ applies the EQ predicate on the "draft_revision" field.
+func DraftRevisionEQ(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEQ(FieldDraftRevision, v))
+}
+
+// DraftRevisionNEQ applies the NEQ predicate on the "draft_revision" field.
+func DraftRevisionNEQ(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNEQ(FieldDraftRevision, v))
+}
+
+// DraftRevisionIn applies the In predicate on the "draft_revision" field.
+func DraftRevisionIn(vs ...int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldIn(FieldDraftRevision, vs...))
+}
+
+// DraftRevisionNotIn applies the NotIn predicate on the "draft_revision" field.
+func DraftRevisionNotIn(vs ...int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNotIn(FieldDraftRevision, vs...))
+}
+
+// DraftRevisionGT applies the GT predicate on the "draft_revision" field.
+func DraftRevisionGT(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldGT(FieldDraftRevision, v))
+}
+
+// DraftRevisionGTE applies the GTE predicate on the "draft_revision" field.
+func DraftRevisionGTE(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldGTE(FieldDraftRevision, v))
+}
+
+// DraftRevisionLT applies the LT predicate on the "draft_revision" field.
+func DraftRevisionLT(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldLT(FieldDraftRevision, v))
+}
+
+// DraftRevisionLTE applies the LTE predicate on the "draft_revision" field.
+func DraftRevisionLTE(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldLTE(FieldDraftRevision, v))
+}
+
+// PublishedRevisionEQ applies the EQ predicate on the "published_revision" field.
+func PublishedRevisionEQ(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEQ(FieldPublishedRevision, v))
+}
+
+// PublishedRevisionNEQ applies the NEQ predicate on the "published_revision" field.
+func PublishedRevisionNEQ(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNEQ(FieldPublishedRevision, v))
+}
+
+// PublishedRevisionIn applies the In predicate on the "published_revision" field.
+func PublishedRevisionIn(vs ...int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldIn(FieldPublishedRevision, vs...))
+}
+
+// PublishedRevisionNotIn applies the NotIn predicate on the "published_revision" field.
+func PublishedRevisionNotIn(vs ...int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNotIn(FieldPublishedRevision, vs...))
+}
+
+// PublishedRevisionGT applies the GT predicate on the "published_revision" field.
+func PublishedRevisionGT(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldGT(FieldPublishedRevision, v))
+}
+
+// PublishedRevisionGTE applies the GTE predicate on the "published_revision" field.
+func PublishedRevisionGTE(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldGTE(FieldPublishedRevision, v))
+}
+
+// PublishedRevisionLT applies the LT predicate on the "published_revision" field.
+func PublishedRevisionLT(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldLT(FieldPublishedRevision, v))
+}
+
+// PublishedRevisionLTE applies the LTE predicate on the "published_revision" field.
+func PublishedRevisionLTE(v int) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldLTE(FieldPublishedRevision, v))
+}
+
+// PublishedAtEQ applies the EQ predicate on the "published_at" field.
+func PublishedAtEQ(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEQ(FieldPublishedAt, v))
+}
+
+// PublishedAtNEQ applies the NEQ predicate on the "published_at" field.
+func PublishedAtNEQ(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNEQ(FieldPublishedAt, v))
+}
+
+// PublishedAtIn applies the In predicate on the "published_at" field.
+func PublishedAtIn(vs ...time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldIn(FieldPublishedAt, vs...))
+}
+
+// PublishedAtNotIn applies the NotIn predicate on the "published_at" field.
+func PublishedAtNotIn(vs ...time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNotIn(FieldPublishedAt, vs...))
+}
+
+// PublishedAtGT applies the GT predicate on the "published_at" field.
+func PublishedAtGT(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldGT(FieldPublishedAt, v))
+}
+
+// PublishedAtGTE applies the GTE predicate on the "published_at" field.
+func PublishedAtGTE(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldGTE(FieldPublishedAt, v))
+}
+
+// PublishedAtLT applies the LT predicate on the "published_at" field.
+func PublishedAtLT(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldLT(FieldPublishedAt, v))
+}
+
+// PublishedAtLTE applies the LTE predicate on the "published_at" field.
+func PublishedAtLTE(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldLTE(FieldPublishedAt, v))
+}
+
+// PublishedAtIsNil applies the IsNil predicate on the "published_at" field.
+func PublishedAtIsNil() predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldIsNull(FieldPublishedAt))
+}
+
+// PublishedAtNotNil applies the NotNil predicate on the "published_at" field.
+func PublishedAtNotNil() predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNotNull(FieldPublishedAt))
+}
+
+// ArchivedAtEQ applies the EQ predicate on the "archived_at" field.
+func ArchivedAtEQ(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEQ(FieldArchivedAt, v))
+}
+
+// ArchivedAtNEQ applies the NEQ predicate on the "archived_at" field.
+func ArchivedAtNEQ(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNEQ(FieldArchivedAt, v))
+}
+
+// ArchivedAtIn applies the In predicate on the "archived_at" field.
+func ArchivedAtIn(vs ...time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldIn(FieldArchivedAt, vs...))
+}
+
+// ArchivedAtNotIn applies the NotIn predicate on the "archived_at" field.
+func ArchivedAtNotIn(vs ...time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNotIn(FieldArchivedAt, vs...))
+}
+
+// ArchivedAtGT applies the GT predicate on the "archived_at" field.
+func ArchivedAtGT(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldGT(FieldArchivedAt, v))
+}
+
+// ArchivedAtGTE applies the GTE predicate on the "archived_at" field.
+func ArchivedAtGTE(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldGTE(FieldArchivedAt, v))
+}
+
+// ArchivedAtLT applies the LT predicate on the "archived_at" field.
+func ArchivedAtLT(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldLT(FieldArchivedAt, v))
+}
+
+// ArchivedAtLTE applies the LTE predicate on the "archived_at" field.
+func ArchivedAtLTE(v time.Time) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldLTE(FieldArchivedAt, v))
+}
+
+// ArchivedAtIsNil applies the IsNil predicate on the "archived_at" field.
+func ArchivedAtIsNil() predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldIsNull(FieldArchivedAt))
+}
+
+// ArchivedAtNotNil applies the NotNil predicate on the "archived_at" field.
+func ArchivedAtNotNil() predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNotNull(FieldArchivedAt))
+}
+
+// CreatedByEQ applies the EQ predicate on the "created_by" field.
+func CreatedByEQ(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEQ(FieldCreatedBy, v))
+}
+
+// CreatedByNEQ applies the NEQ predicate on the "created_by" field.
+func CreatedByNEQ(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNEQ(FieldCreatedBy, v))
+}
+
+// CreatedByIn applies the In predicate on the "created_by" field.
+func CreatedByIn(vs ...string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldIn(FieldCreatedBy, vs...))
+}
+
+// CreatedByNotIn applies the NotIn predicate on the "created_by" field.
+func CreatedByNotIn(vs ...string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNotIn(FieldCreatedBy, vs...))
+}
+
+// CreatedByGT applies the GT predicate on the "created_by" field.
+func CreatedByGT(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldGT(FieldCreatedBy, v))
+}
+
+// CreatedByGTE applies the GTE predicate on the "created_by" field.
+func CreatedByGTE(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldGTE(FieldCreatedBy, v))
+}
+
+// CreatedByLT applies the LT predicate on the "created_by" field.
+func CreatedByLT(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldLT(FieldCreatedBy, v))
+}
+
+// CreatedByLTE applies the LTE predicate on the "created_by" field.
+func CreatedByLTE(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldLTE(FieldCreatedBy, v))
+}
+
+// CreatedByContains applies the Contains predicate on the "created_by" field.
+func CreatedByContains(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldContains(FieldCreatedBy, v))
+}
+
+// CreatedByHasPrefix applies the HasPrefix predicate on the "created_by" field.
+func CreatedByHasPrefix(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldHasPrefix(FieldCreatedBy, v))
+}
+
+// CreatedByHasSuffix applies the HasSuffix predicate on the "created_by" field.
+func CreatedByHasSuffix(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldHasSuffix(FieldCreatedBy, v))
+}
+
+// CreatedByIsNil applies the IsNil predicate on the "created_by" field.
+func CreatedByIsNil() predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldIsNull(FieldCreatedBy))
+}
+
+// CreatedByNotNil applies the NotNil predicate on the "created_by" field.
+func CreatedByNotNil() predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNotNull(FieldCreatedBy))
+}
+
+// CreatedByEqualFold applies the EqualFold predicate on the "created_by" field.
+func CreatedByEqualFold(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEqualFold(FieldCreatedBy, v))
+}
+
+// CreatedByContainsFold applies the ContainsFold predicate on the "created_by" field.
+func CreatedByContainsFold(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldContainsFold(FieldCreatedBy, v))
+}
+
+// UpdatedByEQ applies the EQ predicate on the "updated_by" field.
+func UpdatedByEQ(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEQ(FieldUpdatedBy, v))
+}
+
+// UpdatedByNEQ applies the NEQ predicate on the "updated_by" field.
+func UpdatedByNEQ(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNEQ(FieldUpdatedBy, v))
+}
+
+// UpdatedByIn applies the In predicate on the "updated_by" field.
+func UpdatedByIn(vs ...string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldIn(FieldUpdatedBy, vs...))
+}
+
+// UpdatedByNotIn applies the NotIn predicate on the "updated_by" field.
+func UpdatedByNotIn(vs ...string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNotIn(FieldUpdatedBy, vs...))
+}
+
+// UpdatedByGT applies the GT predicate on the "updated_by" field.
+func UpdatedByGT(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldGT(FieldUpdatedBy, v))
+}
+
+// UpdatedByGTE applies the GTE predicate on the "updated_by" field.
+func UpdatedByGTE(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldGTE(FieldUpdatedBy, v))
+}
+
+// UpdatedByLT applies the LT predicate on the "updated_by" field.
+func UpdatedByLT(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldLT(FieldUpdatedBy, v))
+}
+
+// UpdatedByLTE applies the LTE predicate on the "updated_by" field.
+func UpdatedByLTE(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldLTE(FieldUpdatedBy, v))
+}
+
+// UpdatedByContains applies the Contains predicate on the "updated_by" field.
+func UpdatedByContains(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldContains(FieldUpdatedBy, v))
+}
+
+// UpdatedByHasPrefix applies the HasPrefix predicate on the "updated_by" field.
+func UpdatedByHasPrefix(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldHasPrefix(FieldUpdatedBy, v))
+}
+
+// UpdatedByHasSuffix applies the HasSuffix predicate on the "updated_by" field.
+func UpdatedByHasSuffix(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldHasSuffix(FieldUpdatedBy, v))
+}
+
+// UpdatedByIsNil applies the IsNil predicate on the "updated_by" field.
+func UpdatedByIsNil() predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldIsNull(FieldUpdatedBy))
+}
+
+// UpdatedByNotNil applies the NotNil predicate on the "updated_by" field.
+func UpdatedByNotNil() predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldNotNull(FieldUpdatedBy))
+}
+
+// UpdatedByEqualFold applies the EqualFold predicate on the "updated_by" field.
+func UpdatedByEqualFold(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldEqualFold(FieldUpdatedBy, v))
+}
+
+// UpdatedByContainsFold applies the ContainsFold predicate on the "updated_by" field.
+func UpdatedByContainsFold(v string) predicate.PsychoeducationModule {
+	return predicate.PsychoeducationModule(sql.FieldContainsFold(FieldUpdatedBy, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

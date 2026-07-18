@@ -123,6 +123,6 @@ func TestHandler_GetModuleDetail_NotFound(t *testing.T) {
 
 func TestHandler_GetModuleDetail_Found(t *testing.T) {
 	r, token := newPartnerRouter(t)
-	w := authedGet(r, "/v1/psychoeducation/modules/pause-before-impulse", token)
+	w := authedGet(r, "/v1/psychoeducation/modules/memahami-siklus-dorongan", token)
 	assert.Equal(t, http.StatusOK, w.Code)
 }

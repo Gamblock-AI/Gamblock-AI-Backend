@@ -7,6 +7,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
+
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 )
 
 func idField() ent.Field {
@@ -18,7 +20,7 @@ func updatedAt() ent.Field { return field.Time("updated_at").Default(time.Now).U
 type User struct{ ent.Schema }
 
 func (User) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("email").Unique(), field.String("display_name"), field.String("password_hash").Optional().Nillable().Sensitive(), field.String("avatar_url").Optional().Nillable(), field.String("google_subject").Optional().Nillable().Unique(), field.Enum("role").Values("user", "partner", "organization_owner", "organization_admin", "content_admin", "model_release_operator", "support_operator", "research_evaluator", "platform_admin").Default("user"), field.Time("disabled_at").Optional().Nillable(), createdAt(), updatedAt()}
+	return []ent.Field{idField(), field.String("email").Unique(), field.String("display_name"), field.String("password_hash").Optional().Nillable().Sensitive(), field.String("avatar_url").Optional().Nillable(), field.String("google_subject").Optional().Nillable().Unique(), field.Enum("role").Values("user", "partner", "organization_owner", "organization_admin", "content_admin", "model_release_operator", "support_operator", "research_evaluator", "platform_admin").Default("user"), field.Int("experience_points").Default(0).NonNegative(), field.Time("disabled_at").Optional().Nillable(), createdAt(), updatedAt()}
 }
 
 type RefreshToken struct{ ent.Schema }
@@ -58,7 +60,72 @@ func (NotificationDelivery) Fields() []ent.Field {
 type PsychoeducationModule struct{ ent.Schema }
 
 func (PsychoeducationModule) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("slug").Unique(), field.String("title"), field.String("summary"), field.Text("body_markdown"), field.Int("estimated_minutes"), field.Enum("status").Values("draft", "published", "archived").Default("draft"), createdAt(), updatedAt()}
+	return []ent.Field{
+		idField(),
+		field.String("slug").Unique(),
+		// Legacy summary fields remain mirrored from the Indonesian draft so
+		// existing databases can migrate without dropping data.
+		field.String("title"),
+		field.String("summary"),
+		field.Text("body_markdown"),
+		field.Int("estimated_minutes"),
+		field.Enum("status").Values("draft", "in_review", "published", "archived").Default("draft"),
+		field.JSON("draft_document_json", model.EducationDocument{}).Optional(),
+		field.JSON("published_document_json", model.EducationDocument{}).Optional(),
+		field.Int("draft_revision").Default(1),
+		field.Int("published_revision").Default(0),
+		field.Time("published_at").Optional().Nillable(),
+		field.Time("archived_at").Optional().Nillable(),
+		field.String("created_by").Optional(),
+		field.String("updated_by").Optional(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+type EducationMedia struct{ ent.Schema }
+
+func (EducationMedia) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.Enum("kind").Values("upload", "external"),
+		field.Enum("purpose").Values("thumbnail", "content"),
+		field.Enum("media_type").Values("image", "video", "pdf"),
+		field.String("mime_type"),
+		field.String("storage_key").Optional(),
+		field.String("external_url").Optional(),
+		field.String("original_name").Optional(),
+		field.Int64("size_bytes").Default(0),
+		field.Int("width").Default(0),
+		field.Int("height").Default(0),
+		field.String("sha256").Optional(),
+		field.Enum("status").Values("draft", "published").Default("draft"),
+		field.String("created_by").Optional(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+type PsychoeducationProgress struct{ ent.Schema }
+
+func (PsychoeducationProgress) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("user_id"),
+		field.String("module_id"),
+		field.Int("revision"),
+		field.JSON("completed_section_ids", []string{}).Default([]string{}),
+		field.JSON("opened_media_ids", []string{}).Default([]string{}),
+		field.JSON("correct_check_ids", []string{}).Default([]string{}),
+		field.Int("progress_percent").Default(0),
+		field.Time("completed_at").Optional().Nillable(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+func (PsychoeducationProgress) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("user_id", "module_id", "revision").Unique()}
 }
 
 type ModelRelease struct{ ent.Schema }
@@ -172,13 +239,27 @@ func (Intention) Fields() []ent.Field {
 type CheckIn struct{ ent.Schema }
 
 func (CheckIn) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.Int("mood_score").Comment("1-5 scale"), field.Int("urge_score").Comment("1-5 scale"), field.String("context_text").Optional().Nillable(), createdAt()}
+	return []ent.Field{idField(), field.String("user_id"), field.Int("mood_score").Comment("1-5 scale"), field.Int("urge_score").Comment("0 when not disclosed; otherwise 1-5 scale"), field.String("context_text").Optional().Nillable(), createdAt()}
 }
 
 type DailyMission struct{ ent.Schema }
 
 func (DailyMission) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.String("mission_key"), field.Enum("status").Values("completed", "skipped", "pending").Default("completed"), field.Time("completed_at").Optional().Nillable(), createdAt()}
+	return []ent.Field{
+		idField(),
+		field.String("user_id"),
+		field.String("mission_date").Optional().Nillable(),
+		field.String("mission_key"),
+		field.Enum("status").Values("completed", "skipped", "pending").Default("pending"),
+		field.Int("exp_reward").Default(0).NonNegative(),
+		field.Time("completed_at").Optional().Nillable(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+func (DailyMission) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("user_id", "mission_date", "mission_key").Unique()}
 }
 
 type Reflection struct{ ent.Schema }

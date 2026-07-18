@@ -1,5 +1,5 @@
 schema_version: 1
-context_version: 2026-07-16.5
+context_version: 2026-07-18.3
 component: backend
 contracts:
   proposal_authority: 1
@@ -10,6 +10,7 @@ contracts:
   accountability_state: 1
   client_daily_aggregate: 1
   emergency_two_operator: 1
+  education_revisioned_content: 1
 canonical_instruction: AGENTS.md
 proposal_requirements:
   - PKM-PRIV-001

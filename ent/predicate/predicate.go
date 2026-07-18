@@ -30,6 +30,9 @@ type DataRequest func(*sql.Selector)
 // Device is the predicate function for device builders.
 type Device func(*sql.Selector)
 
+// EducationMedia is the predicate function for educationmedia builders.
+type EducationMedia func(*sql.Selector)
+
 // EmergencyKeyRequest is the predicate function for emergencykeyrequest builders.
 type EmergencyKeyRequest func(*sql.Selector)
 
@@ -65,6 +68,9 @@ type PartnerLink func(*sql.Selector)
 
 // PsychoeducationModule is the predicate function for psychoeducationmodule builders.
 type PsychoeducationModule func(*sql.Selector)
+
+// PsychoeducationProgress is the predicate function for psychoeducationprogress builders.
+type PsychoeducationProgress func(*sql.Selector)
 
 // Reflection is the predicate function for reflection builders.
 type Reflection func(*sql.Selector)

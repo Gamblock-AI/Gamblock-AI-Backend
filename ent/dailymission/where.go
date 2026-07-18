@@ -69,9 +69,19 @@ func UserID(v string) predicate.DailyMission {
 	return predicate.DailyMission(sql.FieldEQ(FieldUserID, v))
 }
 
+// MissionDate applies equality check predicate on the "mission_date" field. It's identical to MissionDateEQ.
+func MissionDate(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEQ(FieldMissionDate, v))
+}
+
 // MissionKey applies equality check predicate on the "mission_key" field. It's identical to MissionKeyEQ.
 func MissionKey(v string) predicate.DailyMission {
 	return predicate.DailyMission(sql.FieldEQ(FieldMissionKey, v))
+}
+
+// ExpReward applies equality check predicate on the "exp_reward" field. It's identical to ExpRewardEQ.
+func ExpReward(v int) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEQ(FieldExpReward, v))
 }
 
 // CompletedAt applies equality check predicate on the "completed_at" field. It's identical to CompletedAtEQ.
@@ -82,6 +92,11 @@ func CompletedAt(v time.Time) predicate.DailyMission {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.DailyMission {
 	return predicate.DailyMission(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
 // UserIDEQ applies the EQ predicate on the "user_id" field.
@@ -147,6 +162,81 @@ func UserIDEqualFold(v string) predicate.DailyMission {
 // UserIDContainsFold applies the ContainsFold predicate on the "user_id" field.
 func UserIDContainsFold(v string) predicate.DailyMission {
 	return predicate.DailyMission(sql.FieldContainsFold(FieldUserID, v))
+}
+
+// MissionDateEQ applies the EQ predicate on the "mission_date" field.
+func MissionDateEQ(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEQ(FieldMissionDate, v))
+}
+
+// MissionDateNEQ applies the NEQ predicate on the "mission_date" field.
+func MissionDateNEQ(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNEQ(FieldMissionDate, v))
+}
+
+// MissionDateIn applies the In predicate on the "mission_date" field.
+func MissionDateIn(vs ...string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldIn(FieldMissionDate, vs...))
+}
+
+// MissionDateNotIn applies the NotIn predicate on the "mission_date" field.
+func MissionDateNotIn(vs ...string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNotIn(FieldMissionDate, vs...))
+}
+
+// MissionDateGT applies the GT predicate on the "mission_date" field.
+func MissionDateGT(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldGT(FieldMissionDate, v))
+}
+
+// MissionDateGTE applies the GTE predicate on the "mission_date" field.
+func MissionDateGTE(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldGTE(FieldMissionDate, v))
+}
+
+// MissionDateLT applies the LT predicate on the "mission_date" field.
+func MissionDateLT(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldLT(FieldMissionDate, v))
+}
+
+// MissionDateLTE applies the LTE predicate on the "mission_date" field.
+func MissionDateLTE(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldLTE(FieldMissionDate, v))
+}
+
+// MissionDateContains applies the Contains predicate on the "mission_date" field.
+func MissionDateContains(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldContains(FieldMissionDate, v))
+}
+
+// MissionDateHasPrefix applies the HasPrefix predicate on the "mission_date" field.
+func MissionDateHasPrefix(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldHasPrefix(FieldMissionDate, v))
+}
+
+// MissionDateHasSuffix applies the HasSuffix predicate on the "mission_date" field.
+func MissionDateHasSuffix(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldHasSuffix(FieldMissionDate, v))
+}
+
+// MissionDateIsNil applies the IsNil predicate on the "mission_date" field.
+func MissionDateIsNil() predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldIsNull(FieldMissionDate))
+}
+
+// MissionDateNotNil applies the NotNil predicate on the "mission_date" field.
+func MissionDateNotNil() predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNotNull(FieldMissionDate))
+}
+
+// MissionDateEqualFold applies the EqualFold predicate on the "mission_date" field.
+func MissionDateEqualFold(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEqualFold(FieldMissionDate, v))
+}
+
+// MissionDateContainsFold applies the ContainsFold predicate on the "mission_date" field.
+func MissionDateContainsFold(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldContainsFold(FieldMissionDate, v))
 }
 
 // MissionKeyEQ applies the EQ predicate on the "mission_key" field.
@@ -232,6 +322,46 @@ func StatusIn(vs ...Status) predicate.DailyMission {
 // StatusNotIn applies the NotIn predicate on the "status" field.
 func StatusNotIn(vs ...Status) predicate.DailyMission {
 	return predicate.DailyMission(sql.FieldNotIn(FieldStatus, vs...))
+}
+
+// ExpRewardEQ applies the EQ predicate on the "exp_reward" field.
+func ExpRewardEQ(v int) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEQ(FieldExpReward, v))
+}
+
+// ExpRewardNEQ applies the NEQ predicate on the "exp_reward" field.
+func ExpRewardNEQ(v int) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNEQ(FieldExpReward, v))
+}
+
+// ExpRewardIn applies the In predicate on the "exp_reward" field.
+func ExpRewardIn(vs ...int) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldIn(FieldExpReward, vs...))
+}
+
+// ExpRewardNotIn applies the NotIn predicate on the "exp_reward" field.
+func ExpRewardNotIn(vs ...int) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNotIn(FieldExpReward, vs...))
+}
+
+// ExpRewardGT applies the GT predicate on the "exp_reward" field.
+func ExpRewardGT(v int) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldGT(FieldExpReward, v))
+}
+
+// ExpRewardGTE applies the GTE predicate on the "exp_reward" field.
+func ExpRewardGTE(v int) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldGTE(FieldExpReward, v))
+}
+
+// ExpRewardLT applies the LT predicate on the "exp_reward" field.
+func ExpRewardLT(v int) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldLT(FieldExpReward, v))
+}
+
+// ExpRewardLTE applies the LTE predicate on the "exp_reward" field.
+func ExpRewardLTE(v int) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldLTE(FieldExpReward, v))
 }
 
 // CompletedAtEQ applies the EQ predicate on the "completed_at" field.
@@ -322,6 +452,46 @@ func CreatedAtLT(v time.Time) predicate.DailyMission {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.DailyMission {
 	return predicate.DailyMission(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // And groups predicates with the AND operator between them.

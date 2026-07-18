@@ -22,6 +22,8 @@ type Config struct {
 	AllowedOrigins       []string
 	ArtifactStoragePath  string
 	ExportStoragePath    string
+	MediaStoragePath     string
+	MediaEmbedHosts      []string
 	JournalEncryptionKey string
 	WhatsAppAPIKey       string
 	WhatsAppPhoneID      string
@@ -66,6 +68,8 @@ func Load() Config {
 	viper.SetDefault("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8099,http://127.0.0.1:8099")
 	viper.SetDefault("ARTIFACT_STORAGE_PATH", "./var/artifacts")
 	viper.SetDefault("EXPORT_STORAGE_PATH", "./var/exports")
+	viper.SetDefault("MEDIA_STORAGE_PATH", "./var/media")
+	viper.SetDefault("MEDIA_EMBED_ALLOWED_HOSTS", "www.youtube-nocookie.com,player.vimeo.com,who.int,www.who.int,ppatk.go.id,www.ppatk.go.id,ojk.go.id,www.ojk.go.id,komdigi.go.id,www.komdigi.go.id,kemkes.go.id,www.kemkes.go.id")
 	viper.SetDefault("JOURNAL_ENCRYPTION_KEY", "")
 	viper.SetDefault("WHATSAPP_API_KEY", "")
 	viper.SetDefault("WHATSAPP_PHONE_ID", "")
@@ -96,6 +100,8 @@ func Load() Config {
 		AllowedOrigins:       splitCSV(viper.GetString("CORS_ALLOWED_ORIGINS")),
 		ArtifactStoragePath:  viper.GetString("ARTIFACT_STORAGE_PATH"),
 		ExportStoragePath:    viper.GetString("EXPORT_STORAGE_PATH"),
+		MediaStoragePath:     viper.GetString("MEDIA_STORAGE_PATH"),
+		MediaEmbedHosts:      splitCSV(viper.GetString("MEDIA_EMBED_ALLOWED_HOSTS")),
 		JournalEncryptionKey: viper.GetString("JOURNAL_ENCRYPTION_KEY"),
 		WhatsAppAPIKey:       viper.GetString("WHATSAPP_API_KEY"),
 		WhatsAppPhoneID:      viper.GetString("WHATSAPP_PHONE_ID"),

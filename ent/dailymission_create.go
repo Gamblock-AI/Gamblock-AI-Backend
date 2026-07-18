@@ -26,6 +26,20 @@ func (_c *DailyMissionCreate) SetUserID(v string) *DailyMissionCreate {
 	return _c
 }
 
+// SetMissionDate sets the "mission_date" field.
+func (_c *DailyMissionCreate) SetMissionDate(v string) *DailyMissionCreate {
+	_c.mutation.SetMissionDate(v)
+	return _c
+}
+
+// SetNillableMissionDate sets the "mission_date" field if the given value is not nil.
+func (_c *DailyMissionCreate) SetNillableMissionDate(v *string) *DailyMissionCreate {
+	if v != nil {
+		_c.SetMissionDate(*v)
+	}
+	return _c
+}
+
 // SetMissionKey sets the "mission_key" field.
 func (_c *DailyMissionCreate) SetMissionKey(v string) *DailyMissionCreate {
 	_c.mutation.SetMissionKey(v)
@@ -42,6 +56,20 @@ func (_c *DailyMissionCreate) SetStatus(v dailymission.Status) *DailyMissionCrea
 func (_c *DailyMissionCreate) SetNillableStatus(v *dailymission.Status) *DailyMissionCreate {
 	if v != nil {
 		_c.SetStatus(*v)
+	}
+	return _c
+}
+
+// SetExpReward sets the "exp_reward" field.
+func (_c *DailyMissionCreate) SetExpReward(v int) *DailyMissionCreate {
+	_c.mutation.SetExpReward(v)
+	return _c
+}
+
+// SetNillableExpReward sets the "exp_reward" field if the given value is not nil.
+func (_c *DailyMissionCreate) SetNillableExpReward(v *int) *DailyMissionCreate {
+	if v != nil {
+		_c.SetExpReward(*v)
 	}
 	return _c
 }
@@ -70,6 +98,20 @@ func (_c *DailyMissionCreate) SetCreatedAt(v time.Time) *DailyMissionCreate {
 func (_c *DailyMissionCreate) SetNillableCreatedAt(v *time.Time) *DailyMissionCreate {
 	if v != nil {
 		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_c *DailyMissionCreate) SetUpdatedAt(v time.Time) *DailyMissionCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_c *DailyMissionCreate) SetNillableUpdatedAt(v *time.Time) *DailyMissionCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
 	return _c
 }
@@ -127,9 +169,17 @@ func (_c *DailyMissionCreate) defaults() {
 		v := dailymission.DefaultStatus
 		_c.mutation.SetStatus(v)
 	}
+	if _, ok := _c.mutation.ExpReward(); !ok {
+		v := dailymission.DefaultExpReward
+		_c.mutation.SetExpReward(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := dailymission.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		v := dailymission.DefaultUpdatedAt()
+		_c.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := dailymission.DefaultID()
@@ -153,8 +203,19 @@ func (_c *DailyMissionCreate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "DailyMission.status": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.ExpReward(); !ok {
+		return &ValidationError{Name: "exp_reward", err: errors.New(`ent: missing required field "DailyMission.exp_reward"`)}
+	}
+	if v, ok := _c.mutation.ExpReward(); ok {
+		if err := dailymission.ExpRewardValidator(v); err != nil {
+			return &ValidationError{Name: "exp_reward", err: fmt.Errorf(`ent: validator failed for field "DailyMission.exp_reward": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "DailyMission.created_at"`)}
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "DailyMission.updated_at"`)}
 	}
 	return nil
 }
@@ -195,6 +256,10 @@ func (_c *DailyMissionCreate) createSpec() (*DailyMission, *sqlgraph.CreateSpec)
 		_spec.SetField(dailymission.FieldUserID, field.TypeString, value)
 		_node.UserID = value
 	}
+	if value, ok := _c.mutation.MissionDate(); ok {
+		_spec.SetField(dailymission.FieldMissionDate, field.TypeString, value)
+		_node.MissionDate = &value
+	}
 	if value, ok := _c.mutation.MissionKey(); ok {
 		_spec.SetField(dailymission.FieldMissionKey, field.TypeString, value)
 		_node.MissionKey = value
@@ -203,6 +268,10 @@ func (_c *DailyMissionCreate) createSpec() (*DailyMission, *sqlgraph.CreateSpec)
 		_spec.SetField(dailymission.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
 	}
+	if value, ok := _c.mutation.ExpReward(); ok {
+		_spec.SetField(dailymission.FieldExpReward, field.TypeInt, value)
+		_node.ExpReward = value
+	}
 	if value, ok := _c.mutation.CompletedAt(); ok {
 		_spec.SetField(dailymission.FieldCompletedAt, field.TypeTime, value)
 		_node.CompletedAt = &value
@@ -210,6 +279,10 @@ func (_c *DailyMissionCreate) createSpec() (*DailyMission, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(dailymission.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.UpdatedAt(); ok {
+		_spec.SetField(dailymission.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
 	}
 	return _node, _spec
 }

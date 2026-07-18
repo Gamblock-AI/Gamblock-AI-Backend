@@ -88,6 +88,20 @@ func (_c *UserCreate) SetNillableRole(v *user.Role) *UserCreate {
 	return _c
 }
 
+// SetExperiencePoints sets the "experience_points" field.
+func (_c *UserCreate) SetExperiencePoints(v int) *UserCreate {
+	_c.mutation.SetExperiencePoints(v)
+	return _c
+}
+
+// SetNillableExperiencePoints sets the "experience_points" field if the given value is not nil.
+func (_c *UserCreate) SetNillableExperiencePoints(v *int) *UserCreate {
+	if v != nil {
+		_c.SetExperiencePoints(*v)
+	}
+	return _c
+}
+
 // SetDisabledAt sets the "disabled_at" field.
 func (_c *UserCreate) SetDisabledAt(v time.Time) *UserCreate {
 	_c.mutation.SetDisabledAt(v)
@@ -183,6 +197,10 @@ func (_c *UserCreate) defaults() {
 		v := user.DefaultRole
 		_c.mutation.SetRole(v)
 	}
+	if _, ok := _c.mutation.ExperiencePoints(); !ok {
+		v := user.DefaultExperiencePoints
+		_c.mutation.SetExperiencePoints(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := user.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -211,6 +229,14 @@ func (_c *UserCreate) check() error {
 	if v, ok := _c.mutation.Role(); ok {
 		if err := user.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.ExperiencePoints(); !ok {
+		return &ValidationError{Name: "experience_points", err: errors.New(`ent: missing required field "User.experience_points"`)}
+	}
+	if v, ok := _c.mutation.ExperiencePoints(); ok {
+		if err := user.ExperiencePointsValidator(v); err != nil {
+			return &ValidationError{Name: "experience_points", err: fmt.Errorf(`ent: validator failed for field "User.experience_points": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
@@ -277,6 +303,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 		_node.Role = value
+	}
+	if value, ok := _c.mutation.ExperiencePoints(); ok {
+		_spec.SetField(user.FieldExperiencePoints, field.TypeInt, value)
+		_node.ExperiencePoints = value
 	}
 	if value, ok := _c.mutation.DisabledAt(); ok {
 		_spec.SetField(user.FieldDisabledAt, field.TypeTime, value)

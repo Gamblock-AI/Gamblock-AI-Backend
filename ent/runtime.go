@@ -13,6 +13,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
@@ -25,6 +26,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organizationpolicy"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationprogress"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
@@ -104,10 +106,22 @@ func init() {
 	contentprogress.DefaultID = contentprogressDescID.Default.(func() string)
 	dailymissionFields := schema.DailyMission{}.Fields()
 	_ = dailymissionFields
+	// dailymissionDescExpReward is the schema descriptor for exp_reward field.
+	dailymissionDescExpReward := dailymissionFields[5].Descriptor()
+	// dailymission.DefaultExpReward holds the default value on creation for the exp_reward field.
+	dailymission.DefaultExpReward = dailymissionDescExpReward.Default.(int)
+	// dailymission.ExpRewardValidator is a validator for the "exp_reward" field. It is called by the builders before save.
+	dailymission.ExpRewardValidator = dailymissionDescExpReward.Validators[0].(func(int) error)
 	// dailymissionDescCreatedAt is the schema descriptor for created_at field.
-	dailymissionDescCreatedAt := dailymissionFields[5].Descriptor()
+	dailymissionDescCreatedAt := dailymissionFields[7].Descriptor()
 	// dailymission.DefaultCreatedAt holds the default value on creation for the created_at field.
 	dailymission.DefaultCreatedAt = dailymissionDescCreatedAt.Default.(func() time.Time)
+	// dailymissionDescUpdatedAt is the schema descriptor for updated_at field.
+	dailymissionDescUpdatedAt := dailymissionFields[8].Descriptor()
+	// dailymission.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	dailymission.DefaultUpdatedAt = dailymissionDescUpdatedAt.Default.(func() time.Time)
+	// dailymission.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	dailymission.UpdateDefaultUpdatedAt = dailymissionDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// dailymissionDescID is the schema descriptor for id field.
 	dailymissionDescID := dailymissionFields[0].Descriptor()
 	// dailymission.DefaultID holds the default value on creation for the id field.
@@ -146,6 +160,34 @@ func init() {
 	deviceDescID := deviceFields[0].Descriptor()
 	// device.DefaultID holds the default value on creation for the id field.
 	device.DefaultID = deviceDescID.Default.(func() string)
+	educationmediaFields := schema.EducationMedia{}.Fields()
+	_ = educationmediaFields
+	// educationmediaDescSizeBytes is the schema descriptor for size_bytes field.
+	educationmediaDescSizeBytes := educationmediaFields[8].Descriptor()
+	// educationmedia.DefaultSizeBytes holds the default value on creation for the size_bytes field.
+	educationmedia.DefaultSizeBytes = educationmediaDescSizeBytes.Default.(int64)
+	// educationmediaDescWidth is the schema descriptor for width field.
+	educationmediaDescWidth := educationmediaFields[9].Descriptor()
+	// educationmedia.DefaultWidth holds the default value on creation for the width field.
+	educationmedia.DefaultWidth = educationmediaDescWidth.Default.(int)
+	// educationmediaDescHeight is the schema descriptor for height field.
+	educationmediaDescHeight := educationmediaFields[10].Descriptor()
+	// educationmedia.DefaultHeight holds the default value on creation for the height field.
+	educationmedia.DefaultHeight = educationmediaDescHeight.Default.(int)
+	// educationmediaDescCreatedAt is the schema descriptor for created_at field.
+	educationmediaDescCreatedAt := educationmediaFields[14].Descriptor()
+	// educationmedia.DefaultCreatedAt holds the default value on creation for the created_at field.
+	educationmedia.DefaultCreatedAt = educationmediaDescCreatedAt.Default.(func() time.Time)
+	// educationmediaDescUpdatedAt is the schema descriptor for updated_at field.
+	educationmediaDescUpdatedAt := educationmediaFields[15].Descriptor()
+	// educationmedia.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	educationmedia.DefaultUpdatedAt = educationmediaDescUpdatedAt.Default.(func() time.Time)
+	// educationmedia.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	educationmedia.UpdateDefaultUpdatedAt = educationmediaDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// educationmediaDescID is the schema descriptor for id field.
+	educationmediaDescID := educationmediaFields[0].Descriptor()
+	// educationmedia.DefaultID holds the default value on creation for the id field.
+	educationmedia.DefaultID = educationmediaDescID.Default.(func() string)
 	emergencykeyrequestFields := schema.EmergencyKeyRequest{}.Fields()
 	_ = emergencykeyrequestFields
 	// emergencykeyrequestDescCreatedAt is the schema descriptor for created_at field.
@@ -314,12 +356,20 @@ func init() {
 	partnerlink.DefaultID = partnerlinkDescID.Default.(func() string)
 	psychoeducationmoduleFields := schema.PsychoeducationModule{}.Fields()
 	_ = psychoeducationmoduleFields
+	// psychoeducationmoduleDescDraftRevision is the schema descriptor for draft_revision field.
+	psychoeducationmoduleDescDraftRevision := psychoeducationmoduleFields[9].Descriptor()
+	// psychoeducationmodule.DefaultDraftRevision holds the default value on creation for the draft_revision field.
+	psychoeducationmodule.DefaultDraftRevision = psychoeducationmoduleDescDraftRevision.Default.(int)
+	// psychoeducationmoduleDescPublishedRevision is the schema descriptor for published_revision field.
+	psychoeducationmoduleDescPublishedRevision := psychoeducationmoduleFields[10].Descriptor()
+	// psychoeducationmodule.DefaultPublishedRevision holds the default value on creation for the published_revision field.
+	psychoeducationmodule.DefaultPublishedRevision = psychoeducationmoduleDescPublishedRevision.Default.(int)
 	// psychoeducationmoduleDescCreatedAt is the schema descriptor for created_at field.
-	psychoeducationmoduleDescCreatedAt := psychoeducationmoduleFields[7].Descriptor()
+	psychoeducationmoduleDescCreatedAt := psychoeducationmoduleFields[15].Descriptor()
 	// psychoeducationmodule.DefaultCreatedAt holds the default value on creation for the created_at field.
 	psychoeducationmodule.DefaultCreatedAt = psychoeducationmoduleDescCreatedAt.Default.(func() time.Time)
 	// psychoeducationmoduleDescUpdatedAt is the schema descriptor for updated_at field.
-	psychoeducationmoduleDescUpdatedAt := psychoeducationmoduleFields[8].Descriptor()
+	psychoeducationmoduleDescUpdatedAt := psychoeducationmoduleFields[16].Descriptor()
 	// psychoeducationmodule.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	psychoeducationmodule.DefaultUpdatedAt = psychoeducationmoduleDescUpdatedAt.Default.(func() time.Time)
 	// psychoeducationmodule.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -328,6 +378,38 @@ func init() {
 	psychoeducationmoduleDescID := psychoeducationmoduleFields[0].Descriptor()
 	// psychoeducationmodule.DefaultID holds the default value on creation for the id field.
 	psychoeducationmodule.DefaultID = psychoeducationmoduleDescID.Default.(func() string)
+	psychoeducationprogressFields := schema.PsychoeducationProgress{}.Fields()
+	_ = psychoeducationprogressFields
+	// psychoeducationprogressDescCompletedSectionIds is the schema descriptor for completed_section_ids field.
+	psychoeducationprogressDescCompletedSectionIds := psychoeducationprogressFields[4].Descriptor()
+	// psychoeducationprogress.DefaultCompletedSectionIds holds the default value on creation for the completed_section_ids field.
+	psychoeducationprogress.DefaultCompletedSectionIds = psychoeducationprogressDescCompletedSectionIds.Default.([]string)
+	// psychoeducationprogressDescOpenedMediaIds is the schema descriptor for opened_media_ids field.
+	psychoeducationprogressDescOpenedMediaIds := psychoeducationprogressFields[5].Descriptor()
+	// psychoeducationprogress.DefaultOpenedMediaIds holds the default value on creation for the opened_media_ids field.
+	psychoeducationprogress.DefaultOpenedMediaIds = psychoeducationprogressDescOpenedMediaIds.Default.([]string)
+	// psychoeducationprogressDescCorrectCheckIds is the schema descriptor for correct_check_ids field.
+	psychoeducationprogressDescCorrectCheckIds := psychoeducationprogressFields[6].Descriptor()
+	// psychoeducationprogress.DefaultCorrectCheckIds holds the default value on creation for the correct_check_ids field.
+	psychoeducationprogress.DefaultCorrectCheckIds = psychoeducationprogressDescCorrectCheckIds.Default.([]string)
+	// psychoeducationprogressDescProgressPercent is the schema descriptor for progress_percent field.
+	psychoeducationprogressDescProgressPercent := psychoeducationprogressFields[7].Descriptor()
+	// psychoeducationprogress.DefaultProgressPercent holds the default value on creation for the progress_percent field.
+	psychoeducationprogress.DefaultProgressPercent = psychoeducationprogressDescProgressPercent.Default.(int)
+	// psychoeducationprogressDescCreatedAt is the schema descriptor for created_at field.
+	psychoeducationprogressDescCreatedAt := psychoeducationprogressFields[9].Descriptor()
+	// psychoeducationprogress.DefaultCreatedAt holds the default value on creation for the created_at field.
+	psychoeducationprogress.DefaultCreatedAt = psychoeducationprogressDescCreatedAt.Default.(func() time.Time)
+	// psychoeducationprogressDescUpdatedAt is the schema descriptor for updated_at field.
+	psychoeducationprogressDescUpdatedAt := psychoeducationprogressFields[10].Descriptor()
+	// psychoeducationprogress.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	psychoeducationprogress.DefaultUpdatedAt = psychoeducationprogressDescUpdatedAt.Default.(func() time.Time)
+	// psychoeducationprogress.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	psychoeducationprogress.UpdateDefaultUpdatedAt = psychoeducationprogressDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// psychoeducationprogressDescID is the schema descriptor for id field.
+	psychoeducationprogressDescID := psychoeducationprogressFields[0].Descriptor()
+	// psychoeducationprogress.DefaultID holds the default value on creation for the id field.
+	psychoeducationprogress.DefaultID = psychoeducationprogressDescID.Default.(func() string)
 	reflectionFields := schema.Reflection{}.Fields()
 	_ = reflectionFields
 	// reflectionDescCreatedAt is the schema descriptor for created_at field.
@@ -418,12 +500,18 @@ func init() {
 	supportcase.DefaultID = supportcaseDescID.Default.(func() string)
 	userFields := schema.User{}.Fields()
 	_ = userFields
+	// userDescExperiencePoints is the schema descriptor for experience_points field.
+	userDescExperiencePoints := userFields[7].Descriptor()
+	// user.DefaultExperiencePoints holds the default value on creation for the experience_points field.
+	user.DefaultExperiencePoints = userDescExperiencePoints.Default.(int)
+	// user.ExperiencePointsValidator is a validator for the "experience_points" field. It is called by the builders before save.
+	user.ExperiencePointsValidator = userDescExperiencePoints.Validators[0].(func(int) error)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[8].Descriptor()
+	userDescCreatedAt := userFields[9].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[9].Descriptor()
+	userDescUpdatedAt := userFields[10].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

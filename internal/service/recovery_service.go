@@ -51,8 +51,8 @@ func (s *RecoveryService) GetCheckIns(ctx context.Context, userID string) ([]mod
 }
 
 func (s *RecoveryService) CreateCheckIn(ctx context.Context, userID string, mood, urge int, contextText string) (model.CheckIn, error) {
-	if mood < 1 || mood > 5 || urge < 1 || urge > 5 {
-		return model.CheckIn{}, fmt.Errorf("mood and urge must be between 1 and 5")
+	if mood < 1 || mood > 5 || urge < 0 || urge > 5 {
+		return model.CheckIn{}, fmt.Errorf("mood must be between 1 and 5 and urge between 0 and 5")
 	}
 	return s.repo.SaveCheckIn(ctx, userID, mood, urge, contextText)
 }

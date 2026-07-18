@@ -9,6 +9,7 @@ dashboard. Uses [ent](https://entgo.io/) over PostgreSQL.
 cp .env.example .env
 go run ./cmd/migrate      # apply schema migrations
 go run ./cmd/seed         # (optional) seed demo data
+go run ./cmd/seed-education # upsert the six bilingual education modules/media
 go run ./cmd/api          # start the API (default 127.0.0.1:8080)
 ```
 
@@ -25,7 +26,7 @@ password `password` for `gading@gmail.com`, `dery@gmail.com`,
 fixtures only and demo data is forbidden in production.
 
 Useful Makefile targets: `make dev` (air live-reload), `make lint`,
-`make migrate`, `make seed`, and opt-in `make verify`. `make migrate-fresh` drops the
+`make migrate`, `make seed`, `make seed-education`, and opt-in `make verify`. `make migrate-fresh` drops the
 database schema and must never be run against shared or production data.
 
 ## Key local endpoints
@@ -39,8 +40,15 @@ database schema and must never be run against shared or production data.
 - `GET  /v1/client/protection-status`
 - `GET  /v1/client/protection-analytics`
 - `POST /v1/client/aggregate-events`
+- `GET/POST /v1/check-ins`
 - `GET/PATCH /v1/me`
 - `GET  /v1/psychoeducation/modules`
+- `GET  /v1/psychoeducation/modules/:slug`
+- `PUT  /v1/psychoeducation/modules/:id/revisions/:revision/progress`
+- `POST /v1/psychoeducation/modules/:id/revisions/:revision/checks/:check_id/answer`
+- `GET  /v1/education/media/:id`
+- `GET/POST/PUT /v1/admin/content/modules[...]`
+- `POST /v1/admin/content/media`
 - `GET  /v1/partners`
 - `GET  /v1/approval-requests`
 - `POST /v1/approval-requests/:id/apply`
@@ -50,6 +58,9 @@ database schema and must never be run against shared or production data.
 - `POST /v1/admin/emergency-key-requests/:id/review`
 - `POST /v1/admin/emergency-key-requests/:id/approve`
 - `GET  /v1/portal/overview`
+- `GET  /v1/missions/today`
+- `PATCH /v1/missions`
+- `POST /v1/missions/claim`
 
 All responses use the envelope `{ "data", "error", "request_id" }` produced in
 `internal/handler/handler.go` / `internal/middleware/middleware.go`.
@@ -69,6 +80,21 @@ All responses use the envelope `{ "data", "error", "request_id" }` produced in
   admin reviews it, a different platform admin approves/issues it, and
   `/v1/devices/unlock` consumes the 24-hour single-use key for a ten-minute
   grant.
+- `POST /v1/check-ins` persists the authenticated user's structured mood score
+  and optional urge score (`0` means not disclosed); it accepts no browsing
+  context. Partner visibility is not exposed by this endpoint.
+- `GET /v1/missions/today` returns a deterministic `Asia/Jakarta` daily set of
+  one primary and two optional bonus tasks, plus the authenticated user's level
+  and EXP progress. It derives claim eligibility from existing account records:
+  active protection seen today, today's saved check-in, today's education
+  section/module progress, or an active partner link. `POST
+  /v1/missions/claim` rechecks eligibility and atomically grants the disclosed
+  reward once. Legacy `PATCH /v1/missions` is claim-only and rejects undo.
+  Mission/EXP data is not projected to partners.
+- Psychoeducation publication stores immutable bilingual document snapshots.
+  Student progress is revision-scoped and counts required sections, media, and
+  knowledge checks. Uploaded media is MIME-sniffed and size-bounded; external
+  media is restricted to configured HTTPS hosts.
 
 These endpoints reject ownership mismatches and never accept URL, domain, DOM,
 page title, browsing history, screenshot, feature-vector, or per-page score

@@ -18,6 +18,7 @@ type Container struct {
 	Mission        *MissionService
 	Recovery       *RecoveryService
 	Client         *ClientService
+	Education      *EducationService
 }
 
 func NewContainer(repo *repository.Repository, cfg config.Config, logger *zap.Logger) *Container {
@@ -34,5 +35,6 @@ func NewContainer(repo *repository.Repository, cfg config.Config, logger *zap.Lo
 		Mission:        NewMissionService(repo, logger),
 		Recovery:       NewRecoveryService(repo),
 		Client:         NewClientService(repo),
+		Education:      NewEducationService(repo, cfg),
 	}
 }

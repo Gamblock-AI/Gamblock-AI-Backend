@@ -27,7 +27,7 @@ func main() {
 	if err := db.Migrate(ctx, client); err != nil {
 		log.Fatalf("migrate database: %v", err)
 	}
-	if err := db.Seed(ctx, client); err != nil {
+	if err := db.Seed(ctx, client, cfg.MediaStoragePath); err != nil {
 		log.Fatalf("seed database: %v", err)
 	}
 	log.Println("database seed complete")

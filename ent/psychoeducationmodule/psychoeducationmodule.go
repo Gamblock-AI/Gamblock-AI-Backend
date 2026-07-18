@@ -26,6 +26,22 @@ const (
 	FieldEstimatedMinutes = "estimated_minutes"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldDraftDocumentJSON holds the string denoting the draft_document_json field in the database.
+	FieldDraftDocumentJSON = "draft_document_json"
+	// FieldPublishedDocumentJSON holds the string denoting the published_document_json field in the database.
+	FieldPublishedDocumentJSON = "published_document_json"
+	// FieldDraftRevision holds the string denoting the draft_revision field in the database.
+	FieldDraftRevision = "draft_revision"
+	// FieldPublishedRevision holds the string denoting the published_revision field in the database.
+	FieldPublishedRevision = "published_revision"
+	// FieldPublishedAt holds the string denoting the published_at field in the database.
+	FieldPublishedAt = "published_at"
+	// FieldArchivedAt holds the string denoting the archived_at field in the database.
+	FieldArchivedAt = "archived_at"
+	// FieldCreatedBy holds the string denoting the created_by field in the database.
+	FieldCreatedBy = "created_by"
+	// FieldUpdatedBy holds the string denoting the updated_by field in the database.
+	FieldUpdatedBy = "updated_by"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -43,6 +59,14 @@ var Columns = []string{
 	FieldBodyMarkdown,
 	FieldEstimatedMinutes,
 	FieldStatus,
+	FieldDraftDocumentJSON,
+	FieldPublishedDocumentJSON,
+	FieldDraftRevision,
+	FieldPublishedRevision,
+	FieldPublishedAt,
+	FieldArchivedAt,
+	FieldCreatedBy,
+	FieldUpdatedBy,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -58,6 +82,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultDraftRevision holds the default value on creation for the "draft_revision" field.
+	DefaultDraftRevision int
+	// DefaultPublishedRevision holds the default value on creation for the "published_revision" field.
+	DefaultPublishedRevision int
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -77,6 +105,7 @@ const DefaultStatus = StatusDraft
 // Status values.
 const (
 	StatusDraft     Status = "draft"
+	StatusInReview  Status = "in_review"
 	StatusPublished Status = "published"
 	StatusArchived  Status = "archived"
 )
@@ -88,7 +117,7 @@ func (s Status) String() string {
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s Status) error {
 	switch s {
-	case StatusDraft, StatusPublished, StatusArchived:
+	case StatusDraft, StatusInReview, StatusPublished, StatusArchived:
 		return nil
 	default:
 		return fmt.Errorf("psychoeducationmodule: invalid enum value for status field: %q", s)
@@ -131,6 +160,36 @@ func ByEstimatedMinutes(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByDraftRevision orders the results by the draft_revision field.
+func ByDraftRevision(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDraftRevision, opts...).ToFunc()
+}
+
+// ByPublishedRevision orders the results by the published_revision field.
+func ByPublishedRevision(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPublishedRevision, opts...).ToFunc()
+}
+
+// ByPublishedAt orders the results by the published_at field.
+func ByPublishedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPublishedAt, opts...).ToFunc()
+}
+
+// ByArchivedAt orders the results by the archived_at field.
+func ByArchivedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldArchivedAt, opts...).ToFunc()
+}
+
+// ByCreatedBy orders the results by the created_by field.
+func ByCreatedBy(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedBy, opts...).ToFunc()
+}
+
+// ByUpdatedBy orders the results by the updated_by field.
+func ByUpdatedBy(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedBy, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

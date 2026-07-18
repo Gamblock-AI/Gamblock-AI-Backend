@@ -39,6 +39,7 @@ func newFullRouter(t *testing.T, appEnv string) (*gin.Engine, string) {
 	v1.GET("/portal/overview", mid.AuthRequired(), h.PortalOverview)
 	v1.GET("/missions/today", mid.AuthRequired(), h.GetTodayMission)
 	v1.PATCH("/missions", mid.AuthRequired(), h.UpdateMission)
+	v1.POST("/missions/claim", mid.AuthRequired(), h.ClaimMission)
 	v1.GET("/approval-requests", mid.AuthRequired(), h.GetApprovalRequests)
 	v1.POST("/approval-requests", mid.AuthRequired(), h.CreateApprovalRequest)
 	v1.POST("/organizations", mid.AuthRequired(), h.CreateOrganization)
@@ -86,13 +87,56 @@ func TestHandler_GetTodayMission(t *testing.T) {
 
 func TestHandler_UpdateMission(t *testing.T) {
 	r, token := newFullRouter(t, "development")
-	body := []byte(`{"mission_number":1,"completed":true}`)
+	today := authedGet(r, "/v1/missions/today", token)
+	require.Equal(t, http.StatusOK, today.Code)
+	var missionEnvelope envelopeShape
+	require.NoError(t, json.Unmarshal(today.Body.Bytes(), &missionEnvelope))
+	tasks := missionEnvelope.Data.(map[string]any)["tasks"].([]any)
+	missionNumber := verifiedMissionNumber(t, tasks)
+	body, err := json.Marshal(map[string]any{
+		"mission_number": missionNumber,
+		"completed":      true,
+	})
+	require.NoError(t, err)
 	req := httptest.NewRequest(http.MethodPatch, "/v1/missions", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestHandler_ClaimMission(t *testing.T) {
+	r, token := newFullRouter(t, "development")
+	today := authedGet(r, "/v1/missions/today", token)
+	require.Equal(t, http.StatusOK, today.Code)
+	var missionEnvelope envelopeShape
+	require.NoError(t, json.Unmarshal(today.Body.Bytes(), &missionEnvelope))
+	tasks := missionEnvelope.Data.(map[string]any)["tasks"].([]any)
+	body, err := json.Marshal(map[string]any{
+		"mission_number": verifiedMissionNumber(t, tasks),
+	})
+	require.NoError(t, err)
+	req := httptest.NewRequest(http.MethodPost, "/v1/missions/claim", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func verifiedMissionNumber(t *testing.T, tasks []any) int {
+	t.Helper()
+	for _, rawTask := range tasks {
+		task := rawTask.(map[string]any)
+		claimable, _ := task["claimable"].(bool)
+		completed, _ := task["completed"].(bool)
+		if claimable || completed {
+			return int(task["number"].(float64))
+		}
+	}
+	t.Fatal("expected at least one system-verified mission")
+	return 0
 }
 
 func TestHandler_UpdateMission_InvalidNum(t *testing.T) {

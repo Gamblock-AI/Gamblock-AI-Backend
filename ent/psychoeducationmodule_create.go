@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 )
 
 // PsychoeducationModuleCreate is the builder for creating a PsychoeducationModule entity.
@@ -60,6 +61,118 @@ func (_c *PsychoeducationModuleCreate) SetStatus(v psychoeducationmodule.Status)
 func (_c *PsychoeducationModuleCreate) SetNillableStatus(v *psychoeducationmodule.Status) *PsychoeducationModuleCreate {
 	if v != nil {
 		_c.SetStatus(*v)
+	}
+	return _c
+}
+
+// SetDraftDocumentJSON sets the "draft_document_json" field.
+func (_c *PsychoeducationModuleCreate) SetDraftDocumentJSON(v model.EducationDocument) *PsychoeducationModuleCreate {
+	_c.mutation.SetDraftDocumentJSON(v)
+	return _c
+}
+
+// SetNillableDraftDocumentJSON sets the "draft_document_json" field if the given value is not nil.
+func (_c *PsychoeducationModuleCreate) SetNillableDraftDocumentJSON(v *model.EducationDocument) *PsychoeducationModuleCreate {
+	if v != nil {
+		_c.SetDraftDocumentJSON(*v)
+	}
+	return _c
+}
+
+// SetPublishedDocumentJSON sets the "published_document_json" field.
+func (_c *PsychoeducationModuleCreate) SetPublishedDocumentJSON(v model.EducationDocument) *PsychoeducationModuleCreate {
+	_c.mutation.SetPublishedDocumentJSON(v)
+	return _c
+}
+
+// SetNillablePublishedDocumentJSON sets the "published_document_json" field if the given value is not nil.
+func (_c *PsychoeducationModuleCreate) SetNillablePublishedDocumentJSON(v *model.EducationDocument) *PsychoeducationModuleCreate {
+	if v != nil {
+		_c.SetPublishedDocumentJSON(*v)
+	}
+	return _c
+}
+
+// SetDraftRevision sets the "draft_revision" field.
+func (_c *PsychoeducationModuleCreate) SetDraftRevision(v int) *PsychoeducationModuleCreate {
+	_c.mutation.SetDraftRevision(v)
+	return _c
+}
+
+// SetNillableDraftRevision sets the "draft_revision" field if the given value is not nil.
+func (_c *PsychoeducationModuleCreate) SetNillableDraftRevision(v *int) *PsychoeducationModuleCreate {
+	if v != nil {
+		_c.SetDraftRevision(*v)
+	}
+	return _c
+}
+
+// SetPublishedRevision sets the "published_revision" field.
+func (_c *PsychoeducationModuleCreate) SetPublishedRevision(v int) *PsychoeducationModuleCreate {
+	_c.mutation.SetPublishedRevision(v)
+	return _c
+}
+
+// SetNillablePublishedRevision sets the "published_revision" field if the given value is not nil.
+func (_c *PsychoeducationModuleCreate) SetNillablePublishedRevision(v *int) *PsychoeducationModuleCreate {
+	if v != nil {
+		_c.SetPublishedRevision(*v)
+	}
+	return _c
+}
+
+// SetPublishedAt sets the "published_at" field.
+func (_c *PsychoeducationModuleCreate) SetPublishedAt(v time.Time) *PsychoeducationModuleCreate {
+	_c.mutation.SetPublishedAt(v)
+	return _c
+}
+
+// SetNillablePublishedAt sets the "published_at" field if the given value is not nil.
+func (_c *PsychoeducationModuleCreate) SetNillablePublishedAt(v *time.Time) *PsychoeducationModuleCreate {
+	if v != nil {
+		_c.SetPublishedAt(*v)
+	}
+	return _c
+}
+
+// SetArchivedAt sets the "archived_at" field.
+func (_c *PsychoeducationModuleCreate) SetArchivedAt(v time.Time) *PsychoeducationModuleCreate {
+	_c.mutation.SetArchivedAt(v)
+	return _c
+}
+
+// SetNillableArchivedAt sets the "archived_at" field if the given value is not nil.
+func (_c *PsychoeducationModuleCreate) SetNillableArchivedAt(v *time.Time) *PsychoeducationModuleCreate {
+	if v != nil {
+		_c.SetArchivedAt(*v)
+	}
+	return _c
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (_c *PsychoeducationModuleCreate) SetCreatedBy(v string) *PsychoeducationModuleCreate {
+	_c.mutation.SetCreatedBy(v)
+	return _c
+}
+
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (_c *PsychoeducationModuleCreate) SetNillableCreatedBy(v *string) *PsychoeducationModuleCreate {
+	if v != nil {
+		_c.SetCreatedBy(*v)
+	}
+	return _c
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (_c *PsychoeducationModuleCreate) SetUpdatedBy(v string) *PsychoeducationModuleCreate {
+	_c.mutation.SetUpdatedBy(v)
+	return _c
+}
+
+// SetNillableUpdatedBy sets the "updated_by" field if the given value is not nil.
+func (_c *PsychoeducationModuleCreate) SetNillableUpdatedBy(v *string) *PsychoeducationModuleCreate {
+	if v != nil {
+		_c.SetUpdatedBy(*v)
 	}
 	return _c
 }
@@ -145,6 +258,14 @@ func (_c *PsychoeducationModuleCreate) defaults() {
 		v := psychoeducationmodule.DefaultStatus
 		_c.mutation.SetStatus(v)
 	}
+	if _, ok := _c.mutation.DraftRevision(); !ok {
+		v := psychoeducationmodule.DefaultDraftRevision
+		_c.mutation.SetDraftRevision(v)
+	}
+	if _, ok := _c.mutation.PublishedRevision(); !ok {
+		v := psychoeducationmodule.DefaultPublishedRevision
+		_c.mutation.SetPublishedRevision(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := psychoeducationmodule.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -183,6 +304,12 @@ func (_c *PsychoeducationModuleCreate) check() error {
 		if err := psychoeducationmodule.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "PsychoeducationModule.status": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.DraftRevision(); !ok {
+		return &ValidationError{Name: "draft_revision", err: errors.New(`ent: missing required field "PsychoeducationModule.draft_revision"`)}
+	}
+	if _, ok := _c.mutation.PublishedRevision(); !ok {
+		return &ValidationError{Name: "published_revision", err: errors.New(`ent: missing required field "PsychoeducationModule.published_revision"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PsychoeducationModule.created_at"`)}
@@ -248,6 +375,38 @@ func (_c *PsychoeducationModuleCreate) createSpec() (*PsychoeducationModule, *sq
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(psychoeducationmodule.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
+	}
+	if value, ok := _c.mutation.DraftDocumentJSON(); ok {
+		_spec.SetField(psychoeducationmodule.FieldDraftDocumentJSON, field.TypeJSON, value)
+		_node.DraftDocumentJSON = value
+	}
+	if value, ok := _c.mutation.PublishedDocumentJSON(); ok {
+		_spec.SetField(psychoeducationmodule.FieldPublishedDocumentJSON, field.TypeJSON, value)
+		_node.PublishedDocumentJSON = value
+	}
+	if value, ok := _c.mutation.DraftRevision(); ok {
+		_spec.SetField(psychoeducationmodule.FieldDraftRevision, field.TypeInt, value)
+		_node.DraftRevision = value
+	}
+	if value, ok := _c.mutation.PublishedRevision(); ok {
+		_spec.SetField(psychoeducationmodule.FieldPublishedRevision, field.TypeInt, value)
+		_node.PublishedRevision = value
+	}
+	if value, ok := _c.mutation.PublishedAt(); ok {
+		_spec.SetField(psychoeducationmodule.FieldPublishedAt, field.TypeTime, value)
+		_node.PublishedAt = &value
+	}
+	if value, ok := _c.mutation.ArchivedAt(); ok {
+		_spec.SetField(psychoeducationmodule.FieldArchivedAt, field.TypeTime, value)
+		_node.ArchivedAt = &value
+	}
+	if value, ok := _c.mutation.CreatedBy(); ok {
+		_spec.SetField(psychoeducationmodule.FieldCreatedBy, field.TypeString, value)
+		_node.CreatedBy = value
+	}
+	if value, ok := _c.mutation.UpdatedBy(); ok {
+		_spec.SetField(psychoeducationmodule.FieldUpdatedBy, field.TypeString, value)
+		_node.UpdatedBy = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(psychoeducationmodule.FieldCreatedAt, field.TypeTime, value)

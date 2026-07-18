@@ -19,14 +19,20 @@ type DailyMission struct {
 	ID string `json:"id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID string `json:"user_id,omitempty"`
+	// MissionDate holds the value of the "mission_date" field.
+	MissionDate *string `json:"mission_date,omitempty"`
 	// MissionKey holds the value of the "mission_key" field.
 	MissionKey string `json:"mission_key,omitempty"`
 	// Status holds the value of the "status" field.
 	Status dailymission.Status `json:"status,omitempty"`
+	// ExpReward holds the value of the "exp_reward" field.
+	ExpReward int `json:"exp_reward,omitempty"`
 	// CompletedAt holds the value of the "completed_at" field.
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt    time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt    time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -35,9 +41,11 @@ func (*DailyMission) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case dailymission.FieldID, dailymission.FieldUserID, dailymission.FieldMissionKey, dailymission.FieldStatus:
+		case dailymission.FieldExpReward:
+			values[i] = new(sql.NullInt64)
+		case dailymission.FieldID, dailymission.FieldUserID, dailymission.FieldMissionDate, dailymission.FieldMissionKey, dailymission.FieldStatus:
 			values[i] = new(sql.NullString)
-		case dailymission.FieldCompletedAt, dailymission.FieldCreatedAt:
+		case dailymission.FieldCompletedAt, dailymission.FieldCreatedAt, dailymission.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -66,6 +74,13 @@ func (_m *DailyMission) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UserID = value.String
 			}
+		case dailymission.FieldMissionDate:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field mission_date", values[i])
+			} else if value.Valid {
+				_m.MissionDate = new(string)
+				*_m.MissionDate = value.String
+			}
 		case dailymission.FieldMissionKey:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field mission_key", values[i])
@@ -77,6 +92,12 @@ func (_m *DailyMission) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				_m.Status = dailymission.Status(value.String)
+			}
+		case dailymission.FieldExpReward:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field exp_reward", values[i])
+			} else if value.Valid {
+				_m.ExpReward = int(value.Int64)
 			}
 		case dailymission.FieldCompletedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -90,6 +111,12 @@ func (_m *DailyMission) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
+			}
+		case dailymission.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				_m.UpdatedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -130,11 +157,19 @@ func (_m *DailyMission) String() string {
 	builder.WriteString("user_id=")
 	builder.WriteString(_m.UserID)
 	builder.WriteString(", ")
+	if v := _m.MissionDate; v != nil {
+		builder.WriteString("mission_date=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
 	builder.WriteString("mission_key=")
 	builder.WriteString(_m.MissionKey)
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
+	builder.WriteString(", ")
+	builder.WriteString("exp_reward=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ExpReward))
 	builder.WriteString(", ")
 	if v := _m.CompletedAt; v != nil {
 		builder.WriteString("completed_at=")
@@ -143,6 +178,9 @@ func (_m *DailyMission) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

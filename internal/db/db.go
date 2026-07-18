@@ -29,6 +29,6 @@ func Migrate(ctx context.Context, client *ent.Client) error {
 	return client.Schema.Create(ctx)
 }
 
-func Seed(ctx context.Context, client *ent.Client) error {
-	return seed.Seed(ctx, client)
+func Seed(ctx context.Context, client *ent.Client, mediaPath ...string) error {
+	return seed.Seed(ctx, client, mediaPath...)
 }

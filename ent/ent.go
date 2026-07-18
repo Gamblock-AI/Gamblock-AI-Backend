@@ -20,6 +20,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
@@ -32,6 +33,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organizationpolicy"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationprogress"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
@@ -100,34 +102,36 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			aggregateevent.Table:        aggregateevent.ValidColumn,
-			approvalrequest.Table:       approvalrequest.ValidColumn,
-			auditlog.Table:              auditlog.ValidColumn,
-			checkin.Table:               checkin.ValidColumn,
-			contentprogress.Table:       contentprogress.ValidColumn,
-			dailymission.Table:          dailymission.ValidColumn,
-			datarequest.Table:           datarequest.ValidColumn,
-			device.Table:                device.ValidColumn,
-			emergencykeyrequest.Table:   emergencykeyrequest.ValidColumn,
-			intention.Table:             intention.ValidColumn,
-			modelrelease.Table:          modelrelease.ValidColumn,
-			modelrollout.Table:          modelrollout.ValidColumn,
-			networkrulesetrelease.Table: networkrulesetrelease.ValidColumn,
-			notificationdelivery.Table:  notificationdelivery.ValidColumn,
-			organization.Table:          organization.ValidColumn,
-			organizationinvite.Table:    organizationinvite.ValidColumn,
-			organizationmember.Table:    organizationmember.ValidColumn,
-			organizationpolicy.Table:    organizationpolicy.ValidColumn,
-			partnerlink.Table:           partnerlink.ValidColumn,
-			psychoeducationmodule.Table: psychoeducationmodule.ValidColumn,
-			reflection.Table:            reflection.ValidColumn,
-			refreshtoken.Table:          refreshtoken.ValidColumn,
-			releasecohort.Table:         releasecohort.ValidColumn,
-			reportrollup.Table:          reportrollup.ValidColumn,
-			rulesetrelease.Table:        rulesetrelease.ValidColumn,
-			supportactionaudit.Table:    supportactionaudit.ValidColumn,
-			supportcase.Table:           supportcase.ValidColumn,
-			user.Table:                  user.ValidColumn,
+			aggregateevent.Table:          aggregateevent.ValidColumn,
+			approvalrequest.Table:         approvalrequest.ValidColumn,
+			auditlog.Table:                auditlog.ValidColumn,
+			checkin.Table:                 checkin.ValidColumn,
+			contentprogress.Table:         contentprogress.ValidColumn,
+			dailymission.Table:            dailymission.ValidColumn,
+			datarequest.Table:             datarequest.ValidColumn,
+			device.Table:                  device.ValidColumn,
+			educationmedia.Table:          educationmedia.ValidColumn,
+			emergencykeyrequest.Table:     emergencykeyrequest.ValidColumn,
+			intention.Table:               intention.ValidColumn,
+			modelrelease.Table:            modelrelease.ValidColumn,
+			modelrollout.Table:            modelrollout.ValidColumn,
+			networkrulesetrelease.Table:   networkrulesetrelease.ValidColumn,
+			notificationdelivery.Table:    notificationdelivery.ValidColumn,
+			organization.Table:            organization.ValidColumn,
+			organizationinvite.Table:      organizationinvite.ValidColumn,
+			organizationmember.Table:      organizationmember.ValidColumn,
+			organizationpolicy.Table:      organizationpolicy.ValidColumn,
+			partnerlink.Table:             partnerlink.ValidColumn,
+			psychoeducationmodule.Table:   psychoeducationmodule.ValidColumn,
+			psychoeducationprogress.Table: psychoeducationprogress.ValidColumn,
+			reflection.Table:              reflection.ValidColumn,
+			refreshtoken.Table:            refreshtoken.ValidColumn,
+			releasecohort.Table:           releasecohort.ValidColumn,
+			reportrollup.Table:            reportrollup.ValidColumn,
+			rulesetrelease.Table:          rulesetrelease.ValidColumn,
+			supportactionaudit.Table:      supportactionaudit.ValidColumn,
+			supportcase.Table:             supportcase.ValidColumn,
+			user.Table:                    user.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

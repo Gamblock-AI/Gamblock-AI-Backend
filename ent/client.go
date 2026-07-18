@@ -22,6 +22,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
@@ -34,6 +35,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organizationpolicy"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationprogress"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
@@ -65,6 +67,8 @@ type Client struct {
 	DataRequest *DataRequestClient
 	// Device is the client for interacting with the Device builders.
 	Device *DeviceClient
+	// EducationMedia is the client for interacting with the EducationMedia builders.
+	EducationMedia *EducationMediaClient
 	// EmergencyKeyRequest is the client for interacting with the EmergencyKeyRequest builders.
 	EmergencyKeyRequest *EmergencyKeyRequestClient
 	// Intention is the client for interacting with the Intention builders.
@@ -89,6 +93,8 @@ type Client struct {
 	PartnerLink *PartnerLinkClient
 	// PsychoeducationModule is the client for interacting with the PsychoeducationModule builders.
 	PsychoeducationModule *PsychoeducationModuleClient
+	// PsychoeducationProgress is the client for interacting with the PsychoeducationProgress builders.
+	PsychoeducationProgress *PsychoeducationProgressClient
 	// Reflection is the client for interacting with the Reflection builders.
 	Reflection *ReflectionClient
 	// RefreshToken is the client for interacting with the RefreshToken builders.
@@ -124,6 +130,7 @@ func (c *Client) init() {
 	c.DailyMission = NewDailyMissionClient(c.config)
 	c.DataRequest = NewDataRequestClient(c.config)
 	c.Device = NewDeviceClient(c.config)
+	c.EducationMedia = NewEducationMediaClient(c.config)
 	c.EmergencyKeyRequest = NewEmergencyKeyRequestClient(c.config)
 	c.Intention = NewIntentionClient(c.config)
 	c.ModelRelease = NewModelReleaseClient(c.config)
@@ -136,6 +143,7 @@ func (c *Client) init() {
 	c.OrganizationPolicy = NewOrganizationPolicyClient(c.config)
 	c.PartnerLink = NewPartnerLinkClient(c.config)
 	c.PsychoeducationModule = NewPsychoeducationModuleClient(c.config)
+	c.PsychoeducationProgress = NewPsychoeducationProgressClient(c.config)
 	c.Reflection = NewReflectionClient(c.config)
 	c.RefreshToken = NewRefreshTokenClient(c.config)
 	c.ReleaseCohort = NewReleaseCohortClient(c.config)
@@ -234,36 +242,38 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                   ctx,
-		config:                cfg,
-		AggregateEvent:        NewAggregateEventClient(cfg),
-		ApprovalRequest:       NewApprovalRequestClient(cfg),
-		AuditLog:              NewAuditLogClient(cfg),
-		CheckIn:               NewCheckInClient(cfg),
-		ContentProgress:       NewContentProgressClient(cfg),
-		DailyMission:          NewDailyMissionClient(cfg),
-		DataRequest:           NewDataRequestClient(cfg),
-		Device:                NewDeviceClient(cfg),
-		EmergencyKeyRequest:   NewEmergencyKeyRequestClient(cfg),
-		Intention:             NewIntentionClient(cfg),
-		ModelRelease:          NewModelReleaseClient(cfg),
-		ModelRollout:          NewModelRolloutClient(cfg),
-		NetworkRulesetRelease: NewNetworkRulesetReleaseClient(cfg),
-		NotificationDelivery:  NewNotificationDeliveryClient(cfg),
-		Organization:          NewOrganizationClient(cfg),
-		OrganizationInvite:    NewOrganizationInviteClient(cfg),
-		OrganizationMember:    NewOrganizationMemberClient(cfg),
-		OrganizationPolicy:    NewOrganizationPolicyClient(cfg),
-		PartnerLink:           NewPartnerLinkClient(cfg),
-		PsychoeducationModule: NewPsychoeducationModuleClient(cfg),
-		Reflection:            NewReflectionClient(cfg),
-		RefreshToken:          NewRefreshTokenClient(cfg),
-		ReleaseCohort:         NewReleaseCohortClient(cfg),
-		ReportRollup:          NewReportRollupClient(cfg),
-		RulesetRelease:        NewRulesetReleaseClient(cfg),
-		SupportActionAudit:    NewSupportActionAuditClient(cfg),
-		SupportCase:           NewSupportCaseClient(cfg),
-		User:                  NewUserClient(cfg),
+		ctx:                     ctx,
+		config:                  cfg,
+		AggregateEvent:          NewAggregateEventClient(cfg),
+		ApprovalRequest:         NewApprovalRequestClient(cfg),
+		AuditLog:                NewAuditLogClient(cfg),
+		CheckIn:                 NewCheckInClient(cfg),
+		ContentProgress:         NewContentProgressClient(cfg),
+		DailyMission:            NewDailyMissionClient(cfg),
+		DataRequest:             NewDataRequestClient(cfg),
+		Device:                  NewDeviceClient(cfg),
+		EducationMedia:          NewEducationMediaClient(cfg),
+		EmergencyKeyRequest:     NewEmergencyKeyRequestClient(cfg),
+		Intention:               NewIntentionClient(cfg),
+		ModelRelease:            NewModelReleaseClient(cfg),
+		ModelRollout:            NewModelRolloutClient(cfg),
+		NetworkRulesetRelease:   NewNetworkRulesetReleaseClient(cfg),
+		NotificationDelivery:    NewNotificationDeliveryClient(cfg),
+		Organization:            NewOrganizationClient(cfg),
+		OrganizationInvite:      NewOrganizationInviteClient(cfg),
+		OrganizationMember:      NewOrganizationMemberClient(cfg),
+		OrganizationPolicy:      NewOrganizationPolicyClient(cfg),
+		PartnerLink:             NewPartnerLinkClient(cfg),
+		PsychoeducationModule:   NewPsychoeducationModuleClient(cfg),
+		PsychoeducationProgress: NewPsychoeducationProgressClient(cfg),
+		Reflection:              NewReflectionClient(cfg),
+		RefreshToken:            NewRefreshTokenClient(cfg),
+		ReleaseCohort:           NewReleaseCohortClient(cfg),
+		ReportRollup:            NewReportRollupClient(cfg),
+		RulesetRelease:          NewRulesetReleaseClient(cfg),
+		SupportActionAudit:      NewSupportActionAuditClient(cfg),
+		SupportCase:             NewSupportCaseClient(cfg),
+		User:                    NewUserClient(cfg),
 	}, nil
 }
 
@@ -281,36 +291,38 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                   ctx,
-		config:                cfg,
-		AggregateEvent:        NewAggregateEventClient(cfg),
-		ApprovalRequest:       NewApprovalRequestClient(cfg),
-		AuditLog:              NewAuditLogClient(cfg),
-		CheckIn:               NewCheckInClient(cfg),
-		ContentProgress:       NewContentProgressClient(cfg),
-		DailyMission:          NewDailyMissionClient(cfg),
-		DataRequest:           NewDataRequestClient(cfg),
-		Device:                NewDeviceClient(cfg),
-		EmergencyKeyRequest:   NewEmergencyKeyRequestClient(cfg),
-		Intention:             NewIntentionClient(cfg),
-		ModelRelease:          NewModelReleaseClient(cfg),
-		ModelRollout:          NewModelRolloutClient(cfg),
-		NetworkRulesetRelease: NewNetworkRulesetReleaseClient(cfg),
-		NotificationDelivery:  NewNotificationDeliveryClient(cfg),
-		Organization:          NewOrganizationClient(cfg),
-		OrganizationInvite:    NewOrganizationInviteClient(cfg),
-		OrganizationMember:    NewOrganizationMemberClient(cfg),
-		OrganizationPolicy:    NewOrganizationPolicyClient(cfg),
-		PartnerLink:           NewPartnerLinkClient(cfg),
-		PsychoeducationModule: NewPsychoeducationModuleClient(cfg),
-		Reflection:            NewReflectionClient(cfg),
-		RefreshToken:          NewRefreshTokenClient(cfg),
-		ReleaseCohort:         NewReleaseCohortClient(cfg),
-		ReportRollup:          NewReportRollupClient(cfg),
-		RulesetRelease:        NewRulesetReleaseClient(cfg),
-		SupportActionAudit:    NewSupportActionAuditClient(cfg),
-		SupportCase:           NewSupportCaseClient(cfg),
-		User:                  NewUserClient(cfg),
+		ctx:                     ctx,
+		config:                  cfg,
+		AggregateEvent:          NewAggregateEventClient(cfg),
+		ApprovalRequest:         NewApprovalRequestClient(cfg),
+		AuditLog:                NewAuditLogClient(cfg),
+		CheckIn:                 NewCheckInClient(cfg),
+		ContentProgress:         NewContentProgressClient(cfg),
+		DailyMission:            NewDailyMissionClient(cfg),
+		DataRequest:             NewDataRequestClient(cfg),
+		Device:                  NewDeviceClient(cfg),
+		EducationMedia:          NewEducationMediaClient(cfg),
+		EmergencyKeyRequest:     NewEmergencyKeyRequestClient(cfg),
+		Intention:               NewIntentionClient(cfg),
+		ModelRelease:            NewModelReleaseClient(cfg),
+		ModelRollout:            NewModelRolloutClient(cfg),
+		NetworkRulesetRelease:   NewNetworkRulesetReleaseClient(cfg),
+		NotificationDelivery:    NewNotificationDeliveryClient(cfg),
+		Organization:            NewOrganizationClient(cfg),
+		OrganizationInvite:      NewOrganizationInviteClient(cfg),
+		OrganizationMember:      NewOrganizationMemberClient(cfg),
+		OrganizationPolicy:      NewOrganizationPolicyClient(cfg),
+		PartnerLink:             NewPartnerLinkClient(cfg),
+		PsychoeducationModule:   NewPsychoeducationModuleClient(cfg),
+		PsychoeducationProgress: NewPsychoeducationProgressClient(cfg),
+		Reflection:              NewReflectionClient(cfg),
+		RefreshToken:            NewRefreshTokenClient(cfg),
+		ReleaseCohort:           NewReleaseCohortClient(cfg),
+		ReportRollup:            NewReportRollupClient(cfg),
+		RulesetRelease:          NewRulesetReleaseClient(cfg),
+		SupportActionAudit:      NewSupportActionAuditClient(cfg),
+		SupportCase:             NewSupportCaseClient(cfg),
+		User:                    NewUserClient(cfg),
 	}, nil
 }
 
@@ -341,12 +353,13 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.CheckIn, c.ContentProgress,
-		c.DailyMission, c.DataRequest, c.Device, c.EmergencyKeyRequest, c.Intention,
-		c.ModelRelease, c.ModelRollout, c.NetworkRulesetRelease,
-		c.NotificationDelivery, c.Organization, c.OrganizationInvite,
-		c.OrganizationMember, c.OrganizationPolicy, c.PartnerLink,
-		c.PsychoeducationModule, c.Reflection, c.RefreshToken, c.ReleaseCohort,
-		c.ReportRollup, c.RulesetRelease, c.SupportActionAudit, c.SupportCase, c.User,
+		c.DailyMission, c.DataRequest, c.Device, c.EducationMedia,
+		c.EmergencyKeyRequest, c.Intention, c.ModelRelease, c.ModelRollout,
+		c.NetworkRulesetRelease, c.NotificationDelivery, c.Organization,
+		c.OrganizationInvite, c.OrganizationMember, c.OrganizationPolicy,
+		c.PartnerLink, c.PsychoeducationModule, c.PsychoeducationProgress,
+		c.Reflection, c.RefreshToken, c.ReleaseCohort, c.ReportRollup,
+		c.RulesetRelease, c.SupportActionAudit, c.SupportCase, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -357,12 +370,13 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.CheckIn, c.ContentProgress,
-		c.DailyMission, c.DataRequest, c.Device, c.EmergencyKeyRequest, c.Intention,
-		c.ModelRelease, c.ModelRollout, c.NetworkRulesetRelease,
-		c.NotificationDelivery, c.Organization, c.OrganizationInvite,
-		c.OrganizationMember, c.OrganizationPolicy, c.PartnerLink,
-		c.PsychoeducationModule, c.Reflection, c.RefreshToken, c.ReleaseCohort,
-		c.ReportRollup, c.RulesetRelease, c.SupportActionAudit, c.SupportCase, c.User,
+		c.DailyMission, c.DataRequest, c.Device, c.EducationMedia,
+		c.EmergencyKeyRequest, c.Intention, c.ModelRelease, c.ModelRollout,
+		c.NetworkRulesetRelease, c.NotificationDelivery, c.Organization,
+		c.OrganizationInvite, c.OrganizationMember, c.OrganizationPolicy,
+		c.PartnerLink, c.PsychoeducationModule, c.PsychoeducationProgress,
+		c.Reflection, c.RefreshToken, c.ReleaseCohort, c.ReportRollup,
+		c.RulesetRelease, c.SupportActionAudit, c.SupportCase, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -387,6 +401,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.DataRequest.mutate(ctx, m)
 	case *DeviceMutation:
 		return c.Device.mutate(ctx, m)
+	case *EducationMediaMutation:
+		return c.EducationMedia.mutate(ctx, m)
 	case *EmergencyKeyRequestMutation:
 		return c.EmergencyKeyRequest.mutate(ctx, m)
 	case *IntentionMutation:
@@ -411,6 +427,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.PartnerLink.mutate(ctx, m)
 	case *PsychoeducationModuleMutation:
 		return c.PsychoeducationModule.mutate(ctx, m)
+	case *PsychoeducationProgressMutation:
+		return c.PsychoeducationProgress.mutate(ctx, m)
 	case *ReflectionMutation:
 		return c.Reflection.mutate(ctx, m)
 	case *RefreshTokenMutation:
@@ -1493,6 +1511,139 @@ func (c *DeviceClient) mutate(ctx context.Context, m *DeviceMutation) (Value, er
 		return (&DeviceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Device mutation op: %q", m.Op())
+	}
+}
+
+// EducationMediaClient is a client for the EducationMedia schema.
+type EducationMediaClient struct {
+	config
+}
+
+// NewEducationMediaClient returns a client for the EducationMedia from the given config.
+func NewEducationMediaClient(c config) *EducationMediaClient {
+	return &EducationMediaClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `educationmedia.Hooks(f(g(h())))`.
+func (c *EducationMediaClient) Use(hooks ...Hook) {
+	c.hooks.EducationMedia = append(c.hooks.EducationMedia, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `educationmedia.Intercept(f(g(h())))`.
+func (c *EducationMediaClient) Intercept(interceptors ...Interceptor) {
+	c.inters.EducationMedia = append(c.inters.EducationMedia, interceptors...)
+}
+
+// Create returns a builder for creating a EducationMedia entity.
+func (c *EducationMediaClient) Create() *EducationMediaCreate {
+	mutation := newEducationMediaMutation(c.config, OpCreate)
+	return &EducationMediaCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of EducationMedia entities.
+func (c *EducationMediaClient) CreateBulk(builders ...*EducationMediaCreate) *EducationMediaCreateBulk {
+	return &EducationMediaCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *EducationMediaClient) MapCreateBulk(slice any, setFunc func(*EducationMediaCreate, int)) *EducationMediaCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &EducationMediaCreateBulk{err: fmt.Errorf("calling to EducationMediaClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*EducationMediaCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &EducationMediaCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for EducationMedia.
+func (c *EducationMediaClient) Update() *EducationMediaUpdate {
+	mutation := newEducationMediaMutation(c.config, OpUpdate)
+	return &EducationMediaUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EducationMediaClient) UpdateOne(_m *EducationMedia) *EducationMediaUpdateOne {
+	mutation := newEducationMediaMutation(c.config, OpUpdateOne, withEducationMedia(_m))
+	return &EducationMediaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EducationMediaClient) UpdateOneID(id string) *EducationMediaUpdateOne {
+	mutation := newEducationMediaMutation(c.config, OpUpdateOne, withEducationMediaID(id))
+	return &EducationMediaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for EducationMedia.
+func (c *EducationMediaClient) Delete() *EducationMediaDelete {
+	mutation := newEducationMediaMutation(c.config, OpDelete)
+	return &EducationMediaDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *EducationMediaClient) DeleteOne(_m *EducationMedia) *EducationMediaDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *EducationMediaClient) DeleteOneID(id string) *EducationMediaDeleteOne {
+	builder := c.Delete().Where(educationmedia.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EducationMediaDeleteOne{builder}
+}
+
+// Query returns a query builder for EducationMedia.
+func (c *EducationMediaClient) Query() *EducationMediaQuery {
+	return &EducationMediaQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeEducationMedia},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a EducationMedia entity by its id.
+func (c *EducationMediaClient) Get(ctx context.Context, id string) (*EducationMedia, error) {
+	return c.Query().Where(educationmedia.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EducationMediaClient) GetX(ctx context.Context, id string) *EducationMedia {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *EducationMediaClient) Hooks() []Hook {
+	return c.hooks.EducationMedia
+}
+
+// Interceptors returns the client interceptors.
+func (c *EducationMediaClient) Interceptors() []Interceptor {
+	return c.inters.EducationMedia
+}
+
+func (c *EducationMediaClient) mutate(ctx context.Context, m *EducationMediaMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EducationMediaCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EducationMediaUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EducationMediaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EducationMediaDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown EducationMedia mutation op: %q", m.Op())
 	}
 }
 
@@ -3092,6 +3243,139 @@ func (c *PsychoeducationModuleClient) mutate(ctx context.Context, m *Psychoeduca
 	}
 }
 
+// PsychoeducationProgressClient is a client for the PsychoeducationProgress schema.
+type PsychoeducationProgressClient struct {
+	config
+}
+
+// NewPsychoeducationProgressClient returns a client for the PsychoeducationProgress from the given config.
+func NewPsychoeducationProgressClient(c config) *PsychoeducationProgressClient {
+	return &PsychoeducationProgressClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `psychoeducationprogress.Hooks(f(g(h())))`.
+func (c *PsychoeducationProgressClient) Use(hooks ...Hook) {
+	c.hooks.PsychoeducationProgress = append(c.hooks.PsychoeducationProgress, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `psychoeducationprogress.Intercept(f(g(h())))`.
+func (c *PsychoeducationProgressClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PsychoeducationProgress = append(c.inters.PsychoeducationProgress, interceptors...)
+}
+
+// Create returns a builder for creating a PsychoeducationProgress entity.
+func (c *PsychoeducationProgressClient) Create() *PsychoeducationProgressCreate {
+	mutation := newPsychoeducationProgressMutation(c.config, OpCreate)
+	return &PsychoeducationProgressCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PsychoeducationProgress entities.
+func (c *PsychoeducationProgressClient) CreateBulk(builders ...*PsychoeducationProgressCreate) *PsychoeducationProgressCreateBulk {
+	return &PsychoeducationProgressCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PsychoeducationProgressClient) MapCreateBulk(slice any, setFunc func(*PsychoeducationProgressCreate, int)) *PsychoeducationProgressCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PsychoeducationProgressCreateBulk{err: fmt.Errorf("calling to PsychoeducationProgressClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PsychoeducationProgressCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PsychoeducationProgressCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PsychoeducationProgress.
+func (c *PsychoeducationProgressClient) Update() *PsychoeducationProgressUpdate {
+	mutation := newPsychoeducationProgressMutation(c.config, OpUpdate)
+	return &PsychoeducationProgressUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PsychoeducationProgressClient) UpdateOne(_m *PsychoeducationProgress) *PsychoeducationProgressUpdateOne {
+	mutation := newPsychoeducationProgressMutation(c.config, OpUpdateOne, withPsychoeducationProgress(_m))
+	return &PsychoeducationProgressUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PsychoeducationProgressClient) UpdateOneID(id string) *PsychoeducationProgressUpdateOne {
+	mutation := newPsychoeducationProgressMutation(c.config, OpUpdateOne, withPsychoeducationProgressID(id))
+	return &PsychoeducationProgressUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PsychoeducationProgress.
+func (c *PsychoeducationProgressClient) Delete() *PsychoeducationProgressDelete {
+	mutation := newPsychoeducationProgressMutation(c.config, OpDelete)
+	return &PsychoeducationProgressDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PsychoeducationProgressClient) DeleteOne(_m *PsychoeducationProgress) *PsychoeducationProgressDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PsychoeducationProgressClient) DeleteOneID(id string) *PsychoeducationProgressDeleteOne {
+	builder := c.Delete().Where(psychoeducationprogress.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PsychoeducationProgressDeleteOne{builder}
+}
+
+// Query returns a query builder for PsychoeducationProgress.
+func (c *PsychoeducationProgressClient) Query() *PsychoeducationProgressQuery {
+	return &PsychoeducationProgressQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePsychoeducationProgress},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PsychoeducationProgress entity by its id.
+func (c *PsychoeducationProgressClient) Get(ctx context.Context, id string) (*PsychoeducationProgress, error) {
+	return c.Query().Where(psychoeducationprogress.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PsychoeducationProgressClient) GetX(ctx context.Context, id string) *PsychoeducationProgress {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *PsychoeducationProgressClient) Hooks() []Hook {
+	return c.hooks.PsychoeducationProgress
+}
+
+// Interceptors returns the client interceptors.
+func (c *PsychoeducationProgressClient) Interceptors() []Interceptor {
+	return c.inters.PsychoeducationProgress
+}
+
+func (c *PsychoeducationProgressClient) mutate(ctx context.Context, m *PsychoeducationProgressMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PsychoeducationProgressCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PsychoeducationProgressUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PsychoeducationProgressUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PsychoeducationProgressDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PsychoeducationProgress mutation op: %q", m.Op())
+	}
+}
+
 // ReflectionClient is a client for the Reflection schema.
 type ReflectionClient struct {
 	config
@@ -4160,19 +4444,20 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 type (
 	hooks struct {
 		AggregateEvent, ApprovalRequest, AuditLog, CheckIn, ContentProgress,
-		DailyMission, DataRequest, Device, EmergencyKeyRequest, Intention,
-		ModelRelease, ModelRollout, NetworkRulesetRelease, NotificationDelivery,
-		Organization, OrganizationInvite, OrganizationMember, OrganizationPolicy,
-		PartnerLink, PsychoeducationModule, Reflection, RefreshToken, ReleaseCohort,
-		ReportRollup, RulesetRelease, SupportActionAudit, SupportCase, User []ent.Hook
+		DailyMission, DataRequest, Device, EducationMedia, EmergencyKeyRequest,
+		Intention, ModelRelease, ModelRollout, NetworkRulesetRelease,
+		NotificationDelivery, Organization, OrganizationInvite, OrganizationMember,
+		OrganizationPolicy, PartnerLink, PsychoeducationModule,
+		PsychoeducationProgress, Reflection, RefreshToken, ReleaseCohort, ReportRollup,
+		RulesetRelease, SupportActionAudit, SupportCase, User []ent.Hook
 	}
 	inters struct {
 		AggregateEvent, ApprovalRequest, AuditLog, CheckIn, ContentProgress,
-		DailyMission, DataRequest, Device, EmergencyKeyRequest, Intention,
-		ModelRelease, ModelRollout, NetworkRulesetRelease, NotificationDelivery,
-		Organization, OrganizationInvite, OrganizationMember, OrganizationPolicy,
-		PartnerLink, PsychoeducationModule, Reflection, RefreshToken, ReleaseCohort,
-		ReportRollup, RulesetRelease, SupportActionAudit, SupportCase,
-		User []ent.Interceptor
+		DailyMission, DataRequest, Device, EducationMedia, EmergencyKeyRequest,
+		Intention, ModelRelease, ModelRollout, NetworkRulesetRelease,
+		NotificationDelivery, Organization, OrganizationInvite, OrganizationMember,
+		OrganizationPolicy, PartnerLink, PsychoeducationModule,
+		PsychoeducationProgress, Reflection, RefreshToken, ReleaseCohort, ReportRollup,
+		RulesetRelease, SupportActionAudit, SupportCase, User []ent.Interceptor
 	}
 )

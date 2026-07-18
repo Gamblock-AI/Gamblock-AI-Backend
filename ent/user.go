@@ -29,6 +29,8 @@ type User struct {
 	GoogleSubject *string `json:"google_subject,omitempty"`
 	// Role holds the value of the "role" field.
 	Role user.Role `json:"role,omitempty"`
+	// ExperiencePoints holds the value of the "experience_points" field.
+	ExperiencePoints int `json:"experience_points,omitempty"`
 	// DisabledAt holds the value of the "disabled_at" field.
 	DisabledAt *time.Time `json:"disabled_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -43,6 +45,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldExperiencePoints:
+			values[i] = new(sql.NullInt64)
 		case user.FieldID, user.FieldEmail, user.FieldDisplayName, user.FieldPasswordHash, user.FieldAvatarURL, user.FieldGoogleSubject, user.FieldRole:
 			values[i] = new(sql.NullString)
 		case user.FieldDisabledAt, user.FieldCreatedAt, user.FieldUpdatedAt:
@@ -106,6 +110,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
 			} else if value.Valid {
 				_m.Role = user.Role(value.String)
+			}
+		case user.FieldExperiencePoints:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field experience_points", values[i])
+			} else if value.Valid {
+				_m.ExperiencePoints = int(value.Int64)
 			}
 		case user.FieldDisabledAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -182,6 +192,9 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Role))
+	builder.WriteString(", ")
+	builder.WriteString("experience_points=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ExperiencePoints))
 	builder.WriteString(", ")
 	if v := _m.DisabledAt; v != nil {
 		builder.WriteString("disabled_at=")

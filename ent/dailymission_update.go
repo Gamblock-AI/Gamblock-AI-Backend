@@ -42,6 +42,26 @@ func (_u *DailyMissionUpdate) SetNillableUserID(v *string) *DailyMissionUpdate {
 	return _u
 }
 
+// SetMissionDate sets the "mission_date" field.
+func (_u *DailyMissionUpdate) SetMissionDate(v string) *DailyMissionUpdate {
+	_u.mutation.SetMissionDate(v)
+	return _u
+}
+
+// SetNillableMissionDate sets the "mission_date" field if the given value is not nil.
+func (_u *DailyMissionUpdate) SetNillableMissionDate(v *string) *DailyMissionUpdate {
+	if v != nil {
+		_u.SetMissionDate(*v)
+	}
+	return _u
+}
+
+// ClearMissionDate clears the value of the "mission_date" field.
+func (_u *DailyMissionUpdate) ClearMissionDate() *DailyMissionUpdate {
+	_u.mutation.ClearMissionDate()
+	return _u
+}
+
 // SetMissionKey sets the "mission_key" field.
 func (_u *DailyMissionUpdate) SetMissionKey(v string) *DailyMissionUpdate {
 	_u.mutation.SetMissionKey(v)
@@ -70,6 +90,27 @@ func (_u *DailyMissionUpdate) SetNillableStatus(v *dailymission.Status) *DailyMi
 	return _u
 }
 
+// SetExpReward sets the "exp_reward" field.
+func (_u *DailyMissionUpdate) SetExpReward(v int) *DailyMissionUpdate {
+	_u.mutation.ResetExpReward()
+	_u.mutation.SetExpReward(v)
+	return _u
+}
+
+// SetNillableExpReward sets the "exp_reward" field if the given value is not nil.
+func (_u *DailyMissionUpdate) SetNillableExpReward(v *int) *DailyMissionUpdate {
+	if v != nil {
+		_u.SetExpReward(*v)
+	}
+	return _u
+}
+
+// AddExpReward adds value to the "exp_reward" field.
+func (_u *DailyMissionUpdate) AddExpReward(v int) *DailyMissionUpdate {
+	_u.mutation.AddExpReward(v)
+	return _u
+}
+
 // SetCompletedAt sets the "completed_at" field.
 func (_u *DailyMissionUpdate) SetCompletedAt(v time.Time) *DailyMissionUpdate {
 	_u.mutation.SetCompletedAt(v)
@@ -90,6 +131,12 @@ func (_u *DailyMissionUpdate) ClearCompletedAt() *DailyMissionUpdate {
 	return _u
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *DailyMissionUpdate) SetUpdatedAt(v time.Time) *DailyMissionUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
 // Mutation returns the DailyMissionMutation object of the builder.
 func (_u *DailyMissionUpdate) Mutation() *DailyMissionMutation {
 	return _u.mutation
@@ -97,6 +144,7 @@ func (_u *DailyMissionUpdate) Mutation() *DailyMissionMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *DailyMissionUpdate) Save(ctx context.Context) (int, error) {
+	_u.defaults()
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -122,11 +170,24 @@ func (_u *DailyMissionUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (_u *DailyMissionUpdate) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
+		v := dailymission.UpdateDefaultUpdatedAt()
+		_u.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (_u *DailyMissionUpdate) check() error {
 	if v, ok := _u.mutation.Status(); ok {
 		if err := dailymission.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "DailyMission.status": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ExpReward(); ok {
+		if err := dailymission.ExpRewardValidator(v); err != nil {
+			return &ValidationError{Name: "exp_reward", err: fmt.Errorf(`ent: validator failed for field "DailyMission.exp_reward": %w`, err)}
 		}
 	}
 	return nil
@@ -147,17 +208,32 @@ func (_u *DailyMissionUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if value, ok := _u.mutation.UserID(); ok {
 		_spec.SetField(dailymission.FieldUserID, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.MissionDate(); ok {
+		_spec.SetField(dailymission.FieldMissionDate, field.TypeString, value)
+	}
+	if _u.mutation.MissionDateCleared() {
+		_spec.ClearField(dailymission.FieldMissionDate, field.TypeString)
+	}
 	if value, ok := _u.mutation.MissionKey(); ok {
 		_spec.SetField(dailymission.FieldMissionKey, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(dailymission.FieldStatus, field.TypeEnum, value)
 	}
+	if value, ok := _u.mutation.ExpReward(); ok {
+		_spec.SetField(dailymission.FieldExpReward, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedExpReward(); ok {
+		_spec.AddField(dailymission.FieldExpReward, field.TypeInt, value)
+	}
 	if value, ok := _u.mutation.CompletedAt(); ok {
 		_spec.SetField(dailymission.FieldCompletedAt, field.TypeTime, value)
 	}
 	if _u.mutation.CompletedAtCleared() {
 		_spec.ClearField(dailymission.FieldCompletedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(dailymission.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -193,6 +269,26 @@ func (_u *DailyMissionUpdateOne) SetNillableUserID(v *string) *DailyMissionUpdat
 	return _u
 }
 
+// SetMissionDate sets the "mission_date" field.
+func (_u *DailyMissionUpdateOne) SetMissionDate(v string) *DailyMissionUpdateOne {
+	_u.mutation.SetMissionDate(v)
+	return _u
+}
+
+// SetNillableMissionDate sets the "mission_date" field if the given value is not nil.
+func (_u *DailyMissionUpdateOne) SetNillableMissionDate(v *string) *DailyMissionUpdateOne {
+	if v != nil {
+		_u.SetMissionDate(*v)
+	}
+	return _u
+}
+
+// ClearMissionDate clears the value of the "mission_date" field.
+func (_u *DailyMissionUpdateOne) ClearMissionDate() *DailyMissionUpdateOne {
+	_u.mutation.ClearMissionDate()
+	return _u
+}
+
 // SetMissionKey sets the "mission_key" field.
 func (_u *DailyMissionUpdateOne) SetMissionKey(v string) *DailyMissionUpdateOne {
 	_u.mutation.SetMissionKey(v)
@@ -221,6 +317,27 @@ func (_u *DailyMissionUpdateOne) SetNillableStatus(v *dailymission.Status) *Dail
 	return _u
 }
 
+// SetExpReward sets the "exp_reward" field.
+func (_u *DailyMissionUpdateOne) SetExpReward(v int) *DailyMissionUpdateOne {
+	_u.mutation.ResetExpReward()
+	_u.mutation.SetExpReward(v)
+	return _u
+}
+
+// SetNillableExpReward sets the "exp_reward" field if the given value is not nil.
+func (_u *DailyMissionUpdateOne) SetNillableExpReward(v *int) *DailyMissionUpdateOne {
+	if v != nil {
+		_u.SetExpReward(*v)
+	}
+	return _u
+}
+
+// AddExpReward adds value to the "exp_reward" field.
+func (_u *DailyMissionUpdateOne) AddExpReward(v int) *DailyMissionUpdateOne {
+	_u.mutation.AddExpReward(v)
+	return _u
+}
+
 // SetCompletedAt sets the "completed_at" field.
 func (_u *DailyMissionUpdateOne) SetCompletedAt(v time.Time) *DailyMissionUpdateOne {
 	_u.mutation.SetCompletedAt(v)
@@ -238,6 +355,12 @@ func (_u *DailyMissionUpdateOne) SetNillableCompletedAt(v *time.Time) *DailyMiss
 // ClearCompletedAt clears the value of the "completed_at" field.
 func (_u *DailyMissionUpdateOne) ClearCompletedAt() *DailyMissionUpdateOne {
 	_u.mutation.ClearCompletedAt()
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *DailyMissionUpdateOne) SetUpdatedAt(v time.Time) *DailyMissionUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
@@ -261,6 +384,7 @@ func (_u *DailyMissionUpdateOne) Select(field string, fields ...string) *DailyMi
 
 // Save executes the query and returns the updated DailyMission entity.
 func (_u *DailyMissionUpdateOne) Save(ctx context.Context) (*DailyMission, error) {
+	_u.defaults()
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -286,11 +410,24 @@ func (_u *DailyMissionUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (_u *DailyMissionUpdateOne) defaults() {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
+		v := dailymission.UpdateDefaultUpdatedAt()
+		_u.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (_u *DailyMissionUpdateOne) check() error {
 	if v, ok := _u.mutation.Status(); ok {
 		if err := dailymission.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "DailyMission.status": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ExpReward(); ok {
+		if err := dailymission.ExpRewardValidator(v); err != nil {
+			return &ValidationError{Name: "exp_reward", err: fmt.Errorf(`ent: validator failed for field "DailyMission.exp_reward": %w`, err)}
 		}
 	}
 	return nil
@@ -328,17 +465,32 @@ func (_u *DailyMissionUpdateOne) sqlSave(ctx context.Context) (_node *DailyMissi
 	if value, ok := _u.mutation.UserID(); ok {
 		_spec.SetField(dailymission.FieldUserID, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.MissionDate(); ok {
+		_spec.SetField(dailymission.FieldMissionDate, field.TypeString, value)
+	}
+	if _u.mutation.MissionDateCleared() {
+		_spec.ClearField(dailymission.FieldMissionDate, field.TypeString)
+	}
 	if value, ok := _u.mutation.MissionKey(); ok {
 		_spec.SetField(dailymission.FieldMissionKey, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(dailymission.FieldStatus, field.TypeEnum, value)
 	}
+	if value, ok := _u.mutation.ExpReward(); ok {
+		_spec.SetField(dailymission.FieldExpReward, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedExpReward(); ok {
+		_spec.AddField(dailymission.FieldExpReward, field.TypeInt, value)
+	}
 	if value, ok := _u.mutation.CompletedAt(); ok {
 		_spec.SetField(dailymission.FieldCompletedAt, field.TypeTime, value)
 	}
 	if _u.mutation.CompletedAtCleared() {
 		_spec.ClearField(dailymission.FieldCompletedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(dailymission.FieldUpdatedAt, field.TypeTime, value)
 	}
 	_node = &DailyMission{config: _u.config}
 	_spec.Assign = _node.assignValues

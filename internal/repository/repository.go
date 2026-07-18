@@ -36,6 +36,8 @@ func (r *Repository) RefreshStore(ctx context.Context) {
 	r.store.Partners = loaded.Partners
 	r.store.Approvals = loaded.Approvals
 	r.store.Modules = loaded.Modules
+	r.store.EducationMedia = loaded.EducationMedia
+	r.store.EducationProgress = loaded.EducationProgress
 	r.store.SupportCases = loaded.SupportCases
 	r.store.DataRequests = loaded.DataRequests
 	r.store.Organizations = loaded.Organizations

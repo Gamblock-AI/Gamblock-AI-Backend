@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 )
 
 // PsychoeducationModule is the model entity for the PsychoeducationModule schema.
@@ -29,6 +31,22 @@ type PsychoeducationModule struct {
 	EstimatedMinutes int `json:"estimated_minutes,omitempty"`
 	// Status holds the value of the "status" field.
 	Status psychoeducationmodule.Status `json:"status,omitempty"`
+	// DraftDocumentJSON holds the value of the "draft_document_json" field.
+	DraftDocumentJSON model.EducationDocument `json:"draft_document_json,omitempty"`
+	// PublishedDocumentJSON holds the value of the "published_document_json" field.
+	PublishedDocumentJSON model.EducationDocument `json:"published_document_json,omitempty"`
+	// DraftRevision holds the value of the "draft_revision" field.
+	DraftRevision int `json:"draft_revision,omitempty"`
+	// PublishedRevision holds the value of the "published_revision" field.
+	PublishedRevision int `json:"published_revision,omitempty"`
+	// PublishedAt holds the value of the "published_at" field.
+	PublishedAt *time.Time `json:"published_at,omitempty"`
+	// ArchivedAt holds the value of the "archived_at" field.
+	ArchivedAt *time.Time `json:"archived_at,omitempty"`
+	// CreatedBy holds the value of the "created_by" field.
+	CreatedBy string `json:"created_by,omitempty"`
+	// UpdatedBy holds the value of the "updated_by" field.
+	UpdatedBy string `json:"updated_by,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -41,11 +59,13 @@ func (*PsychoeducationModule) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case psychoeducationmodule.FieldEstimatedMinutes:
+		case psychoeducationmodule.FieldDraftDocumentJSON, psychoeducationmodule.FieldPublishedDocumentJSON:
+			values[i] = new([]byte)
+		case psychoeducationmodule.FieldEstimatedMinutes, psychoeducationmodule.FieldDraftRevision, psychoeducationmodule.FieldPublishedRevision:
 			values[i] = new(sql.NullInt64)
-		case psychoeducationmodule.FieldID, psychoeducationmodule.FieldSlug, psychoeducationmodule.FieldTitle, psychoeducationmodule.FieldSummary, psychoeducationmodule.FieldBodyMarkdown, psychoeducationmodule.FieldStatus:
+		case psychoeducationmodule.FieldID, psychoeducationmodule.FieldSlug, psychoeducationmodule.FieldTitle, psychoeducationmodule.FieldSummary, psychoeducationmodule.FieldBodyMarkdown, psychoeducationmodule.FieldStatus, psychoeducationmodule.FieldCreatedBy, psychoeducationmodule.FieldUpdatedBy:
 			values[i] = new(sql.NullString)
-		case psychoeducationmodule.FieldCreatedAt, psychoeducationmodule.FieldUpdatedAt:
+		case psychoeducationmodule.FieldPublishedAt, psychoeducationmodule.FieldArchivedAt, psychoeducationmodule.FieldCreatedAt, psychoeducationmodule.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -103,6 +123,60 @@ func (_m *PsychoeducationModule) assignValues(columns []string, values []any) er
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				_m.Status = psychoeducationmodule.Status(value.String)
+			}
+		case psychoeducationmodule.FieldDraftDocumentJSON:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field draft_document_json", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.DraftDocumentJSON); err != nil {
+					return fmt.Errorf("unmarshal field draft_document_json: %w", err)
+				}
+			}
+		case psychoeducationmodule.FieldPublishedDocumentJSON:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field published_document_json", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.PublishedDocumentJSON); err != nil {
+					return fmt.Errorf("unmarshal field published_document_json: %w", err)
+				}
+			}
+		case psychoeducationmodule.FieldDraftRevision:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field draft_revision", values[i])
+			} else if value.Valid {
+				_m.DraftRevision = int(value.Int64)
+			}
+		case psychoeducationmodule.FieldPublishedRevision:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field published_revision", values[i])
+			} else if value.Valid {
+				_m.PublishedRevision = int(value.Int64)
+			}
+		case psychoeducationmodule.FieldPublishedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field published_at", values[i])
+			} else if value.Valid {
+				_m.PublishedAt = new(time.Time)
+				*_m.PublishedAt = value.Time
+			}
+		case psychoeducationmodule.FieldArchivedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field archived_at", values[i])
+			} else if value.Valid {
+				_m.ArchivedAt = new(time.Time)
+				*_m.ArchivedAt = value.Time
+			}
+		case psychoeducationmodule.FieldCreatedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field created_by", values[i])
+			} else if value.Valid {
+				_m.CreatedBy = value.String
+			}
+		case psychoeducationmodule.FieldUpdatedBy:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_by", values[i])
+			} else if value.Valid {
+				_m.UpdatedBy = value.String
 			}
 		case psychoeducationmodule.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -169,6 +243,34 @@ func (_m *PsychoeducationModule) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
+	builder.WriteString(", ")
+	builder.WriteString("draft_document_json=")
+	builder.WriteString(fmt.Sprintf("%v", _m.DraftDocumentJSON))
+	builder.WriteString(", ")
+	builder.WriteString("published_document_json=")
+	builder.WriteString(fmt.Sprintf("%v", _m.PublishedDocumentJSON))
+	builder.WriteString(", ")
+	builder.WriteString("draft_revision=")
+	builder.WriteString(fmt.Sprintf("%v", _m.DraftRevision))
+	builder.WriteString(", ")
+	builder.WriteString("published_revision=")
+	builder.WriteString(fmt.Sprintf("%v", _m.PublishedRevision))
+	builder.WriteString(", ")
+	if v := _m.PublishedAt; v != nil {
+		builder.WriteString("published_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.ArchivedAt; v != nil {
+		builder.WriteString("archived_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("created_by=")
+	builder.WriteString(_m.CreatedBy)
+	builder.WriteString(", ")
+	builder.WriteString("updated_by=")
+	builder.WriteString(_m.UpdatedBy)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
