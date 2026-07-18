@@ -26,6 +26,8 @@ secrets.*
 
 # ===== Storage / runtime data =====
 /var/
+/internal/db/var/
+/internal/seed/var/
 *.db
 *.sqlite
 *.sqlite3
