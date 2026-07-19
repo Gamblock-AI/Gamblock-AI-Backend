@@ -25,6 +25,10 @@ type DailyMission struct {
 	MissionKey string `json:"mission_key,omitempty"`
 	// Status holds the value of the "status" field.
 	Status dailymission.Status `json:"status,omitempty"`
+	// AdjustmentReason holds the value of the "adjustment_reason" field.
+	AdjustmentReason *dailymission.AdjustmentReason `json:"adjustment_reason,omitempty"`
+	// ReplacementKey holds the value of the "replacement_key" field.
+	ReplacementKey *string `json:"replacement_key,omitempty"`
 	// ExpReward holds the value of the "exp_reward" field.
 	ExpReward int `json:"exp_reward,omitempty"`
 	// CompletedAt holds the value of the "completed_at" field.
@@ -43,7 +47,7 @@ func (*DailyMission) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case dailymission.FieldExpReward:
 			values[i] = new(sql.NullInt64)
-		case dailymission.FieldID, dailymission.FieldUserID, dailymission.FieldMissionDate, dailymission.FieldMissionKey, dailymission.FieldStatus:
+		case dailymission.FieldID, dailymission.FieldUserID, dailymission.FieldMissionDate, dailymission.FieldMissionKey, dailymission.FieldStatus, dailymission.FieldAdjustmentReason, dailymission.FieldReplacementKey:
 			values[i] = new(sql.NullString)
 		case dailymission.FieldCompletedAt, dailymission.FieldCreatedAt, dailymission.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -92,6 +96,20 @@ func (_m *DailyMission) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				_m.Status = dailymission.Status(value.String)
+			}
+		case dailymission.FieldAdjustmentReason:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field adjustment_reason", values[i])
+			} else if value.Valid {
+				_m.AdjustmentReason = new(dailymission.AdjustmentReason)
+				*_m.AdjustmentReason = dailymission.AdjustmentReason(value.String)
+			}
+		case dailymission.FieldReplacementKey:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field replacement_key", values[i])
+			} else if value.Valid {
+				_m.ReplacementKey = new(string)
+				*_m.ReplacementKey = value.String
 			}
 		case dailymission.FieldExpReward:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -167,6 +185,16 @@ func (_m *DailyMission) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
+	builder.WriteString(", ")
+	if v := _m.AdjustmentReason; v != nil {
+		builder.WriteString("adjustment_reason=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.ReplacementKey; v != nil {
+		builder.WriteString("replacement_key=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("exp_reward=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ExpReward))

@@ -36,19 +36,19 @@ func (m *Middleware) AuthRequired() gin.HandlerFunc {
 		}
 		header := c.GetHeader("Authorization")
 		if !strings.HasPrefix(header, "Bearer ") {
-			m.respondError(c, http.StatusUnauthorized, "auth_required", "Bearer token is required")
+			m.respondError(c, http.StatusUnauthorized, "auth_required")
 			c.Abort()
 			return
 		}
 		claims, err := m.auth.ParseAccessToken(strings.TrimPrefix(header, "Bearer "))
 		if err != nil {
-			m.respondError(c, http.StatusUnauthorized, "invalid_token", "Access token is invalid or expired")
+			m.respondError(c, http.StatusUnauthorized, "invalid_token")
 			c.Abort()
 			return
 		}
 		role, active := m.auth.ActiveIdentity(c.Request.Context(), claims.UserID)
 		if !active {
-			m.respondError(c, http.StatusUnauthorized, "invalid_token", "Account is unavailable")
+			m.respondError(c, http.StatusUnauthorized, "invalid_token")
 			c.Abort()
 			return
 		}
@@ -63,7 +63,7 @@ func (m *Middleware) RequireRecentAuth(maxAge time.Duration) gin.HandlerFunc {
 		authTime, ok := c.Get("auth_time")
 		issuedAt, valid := authTime.(time.Time)
 		if !ok || !valid || time.Since(issuedAt) > maxAge {
-			m.respondError(c, http.StatusUnauthorized, "recent_auth_required", "Sign in again before completing this decision")
+			m.respondError(c, http.StatusUnauthorized, "recent_auth_required")
 			c.Abort()
 			return
 		}
@@ -82,7 +82,7 @@ func (m *Middleware) RequireRoles(roles ...string) gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		m.respondError(c, http.StatusForbidden, "forbidden", "Role is not allowed for this action")
+		m.respondError(c, http.StatusForbidden, "forbidden")
 		c.Abort()
 	}
 }

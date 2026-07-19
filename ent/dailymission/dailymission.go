@@ -22,6 +22,10 @@ const (
 	FieldMissionKey = "mission_key"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldAdjustmentReason holds the string denoting the adjustment_reason field in the database.
+	FieldAdjustmentReason = "adjustment_reason"
+	// FieldReplacementKey holds the string denoting the replacement_key field in the database.
+	FieldReplacementKey = "replacement_key"
 	// FieldExpReward holds the string denoting the exp_reward field in the database.
 	FieldExpReward = "exp_reward"
 	// FieldCompletedAt holds the string denoting the completed_at field in the database.
@@ -41,6 +45,8 @@ var Columns = []string{
 	FieldMissionDate,
 	FieldMissionKey,
 	FieldStatus,
+	FieldAdjustmentReason,
+	FieldReplacementKey,
 	FieldExpReward,
 	FieldCompletedAt,
 	FieldCreatedAt,
@@ -99,6 +105,32 @@ func StatusValidator(s Status) error {
 	}
 }
 
+// AdjustmentReason defines the type for the "adjustment_reason" enum field.
+type AdjustmentReason string
+
+// AdjustmentReason values.
+const (
+	AdjustmentReasonNotEnoughTime     AdjustmentReason = "not_enough_time"
+	AdjustmentReasonNotAGoodFit       AdjustmentReason = "not_a_good_fit"
+	AdjustmentReasonNeedLowerEffort   AdjustmentReason = "need_lower_effort"
+	AdjustmentReasonAccessibilityNeed AdjustmentReason = "accessibility_need"
+	AdjustmentReasonPreferNotToSay    AdjustmentReason = "prefer_not_to_say"
+)
+
+func (ar AdjustmentReason) String() string {
+	return string(ar)
+}
+
+// AdjustmentReasonValidator is a validator for the "adjustment_reason" field enum values. It is called by the builders before save.
+func AdjustmentReasonValidator(ar AdjustmentReason) error {
+	switch ar {
+	case AdjustmentReasonNotEnoughTime, AdjustmentReasonNotAGoodFit, AdjustmentReasonNeedLowerEffort, AdjustmentReasonAccessibilityNeed, AdjustmentReasonPreferNotToSay:
+		return nil
+	default:
+		return fmt.Errorf("dailymission: invalid enum value for adjustment_reason field: %q", ar)
+	}
+}
+
 // OrderOption defines the ordering options for the DailyMission queries.
 type OrderOption func(*sql.Selector)
 
@@ -125,6 +157,16 @@ func ByMissionKey(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByAdjustmentReason orders the results by the adjustment_reason field.
+func ByAdjustmentReason(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAdjustmentReason, opts...).ToFunc()
+}
+
+// ByReplacementKey orders the results by the replacement_key field.
+func ByReplacementKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReplacementKey, opts...).ToFunc()
 }
 
 // ByExpReward orders the results by the exp_reward field.

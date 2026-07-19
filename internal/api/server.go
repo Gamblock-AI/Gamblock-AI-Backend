@@ -31,7 +31,7 @@ func New(cfg config.Config, st *store.Store, logger *zap.Logger, clients ...*ent
 	h := handler.New(services, mid, cfg, logger)
 
 	r := gin.New()
-	r.Use(gin.Recovery(), mid.RequestID(), mid.PrivacyGuard())
+	r.Use(gin.Recovery(), mid.RequestID())
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.AllowedOrigins,
 		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete, http.MethodOptions},
@@ -40,6 +40,9 @@ func New(cfg config.Config, st *store.Store, logger *zap.Logger, clients ...*ent
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+	// CORS must wrap PrivacyGuard so even a rejected request carries the
+	// appropriate browser-readable response headers.
+	r.Use(mid.PrivacyGuard())
 
 	routes.Register(r, h, mid)
 

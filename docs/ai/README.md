@@ -27,6 +27,10 @@ are supporting/operational features.
 - The browser extension is only a passive sensor; the client owns blocking.
 - Anti-tamper never uses critical-process APIs.
 - API responses use `{ data, error, request_id }` and stable error codes.
+- Client-visible error text is catalog-safe in every environment; expected 4xx
+  rejections log metadata only, 5xx details stay in server logs, and the root
+  context validator rejects literal handler/middleware codes missing from the
+  synchronized catalogs.
 
 ## Current capability truth
 
@@ -34,18 +38,18 @@ are supporting/operational features.
 |---|---|---|
 | Auth, contact verification, token rotation, RBAC | Implemented | Argon2id password verification, Google ID-token audience validation, authoritative `user`/`partner` registration role, 30-minute email links, 10-minute WhatsApp codes, refresh rotation preserving primary `auth_time`, per-request disabled/role checks, per-route roles, and current-password-protected password change with session revocation are wired; password reset remains planned |
 | Device and aggregate client APIs | Implemented | stable client-instance upsert, owned-device enforcement, heartbeat/status, completed-day idempotent aggregate ingest, and 7/30-day aggregate analytics are wired; no browsing schema exists |
-| Accountability groups and approvals | Implemented supporting workflow | verified partners own multiple groups with hashed/rotatable codes; a verified student has one live membership with category-specific aggregate sharing; normal/unsafe exit, removal, archive, scoped pause/uninstall requests, recent-auth partner decisions, bounded one-time native grants, and hashed quick tokens are wired; native device proof remains |
-| PrivacyGuard | Implemented | forbidden-key regression tests; values are not censored |
-| Journal encryption | Implemented server invariant | AES-256-GCM write/read paths fail closed; production validates a 32-byte hex key |
+| Accountability groups and approvals | Implemented supporting workflow | verified partners own multiple groups with hashed/rotatable codes; a verified student has one live membership with category-specific aggregate sharing; pending normal exits can be cancelled by the requesting student, while unsafe exit remains immediate and support-reviewed; removal, archive, scoped pause/uninstall requests, recent-auth partner decisions, bounded one-time native grants, and hashed quick tokens are wired; native device proof remains |
+| PrivacyGuard | Implemented | forbidden-key regression tests; values are not censored; narrow credential routes are exempt and CORS wraps guard rejections so localhost browser clients receive readable envelopes |
+| Journal encryption | Implemented server invariant | AES-256-GCM write/read paths fail closed; every environment validates a required 32-byte hex key at startup |
 | PostgreSQL/ent persistence | Implemented production path | production fails closed on open/migration/load failure; development can use empty memory and explicitly enabled contextual demo data |
 | Structured check-ins | Implemented for account persistence | authenticated users save a 1-5 mood and optional 1-5 urge (`0` means not disclosed); no browsing data is accepted and partner visibility remains planned pending explicit consent design |
 | Recovery room, journal, and progress | Implemented supporting workflow | student-only completed practices and typed weekly reviews retain a rolling 12 months; deterministic room unlock/placement state retains for account lifetime; AES-256-GCM reflection payload v2 supports optional next-step/current-focus fields; check-ins update the current `Asia/Jakarta` day without backfill; private progress exposes category-tagged 7/30/90-day activity and suppresses trends below three check-ins; the full `PKM-WEB-002` focus-period/reminder lifecycle remains incomplete core work |
 | Threaded support | Implemented operational workflow | student/partner requesters access only their cases; encrypted messages transition between waiting-support/waiting-user/resolved/closed; requester close and seven-day reopen rules are wired; support operators atomically claim/release ownership before reading or replying; platform admins have no support-thread access |
-| Daily mission EXP | Implemented supporting PKM-WEB-005 workflow | `Asia/Jakarta` deterministic one-primary/two-bonus assignment, fixed effort-based rewards, server-derived eligibility from existing account state, idempotent claim-only grants, and per-user level progress are wired; self-completion/undo cannot grant or remove EXP, skip/replace/reflection remain incomplete PKM-core work, and no partner projection exists |
-| Dashboard/profile/aggregate API | Implemented | user-scoped summaries derive from owned records; Flutter sends only bounded daily aggregate categories with idempotency; authenticated avatar upload/delete and session-gated avatar retrieval use managed 2 MiB WebP files rather than provider-hosted image URLs |
+| Daily mission EXP | Implemented supporting PKM-WEB-005 workflow | `Asia/Jakarta` deterministic one-primary/two-bonus assignment, fixed effort-based rewards, server-derived eligibility, idempotent claims, one bounded primary replacement followed by optional skip, and per-user level progress are wired; adjustments never change EXP, optional mission closeout uses the encrypted recovery-record path, and no partner projection exists |
+| Dashboard/profile/aggregate API | Implemented | user-scoped summaries derive from owned records; Flutter sends only bounded daily aggregate categories with idempotency; authenticated avatar upload/delete and session-gated avatar retrieval use managed 2 MiB WebP files rather than provider-hosted image URLs; own-profile responses expose only a derived password-enabled boolean for provider-aware security UI |
 | Emergency recovery | Implemented operational workflow | protected user requests for an owned device; one platform admin reviews and a distinct second admin issues within 30 minutes; hashed device-bound key is single-use for 24 hours and produces a ten-minute grant |
 | Psychoeducation authoring and progress | Implemented supporting PKM-WEB-003 workflow | bilingual revisioned rich-text documents, immutable draft/publish/rollback snapshots, role-enforced student/partner/all audience and article/response-simulator experience metadata, 1–8 thumbnails, allowlisted image/video/PDF media, reviewer/source metadata, review/publish/archive lifecycle, and revision-scoped section/media/check progress are wired; editorial and clinical governance remain operational responsibilities |
-| Data export/deletion | Implemented operational workflow | export creates an AES-256-GCM encrypted ZIP at rest with a seven-day authenticated download; student/partner deletion requires a hashed 30-minute email token and recent auth, deletes account-scoped records, and anonymizes retained audit/request rows; external lifecycle cleanup remains operational |
+| Data export/deletion | Implemented operational workflow | export creates an AES-256-GCM encrypted ZIP at rest with a seven-day recent-auth download; missing configuration fails at startup, expired/legacy results are marked unavailable rather than advertised as downloads, and failed processing remains visible for recovery; student/partner deletion requires a hashed 30-minute email token and recent auth, deletes account-scoped records, and anonymizes retained audit/request rows; external lifecycle cleanup remains operational |
 | Operator control plane | Implemented operational v1 | specialist roles are non-cumulative; platform admins manage hashed 24-hour email invitations, enable/disable, safe public social links, audit history, and dual-control emergency access; platform-admin bootstrap remains out of band |
 | Release gates and rollout | Implemented operational v1 | allowlisted artifact upload uses randomized managed storage and server-computed SHA-256; model/ruleset/network releases can be staged to manual platform/percentage/app-version cohorts and activated, paused, completed, or rolled back; signing and automated health decisions remain planned |
 | WhatsApp delivery | Prototype adapter | immediate delivery can use configured partner phone/provider; demo logs omit tokens and the partner inbox remains authoritative |
@@ -60,6 +64,14 @@ Run `make lint`. When AI context changed, also run
 `./scripts/verify-ai-context.sh` (use `--allow-untracked` while authoring new
 context files). Tests, builds, race tests, and `make verify` run only when the
 user explicitly requests them.
+
+## Local encryption-key bootstrap
+
+After copying `.env.example` to `.env`, run `make key-generate`. It writes a
+cryptographically random 32-byte hex `JOURNAL_ENCRYPTION_KEY` and refuses to
+replace a valid existing key unless `FORCE=1` is explicitly supplied. Key
+replacement makes encrypted local journal, support, and export data
+unreadable.
 
 ## Related repositories and contracts
 

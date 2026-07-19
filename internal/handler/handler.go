@@ -53,28 +53,17 @@ func (h *Handler) respond(c *gin.Context, status int, data any) {
 	c.JSON(status, envelope{Data: data, Error: nil, RequestID: h.requestID(c)})
 }
 
-func (h *Handler) respondError(c *gin.Context, status int, code, message string) {
-	c.JSON(status, envelope{Data: nil, Error: &apiError{Code: code, Message: message}, RequestID: h.requestID(c)})
-}
-
 // respondCode responds with the friendly message from the i18n catalog for the
 // given code. Use this for validation/hint errors that have no underlying Go
-// error. Production always shows the friendly catalog message; development
-// appends the code for easier debugging.
+// error. Client-visible messages stay friendly in every environment; the
+// stable code and request ID provide the correlation needed for diagnostics.
 func (h *Handler) respondCode(c *gin.Context, status int, code string) {
-	msg := i18n.Friendly(code)
-	if !h.cfg.IsProduction() {
-		msg = "[" + code + "] " + msg
-	}
-	c.JSON(status, envelope{Data: nil, Error: &apiError{Code: code, Message: msg}, RequestID: h.requestID(c)})
+	c.JSON(status, envelope{Data: nil, Error: &apiError{Code: code, Message: i18n.Friendly(code)}, RequestID: h.requestID(c)})
 }
 
-// respondErrorErr responds with an env-gated message derived from [err].
-//
-// Production: the friendly catalog message for [code] (never [err].Error()),
-// so internal details never leak to clients. Development: the technical
-// err.Error() for debugging. Expected 4xx rejections are logged without the
-// underlying error; 5xx faults retain the full technical error and stack.
+// respondErrorErr always returns the friendly catalog message to clients.
+// Expected 4xx rejections are logged without the underlying error; 5xx faults
+// retain the full technical error in server logs.
 func (h *Handler) respondErrorErr(c *gin.Context, status int, code string, err error) {
 	reqID := h.requestID(c)
 	if h.logger != nil && err != nil {
@@ -89,11 +78,7 @@ func (h *Handler) respondErrorErr(c *gin.Context, status int, code string, err e
 			h.logger.Info("request rejected", fields...)
 		}
 	}
-	msg := i18n.Friendly(code)
-	if !h.cfg.IsProduction() && err != nil {
-		msg = "[" + code + "] " + err.Error()
-	}
-	c.JSON(status, envelope{Data: nil, Error: &apiError{Code: code, Message: msg}, RequestID: reqID})
+	c.JSON(status, envelope{Data: nil, Error: &apiError{Code: code, Message: i18n.Friendly(code)}, RequestID: reqID})
 }
 
 func (h *Handler) requestID(c *gin.Context) string {

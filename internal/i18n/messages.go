@@ -3,8 +3,7 @@
 // Single source of truth for friendly Indonesian messages keyed by the stable
 // error `code` returned in the API envelope `{ data, error: {code, message},
 // request_id }`. Handlers resolve messages through [Friendly] so that:
-//   - production responses always show a friendly, non-leaking message;
-//   - development responses may surface technical detail for debugging;
+//   - responses always show a friendly, non-leaking message;
 //   - server faults retain technical detail, while expected 4xx rejections log
 //     only safe request metadata (see Handler.respondErrorErr).
 //
@@ -17,6 +16,15 @@ const Generic = "Terjadi kendala, silakan coba beberapa saat lagi."
 
 // messages maps error code -> friendly end-user message (Bahasa Indonesia).
 var messages = map[string]string{
+	// shared request / authorization
+	"auth_required":              "Sesi diperlukan. Silakan masuk terlebih dahulu.",
+	"forbidden":                  "Anda tidak memiliki izin untuk tindakan ini.",
+	"invalid_body":               "Data yang dikirim tidak dapat dibaca. Periksa isian lalu coba lagi.",
+	"privacy_payload_rejected":   "Permintaan ditolak karena memuat data yang tidak boleh dikirim.",
+	"err_validation":             "Periksa kembali isian yang belum sesuai.",
+	"err_internal":               "Terjadi kendala pada layanan. Silakan coba beberapa saat lagi.",
+	"create_admin_module_failed": "Modul admin belum dapat dibuat.",
+
 	// auth
 	"email_required":                     "Email wajib diisi.",
 	"validation_failed":                  "Email dan nama wajib diisi.",
@@ -73,6 +81,7 @@ var messages = map[string]string{
 	"accountability_group_archive_failed":  "Grup hanya dapat diarsipkan setelah tidak memiliki anggota aktif.",
 	"accountability_sharing_update_failed": "Preferensi berbagi belum dapat diperbarui.",
 	"accountability_leave_failed":          "Permintaan keluar belum dapat diproses.",
+	"accountability_leave_cancel_failed":   "Permintaan keluar tidak dapat dibatalkan. Muat ulang status lalu coba lagi.",
 	"accountability_leave_resolve_failed":  "Keputusan keluar belum dapat disimpan.",
 	"accountability_member_remove_failed":  "Anggota belum dapat dikeluarkan dari grup.",
 	"partner_contact_create_failed":        "Permintaan menghubungi pendamping belum dapat dikirim.",
@@ -93,6 +102,7 @@ var messages = map[string]string{
 	"mission_fetch_failed":  "Gagal memuat misi harian.",
 	"invalid_mission":       "Nomor misi harus 1-5.",
 	"mission_update_failed": "Gagal memperbarui misi harian.",
+	"mission_adjust_failed": "Misi utama belum dapat disesuaikan. Coba pilihan lain.",
 
 	// reflections / psychoeducation
 	"fetch_reflections_failed":    "Gagal memuat jurnal refleksi.",

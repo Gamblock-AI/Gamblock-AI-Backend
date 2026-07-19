@@ -66,7 +66,7 @@ func membershipFromEnt(row *ent.AccountabilityMembership) model.AccountabilityMe
 }
 
 func (r *Repository) ListAccountabilityGroups(ctx context.Context, partnerID string) ([]model.AccountabilityGroup, error) {
-	var groups []model.AccountabilityGroup
+	groups := make([]model.AccountabilityGroup, 0)
 	if r.db == nil {
 		for _, group := range r.store.Snapshot().AccountabilityGroups {
 			if group.OwnerPartnerID == partnerID {
@@ -206,7 +206,7 @@ func (r *Repository) MembershipByID(ctx context.Context, membershipID string) (m
 }
 
 func (r *Repository) ListMembershipsForGroup(ctx context.Context, groupID string) ([]model.AccountabilityMembership, error) {
-	var result []model.AccountabilityMembership
+	result := make([]model.AccountabilityMembership, 0)
 	if r.db == nil {
 		for _, item := range r.store.Snapshot().AccountabilityMemberships {
 			if item.GroupID == groupID {
@@ -368,7 +368,7 @@ func (r *Repository) ListExitRequests(ctx context.Context, membershipIDs []strin
 	for _, id := range membershipIDs {
 		allowed[id] = true
 	}
-	var result []model.MembershipExitRequest
+	result := make([]model.MembershipExitRequest, 0)
 	if r.db == nil {
 		for _, item := range r.store.Snapshot().MembershipExitRequests {
 			if allowed[item.MembershipID] {
@@ -420,19 +420,31 @@ func (r *Repository) ResolveMembershipExitRequest(ctx context.Context, requestID
 	now := time.Now().UTC()
 	if r.db == nil {
 		r.store.Lock()
+		resolved := false
 		for i := range r.store.MembershipExitRequests {
-			if r.store.MembershipExitRequests[i].ID == requestID {
+			if r.store.MembershipExitRequests[i].ID == requestID && r.store.MembershipExitRequests[i].Status == "pending" {
 				r.store.MembershipExitRequests[i].Status = decision
 				r.store.MembershipExitRequests[i].ResolvedBy = partnerID
 				r.store.MembershipExitRequests[i].ResolvedAt = &now
 				r.store.MembershipExitRequests[i].UpdatedAt = now
+				resolved = true
 			}
 		}
 		r.store.Unlock()
+		if !resolved {
+			return fmt.Errorf("exit request is no longer pending")
+		}
 	} else {
-		_, err = r.db.MembershipExitRequest.UpdateOneID(requestID).
-			SetStatus(membershipexitrequest.Status(decision)).SetResolvedBy(partnerID).SetResolvedAt(now).Save(ctx)
-		if err != nil {
+		var updated int
+		updated, err = r.db.MembershipExitRequest.Update().Where(
+			membershipexitrequest.IDEQ(requestID),
+			membershipexitrequest.StatusEQ(membershipexitrequest.StatusPending),
+		).SetStatus(membershipexitrequest.Status(decision)).
+			SetResolvedBy(partnerID).SetResolvedAt(now).Save(ctx)
+		if err != nil || updated != 1 {
+			if err == nil {
+				err = fmt.Errorf("exit request is no longer pending")
+			}
 			return err
 		}
 	}
@@ -445,6 +457,119 @@ func (r *Repository) ResolveMembershipExitRequest(ctx context.Context, requestID
 		err = r.SetMembershipStatus(ctx, membership.ID, "active", nil)
 	}
 	if err == nil && r.db != nil {
+		r.RefreshStore(ctx)
+	}
+	return err
+}
+
+func (r *Repository) CancelMembershipExitRequest(ctx context.Context, requestID, studentID string) error {
+	now := time.Now().UTC()
+	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+
+		requestIndex := -1
+		membershipIndex := -1
+		for i := range r.store.MembershipExitRequests {
+			request := &r.store.MembershipExitRequests[i]
+			if request.ID == requestID && request.RequestedBy == studentID && request.Kind == "normal" && request.Status == "pending" {
+				requestIndex = i
+				for j := range r.store.AccountabilityMemberships {
+					membership := &r.store.AccountabilityMemberships[j]
+					if membership.ID == request.MembershipID && membership.StudentID == studentID && membership.Status == "leave_pending" {
+						membershipIndex = j
+						break
+					}
+				}
+				break
+			}
+		}
+		if requestIndex < 0 || membershipIndex < 0 {
+			return fmt.Errorf("pending normal exit request not found for student")
+		}
+
+		request := &r.store.MembershipExitRequests[requestIndex]
+		request.Status = "cancelled"
+		request.ResolvedBy = studentID
+		request.ResolvedAt = &now
+		request.UpdatedAt = now
+		membership := &r.store.AccountabilityMemberships[membershipIndex]
+		membership.Status = "active"
+		membership.EndedAt = nil
+		membership.UpdatedAt = now
+		return nil
+	}
+
+	tx, err := r.db.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	committed := false
+	defer func() {
+		if !committed {
+			_ = tx.Rollback()
+		}
+	}()
+
+	request, err := tx.MembershipExitRequest.Query().Where(
+		membershipexitrequest.IDEQ(requestID),
+		membershipexitrequest.RequestedByEQ(studentID),
+		membershipexitrequest.KindEQ(membershipexitrequest.KindNormal),
+		membershipexitrequest.StatusEQ(membershipexitrequest.StatusPending),
+	).Only(ctx)
+	if err != nil {
+		return fmt.Errorf("pending normal exit request not found for student")
+	}
+
+	updatedRequests, err := tx.MembershipExitRequest.Update().Where(
+		membershipexitrequest.IDEQ(requestID),
+		membershipexitrequest.StatusEQ(membershipexitrequest.StatusPending),
+	).SetStatus(membershipexitrequest.StatusCancelled).
+		SetResolvedBy(studentID).SetResolvedAt(now).Save(ctx)
+	if err != nil || updatedRequests != 1 {
+		return fmt.Errorf("exit request is no longer cancellable")
+	}
+
+	updatedMemberships, err := tx.AccountabilityMembership.Update().Where(
+		accountabilitymembership.IDEQ(request.MembershipID),
+		accountabilitymembership.StudentIDEQ(studentID),
+		accountabilitymembership.StatusEQ(accountabilitymembership.StatusLeavePending),
+	).SetStatus(accountabilitymembership.StatusActive).ClearEndedAt().Save(ctx)
+	if err != nil || updatedMemberships != 1 {
+		return fmt.Errorf("membership is no longer waiting for exit review")
+	}
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	committed = true
+	r.RefreshStore(ctx)
+	return nil
+}
+
+func (r *Repository) CancelPendingNormalExitRequestsForMembership(ctx context.Context, membershipID, resolvedBy string) error {
+	now := time.Now().UTC()
+	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+		for i := range r.store.MembershipExitRequests {
+			request := &r.store.MembershipExitRequests[i]
+			if request.MembershipID == membershipID && request.Kind == "normal" && request.Status == "pending" {
+				request.Status = "cancelled"
+				request.ResolvedBy = resolvedBy
+				request.ResolvedAt = &now
+				request.UpdatedAt = now
+			}
+		}
+		return nil
+	}
+
+	_, err := r.db.MembershipExitRequest.Update().Where(
+		membershipexitrequest.MembershipIDEQ(membershipID),
+		membershipexitrequest.KindEQ(membershipexitrequest.KindNormal),
+		membershipexitrequest.StatusEQ(membershipexitrequest.StatusPending),
+	).SetStatus(membershipexitrequest.StatusCancelled).
+		SetResolvedBy(resolvedBy).SetResolvedAt(now).Save(ctx)
+	if err == nil {
 		r.RefreshStore(ctx)
 	}
 	return err
@@ -521,7 +646,7 @@ func contactRequestFromEnt(row *ent.PartnerContactRequest) model.PartnerContactR
 }
 
 func (r *Repository) ListPartnerContactRequests(ctx context.Context, userID, role string) ([]model.PartnerContactRequest, error) {
-	var result []model.PartnerContactRequest
+	result := make([]model.PartnerContactRequest, 0)
 	if r.db == nil {
 		for _, item := range r.store.Snapshot().PartnerContactRequests {
 			if (role == "partner" && item.PartnerID == userID) || (role == "user" && item.StudentID == userID) {

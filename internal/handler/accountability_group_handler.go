@@ -130,6 +130,14 @@ func (h *Handler) ResolveAccountabilityLeave(c *gin.Context) {
 	h.respond(c, http.StatusOK, gin.H{"resolved": true})
 }
 
+func (h *Handler) CancelAccountabilityLeave(c *gin.Context) {
+	if err := h.services.AccountabilityGroups.CancelLeave(c.Request.Context(), h.currentUserID(c), c.Param("request_id")); err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "accountability_leave_cancel_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, gin.H{"cancelled": true})
+}
+
 func (h *Handler) RemoveAccountabilityMember(c *gin.Context) {
 	var input struct {
 		Reason string `json:"reason"`

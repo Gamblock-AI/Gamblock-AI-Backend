@@ -7,27 +7,38 @@ dashboard. Uses [ent](https://entgo.io/) over PostgreSQL.
 
 ```sh
 cp .env.example .env
-go run ./cmd/migrate      # apply schema migrations
-go run ./cmd/seed         # (optional) seed demo data
-go run ./cmd/seed-education # upsert the six bilingual education modules/media
-go run ./cmd/api          # start the API (default 127.0.0.1:8080)
+make key-generate  # creates and saves a valid JOURNAL_ENCRYPTION_KEY in .env
+make migrate        # apply schema migrations with values loaded from .env
+make seed           # (optional) seed demo data
+make seed-education # upsert the six bilingual education modules/media
+make run            # start the API (default 127.0.0.1:8080)
 ```
 
 The service uses ent/PostgreSQL by default. Development may fall back to an
 empty in-memory store when the database cannot be reached; contextual demo
 records appear only when `ENABLE_DEMO_DATA=true` outside production.
-Production validates its JWT/journal configuration and fails closed when
+Every environment validates the required 32-byte AES key at startup so journal,
+support-message, and export encryption cannot fail later during a user action.
+Production additionally validates its JWT configuration and fails closed when
 PostgreSQL is unavailable. The default local URL is
 `postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable`.
 
 PostgreSQL seed data and the optional in-memory demo store use the shared dummy
 password `password` for `gading@gmail.com`, `dery@gmail.com`,
-`suci@gmail.com`, and `nasywa@gmail.com`. These credentials are development
-fixtures only and demo data is forbidden in production.
+`suci@gmail.com`, `nasywa@gmail.com`, `student@gmail.com`,
+`partner@gmail.com`, `organization-owner@gmail.com`,
+`organization-admin@gmail.com`, `content-admin@gmail.com`,
+`model-release-operator@gmail.com`, `support-operator@gmail.com`,
+`research-evaluator@gmail.com`, and `platform-admin@gmail.com`. These
+credentials are development fixtures only and demo data is forbidden in
+production.
 
-Useful Makefile targets: `make dev` (air live-reload), `make lint`,
+Useful Makefile targets: `make dev` (air live-reload), `make key-generate`, `make lint`,
 `make migrate`, `make seed`, `make seed-education`, and opt-in `make verify`. `make migrate-fresh` drops the
 database schema and must never be run against shared or production data.
+`make key-generate` refuses to replace a valid existing key; use
+`make key-generate FORCE=1` only when no encrypted local journal, support, or
+export data needs to be retained.
 
 ## Key local endpoints
 
@@ -54,6 +65,8 @@ database schema and must never be run against shared or production data.
 - `GET  /v1/accountability/workspace`
 - `POST /v1/accountability/groups[...]`
 - `PATCH /v1/accountability/memberships/:membership_id/sharing`
+- `POST /v1/accountability/memberships/:membership_id/leave`
+- `POST /v1/accountability/exit-requests/:request_id/cancel`
 - `GET  /v1/approval-requests`
 - `POST /v1/approval-requests/:id/apply`
 - `GET/POST /v1/emergency-key-requests`
@@ -65,6 +78,7 @@ database schema and must never be run against shared or production data.
 - `GET  /v1/missions/today`
 - `PATCH /v1/missions`
 - `POST /v1/missions/claim`
+- `POST /v1/missions/adjust`
 - `GET  /v1/client/progress?days=7|30|90`
 - `GET/POST/PATCH /v1/reflections[...]`
 - `GET/POST /v1/recovery-practices`
@@ -72,9 +86,17 @@ database schema and must never be run against shared or production data.
 - `GET/PUT /v1/weekly-reviews/current`
 - `GET/PUT /v1/recovery-records`
 - `GET/POST /v1/support-cases[...]`
+- `GET/POST /v1/data-requests`
+- `GET /v1/data-requests/:id/download`
 
 All responses use the envelope `{ "data", "error", "request_id" }` produced in
 `internal/handler/handler.go` / `internal/middleware/middleware.go`.
+
+`POST /v1/accountability/exit-requests/:request_id/cancel` is student-scoped.
+It changes only the requesting student's pending normal exit to `cancelled`
+and restores that membership to `active`; unsafe exits and already-resolved
+requests cannot be cancelled. Success returns `{ "cancelled": true }` inside
+the standard envelope.
 
 ### Client protection contract
 
@@ -82,6 +104,8 @@ All responses use the envelope `{ "data", "error", "request_id" }` produced in
   user's installation; a new device starts `inactive`.
 - `PATCH /v1/me/password` requires `current_password` and `new_password`, then
   revokes every refresh token so clients must reauthenticate.
+- `GET /v1/me` includes `password_enabled` so clients can distinguish
+  password-backed accounts from provider-only accounts without exposing a hash.
 - `POST /v1/me/avatar` accepts an authenticated user's cropped WebP avatar up
   to 2 MiB. `GET /v1/users/:id/avatar` is authenticated, returns only the
   managed image with a private cache directive, and never exposes a storage
@@ -106,6 +130,10 @@ All responses use the envelope `{ "data", "error", "request_id" }` produced in
 - `POST /v1/check-ins` persists the authenticated user's structured mood score
   and optional urge score (`0` means not disclosed); it accepts no browsing
   context. Partner visibility is not exposed by this endpoint.
+- Account export is created synchronously as an AES-256-GCM encrypted ZIP at
+  rest. A completed result is downloadable with recent authentication for seven
+  days; expired or legacy records without a valid managed file are retained as
+  history but explicitly marked unavailable so clients can offer regeneration.
 - `GET/PUT /v1/recovery-records` stores only explicitly submitted student
   records; sensitive text is AES-256-GCM encrypted, reminders default off, and
   records older than 12 months are removed. `GET /v1/client/progress` supports
@@ -126,7 +154,10 @@ All responses use the envelope `{ "data", "error", "request_id" }` produced in
   active protection seen today, today's saved check-in, today's education
   section/module progress, or an active partner link. `POST
   /v1/missions/claim` rechecks eligibility and atomically grants the disclosed
-  reward once. Legacy `PATCH /v1/missions` is claim-only and rejects undo.
+  reward once. `POST /v1/missions/adjust` allows one primary replacement from
+  the two non-assigned catalog tasks, followed by an optional skip; both require
+  a bounded reason and never change EXP. Legacy `PATCH /v1/missions` is
+  claim-only and rejects undo.
   Mission/EXP data is not projected to partners.
 - Psychoeducation publication stores immutable bilingual document snapshots.
   Audience (`student`, `partner`, `all`) and experience type (`article`,

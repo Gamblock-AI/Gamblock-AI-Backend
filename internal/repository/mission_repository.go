@@ -126,7 +126,7 @@ func (r *Repository) GetMissionByDate(
 					dailymission.CreatedAtLT(dayEndUTC),
 				),
 			),
-		).All(ctx)
+		).Order(ent.Asc(dailymission.FieldCreatedAt)).All(ctx)
 		if err != nil {
 			return model.DailyMission{}, 0, err
 		}
@@ -152,6 +152,176 @@ func (r *Repository) GetMissionByDate(
 		}
 	}
 	return model.DailyMission{ID: "day_" + date, UserID: userID, Date: date}, points, nil
+}
+
+func (r *Repository) AdjustMission(
+	ctx context.Context,
+	userID, date string,
+	dayStartUTC, dayEndUTC time.Time,
+	missionNum int,
+	action, reason string,
+	replacementNum int,
+) (model.DailyMission, int, error) {
+	if r.db != nil {
+		mission, points, err := r.adjustMissionDB(
+			ctx, userID, date, dayStartUTC, dayEndUTC,
+			missionNum, action, reason, replacementNum,
+		)
+		if err == nil {
+			r.RefreshStore(ctx)
+		}
+		return mission, points, err
+	}
+	return r.adjustMissionInMemory(userID, date, missionNum, action, reason, replacementNum)
+}
+
+func (r *Repository) adjustMissionDB(
+	ctx context.Context,
+	userID, date string,
+	dayStartUTC, dayEndUTC time.Time,
+	missionNum int,
+	action, reason string,
+	replacementNum int,
+) (model.DailyMission, int, error) {
+	tx, err := r.db.Tx(ctx)
+	if err != nil {
+		return model.DailyMission{}, 0, err
+	}
+	committed := false
+	defer func() {
+		if !committed {
+			_ = tx.Rollback()
+		}
+	}()
+
+	key := fmt.Sprintf("mission_%d", missionNum)
+	row, queryErr := tx.DailyMission.Query().Where(
+		dailymission.UserID(userID),
+		dailymission.MissionKey(key),
+		dailymission.Or(
+			dailymission.MissionDate(date),
+			dailymission.And(
+				dailymission.MissionDateIsNil(),
+				dailymission.CreatedAtGTE(dayStartUTC),
+				dailymission.CreatedAtLT(dayEndUTC),
+			),
+		),
+	).First(ctx)
+	if queryErr != nil && !ent.IsNotFound(queryErr) {
+		return model.DailyMission{}, 0, queryErr
+	}
+
+	replacementKey := ""
+	if action == "replace" {
+		replacementKey = fmt.Sprintf("mission_%d", replacementNum)
+	}
+	adjustedAt := time.Now().UTC()
+	if ent.IsNotFound(queryErr) {
+		creator := tx.DailyMission.Create().
+			SetID("mis_" + uuid.NewString()[:8]).
+			SetUserID(userID).
+			SetMissionDate(date).
+			SetMissionKey(key).
+			SetStatus(dailymission.StatusSkipped).
+			SetAdjustmentReason(dailymission.AdjustmentReason(reason)).
+			SetExpReward(0).
+			SetCreatedAt(adjustedAt).
+			SetUpdatedAt(adjustedAt)
+		if replacementKey != "" {
+			creator.SetReplacementKey(replacementKey)
+		}
+		if _, err = creator.Save(ctx); err != nil {
+			return model.DailyMission{}, 0, err
+		}
+	} else {
+		if row.Status != dailymission.StatusPending {
+			return model.DailyMission{}, 0, fmt.Errorf("mission %d is already resolved", missionNum)
+		}
+		updater := tx.DailyMission.Update().Where(
+			dailymission.IDEQ(row.ID),
+			dailymission.StatusEQ(dailymission.StatusPending),
+		).SetMissionDate(date).
+			SetStatus(dailymission.StatusSkipped).
+			SetAdjustmentReason(dailymission.AdjustmentReason(reason)).
+			SetUpdatedAt(adjustedAt)
+		if replacementKey != "" {
+			updater.SetReplacementKey(replacementKey)
+		}
+		changed, updateErr := updater.Save(ctx)
+		if updateErr != nil {
+			return model.DailyMission{}, 0, updateErr
+		}
+		if changed != 1 {
+			return model.DailyMission{}, 0, fmt.Errorf("mission %d adjustment conflicted", missionNum)
+		}
+	}
+
+	rows, err := tx.DailyMission.Query().Where(
+		dailymission.UserID(userID),
+		dailymission.MissionDate(date),
+	).Order(ent.Asc(dailymission.FieldCreatedAt)).All(ctx)
+	if err != nil {
+		return model.DailyMission{}, 0, err
+	}
+	user, err := tx.User.Query().Where(entuser.IDEQ(userID)).Only(ctx)
+	if err != nil {
+		return model.DailyMission{}, 0, err
+	}
+	mission := missionFromRows(rows, userID, date)
+	if err = tx.Commit(); err != nil {
+		return model.DailyMission{}, 0, err
+	}
+	committed = true
+	return mission, user.ExperiencePoints, nil
+}
+
+func (r *Repository) adjustMissionInMemory(
+	userID, date string,
+	missionNum int,
+	action, reason string,
+	replacementNum int,
+) (model.DailyMission, int, error) {
+	now := time.Now().UTC()
+	r.store.Lock()
+	defer r.store.Unlock()
+
+	userIndex := -1
+	for index := range r.store.Users {
+		if r.store.Users[index].ID == userID {
+			userIndex = index
+			break
+		}
+	}
+	adjustment := model.MissionAdjustment{
+		OriginalNumber: missionNum, Action: action, Reason: reason,
+		ReplacementNumber: replacementNum, AdjustedAt: now,
+	}
+	for index := range r.store.Missions {
+		mission := &r.store.Missions[index]
+		if mission.UserID != userID || mission.Date != date {
+			continue
+		}
+		if missionCompleted(*mission, missionNum) {
+			return model.DailyMission{}, 0, fmt.Errorf("mission %d is already resolved", missionNum)
+		}
+		for _, existing := range mission.AdjustmentHistory {
+			if existing.OriginalNumber == missionNum {
+				return model.DailyMission{}, 0, fmt.Errorf("mission %d is already adjusted", missionNum)
+			}
+		}
+		mission.AdjustmentHistory = append(mission.AdjustmentHistory, adjustment)
+		mission.Adjustment = &mission.AdjustmentHistory[len(mission.AdjustmentHistory)-1]
+		mission.UpdatedAt = now
+		return toDailyMission(*mission), userExperienceFromStore(r.store, userIndex), nil
+	}
+
+	entry := store.DailyMission{
+		ID: "mis_" + uuid.NewString()[:8], UserID: userID, Date: date,
+		Adjustment: &adjustment, AdjustmentHistory: []model.MissionAdjustment{adjustment},
+		CreatedAt: now, UpdatedAt: now,
+	}
+	r.store.Missions = append(r.store.Missions, entry)
+	return toDailyMission(entry), userExperienceFromStore(r.store, userIndex), nil
 }
 
 func (r *Repository) UpsertMission(
@@ -245,6 +415,9 @@ func (r *Repository) upsertMissionDB(
 			}
 		}
 	} else {
+		if row.Status == dailymission.StatusSkipped {
+			return model.DailyMission{}, 0, fmt.Errorf("mission %d is already adjusted", missionNum)
+		}
 		desiredStatus := dailymission.StatusPending
 		if completed {
 			desiredStatus = dailymission.StatusCompleted
@@ -283,7 +456,7 @@ func (r *Repository) upsertMissionDB(
 	rows, err := tx.DailyMission.Query().Where(
 		dailymission.UserID(userID),
 		dailymission.MissionDate(date),
-	).All(ctx)
+	).Order(ent.Asc(dailymission.FieldCreatedAt)).All(ctx)
 	if err != nil {
 		return model.DailyMission{}, 0, err
 	}
@@ -377,6 +550,22 @@ func missionFromRows(rows []*ent.DailyMission, userID, date string) model.DailyM
 			mission.UpdatedAt = item.UpdatedAt
 		}
 		setMissionFlag(&mission, missionNumber(item.MissionKey), item.Status == dailymission.StatusCompleted)
+		if item.Status == dailymission.StatusSkipped && item.AdjustmentReason != nil {
+			adjustment := model.MissionAdjustment{
+				OriginalNumber: missionNumber(item.MissionKey),
+				Action:         "skip",
+				Reason:         string(*item.AdjustmentReason),
+				AdjustedAt:     item.UpdatedAt,
+			}
+			if item.ReplacementKey != nil {
+				adjustment.Action = "replace"
+				adjustment.ReplacementNumber = missionNumber(*item.ReplacementKey)
+			}
+			mission.AdjustmentHistory = append(mission.AdjustmentHistory, adjustment)
+		}
+	}
+	if len(mission.AdjustmentHistory) > 0 {
+		mission.Adjustment = &mission.AdjustmentHistory[len(mission.AdjustmentHistory)-1]
 	}
 	return mission
 }
@@ -419,10 +608,15 @@ func setMissionFlag(mission *model.DailyMission, number int, completed bool) {
 }
 
 func toDailyMission(mission store.DailyMission) model.DailyMission {
-	return model.DailyMission{
+	result := model.DailyMission{
 		ID: mission.ID, UserID: mission.UserID, Date: mission.Date,
 		Mission1: mission.Mission1, Mission2: mission.Mission2, Mission3: mission.Mission3,
 		Mission4: mission.Mission4, Mission5: mission.Mission5,
-		CreatedAt: mission.CreatedAt, UpdatedAt: mission.UpdatedAt,
+		AdjustmentHistory: append([]model.MissionAdjustment(nil), mission.AdjustmentHistory...),
+		CreatedAt:         mission.CreatedAt, UpdatedAt: mission.UpdatedAt,
 	}
+	if len(result.AdjustmentHistory) > 0 {
+		result.Adjustment = &result.AdjustmentHistory[len(result.AdjustmentHistory)-1]
+	}
+	return result
 }

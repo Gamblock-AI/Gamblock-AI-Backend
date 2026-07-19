@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -10,6 +11,11 @@ import (
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/authn"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
+)
+
+var (
+	ErrCurrentPasswordInvalid = errors.New("current password is invalid")
+	ErrPasswordReuse          = errors.New("new password must be different")
 )
 
 func (s *AuthService) Login(ctx context.Context, email, password string) (model.AuthResponse, error) {
@@ -90,10 +96,10 @@ func (s *AuthService) UpdatePassword(ctx context.Context, userID, currentPasswor
 	}
 	user, ok := s.repo.UserByID(ctx, userID)
 	if !ok || user.PasswordHash == "" || !authn.VerifyPassword(currentPassword, user.PasswordHash) {
-		return fmt.Errorf("current password is invalid")
+		return ErrCurrentPasswordInvalid
 	}
 	if authn.VerifyPassword(newPassword, user.PasswordHash) {
-		return fmt.Errorf("new password must be different")
+		return ErrPasswordReuse
 	}
 	passwordHash, err := authn.HashPassword(newPassword)
 	if err != nil {

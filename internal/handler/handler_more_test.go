@@ -40,6 +40,7 @@ func newFullRouter(t *testing.T, appEnv string) (*gin.Engine, string) {
 	v1.GET("/missions/today", mid.AuthRequired(), h.GetTodayMission)
 	v1.PATCH("/missions", mid.AuthRequired(), h.UpdateMission)
 	v1.POST("/missions/claim", mid.AuthRequired(), h.ClaimMission)
+	v1.POST("/missions/adjust", mid.AuthRequired(), h.AdjustMission)
 	v1.GET("/approval-requests", mid.AuthRequired(), h.GetApprovalRequests)
 	v1.POST("/approval-requests", mid.AuthRequired(), h.CreateApprovalRequest)
 	v1.POST("/organizations", mid.AuthRequired(), h.CreateOrganization)
@@ -123,6 +124,31 @@ func TestHandler_ClaimMission(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestHandler_AdjustMission(t *testing.T) {
+	r, token := newFullRouter(t, "development")
+	today := authedGet(r, "/v1/missions/today", token)
+	require.Equal(t, http.StatusOK, today.Code)
+	var missionEnvelope envelopeShape
+	require.NoError(t, json.Unmarshal(today.Body.Bytes(), &missionEnvelope))
+	data := missionEnvelope.Data.(map[string]any)
+	tasks := data["tasks"].([]any)
+	replacements := data["replacement_options"].([]any)
+	require.NotEmpty(t, replacements)
+	body, err := json.Marshal(map[string]any{
+		"mission_number":     int(tasks[0].(map[string]any)["number"].(float64)),
+		"action":             "replace",
+		"reason":             "not_a_good_fit",
+		"replacement_number": int(replacements[0].(float64)),
+	})
+	require.NoError(t, err)
+	req := httptest.NewRequest(http.MethodPost, "/v1/missions/adjust", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code, w.Body.String())
 }
 
 func verifiedMissionNumber(t *testing.T, tasks []any) int {

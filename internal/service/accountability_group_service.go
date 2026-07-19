@@ -200,6 +200,9 @@ func (s *AccountabilityGroupService) RequestLeave(ctx context.Context, studentID
 	if kind != "normal" && kind != "unsafe" {
 		return model.MembershipExitRequest{}, fmt.Errorf("leave kind must be normal or unsafe")
 	}
+	if kind == "normal" && membership.Status != "active" {
+		return model.MembershipExitRequest{}, fmt.Errorf("a normal exit request is already pending")
+	}
 	reason = strings.TrimSpace(reason)
 	if len(reason) > 500 {
 		return model.MembershipExitRequest{}, fmt.Errorf("leave reason is too long")
@@ -220,6 +223,9 @@ func (s *AccountabilityGroupService) RequestLeave(ctx context.Context, studentID
 		if err := s.repo.CancelPendingApprovalsForMembership(ctx, membership.ID, studentID); err != nil {
 			return model.MembershipExitRequest{}, err
 		}
+		if err := s.repo.CancelPendingNormalExitRequestsForMembership(ctx, membership.ID, studentID); err != nil {
+			return model.MembershipExitRequest{}, err
+		}
 	} else {
 		due := now.Add(72 * time.Hour)
 		request.ReviewDueAt = &due
@@ -232,6 +238,10 @@ func (s *AccountabilityGroupService) RequestLeave(ctx context.Context, studentID
 
 func (s *AccountabilityGroupService) ResolveLeave(ctx context.Context, partnerID, requestID, decision string) error {
 	return s.repo.ResolveMembershipExitRequest(ctx, requestID, partnerID, decision)
+}
+
+func (s *AccountabilityGroupService) CancelLeave(ctx context.Context, studentID, requestID string) error {
+	return s.repo.CancelMembershipExitRequest(ctx, requestID, studentID)
 }
 
 func (s *AccountabilityGroupService) RemoveMember(ctx context.Context, partnerID, membershipID, reason string) error {

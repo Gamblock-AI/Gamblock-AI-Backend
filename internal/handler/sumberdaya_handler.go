@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -169,7 +171,15 @@ func (h *Handler) CreateDataRequest(c *gin.Context) {
 
 	item, previewURL, err := h.services.Support.CreateDataRequestWithResult(c.Request.Context(), h.currentUserID(c), input.Type)
 	if err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "data_request_failed", err)
+		status := http.StatusInternalServerError
+		if errors.Is(err, service.ErrDataRequestInvalid) {
+			status = http.StatusBadRequest
+		} else if errors.Is(err, service.ErrDataRequestConflict) {
+			status = http.StatusConflict
+		} else if errors.Is(err, service.ErrDataRequestForbidden) {
+			status = http.StatusForbidden
+		}
+		h.respondErrorErr(c, status, "data_request_failed", err)
 		return
 	}
 	h.respond(c, http.StatusCreated, gin.H{"request": item, "confirmation_preview_url": previewURL})

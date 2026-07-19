@@ -70,8 +70,8 @@ func TestLoginError_ProductionFriendlyNoLeak(t *testing.T) {
 	assert.NotEmpty(t, env.RequestID)
 }
 
-// Development env gate: error response includes technical detail for debugging.
-func TestLoginError_DevelopmentTechnical(t *testing.T) {
+// Development responses are as safe as production; technical details stay in logs.
+func TestLoginError_DevelopmentFriendlyNoLeak(t *testing.T) {
 	r, _ := newTestRouter(t, "development")
 	body := []byte(`{"email":"nobody@nowhere.xyz","password":"wrong"}`)
 	req := httptest.NewRequest(http.MethodPost, "/v1/auth/login", bytes.NewReader(body))
@@ -82,8 +82,9 @@ func TestLoginError_DevelopmentTechnical(t *testing.T) {
 	require.Equal(t, http.StatusUnauthorized, w.Code)
 	var env envelopeShape
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &env))
-	assert.Contains(t, env.Error.Message, "user not found", "dev must surface technical detail")
-	assert.Contains(t, env.Error.Message, "invalid_credentials")
+	assert.Equal(t, "invalid_credentials", env.Error.Code)
+	assert.Equal(t, "Email atau kata sandi salah. Silakan periksa kembali.", env.Error.Message)
+	assert.NotContains(t, env.Error.Message, "user not found")
 }
 
 // Validation path uses respondCode -> friendly catalog message in production.

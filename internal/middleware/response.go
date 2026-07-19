@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/i18n"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -16,12 +17,12 @@ type apiError struct {
 	Message string `json:"message"`
 }
 
-func (m *Middleware) respondError(c *gin.Context, status int, code, message string) {
+func (m *Middleware) respondError(c *gin.Context, status int, code string) {
 	requestID := uuid.NewString()
 	if value, ok := c.Get("request_id"); ok {
 		if id, ok := value.(string); ok {
 			requestID = id
 		}
 	}
-	c.JSON(status, envelope{Data: nil, Error: &apiError{Code: code, Message: message}, RequestID: requestID})
+	c.JSON(status, envelope{Data: nil, Error: &apiError{Code: code, Message: i18n.Friendly(code)}, RequestID: requestID})
 }

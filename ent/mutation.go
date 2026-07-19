@@ -6767,22 +6767,24 @@ func (m *ContentProgressMutation) ResetEdge(name string) error {
 // DailyMissionMutation represents an operation that mutates the DailyMission nodes in the graph.
 type DailyMissionMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *string
-	user_id       *string
-	mission_date  *string
-	mission_key   *string
-	status        *dailymission.Status
-	exp_reward    *int
-	addexp_reward *int
-	completed_at  *time.Time
-	created_at    *time.Time
-	updated_at    *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*DailyMission, error)
-	predicates    []predicate.DailyMission
+	op                Op
+	typ               string
+	id                *string
+	user_id           *string
+	mission_date      *string
+	mission_key       *string
+	status            *dailymission.Status
+	adjustment_reason *dailymission.AdjustmentReason
+	replacement_key   *string
+	exp_reward        *int
+	addexp_reward     *int
+	completed_at      *time.Time
+	created_at        *time.Time
+	updated_at        *time.Time
+	clearedFields     map[string]struct{}
+	done              bool
+	oldValue          func(context.Context) (*DailyMission, error)
+	predicates        []predicate.DailyMission
 }
 
 var _ ent.Mutation = (*DailyMissionMutation)(nil)
@@ -7046,6 +7048,104 @@ func (m *DailyMissionMutation) ResetStatus() {
 	m.status = nil
 }
 
+// SetAdjustmentReason sets the "adjustment_reason" field.
+func (m *DailyMissionMutation) SetAdjustmentReason(dr dailymission.AdjustmentReason) {
+	m.adjustment_reason = &dr
+}
+
+// AdjustmentReason returns the value of the "adjustment_reason" field in the mutation.
+func (m *DailyMissionMutation) AdjustmentReason() (r dailymission.AdjustmentReason, exists bool) {
+	v := m.adjustment_reason
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAdjustmentReason returns the old "adjustment_reason" field's value of the DailyMission entity.
+// If the DailyMission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyMissionMutation) OldAdjustmentReason(ctx context.Context) (v *dailymission.AdjustmentReason, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAdjustmentReason is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAdjustmentReason requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAdjustmentReason: %w", err)
+	}
+	return oldValue.AdjustmentReason, nil
+}
+
+// ClearAdjustmentReason clears the value of the "adjustment_reason" field.
+func (m *DailyMissionMutation) ClearAdjustmentReason() {
+	m.adjustment_reason = nil
+	m.clearedFields[dailymission.FieldAdjustmentReason] = struct{}{}
+}
+
+// AdjustmentReasonCleared returns if the "adjustment_reason" field was cleared in this mutation.
+func (m *DailyMissionMutation) AdjustmentReasonCleared() bool {
+	_, ok := m.clearedFields[dailymission.FieldAdjustmentReason]
+	return ok
+}
+
+// ResetAdjustmentReason resets all changes to the "adjustment_reason" field.
+func (m *DailyMissionMutation) ResetAdjustmentReason() {
+	m.adjustment_reason = nil
+	delete(m.clearedFields, dailymission.FieldAdjustmentReason)
+}
+
+// SetReplacementKey sets the "replacement_key" field.
+func (m *DailyMissionMutation) SetReplacementKey(s string) {
+	m.replacement_key = &s
+}
+
+// ReplacementKey returns the value of the "replacement_key" field in the mutation.
+func (m *DailyMissionMutation) ReplacementKey() (r string, exists bool) {
+	v := m.replacement_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReplacementKey returns the old "replacement_key" field's value of the DailyMission entity.
+// If the DailyMission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyMissionMutation) OldReplacementKey(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReplacementKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReplacementKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReplacementKey: %w", err)
+	}
+	return oldValue.ReplacementKey, nil
+}
+
+// ClearReplacementKey clears the value of the "replacement_key" field.
+func (m *DailyMissionMutation) ClearReplacementKey() {
+	m.replacement_key = nil
+	m.clearedFields[dailymission.FieldReplacementKey] = struct{}{}
+}
+
+// ReplacementKeyCleared returns if the "replacement_key" field was cleared in this mutation.
+func (m *DailyMissionMutation) ReplacementKeyCleared() bool {
+	_, ok := m.clearedFields[dailymission.FieldReplacementKey]
+	return ok
+}
+
+// ResetReplacementKey resets all changes to the "replacement_key" field.
+func (m *DailyMissionMutation) ResetReplacementKey() {
+	m.replacement_key = nil
+	delete(m.clearedFields, dailymission.FieldReplacementKey)
+}
+
 // SetExpReward sets the "exp_reward" field.
 func (m *DailyMissionMutation) SetExpReward(i int) {
 	m.exp_reward = &i
@@ -7257,7 +7357,7 @@ func (m *DailyMissionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DailyMissionMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 10)
 	if m.user_id != nil {
 		fields = append(fields, dailymission.FieldUserID)
 	}
@@ -7269,6 +7369,12 @@ func (m *DailyMissionMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, dailymission.FieldStatus)
+	}
+	if m.adjustment_reason != nil {
+		fields = append(fields, dailymission.FieldAdjustmentReason)
+	}
+	if m.replacement_key != nil {
+		fields = append(fields, dailymission.FieldReplacementKey)
 	}
 	if m.exp_reward != nil {
 		fields = append(fields, dailymission.FieldExpReward)
@@ -7298,6 +7404,10 @@ func (m *DailyMissionMutation) Field(name string) (ent.Value, bool) {
 		return m.MissionKey()
 	case dailymission.FieldStatus:
 		return m.Status()
+	case dailymission.FieldAdjustmentReason:
+		return m.AdjustmentReason()
+	case dailymission.FieldReplacementKey:
+		return m.ReplacementKey()
 	case dailymission.FieldExpReward:
 		return m.ExpReward()
 	case dailymission.FieldCompletedAt:
@@ -7323,6 +7433,10 @@ func (m *DailyMissionMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldMissionKey(ctx)
 	case dailymission.FieldStatus:
 		return m.OldStatus(ctx)
+	case dailymission.FieldAdjustmentReason:
+		return m.OldAdjustmentReason(ctx)
+	case dailymission.FieldReplacementKey:
+		return m.OldReplacementKey(ctx)
 	case dailymission.FieldExpReward:
 		return m.OldExpReward(ctx)
 	case dailymission.FieldCompletedAt:
@@ -7367,6 +7481,20 @@ func (m *DailyMissionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
+		return nil
+	case dailymission.FieldAdjustmentReason:
+		v, ok := value.(dailymission.AdjustmentReason)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAdjustmentReason(v)
+		return nil
+	case dailymission.FieldReplacementKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReplacementKey(v)
 		return nil
 	case dailymission.FieldExpReward:
 		v, ok := value.(int)
@@ -7444,6 +7572,12 @@ func (m *DailyMissionMutation) ClearedFields() []string {
 	if m.FieldCleared(dailymission.FieldMissionDate) {
 		fields = append(fields, dailymission.FieldMissionDate)
 	}
+	if m.FieldCleared(dailymission.FieldAdjustmentReason) {
+		fields = append(fields, dailymission.FieldAdjustmentReason)
+	}
+	if m.FieldCleared(dailymission.FieldReplacementKey) {
+		fields = append(fields, dailymission.FieldReplacementKey)
+	}
 	if m.FieldCleared(dailymission.FieldCompletedAt) {
 		fields = append(fields, dailymission.FieldCompletedAt)
 	}
@@ -7463,6 +7597,12 @@ func (m *DailyMissionMutation) ClearField(name string) error {
 	switch name {
 	case dailymission.FieldMissionDate:
 		m.ClearMissionDate()
+		return nil
+	case dailymission.FieldAdjustmentReason:
+		m.ClearAdjustmentReason()
+		return nil
+	case dailymission.FieldReplacementKey:
+		m.ClearReplacementKey()
 		return nil
 	case dailymission.FieldCompletedAt:
 		m.ClearCompletedAt()
@@ -7486,6 +7626,12 @@ func (m *DailyMissionMutation) ResetField(name string) error {
 		return nil
 	case dailymission.FieldStatus:
 		m.ResetStatus()
+		return nil
+	case dailymission.FieldAdjustmentReason:
+		m.ResetAdjustmentReason()
+		return nil
+	case dailymission.FieldReplacementKey:
+		m.ResetReplacementKey()
 		return nil
 	case dailymission.FieldExpReward:
 		m.ResetExpReward()

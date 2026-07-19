@@ -173,6 +173,8 @@ var (
 		{Name: "mission_date", Type: field.TypeString, Nullable: true},
 		{Name: "mission_key", Type: field.TypeString},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"completed", "skipped", "pending"}, Default: "pending"},
+		{Name: "adjustment_reason", Type: field.TypeEnum, Nullable: true, Enums: []string{"not_enough_time", "not_a_good_fit", "need_lower_effort", "accessibility_need", "prefer_not_to_say"}},
+		{Name: "replacement_key", Type: field.TypeString, Nullable: true},
 		{Name: "exp_reward", Type: field.TypeInt, Default: 0},
 		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},

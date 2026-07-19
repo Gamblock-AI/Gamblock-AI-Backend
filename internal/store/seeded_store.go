@@ -46,7 +46,7 @@ func NewSeeded() *Store {
 			{ID: "CASE-1084", UserID: "usr_dery", Title: "Partner approval issue", Type: "stuck_approval", Status: "waiting_support", Priority: "high", Owner: "Suci", CreatedAt: now, UpdatedAt: now},
 		},
 		DataRequests: []DataRequest{
-			{ID: "DR-1042", UserID: "usr_gading", Title: "Export account data", Type: "export", Status: "completed", CreatedAt: now, UpdatedAt: now},
+			{ID: "DR-1042", UserID: "usr_gading", Title: "Export account data", Type: "export", Status: "completed", FailureCode: "result_unavailable", CreatedAt: now, UpdatedAt: now},
 			{ID: "DR-1035", UserID: "usr_dery", Title: "Delete archived support notes", Type: "delete", Status: "processing", CreatedAt: now, UpdatedAt: now},
 		},
 		Organizations:   []Organization{{ID: "org_community", Name: "Gamblock Community Pilot", Slug: "community-pilot", Status: "active", Members: 128, CreatedAt: now, UpdatedAt: now}},

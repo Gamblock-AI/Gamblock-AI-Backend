@@ -104,6 +104,44 @@ func TestMission_GetTodayEmptyThenUpdate(t *testing.T) {
 	require.ErrorIs(t, err, ErrMissionNotClaimable)
 }
 
+func TestMission_AdjustPrimaryOnceThenSkipReplacement(t *testing.T) {
+	repo, _ := newRepo(t)
+	svc := NewMissionService(repo, zap.NewNop())
+	ctx := context.Background()
+
+	today, err := svc.GetToday(ctx, "usr_dery")
+	require.NoError(t, err)
+	require.Len(t, today.Tasks, 3)
+	require.Len(t, today.ReplacementOptions, 2)
+	primary := today.Tasks[0].Number
+	replacement := today.ReplacementOptions[0]
+
+	replaced, err := svc.AdjustMission(
+		ctx, "usr_dery", primary, "replace", "not_a_good_fit", replacement,
+	)
+	require.NoError(t, err)
+	assert.Equal(t, replacement, replaced.Tasks[0].Number)
+	assert.Equal(t, primary, replaced.Tasks[0].ReplacedFrom)
+	assert.Empty(t, replaced.ReplacementOptions)
+	assert.Equal(t, 0, replaced.Experience.TotalEXP)
+
+	_, err = svc.AdjustMission(
+		ctx, "usr_dery", replacement, "replace", "not_a_good_fit", primary,
+	)
+	require.ErrorIs(t, err, ErrMissionAdjustment)
+
+	skipped, err := svc.AdjustMission(
+		ctx, "usr_dery", replacement, "skip", "not_enough_time", 0,
+	)
+	require.NoError(t, err)
+	assert.Equal(t, "skipped", skipped.Tasks[0].Status)
+	assert.Equal(t, 1, skipped.ResolvedCount)
+	assert.Equal(t, 0, skipped.Experience.TotalEXP)
+
+	_, err = svc.ClaimMission(ctx, "usr_dery", replacement)
+	require.Error(t, err)
+}
+
 // --- OrganizationService ---
 
 func TestOrganization_CreateAndJoinByCode(t *testing.T) {
@@ -221,7 +259,7 @@ func TestSupport_CreateSupportCaseAndDataRequest(t *testing.T) {
 	err := svc.CreateSupportCase(ctx, "usr_gading", "tidak bisa login", "device_recovery", "normal")
 	assert.NoError(t, err)
 
-	err = svc.CreateDataRequest(ctx, "usr_gading", "export")
+	err = svc.CreateDataRequest(ctx, "usr_gading", "retention_review")
 	assert.NoError(t, err)
 
 	cases, err := svc.GetSupportCases(ctx)

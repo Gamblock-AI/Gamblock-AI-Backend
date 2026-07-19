@@ -57,3 +57,32 @@ func (h *Handler) ClaimMission(c *gin.Context) {
 	}
 	h.respond(c, http.StatusOK, mission)
 }
+
+type adjustMissionInput struct {
+	MissionNumber     int    `json:"mission_number" binding:"required"`
+	Action            string `json:"action" binding:"required"`
+	Reason            string `json:"reason" binding:"required"`
+	ReplacementNumber int    `json:"replacement_number"`
+}
+
+func (h *Handler) AdjustMission(c *gin.Context) {
+	var input adjustMissionInput
+	if err := c.ShouldBindJSON(&input); err != nil || input.MissionNumber < 1 || input.MissionNumber > 5 {
+		h.respondCode(c, http.StatusBadRequest, "invalid_mission")
+		return
+	}
+
+	mission, err := h.services.Mission.AdjustMission(
+		c.Request.Context(),
+		h.currentUserID(c),
+		input.MissionNumber,
+		input.Action,
+		input.Reason,
+		input.ReplacementNumber,
+	)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusConflict, "mission_adjust_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, mission)
+}

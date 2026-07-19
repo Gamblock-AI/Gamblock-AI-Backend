@@ -79,6 +79,11 @@ func MissionKey(v string) predicate.DailyMission {
 	return predicate.DailyMission(sql.FieldEQ(FieldMissionKey, v))
 }
 
+// ReplacementKey applies equality check predicate on the "replacement_key" field. It's identical to ReplacementKeyEQ.
+func ReplacementKey(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEQ(FieldReplacementKey, v))
+}
+
 // ExpReward applies equality check predicate on the "exp_reward" field. It's identical to ExpRewardEQ.
 func ExpReward(v int) predicate.DailyMission {
 	return predicate.DailyMission(sql.FieldEQ(FieldExpReward, v))
@@ -322,6 +327,111 @@ func StatusIn(vs ...Status) predicate.DailyMission {
 // StatusNotIn applies the NotIn predicate on the "status" field.
 func StatusNotIn(vs ...Status) predicate.DailyMission {
 	return predicate.DailyMission(sql.FieldNotIn(FieldStatus, vs...))
+}
+
+// AdjustmentReasonEQ applies the EQ predicate on the "adjustment_reason" field.
+func AdjustmentReasonEQ(v AdjustmentReason) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEQ(FieldAdjustmentReason, v))
+}
+
+// AdjustmentReasonNEQ applies the NEQ predicate on the "adjustment_reason" field.
+func AdjustmentReasonNEQ(v AdjustmentReason) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNEQ(FieldAdjustmentReason, v))
+}
+
+// AdjustmentReasonIn applies the In predicate on the "adjustment_reason" field.
+func AdjustmentReasonIn(vs ...AdjustmentReason) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldIn(FieldAdjustmentReason, vs...))
+}
+
+// AdjustmentReasonNotIn applies the NotIn predicate on the "adjustment_reason" field.
+func AdjustmentReasonNotIn(vs ...AdjustmentReason) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNotIn(FieldAdjustmentReason, vs...))
+}
+
+// AdjustmentReasonIsNil applies the IsNil predicate on the "adjustment_reason" field.
+func AdjustmentReasonIsNil() predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldIsNull(FieldAdjustmentReason))
+}
+
+// AdjustmentReasonNotNil applies the NotNil predicate on the "adjustment_reason" field.
+func AdjustmentReasonNotNil() predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNotNull(FieldAdjustmentReason))
+}
+
+// ReplacementKeyEQ applies the EQ predicate on the "replacement_key" field.
+func ReplacementKeyEQ(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEQ(FieldReplacementKey, v))
+}
+
+// ReplacementKeyNEQ applies the NEQ predicate on the "replacement_key" field.
+func ReplacementKeyNEQ(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNEQ(FieldReplacementKey, v))
+}
+
+// ReplacementKeyIn applies the In predicate on the "replacement_key" field.
+func ReplacementKeyIn(vs ...string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldIn(FieldReplacementKey, vs...))
+}
+
+// ReplacementKeyNotIn applies the NotIn predicate on the "replacement_key" field.
+func ReplacementKeyNotIn(vs ...string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNotIn(FieldReplacementKey, vs...))
+}
+
+// ReplacementKeyGT applies the GT predicate on the "replacement_key" field.
+func ReplacementKeyGT(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldGT(FieldReplacementKey, v))
+}
+
+// ReplacementKeyGTE applies the GTE predicate on the "replacement_key" field.
+func ReplacementKeyGTE(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldGTE(FieldReplacementKey, v))
+}
+
+// ReplacementKeyLT applies the LT predicate on the "replacement_key" field.
+func ReplacementKeyLT(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldLT(FieldReplacementKey, v))
+}
+
+// ReplacementKeyLTE applies the LTE predicate on the "replacement_key" field.
+func ReplacementKeyLTE(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldLTE(FieldReplacementKey, v))
+}
+
+// ReplacementKeyContains applies the Contains predicate on the "replacement_key" field.
+func ReplacementKeyContains(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldContains(FieldReplacementKey, v))
+}
+
+// ReplacementKeyHasPrefix applies the HasPrefix predicate on the "replacement_key" field.
+func ReplacementKeyHasPrefix(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldHasPrefix(FieldReplacementKey, v))
+}
+
+// ReplacementKeyHasSuffix applies the HasSuffix predicate on the "replacement_key" field.
+func ReplacementKeyHasSuffix(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldHasSuffix(FieldReplacementKey, v))
+}
+
+// ReplacementKeyIsNil applies the IsNil predicate on the "replacement_key" field.
+func ReplacementKeyIsNil() predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldIsNull(FieldReplacementKey))
+}
+
+// ReplacementKeyNotNil applies the NotNil predicate on the "replacement_key" field.
+func ReplacementKeyNotNil() predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNotNull(FieldReplacementKey))
+}
+
+// ReplacementKeyEqualFold applies the EqualFold predicate on the "replacement_key" field.
+func ReplacementKeyEqualFold(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEqualFold(FieldReplacementKey, v))
+}
+
+// ReplacementKeyContainsFold applies the ContainsFold predicate on the "replacement_key" field.
+func ReplacementKeyContainsFold(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldContainsFold(FieldReplacementKey, v))
 }
 
 // ExpRewardEQ applies the EQ predicate on the "exp_reward" field.

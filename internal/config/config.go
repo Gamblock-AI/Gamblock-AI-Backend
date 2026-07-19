@@ -39,6 +39,10 @@ type Config struct {
 }
 
 func (c Config) Validate() error {
+	key, err := hex.DecodeString(c.JournalEncryptionKey)
+	if err != nil || len(key) != 32 {
+		return fmt.Errorf("JOURNAL_ENCRYPTION_KEY must be a 64-character AES-256 hex key")
+	}
 	if !c.IsProduction() {
 		return nil
 	}
@@ -47,10 +51,6 @@ func (c Config) Validate() error {
 	}
 	if len(c.JWTAccessSecret) < 32 || c.JWTAccessSecret == "dev-only-change-me" {
 		return fmt.Errorf("JWT_ACCESS_SECRET must be a production secret of at least 32 characters")
-	}
-	key, err := hex.DecodeString(c.JournalEncryptionKey)
-	if err != nil || len(key) != 32 {
-		return fmt.Errorf("JOURNAL_ENCRYPTION_KEY must be a 64-character AES-256 hex key")
 	}
 	if c.EnableDevLogin || c.EnableDemoData {
 		return fmt.Errorf("development login and demo data must be disabled in production")

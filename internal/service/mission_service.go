@@ -16,6 +16,15 @@ const experiencePerLevel = 100
 
 var jakartaLocation = time.FixedZone("Asia/Jakarta", 7*60*60)
 var ErrMissionNotClaimable = errors.New("mission requirements are not verified")
+var ErrMissionAdjustment = errors.New("mission cannot be adjusted")
+
+var missionAdjustmentReasons = map[string]struct{}{
+	"not_enough_time":    {},
+	"not_a_good_fit":     {},
+	"need_lower_effort":  {},
+	"accessibility_need": {},
+	"prefer_not_to_say":  {},
+}
 
 type MissionService struct {
 	repo   *repository.Repository
@@ -33,7 +42,8 @@ func (s *MissionService) GetToday(ctx context.Context, userID string) (model.Dai
 	if err != nil {
 		return model.DailyMission{}, err
 	}
-	eligibility, err := s.missionEligibility(ctx, userID, assignedMissions(now), dayStartUTC, dayEndUTC)
+	assigned, _, _, _ := effectiveMissionState(mission, now)
+	eligibility, err := s.missionEligibility(ctx, userID, assigned, dayStartUTC, dayEndUTC)
 	if err != nil {
 		return model.DailyMission{}, err
 	}
@@ -58,14 +68,14 @@ func (s *MissionService) ClaimMission(
 	missionNum int,
 ) (model.DailyMission, error) {
 	now := time.Now().In(jakartaLocation)
-	assigned := assignedMissions(now)
-	if !isAssignedMission(missionNum, assigned) {
-		return model.DailyMission{}, fmt.Errorf("mission %d is not assigned today", missionNum)
-	}
 	date, dayStartUTC, dayEndUTC := jakartaDay(now)
 	current, points, err := s.repo.GetMissionByDate(ctx, userID, date, dayStartUTC, dayEndUTC)
 	if err != nil {
 		return model.DailyMission{}, err
+	}
+	assigned, skipped, _, _ := effectiveMissionState(current, now)
+	if !isAssignedMission(missionNum, assigned) || skipped[missionNum] {
+		return model.DailyMission{}, fmt.Errorf("mission %d is not assigned or already skipped today", missionNum)
 	}
 	eligibility, err := s.missionEligibility(ctx, userID, assigned, dayStartUTC, dayEndUTC)
 	if err != nil {
@@ -87,6 +97,57 @@ func (s *MissionService) ClaimMission(
 		true,
 		missionReward(missionNum),
 	)
+	if err != nil {
+		return model.DailyMission{}, err
+	}
+	return decorateDailyMission(mission, points, now, eligibility), nil
+}
+
+func (s *MissionService) AdjustMission(
+	ctx context.Context,
+	userID string,
+	missionNum int,
+	action, reason string,
+	replacementNum int,
+) (model.DailyMission, error) {
+	if action != "skip" && action != "replace" {
+		return model.DailyMission{}, fmt.Errorf("%w: unsupported action", ErrMissionAdjustment)
+	}
+	if _, valid := missionAdjustmentReasons[reason]; !valid {
+		return model.DailyMission{}, fmt.Errorf("%w: unsupported reason", ErrMissionAdjustment)
+	}
+
+	now := time.Now().In(jakartaLocation)
+	date, dayStartUTC, dayEndUTC := jakartaDay(now)
+	current, _, err := s.repo.GetMissionByDate(ctx, userID, date, dayStartUTC, dayEndUTC)
+	if err != nil {
+		return model.DailyMission{}, err
+	}
+	assigned, skipped, _, replacementUsed := effectiveMissionState(current, now)
+	primary := assigned[0]
+	if missionNum != primary || missionFlag(current, primary) || skipped[primary] {
+		return model.DailyMission{}, fmt.Errorf("%w: only the unresolved primary mission can be adjusted", ErrMissionAdjustment)
+	}
+	if action == "replace" {
+		if replacementUsed {
+			return model.DailyMission{}, fmt.Errorf("%w: today's replacement was already used", ErrMissionAdjustment)
+		}
+		if !containsMission(replacementOptions(assigned), replacementNum) {
+			return model.DailyMission{}, fmt.Errorf("%w: invalid replacement", ErrMissionAdjustment)
+		}
+	} else if replacementNum != 0 {
+		return model.DailyMission{}, fmt.Errorf("%w: skip cannot include a replacement", ErrMissionAdjustment)
+	}
+
+	mission, points, err := s.repo.AdjustMission(
+		ctx, userID, date, dayStartUTC, dayEndUTC,
+		missionNum, action, reason, replacementNum,
+	)
+	if err != nil {
+		return model.DailyMission{}, err
+	}
+	effective, _, _, _ := effectiveMissionState(mission, now)
+	eligibility, err := s.missionEligibility(ctx, userID, effective, dayStartUTC, dayEndUTC)
 	if err != nil {
 		return model.DailyMission{}, err
 	}
@@ -139,6 +200,50 @@ func isAssignedMission(number int, assigned [3]int) bool {
 	return false
 }
 
+func containsMission(missions []int, number int) bool {
+	for _, candidate := range missions {
+		if candidate == number {
+			return true
+		}
+	}
+	return false
+}
+
+func replacementOptions(assigned [3]int) []int {
+	options := make([]int, 0, 2)
+	for number := 1; number <= 5; number++ {
+		if !isAssignedMission(number, assigned) {
+			options = append(options, number)
+		}
+	}
+	return options
+}
+
+func effectiveMissionState(
+	mission model.DailyMission,
+	now time.Time,
+) ([3]int, map[int]bool, map[int]int, bool) {
+	assigned := assignedMissions(now)
+	skipped := make(map[int]bool)
+	replacedFrom := make(map[int]int)
+	replacementUsed := false
+	for _, adjustment := range mission.AdjustmentHistory {
+		switch adjustment.Action {
+		case "replace":
+			if assigned[0] == adjustment.OriginalNumber && adjustment.ReplacementNumber > 0 {
+				assigned[0] = adjustment.ReplacementNumber
+				replacedFrom[adjustment.ReplacementNumber] = adjustment.OriginalNumber
+				replacementUsed = true
+			}
+		case "skip":
+			if assigned[0] == adjustment.OriginalNumber {
+				skipped[adjustment.OriginalNumber] = true
+			}
+		}
+	}
+	return assigned, skipped, replacedFrom, replacementUsed
+}
+
 func missionReward(number int) int {
 	switch number {
 	case 3:
@@ -156,9 +261,10 @@ func decorateDailyMission(
 	now time.Time,
 	eligibility map[int]bool,
 ) model.DailyMission {
-	assigned := assignedMissions(now)
+	assigned, skipped, replacedFrom, replacementUsed := effectiveMissionState(mission, now)
 	mission.Tasks = make([]model.DailyMissionTask, 0, len(assigned))
 	mission.CompletedCount = 0
+	mission.ResolvedCount = 0
 	mission.TotalCount = len(assigned)
 	for index, number := range assigned {
 		role := "bonus"
@@ -166,11 +272,16 @@ func decorateDailyMission(
 			role = "primary"
 		}
 		completed := missionFlag(mission, number)
-		claimable := eligibility[number] && !completed
+		isSkipped := skipped[number]
+		claimable := eligibility[number] && !completed && !isSkipped
 		status := "locked"
 		if completed {
 			mission.CompletedCount++
+			mission.ResolvedCount++
 			status = "claimed"
+		} else if isSkipped {
+			mission.ResolvedCount++
+			status = "skipped"
 		} else if claimable {
 			status = "claimable"
 		}
@@ -183,7 +294,16 @@ func decorateDailyMission(
 			Status:          status,
 			VerificationKey: missionVerificationKey(number),
 			EXPReward:       missionReward(number),
+			ReplacedFrom:    replacedFrom[number],
 		})
+	}
+	mission.ReplacementOptions = nil
+	if !replacementUsed && !missionFlag(mission, assigned[0]) && !skipped[assigned[0]] {
+		mission.ReplacementOptions = replacementOptions(assigned)
+	}
+	if len(mission.AdjustmentHistory) > 0 {
+		latest := mission.AdjustmentHistory[len(mission.AdjustmentHistory)-1]
+		mission.Adjustment = &latest
 	}
 	mission.Experience = experienceProgress(points)
 	return mission

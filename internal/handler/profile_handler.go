@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
-	"strings"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,7 +15,10 @@ func (h *Handler) GetProfile(c *gin.Context) {
 		h.respondErrorErr(c, http.StatusNotFound, "profile_not_found", err)
 		return
 	}
-	h.respond(c, http.StatusOK, user)
+	h.respond(c, http.StatusOK, struct {
+		model.User
+		PasswordEnabled bool `json:"password_enabled"`
+	}{User: user, PasswordEnabled: user.PasswordHash != ""})
 }
 
 func (h *Handler) UploadAvatar(c *gin.Context) {
@@ -83,9 +88,9 @@ func (h *Handler) UpdatePassword(c *gin.Context) {
 	}
 	if err := h.services.Auth.UpdatePassword(c.Request.Context(), h.currentUserID(c), input.CurrentPassword, input.NewPassword); err != nil {
 		code := "password_update_failed"
-		if strings.Contains(err.Error(), "current password") {
+		if errors.Is(err, service.ErrCurrentPasswordInvalid) {
 			code = "current_password_invalid"
-		} else if strings.Contains(err.Error(), "different") {
+		} else if errors.Is(err, service.ErrPasswordReuse) {
 			code = "password_reuse_not_allowed"
 		}
 		h.respondErrorErr(c, http.StatusBadRequest, code, err)

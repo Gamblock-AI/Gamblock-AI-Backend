@@ -90,6 +90,46 @@ func (_u *DailyMissionUpdate) SetNillableStatus(v *dailymission.Status) *DailyMi
 	return _u
 }
 
+// SetAdjustmentReason sets the "adjustment_reason" field.
+func (_u *DailyMissionUpdate) SetAdjustmentReason(v dailymission.AdjustmentReason) *DailyMissionUpdate {
+	_u.mutation.SetAdjustmentReason(v)
+	return _u
+}
+
+// SetNillableAdjustmentReason sets the "adjustment_reason" field if the given value is not nil.
+func (_u *DailyMissionUpdate) SetNillableAdjustmentReason(v *dailymission.AdjustmentReason) *DailyMissionUpdate {
+	if v != nil {
+		_u.SetAdjustmentReason(*v)
+	}
+	return _u
+}
+
+// ClearAdjustmentReason clears the value of the "adjustment_reason" field.
+func (_u *DailyMissionUpdate) ClearAdjustmentReason() *DailyMissionUpdate {
+	_u.mutation.ClearAdjustmentReason()
+	return _u
+}
+
+// SetReplacementKey sets the "replacement_key" field.
+func (_u *DailyMissionUpdate) SetReplacementKey(v string) *DailyMissionUpdate {
+	_u.mutation.SetReplacementKey(v)
+	return _u
+}
+
+// SetNillableReplacementKey sets the "replacement_key" field if the given value is not nil.
+func (_u *DailyMissionUpdate) SetNillableReplacementKey(v *string) *DailyMissionUpdate {
+	if v != nil {
+		_u.SetReplacementKey(*v)
+	}
+	return _u
+}
+
+// ClearReplacementKey clears the value of the "replacement_key" field.
+func (_u *DailyMissionUpdate) ClearReplacementKey() *DailyMissionUpdate {
+	_u.mutation.ClearReplacementKey()
+	return _u
+}
+
 // SetExpReward sets the "exp_reward" field.
 func (_u *DailyMissionUpdate) SetExpReward(v int) *DailyMissionUpdate {
 	_u.mutation.ResetExpReward()
@@ -185,6 +225,11 @@ func (_u *DailyMissionUpdate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "DailyMission.status": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.AdjustmentReason(); ok {
+		if err := dailymission.AdjustmentReasonValidator(v); err != nil {
+			return &ValidationError{Name: "adjustment_reason", err: fmt.Errorf(`ent: validator failed for field "DailyMission.adjustment_reason": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.ExpReward(); ok {
 		if err := dailymission.ExpRewardValidator(v); err != nil {
 			return &ValidationError{Name: "exp_reward", err: fmt.Errorf(`ent: validator failed for field "DailyMission.exp_reward": %w`, err)}
@@ -219,6 +264,18 @@ func (_u *DailyMissionUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(dailymission.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.AdjustmentReason(); ok {
+		_spec.SetField(dailymission.FieldAdjustmentReason, field.TypeEnum, value)
+	}
+	if _u.mutation.AdjustmentReasonCleared() {
+		_spec.ClearField(dailymission.FieldAdjustmentReason, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.ReplacementKey(); ok {
+		_spec.SetField(dailymission.FieldReplacementKey, field.TypeString, value)
+	}
+	if _u.mutation.ReplacementKeyCleared() {
+		_spec.ClearField(dailymission.FieldReplacementKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.ExpReward(); ok {
 		_spec.SetField(dailymission.FieldExpReward, field.TypeInt, value)
@@ -314,6 +371,46 @@ func (_u *DailyMissionUpdateOne) SetNillableStatus(v *dailymission.Status) *Dail
 	if v != nil {
 		_u.SetStatus(*v)
 	}
+	return _u
+}
+
+// SetAdjustmentReason sets the "adjustment_reason" field.
+func (_u *DailyMissionUpdateOne) SetAdjustmentReason(v dailymission.AdjustmentReason) *DailyMissionUpdateOne {
+	_u.mutation.SetAdjustmentReason(v)
+	return _u
+}
+
+// SetNillableAdjustmentReason sets the "adjustment_reason" field if the given value is not nil.
+func (_u *DailyMissionUpdateOne) SetNillableAdjustmentReason(v *dailymission.AdjustmentReason) *DailyMissionUpdateOne {
+	if v != nil {
+		_u.SetAdjustmentReason(*v)
+	}
+	return _u
+}
+
+// ClearAdjustmentReason clears the value of the "adjustment_reason" field.
+func (_u *DailyMissionUpdateOne) ClearAdjustmentReason() *DailyMissionUpdateOne {
+	_u.mutation.ClearAdjustmentReason()
+	return _u
+}
+
+// SetReplacementKey sets the "replacement_key" field.
+func (_u *DailyMissionUpdateOne) SetReplacementKey(v string) *DailyMissionUpdateOne {
+	_u.mutation.SetReplacementKey(v)
+	return _u
+}
+
+// SetNillableReplacementKey sets the "replacement_key" field if the given value is not nil.
+func (_u *DailyMissionUpdateOne) SetNillableReplacementKey(v *string) *DailyMissionUpdateOne {
+	if v != nil {
+		_u.SetReplacementKey(*v)
+	}
+	return _u
+}
+
+// ClearReplacementKey clears the value of the "replacement_key" field.
+func (_u *DailyMissionUpdateOne) ClearReplacementKey() *DailyMissionUpdateOne {
+	_u.mutation.ClearReplacementKey()
 	return _u
 }
 
@@ -425,6 +522,11 @@ func (_u *DailyMissionUpdateOne) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "DailyMission.status": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.AdjustmentReason(); ok {
+		if err := dailymission.AdjustmentReasonValidator(v); err != nil {
+			return &ValidationError{Name: "adjustment_reason", err: fmt.Errorf(`ent: validator failed for field "DailyMission.adjustment_reason": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.ExpReward(); ok {
 		if err := dailymission.ExpRewardValidator(v); err != nil {
 			return &ValidationError{Name: "exp_reward", err: fmt.Errorf(`ent: validator failed for field "DailyMission.exp_reward": %w`, err)}
@@ -476,6 +578,18 @@ func (_u *DailyMissionUpdateOne) sqlSave(ctx context.Context) (_node *DailyMissi
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(dailymission.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.AdjustmentReason(); ok {
+		_spec.SetField(dailymission.FieldAdjustmentReason, field.TypeEnum, value)
+	}
+	if _u.mutation.AdjustmentReasonCleared() {
+		_spec.ClearField(dailymission.FieldAdjustmentReason, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.ReplacementKey(); ok {
+		_spec.SetField(dailymission.FieldReplacementKey, field.TypeString, value)
+	}
+	if _u.mutation.ReplacementKeyCleared() {
+		_spec.ClearField(dailymission.FieldReplacementKey, field.TypeString)
 	}
 	if value, ok := _u.mutation.ExpReward(); ok {
 		_spec.SetField(dailymission.FieldExpReward, field.TypeInt, value)

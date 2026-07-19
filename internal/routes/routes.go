@@ -48,6 +48,7 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 		accountability.POST("/groups/:group_id/archive", mid.RequireRoles("partner"), mid.RequireRecentAuth(15*time.Minute), h.ArchiveAccountabilityGroup)
 		accountability.PATCH("/memberships/:membership_id/sharing", mid.RequireRoles("user"), h.UpdateAccountabilitySharing)
 		accountability.POST("/memberships/:membership_id/leave", mid.RequireRoles("user"), h.RequestAccountabilityLeave)
+		accountability.POST("/exit-requests/:request_id/cancel", mid.RequireRoles("user"), h.CancelAccountabilityLeave)
 		accountability.POST("/memberships/:membership_id/remove", mid.RequireRoles("partner"), mid.RequireRecentAuth(15*time.Minute), h.RemoveAccountabilityMember)
 		accountability.POST("/exit-requests/:request_id/resolve", mid.RequireRoles("partner"), mid.RequireRecentAuth(15*time.Minute), h.ResolveAccountabilityLeave)
 		accountability.POST("/contact-requests", mid.RequireRoles("user"), h.CreatePartnerContactRequest)
@@ -70,6 +71,7 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	v1.GET("/missions/today", mid.AuthRequired(), mid.RequireRoles("user"), h.GetTodayMission)
 	v1.PATCH("/missions", mid.AuthRequired(), mid.RequireRoles("user"), h.UpdateMission)
 	v1.POST("/missions/claim", mid.AuthRequired(), mid.RequireRoles("user"), h.ClaimMission)
+	v1.POST("/missions/adjust", mid.AuthRequired(), mid.RequireRoles("user"), h.AdjustMission)
 
 	// Reflections / Psychoeducation
 	v1.GET("/reflections", mid.AuthRequired(), mid.RequireRoles("user"), h.GetReflections)

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -25,6 +26,12 @@ type SupportService struct {
 	cfg    config.Config
 	logger *zap.Logger
 }
+
+var (
+	ErrDataRequestInvalid   = errors.New("invalid data request")
+	ErrDataRequestConflict  = errors.New("active data request already exists")
+	ErrDataRequestForbidden = errors.New("data request is not allowed for this account")
+)
 
 func NewSupportService(repo *repository.Repository, logger *zap.Logger) *SupportService {
 	return &SupportService{repo: repo, logger: logger}
@@ -225,15 +232,25 @@ func (s *SupportService) purgeExpiredDataExports(ctx context.Context) {
 	}
 	now := time.Now().UTC()
 	for _, item := range items {
-		if item.Type != "export" || item.ResultExpiresAt == nil || now.Before(*item.ResultExpiresAt) {
+		if item.Type != "export" || item.Status != "completed" {
 			continue
 		}
 		expected := filepath.Join(s.cfg.ExportStoragePath, filepath.Base(item.ID)+".zip.enc")
-		if item.ResultPath != "" && filepath.Clean(item.ResultPath) == filepath.Clean(expected) {
-			_ = os.Remove(expected)
+		if item.ResultExpiresAt != nil && !now.Before(*item.ResultExpiresAt) {
+			if item.ResultPath != "" && filepath.Clean(item.ResultPath) == filepath.Clean(expected) {
+				_ = os.Remove(expected)
+			}
+			item.ResultPath, item.ResultExpiresAt, item.FailureCode, item.UpdatedAt = "", nil, "result_expired", now
+			_ = s.repo.UpdateDataRequest(ctx, item)
+			continue
 		}
-		item.ResultPath, item.ResultExpiresAt, item.FailureCode, item.UpdatedAt = "", nil, "result_expired", now
-		_ = s.repo.UpdateDataRequest(ctx, item)
+		validPath := item.ResultPath != "" && filepath.Clean(item.ResultPath) == filepath.Clean(expected)
+		fileInfo, statErr := os.Stat(expected)
+		validFile := statErr == nil && fileInfo.Mode().IsRegular()
+		if item.ResultExpiresAt == nil || !validPath || !validFile {
+			item.ResultPath, item.ResultExpiresAt, item.FailureCode, item.UpdatedAt = "", nil, "result_unavailable", now
+			_ = s.repo.UpdateDataRequest(ctx, item)
+		}
 	}
 }
 
@@ -244,14 +261,14 @@ func (s *SupportService) CreateDataRequest(ctx context.Context, userID, requestT
 
 func (s *SupportService) CreateDataRequestWithResult(ctx context.Context, userID, requestType string) (model.DataRequest, string, error) {
 	if requestType != "export" && requestType != "delete" && requestType != "retention_review" {
-		return model.DataRequest{}, "", fmt.Errorf("invalid data request type")
+		return model.DataRequest{}, "", fmt.Errorf("%w: unsupported type", ErrDataRequestInvalid)
 	}
 	user, ok := s.repo.UserByID(ctx, userID)
 	if !ok {
 		return model.DataRequest{}, "", fmt.Errorf("user not found")
 	}
 	if requestType == "delete" && user.Role != "user" && user.Role != "partner" {
-		return model.DataRequest{}, "", fmt.Errorf("operator account deletion requires an out-of-band administrator workflow")
+		return model.DataRequest{}, "", fmt.Errorf("%w: operator account deletion requires an out-of-band administrator workflow", ErrDataRequestForbidden)
 	}
 	existingRequests, err := s.repo.GetDataRequests(ctx, userID)
 	if err != nil {
@@ -259,7 +276,7 @@ func (s *SupportService) CreateDataRequestWithResult(ctx context.Context, userID
 	}
 	for _, existing := range existingRequests {
 		if existing.Type == requestType && existing.Status != "completed" && existing.Status != "failed" && existing.Status != "rejected" && existing.Status != "cancelled" {
-			return model.DataRequest{}, "", fmt.Errorf("an active data request already exists")
+			return model.DataRequest{}, "", ErrDataRequestConflict
 		}
 	}
 	now := time.Now().UTC()

@@ -42,13 +42,16 @@ remain explicit opt-in checks.
 
 Every response uses `{ "data", "error", "request_id" }`. Use the helpers in
 `internal/handler/handler.go`; do not return raw ad-hoc shapes or leak
-`err.Error()` in production.
+`err.Error()` in any environment.
 
 - `respondErrorErr` records expected 4xx rejections as metadata-only info,
   retains technical error detail for 5xx faults, and returns catalog-safe
   output.
 - `respondCode` resolves validation errors without an underlying Go error.
 - `internal/i18n/messages.go` owns stable backend error codes.
+- Use typed/sentinel service errors with `errors.Is` when one handler maps
+  different business rejections to different stable codes; never inspect error
+  text. Middleware errors also resolve through the same catalog.
 - Every new stable code must also be added to the website and Flutter catalogs.
   If sibling repositories are not checked out, name both follow-up paths in the
   handoff rather than silently leaving the contract incomplete.
@@ -62,9 +65,12 @@ protection events are permitted.
 `PrivacyGuard` currently enforces this by rejecting forbidden JSON/query field
 names on non-GET, non-OPTIONS, non-auth requests. It intentionally does not
 censor string values: journal text may legitimately mention a URL. Quick
-approval token routes are explicitly exempt. Keep these regression behaviors
-covered in `internal/middleware/middleware_test.go`; do not reintroduce the old
-URL/length value censorship.
+approval token routes and the purpose-specific password-change/operator-accept
+routes are explicitly exempt because their handlers own narrow credential
+schemas. CORS wraps the guard so browser clients can read safe rejection
+envelopes. Keep these regression behaviors covered in
+`internal/middleware/middleware_test.go`; do not reintroduce the old URL/length
+value censorship.
 
 ## Auth and role model
 
@@ -105,7 +111,9 @@ and release management are supporting/operational, not substitutes for core.
 - Education audience is backend authorization, not presentation metadata:
   enforce it for list and direct-slug reads as well as in the website UI.
 - `.env` and credentials are local only. Update `.env.example` for config
-  shape changes.
+  shape changes. Use `make key-generate` to create the required local
+  `JOURNAL_ENCRYPTION_KEY`; it refuses to replace a valid key unless explicitly
+  forced, because replacement makes encrypted local data unreadable.
 - Production validates JWT/AES configuration and fails closed if PostgreSQL
   cannot open, migrate, or load. Non-production memory starts empty; contextual
   demo records require `ENABLE_DEMO_DATA=true` and are forbidden in production.

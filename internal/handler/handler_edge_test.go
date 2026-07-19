@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -26,8 +27,13 @@ func newPartnerRouter(t *testing.T, appEnv ...string) (*gin.Engine, string) {
 	_ = env
 	t.Helper()
 	gin.SetMode(gin.TestMode)
-	cfg := config.Config{AppEnv: env, JWTAccessSecret: "test-secret-very-long-please", JWTAccessTTL: 3600e9, JWTRefreshTTL: 720 * 3600e9}
+	cfg := config.Config{
+		AppEnv: env, JWTAccessSecret: "test-secret-very-long-please", JWTAccessTTL: 3600e9, JWTRefreshTTL: 720 * 3600e9,
+		JournalEncryptionKey: "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+		ExportStoragePath:    t.TempDir(), NotificationMode: "demo", PublicWebBaseURL: "http://localhost:3000",
+	}
 	st := store.NewSeeded()
+	st.JournalEntries = nil
 	repo := repository.New(nil, st)
 	services := service.NewContainer(repo, cfg, zap.NewNop())
 	mid := middleware.New(services.Auth, zap.NewNop())
@@ -44,6 +50,7 @@ func newPartnerRouter(t *testing.T, appEnv ...string) (*gin.Engine, string) {
 	v1.POST("/support-cases", mid.AuthRequired(), h.CreateSupportCase)
 	v1.GET("/data-requests", mid.AuthRequired(), h.GetDataRequests)
 	v1.POST("/data-requests", mid.AuthRequired(), h.CreateDataRequest)
+	v1.GET("/me", mid.AuthRequired(), h.GetProfile)
 	v1.GET("/psychoeducation/modules/:slug", mid.AuthRequired(), h.GetModuleDetail)
 	return r, loginToken(t, r)
 }
@@ -109,10 +116,36 @@ func TestHandler_CreateDataRequest(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, w.Code)
 }
 
+func TestHandler_CreateDataRequest_Conflict(t *testing.T) {
+	r, token := newPartnerRouter(t)
+	body := []byte(`{"type":"delete"}`)
+	for index, expected := range []int{http.StatusCreated, http.StatusConflict} {
+		req := httptest.NewRequest(http.MethodPost, "/v1/data-requests", bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+token)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		assert.Equal(t, expected, w.Code, "request %d", index+1)
+	}
+}
+
 func TestHandler_GetDataRequests(t *testing.T) {
 	r, token := newPartnerRouter(t)
 	w := authedGet(r, "/v1/data-requests", token)
 	require.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestHandler_GetProfileIncludesPasswordCapability(t *testing.T) {
+	r, token := newPartnerRouter(t)
+	w := authedGet(r, "/v1/me", token)
+	require.Equal(t, http.StatusOK, w.Code)
+	var body struct {
+		Data struct {
+			PasswordEnabled bool `json:"password_enabled"`
+		} `json:"data"`
+	}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
+	assert.True(t, body.Data.PasswordEnabled)
 }
 
 func TestHandler_GetModuleDetail_NotFound(t *testing.T) {

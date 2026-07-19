@@ -185,17 +185,17 @@ func init() {
 	dailymissionFields := schema.DailyMission{}.Fields()
 	_ = dailymissionFields
 	// dailymissionDescExpReward is the schema descriptor for exp_reward field.
-	dailymissionDescExpReward := dailymissionFields[5].Descriptor()
+	dailymissionDescExpReward := dailymissionFields[7].Descriptor()
 	// dailymission.DefaultExpReward holds the default value on creation for the exp_reward field.
 	dailymission.DefaultExpReward = dailymissionDescExpReward.Default.(int)
 	// dailymission.ExpRewardValidator is a validator for the "exp_reward" field. It is called by the builders before save.
 	dailymission.ExpRewardValidator = dailymissionDescExpReward.Validators[0].(func(int) error)
 	// dailymissionDescCreatedAt is the schema descriptor for created_at field.
-	dailymissionDescCreatedAt := dailymissionFields[7].Descriptor()
+	dailymissionDescCreatedAt := dailymissionFields[9].Descriptor()
 	// dailymission.DefaultCreatedAt holds the default value on creation for the created_at field.
 	dailymission.DefaultCreatedAt = dailymissionDescCreatedAt.Default.(func() time.Time)
 	// dailymissionDescUpdatedAt is the schema descriptor for updated_at field.
-	dailymissionDescUpdatedAt := dailymissionFields[8].Descriptor()
+	dailymissionDescUpdatedAt := dailymissionFields[10].Descriptor()
 	// dailymission.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	dailymission.DefaultUpdatedAt = dailymissionDescUpdatedAt.Default.(func() time.Time)
 	// dailymission.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

@@ -97,6 +97,33 @@ func TestPrivacyGuard_AuthPathExempt(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestPrivacyGuard_PasswordChangePathExempt(t *testing.T) {
+	m := newTestMiddleware(t)
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(m.PrivacyGuard())
+	r.PATCH("/v1/me/password", func(c *gin.Context) { c.Status(http.StatusOK) })
+
+	body := []byte(`{"current_password":"old-secret","new_password":"new-secret"}`)
+	req := httptest.NewRequest(http.MethodPatch, "/v1/me/password", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestPrivacyGuard_OperatorInvitationPasswordPathExempt(t *testing.T) {
+	m := newTestMiddleware(t)
+	r := setupRouter(m, "/v1/operator/invitations/:token/accept")
+
+	body := []byte(`{"display_name":"Operator","password":"new-secret"}`)
+	req := httptest.NewRequest(http.MethodPost, "/v1/operator/invitations/token-1/accept", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 // RequestID middleware sets/propagates X-Request-ID.
 func TestRequestID_GeneratesAndEchoes(t *testing.T) {
 	gin.SetMode(gin.TestMode)

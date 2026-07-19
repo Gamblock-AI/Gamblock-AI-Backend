@@ -23,7 +23,7 @@ func (m *Middleware) PrivacyGuard() gin.HandlerFunc {
 		}
 		for key, values := range c.Request.URL.Query() {
 			if unsafeKey(key, forbiddenPrivacyKeys) || unsafeValue(strings.Join(values, " ")) {
-				m.respondError(c, http.StatusBadRequest, "privacy_payload_rejected", "Request includes forbidden browsing or secret fields")
+				m.respondError(c, http.StatusBadRequest, "privacy_payload_rejected")
 				c.Abort()
 				return
 			}
@@ -31,7 +31,7 @@ func (m *Middleware) PrivacyGuard() gin.HandlerFunc {
 		if strings.Contains(strings.ToLower(c.GetHeader("Content-Type")), "application/json") && c.Request.Body != nil {
 			body, err := io.ReadAll(c.Request.Body)
 			if err != nil {
-				m.respondError(c, http.StatusBadRequest, "invalid_body", "Unable to read request body")
+				m.respondError(c, http.StatusBadRequest, "invalid_body")
 				c.Abort()
 				return
 			}
@@ -39,7 +39,7 @@ func (m *Middleware) PrivacyGuard() gin.HandlerFunc {
 			if len(bytes.TrimSpace(body)) > 0 {
 				var payload any
 				if err := json.Unmarshal(body, &payload); err == nil && unsafePayload(payload, forbiddenPrivacyKeys) {
-					m.respondError(c, http.StatusBadRequest, "privacy_payload_rejected", "Request includes forbidden browsing or secret fields")
+					m.respondError(c, http.StatusBadRequest, "privacy_payload_rejected")
 					c.Abort()
 					return
 				}
@@ -51,6 +51,13 @@ func (m *Middleware) PrivacyGuard() gin.HandlerFunc {
 
 func privacyExemptPath(path string) bool {
 	if strings.HasPrefix(path, "/v1/auth/") {
+		return true
+	}
+	// These purpose-specific account security routes legitimately accept a
+	// password. Their handlers use explicit request schemas and never persist or
+	// log the plaintext credential.
+	if path == "/v1/me/password" ||
+		(strings.HasPrefix(path, "/v1/operator/invitations/") && strings.HasSuffix(path, "/accept")) {
 		return true
 	}
 	// Quick approvals use a single-use token in their body. The token is an
