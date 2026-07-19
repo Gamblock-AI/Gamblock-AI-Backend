@@ -69,6 +69,41 @@ func UserID(v string) predicate.DataRequest {
 	return predicate.DataRequest(sql.FieldEQ(FieldUserID, v))
 }
 
+// ConfirmationTokenHash applies equality check predicate on the "confirmation_token_hash" field. It's identical to ConfirmationTokenHashEQ.
+func ConfirmationTokenHash(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldConfirmationTokenHash, v))
+}
+
+// ConfirmationExpiresAt applies equality check predicate on the "confirmation_expires_at" field. It's identical to ConfirmationExpiresAtEQ.
+func ConfirmationExpiresAt(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldConfirmationExpiresAt, v))
+}
+
+// ConfirmedAt applies equality check predicate on the "confirmed_at" field. It's identical to ConfirmedAtEQ.
+func ConfirmedAt(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldConfirmedAt, v))
+}
+
+// ResultPath applies equality check predicate on the "result_path" field. It's identical to ResultPathEQ.
+func ResultPath(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldResultPath, v))
+}
+
+// ResultExpiresAt applies equality check predicate on the "result_expires_at" field. It's identical to ResultExpiresAtEQ.
+func ResultExpiresAt(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldResultExpiresAt, v))
+}
+
+// FailureCode applies equality check predicate on the "failure_code" field. It's identical to FailureCodeEQ.
+func FailureCode(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldFailureCode, v))
+}
+
+// RetryCount applies equality check predicate on the "retry_count" field. It's identical to RetryCountEQ.
+func RetryCount(v int) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldRetryCount, v))
+}
+
 // RequestedAt applies equality check predicate on the "requested_at" field. It's identical to RequestedAtEQ.
 func RequestedAt(v time.Time) predicate.DataRequest {
 	return predicate.DataRequest(sql.FieldEQ(FieldRequestedAt, v))
@@ -79,9 +114,9 @@ func CompletedAt(v time.Time) predicate.DataRequest {
 	return predicate.DataRequest(sql.FieldEQ(FieldCompletedAt, v))
 }
 
-// ResultPath applies equality check predicate on the "result_path" field. It's identical to ResultPathEQ.
-func ResultPath(v string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldEQ(FieldResultPath, v))
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
 // UserIDEQ applies the EQ predicate on the "user_id" field.
@@ -189,6 +224,421 @@ func StatusNotIn(vs ...Status) predicate.DataRequest {
 	return predicate.DataRequest(sql.FieldNotIn(FieldStatus, vs...))
 }
 
+// ConfirmationTokenHashEQ applies the EQ predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashEQ(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldConfirmationTokenHash, v))
+}
+
+// ConfirmationTokenHashNEQ applies the NEQ predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashNEQ(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNEQ(FieldConfirmationTokenHash, v))
+}
+
+// ConfirmationTokenHashIn applies the In predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashIn(vs ...string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIn(FieldConfirmationTokenHash, vs...))
+}
+
+// ConfirmationTokenHashNotIn applies the NotIn predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashNotIn(vs ...string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotIn(FieldConfirmationTokenHash, vs...))
+}
+
+// ConfirmationTokenHashGT applies the GT predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashGT(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGT(FieldConfirmationTokenHash, v))
+}
+
+// ConfirmationTokenHashGTE applies the GTE predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashGTE(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGTE(FieldConfirmationTokenHash, v))
+}
+
+// ConfirmationTokenHashLT applies the LT predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashLT(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLT(FieldConfirmationTokenHash, v))
+}
+
+// ConfirmationTokenHashLTE applies the LTE predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashLTE(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLTE(FieldConfirmationTokenHash, v))
+}
+
+// ConfirmationTokenHashContains applies the Contains predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashContains(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldContains(FieldConfirmationTokenHash, v))
+}
+
+// ConfirmationTokenHashHasPrefix applies the HasPrefix predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashHasPrefix(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldHasPrefix(FieldConfirmationTokenHash, v))
+}
+
+// ConfirmationTokenHashHasSuffix applies the HasSuffix predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashHasSuffix(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldHasSuffix(FieldConfirmationTokenHash, v))
+}
+
+// ConfirmationTokenHashIsNil applies the IsNil predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashIsNil() predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIsNull(FieldConfirmationTokenHash))
+}
+
+// ConfirmationTokenHashNotNil applies the NotNil predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashNotNil() predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotNull(FieldConfirmationTokenHash))
+}
+
+// ConfirmationTokenHashEqualFold applies the EqualFold predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashEqualFold(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEqualFold(FieldConfirmationTokenHash, v))
+}
+
+// ConfirmationTokenHashContainsFold applies the ContainsFold predicate on the "confirmation_token_hash" field.
+func ConfirmationTokenHashContainsFold(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldContainsFold(FieldConfirmationTokenHash, v))
+}
+
+// ConfirmationExpiresAtEQ applies the EQ predicate on the "confirmation_expires_at" field.
+func ConfirmationExpiresAtEQ(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldConfirmationExpiresAt, v))
+}
+
+// ConfirmationExpiresAtNEQ applies the NEQ predicate on the "confirmation_expires_at" field.
+func ConfirmationExpiresAtNEQ(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNEQ(FieldConfirmationExpiresAt, v))
+}
+
+// ConfirmationExpiresAtIn applies the In predicate on the "confirmation_expires_at" field.
+func ConfirmationExpiresAtIn(vs ...time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIn(FieldConfirmationExpiresAt, vs...))
+}
+
+// ConfirmationExpiresAtNotIn applies the NotIn predicate on the "confirmation_expires_at" field.
+func ConfirmationExpiresAtNotIn(vs ...time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotIn(FieldConfirmationExpiresAt, vs...))
+}
+
+// ConfirmationExpiresAtGT applies the GT predicate on the "confirmation_expires_at" field.
+func ConfirmationExpiresAtGT(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGT(FieldConfirmationExpiresAt, v))
+}
+
+// ConfirmationExpiresAtGTE applies the GTE predicate on the "confirmation_expires_at" field.
+func ConfirmationExpiresAtGTE(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGTE(FieldConfirmationExpiresAt, v))
+}
+
+// ConfirmationExpiresAtLT applies the LT predicate on the "confirmation_expires_at" field.
+func ConfirmationExpiresAtLT(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLT(FieldConfirmationExpiresAt, v))
+}
+
+// ConfirmationExpiresAtLTE applies the LTE predicate on the "confirmation_expires_at" field.
+func ConfirmationExpiresAtLTE(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLTE(FieldConfirmationExpiresAt, v))
+}
+
+// ConfirmationExpiresAtIsNil applies the IsNil predicate on the "confirmation_expires_at" field.
+func ConfirmationExpiresAtIsNil() predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIsNull(FieldConfirmationExpiresAt))
+}
+
+// ConfirmationExpiresAtNotNil applies the NotNil predicate on the "confirmation_expires_at" field.
+func ConfirmationExpiresAtNotNil() predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotNull(FieldConfirmationExpiresAt))
+}
+
+// ConfirmedAtEQ applies the EQ predicate on the "confirmed_at" field.
+func ConfirmedAtEQ(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldConfirmedAt, v))
+}
+
+// ConfirmedAtNEQ applies the NEQ predicate on the "confirmed_at" field.
+func ConfirmedAtNEQ(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNEQ(FieldConfirmedAt, v))
+}
+
+// ConfirmedAtIn applies the In predicate on the "confirmed_at" field.
+func ConfirmedAtIn(vs ...time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIn(FieldConfirmedAt, vs...))
+}
+
+// ConfirmedAtNotIn applies the NotIn predicate on the "confirmed_at" field.
+func ConfirmedAtNotIn(vs ...time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotIn(FieldConfirmedAt, vs...))
+}
+
+// ConfirmedAtGT applies the GT predicate on the "confirmed_at" field.
+func ConfirmedAtGT(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGT(FieldConfirmedAt, v))
+}
+
+// ConfirmedAtGTE applies the GTE predicate on the "confirmed_at" field.
+func ConfirmedAtGTE(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGTE(FieldConfirmedAt, v))
+}
+
+// ConfirmedAtLT applies the LT predicate on the "confirmed_at" field.
+func ConfirmedAtLT(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLT(FieldConfirmedAt, v))
+}
+
+// ConfirmedAtLTE applies the LTE predicate on the "confirmed_at" field.
+func ConfirmedAtLTE(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLTE(FieldConfirmedAt, v))
+}
+
+// ConfirmedAtIsNil applies the IsNil predicate on the "confirmed_at" field.
+func ConfirmedAtIsNil() predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIsNull(FieldConfirmedAt))
+}
+
+// ConfirmedAtNotNil applies the NotNil predicate on the "confirmed_at" field.
+func ConfirmedAtNotNil() predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotNull(FieldConfirmedAt))
+}
+
+// ResultPathEQ applies the EQ predicate on the "result_path" field.
+func ResultPathEQ(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldResultPath, v))
+}
+
+// ResultPathNEQ applies the NEQ predicate on the "result_path" field.
+func ResultPathNEQ(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNEQ(FieldResultPath, v))
+}
+
+// ResultPathIn applies the In predicate on the "result_path" field.
+func ResultPathIn(vs ...string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIn(FieldResultPath, vs...))
+}
+
+// ResultPathNotIn applies the NotIn predicate on the "result_path" field.
+func ResultPathNotIn(vs ...string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotIn(FieldResultPath, vs...))
+}
+
+// ResultPathGT applies the GT predicate on the "result_path" field.
+func ResultPathGT(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGT(FieldResultPath, v))
+}
+
+// ResultPathGTE applies the GTE predicate on the "result_path" field.
+func ResultPathGTE(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGTE(FieldResultPath, v))
+}
+
+// ResultPathLT applies the LT predicate on the "result_path" field.
+func ResultPathLT(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLT(FieldResultPath, v))
+}
+
+// ResultPathLTE applies the LTE predicate on the "result_path" field.
+func ResultPathLTE(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLTE(FieldResultPath, v))
+}
+
+// ResultPathContains applies the Contains predicate on the "result_path" field.
+func ResultPathContains(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldContains(FieldResultPath, v))
+}
+
+// ResultPathHasPrefix applies the HasPrefix predicate on the "result_path" field.
+func ResultPathHasPrefix(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldHasPrefix(FieldResultPath, v))
+}
+
+// ResultPathHasSuffix applies the HasSuffix predicate on the "result_path" field.
+func ResultPathHasSuffix(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldHasSuffix(FieldResultPath, v))
+}
+
+// ResultPathIsNil applies the IsNil predicate on the "result_path" field.
+func ResultPathIsNil() predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIsNull(FieldResultPath))
+}
+
+// ResultPathNotNil applies the NotNil predicate on the "result_path" field.
+func ResultPathNotNil() predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotNull(FieldResultPath))
+}
+
+// ResultPathEqualFold applies the EqualFold predicate on the "result_path" field.
+func ResultPathEqualFold(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEqualFold(FieldResultPath, v))
+}
+
+// ResultPathContainsFold applies the ContainsFold predicate on the "result_path" field.
+func ResultPathContainsFold(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldContainsFold(FieldResultPath, v))
+}
+
+// ResultExpiresAtEQ applies the EQ predicate on the "result_expires_at" field.
+func ResultExpiresAtEQ(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldResultExpiresAt, v))
+}
+
+// ResultExpiresAtNEQ applies the NEQ predicate on the "result_expires_at" field.
+func ResultExpiresAtNEQ(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNEQ(FieldResultExpiresAt, v))
+}
+
+// ResultExpiresAtIn applies the In predicate on the "result_expires_at" field.
+func ResultExpiresAtIn(vs ...time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIn(FieldResultExpiresAt, vs...))
+}
+
+// ResultExpiresAtNotIn applies the NotIn predicate on the "result_expires_at" field.
+func ResultExpiresAtNotIn(vs ...time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotIn(FieldResultExpiresAt, vs...))
+}
+
+// ResultExpiresAtGT applies the GT predicate on the "result_expires_at" field.
+func ResultExpiresAtGT(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGT(FieldResultExpiresAt, v))
+}
+
+// ResultExpiresAtGTE applies the GTE predicate on the "result_expires_at" field.
+func ResultExpiresAtGTE(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGTE(FieldResultExpiresAt, v))
+}
+
+// ResultExpiresAtLT applies the LT predicate on the "result_expires_at" field.
+func ResultExpiresAtLT(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLT(FieldResultExpiresAt, v))
+}
+
+// ResultExpiresAtLTE applies the LTE predicate on the "result_expires_at" field.
+func ResultExpiresAtLTE(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLTE(FieldResultExpiresAt, v))
+}
+
+// ResultExpiresAtIsNil applies the IsNil predicate on the "result_expires_at" field.
+func ResultExpiresAtIsNil() predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIsNull(FieldResultExpiresAt))
+}
+
+// ResultExpiresAtNotNil applies the NotNil predicate on the "result_expires_at" field.
+func ResultExpiresAtNotNil() predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotNull(FieldResultExpiresAt))
+}
+
+// FailureCodeEQ applies the EQ predicate on the "failure_code" field.
+func FailureCodeEQ(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldFailureCode, v))
+}
+
+// FailureCodeNEQ applies the NEQ predicate on the "failure_code" field.
+func FailureCodeNEQ(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNEQ(FieldFailureCode, v))
+}
+
+// FailureCodeIn applies the In predicate on the "failure_code" field.
+func FailureCodeIn(vs ...string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIn(FieldFailureCode, vs...))
+}
+
+// FailureCodeNotIn applies the NotIn predicate on the "failure_code" field.
+func FailureCodeNotIn(vs ...string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotIn(FieldFailureCode, vs...))
+}
+
+// FailureCodeGT applies the GT predicate on the "failure_code" field.
+func FailureCodeGT(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGT(FieldFailureCode, v))
+}
+
+// FailureCodeGTE applies the GTE predicate on the "failure_code" field.
+func FailureCodeGTE(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGTE(FieldFailureCode, v))
+}
+
+// FailureCodeLT applies the LT predicate on the "failure_code" field.
+func FailureCodeLT(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLT(FieldFailureCode, v))
+}
+
+// FailureCodeLTE applies the LTE predicate on the "failure_code" field.
+func FailureCodeLTE(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLTE(FieldFailureCode, v))
+}
+
+// FailureCodeContains applies the Contains predicate on the "failure_code" field.
+func FailureCodeContains(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldContains(FieldFailureCode, v))
+}
+
+// FailureCodeHasPrefix applies the HasPrefix predicate on the "failure_code" field.
+func FailureCodeHasPrefix(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldHasPrefix(FieldFailureCode, v))
+}
+
+// FailureCodeHasSuffix applies the HasSuffix predicate on the "failure_code" field.
+func FailureCodeHasSuffix(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldHasSuffix(FieldFailureCode, v))
+}
+
+// FailureCodeIsNil applies the IsNil predicate on the "failure_code" field.
+func FailureCodeIsNil() predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIsNull(FieldFailureCode))
+}
+
+// FailureCodeNotNil applies the NotNil predicate on the "failure_code" field.
+func FailureCodeNotNil() predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotNull(FieldFailureCode))
+}
+
+// FailureCodeEqualFold applies the EqualFold predicate on the "failure_code" field.
+func FailureCodeEqualFold(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEqualFold(FieldFailureCode, v))
+}
+
+// FailureCodeContainsFold applies the ContainsFold predicate on the "failure_code" field.
+func FailureCodeContainsFold(v string) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldContainsFold(FieldFailureCode, v))
+}
+
+// RetryCountEQ applies the EQ predicate on the "retry_count" field.
+func RetryCountEQ(v int) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldRetryCount, v))
+}
+
+// RetryCountNEQ applies the NEQ predicate on the "retry_count" field.
+func RetryCountNEQ(v int) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNEQ(FieldRetryCount, v))
+}
+
+// RetryCountIn applies the In predicate on the "retry_count" field.
+func RetryCountIn(vs ...int) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIn(FieldRetryCount, vs...))
+}
+
+// RetryCountNotIn applies the NotIn predicate on the "retry_count" field.
+func RetryCountNotIn(vs ...int) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotIn(FieldRetryCount, vs...))
+}
+
+// RetryCountGT applies the GT predicate on the "retry_count" field.
+func RetryCountGT(v int) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGT(FieldRetryCount, v))
+}
+
+// RetryCountGTE applies the GTE predicate on the "retry_count" field.
+func RetryCountGTE(v int) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGTE(FieldRetryCount, v))
+}
+
+// RetryCountLT applies the LT predicate on the "retry_count" field.
+func RetryCountLT(v int) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLT(FieldRetryCount, v))
+}
+
+// RetryCountLTE applies the LTE predicate on the "retry_count" field.
+func RetryCountLTE(v int) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLTE(FieldRetryCount, v))
+}
+
 // RequestedAtEQ applies the EQ predicate on the "requested_at" field.
 func RequestedAtEQ(v time.Time) predicate.DataRequest {
 	return predicate.DataRequest(sql.FieldEQ(FieldRequestedAt, v))
@@ -279,79 +729,44 @@ func CompletedAtNotNil() predicate.DataRequest {
 	return predicate.DataRequest(sql.FieldNotNull(FieldCompletedAt))
 }
 
-// ResultPathEQ applies the EQ predicate on the "result_path" field.
-func ResultPathEQ(v string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldEQ(FieldResultPath, v))
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// ResultPathNEQ applies the NEQ predicate on the "result_path" field.
-func ResultPathNEQ(v string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldNEQ(FieldResultPath, v))
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNEQ(FieldUpdatedAt, v))
 }
 
-// ResultPathIn applies the In predicate on the "result_path" field.
-func ResultPathIn(vs ...string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldIn(FieldResultPath, vs...))
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldIn(FieldUpdatedAt, vs...))
 }
 
-// ResultPathNotIn applies the NotIn predicate on the "result_path" field.
-func ResultPathNotIn(vs ...string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldNotIn(FieldResultPath, vs...))
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldNotIn(FieldUpdatedAt, vs...))
 }
 
-// ResultPathGT applies the GT predicate on the "result_path" field.
-func ResultPathGT(v string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldGT(FieldResultPath, v))
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGT(FieldUpdatedAt, v))
 }
 
-// ResultPathGTE applies the GTE predicate on the "result_path" field.
-func ResultPathGTE(v string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldGTE(FieldResultPath, v))
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldGTE(FieldUpdatedAt, v))
 }
 
-// ResultPathLT applies the LT predicate on the "result_path" field.
-func ResultPathLT(v string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldLT(FieldResultPath, v))
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLT(FieldUpdatedAt, v))
 }
 
-// ResultPathLTE applies the LTE predicate on the "result_path" field.
-func ResultPathLTE(v string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldLTE(FieldResultPath, v))
-}
-
-// ResultPathContains applies the Contains predicate on the "result_path" field.
-func ResultPathContains(v string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldContains(FieldResultPath, v))
-}
-
-// ResultPathHasPrefix applies the HasPrefix predicate on the "result_path" field.
-func ResultPathHasPrefix(v string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldHasPrefix(FieldResultPath, v))
-}
-
-// ResultPathHasSuffix applies the HasSuffix predicate on the "result_path" field.
-func ResultPathHasSuffix(v string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldHasSuffix(FieldResultPath, v))
-}
-
-// ResultPathIsNil applies the IsNil predicate on the "result_path" field.
-func ResultPathIsNil() predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldIsNull(FieldResultPath))
-}
-
-// ResultPathNotNil applies the NotNil predicate on the "result_path" field.
-func ResultPathNotNil() predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldNotNull(FieldResultPath))
-}
-
-// ResultPathEqualFold applies the EqualFold predicate on the "result_path" field.
-func ResultPathEqualFold(v string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldEqualFold(FieldResultPath, v))
-}
-
-// ResultPathContainsFold applies the ContainsFold predicate on the "result_path" field.
-func ResultPathContainsFold(v string) predicate.DataRequest {
-	return predicate.DataRequest(sql.FieldContainsFold(FieldResultPath, v))
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.DataRequest {
+	return predicate.DataRequest(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // And groups predicates with the AND operator between them.

@@ -10,13 +10,14 @@ import (
 // NewSeeded is explicit test/demo data. Production starts with New instead.
 func NewSeeded() *Store {
 	now := time.Now().UTC()
+	verifiedAt := now
 	jakartaDate := now.In(time.FixedZone("Asia/Jakarta", 7*60*60)).Format("2006-01-02")
 	demoPasswordHash, _ := authn.HashPassword("password")
 	return &Store{
 		Users: []User{
-			{ID: "usr_gading", Email: "gading@gmail.com", DisplayName: "Gading", Role: "user", PasswordHash: demoPasswordHash, ExperiencePoints: 20, CreatedAt: now, UpdatedAt: now},
-			{ID: "usr_dery", Email: "dery@gmail.com", DisplayName: "Dery", Role: "user", PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
-			{ID: "usr_suci", Email: "suci@gmail.com", DisplayName: "Suci", Role: "partner", PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
+			{ID: "usr_gading", Email: "gading@gmail.com", DisplayName: "Gading", Role: "user", EmailVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, ExperiencePoints: 20, CreatedAt: now, UpdatedAt: now},
+			{ID: "usr_dery", Email: "dery@gmail.com", DisplayName: "Dery", Role: "user", EmailVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
+			{ID: "usr_suci", Email: "suci@gmail.com", DisplayName: "Suci", Role: "partner", EmailVerifiedAt: &verifiedAt, PhoneE164: "+6281200000000", PhoneVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
 			{ID: "usr_nasywa", Email: "nasywa@gmail.com", DisplayName: "Nasywa", Role: "platform_admin", PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
 		},
 		Devices: []Device{
@@ -24,15 +25,25 @@ func NewSeeded() *Store {
 			{ID: "dev_windows", UserID: "usr_gading", Platform: "windows", Label: "Gading Windows", AppVersion: "1.0.0", OSVersion: "Windows 11", ModelVersion: "artifact-v0.3.1", RulesetVersion: "ruleset-2026.05.1", ProtectionStatus: "degraded", LastSeenAt: now.Add(-38 * time.Minute), CreatedAt: now, UpdatedAt: now},
 		},
 		Partners: []Partner{{ID: "pl_active", UserID: "usr_gading", PartnerUserID: "usr_suci", Name: "Suci", Contact: "suci@gmail.com | +62 812-0000-0000", Status: "active", PartnerEmail: "suci@gmail.com", CreatedAt: now, UpdatedAt: now}},
+		AccountabilityGroups: []AccountabilityGroup{{
+			ID: "grp_demo", OwnerPartnerID: "usr_suci", OwnerName: "Suci",
+			Name: "Ruang dukungan Gading", Description: "Pendampingan pribadi yang berfokus pada dukungan dan keputusan proteksi.",
+			JoinCodeHint: "DEMO", Status: "active", MemberCount: 1, CodeRotatedAt: now, CreatedAt: now, UpdatedAt: now,
+		}},
+		AccountabilityMemberships: []AccountabilityMembership{{
+			ID: "mbr_active", GroupID: "grp_demo", StudentID: "usr_gading", StudentName: "Gading", StudentMail: "gading@gmail.com",
+			Status: "active", Sharing: SharingPreferences{ProtectionHealth: true, ProtectionActivity: true, RecoveryEngagement: true, EducationProgress: true},
+			JoinedAt: now, CreatedAt: now, UpdatedAt: now,
+		}},
 		Approvals: []ApprovalRequest{
-			{ID: "APR-2401", UserID: "usr_gading", DeviceID: "dev_android", PartnerLinkID: "pl_active", Action: "pause_protection", ExpiresIn: "Expires in 23 minutes", Status: "pending", Reason: "Troubleshooting app setup", RequestedDurationMinutes: 15, CreatedAt: now.Add(-7 * time.Minute), UpdatedAt: now.Add(-7 * time.Minute), ExpiresAt: now.Add(23 * time.Minute)},
-			{ID: "APR-2398", UserID: "usr_gading", DeviceID: "dev_android", PartnerLinkID: "pl_active", Action: "uninstall_detected", ExpiresIn: "Reviewed yesterday", Status: "approved", Reason: "Accessibility service disabled", CreatedAt: now.Add(-24 * time.Hour), UpdatedAt: now.Add(-24 * time.Hour), ExpiresAt: now.Add(-23 * time.Hour)},
+			{ID: "APR-2401", UserID: "usr_gading", DeviceID: "dev_android", MembershipID: "mbr_active", Action: "pause_protection", ExpiresIn: "Expires in 23 minutes", Status: "pending", Reason: "Troubleshooting app setup", RequestedDurationMinutes: 15, CreatedAt: now.Add(-7 * time.Minute), UpdatedAt: now.Add(-7 * time.Minute), ExpiresAt: now.Add(23 * time.Minute)},
+			{ID: "APR-2398", UserID: "usr_gading", DeviceID: "dev_android", MembershipID: "mbr_active", Action: "uninstall_detected", ExpiresIn: "Reviewed yesterday", Status: "approved", Reason: "Accessibility service disabled", CreatedAt: now.Add(-24 * time.Hour), UpdatedAt: now.Add(-24 * time.Hour), ExpiresAt: now.Add(-23 * time.Hour)},
 		},
 		Modules:        seed.DemoEducationModules(now),
 		EducationMedia: seed.DemoEducationMedia(now),
 		SupportCases: []SupportCase{
 			{ID: "CASE-1087", UserID: "usr_gading", Title: "Setup and permissions", Type: "device_recovery", Status: "waiting_user", Priority: "normal", Owner: "Gading", CreatedAt: now, UpdatedAt: now},
-			{ID: "CASE-1084", UserID: "usr_dery", Title: "Partner approval issue", Type: "stuck_approval", Status: "open", Priority: "high", Owner: "Suci", CreatedAt: now, UpdatedAt: now},
+			{ID: "CASE-1084", UserID: "usr_dery", Title: "Partner approval issue", Type: "stuck_approval", Status: "waiting_support", Priority: "high", Owner: "Suci", CreatedAt: now, UpdatedAt: now},
 		},
 		DataRequests: []DataRequest{
 			{ID: "DR-1042", UserID: "usr_gading", Title: "Export account data", Type: "export", Status: "completed", CreatedAt: now, UpdatedAt: now},

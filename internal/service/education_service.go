@@ -105,6 +105,21 @@ func validateRichText(value any) error {
 }
 
 func validateEducationDocument(document model.EducationDocument) error {
+	if document.Audience == "" {
+		document.Audience = "all"
+	}
+	if document.ExperienceType == "" {
+		document.ExperienceType = "article"
+	}
+	if !slices.Contains([]string{"student", "partner", "all"}, document.Audience) {
+		return errors.New("education audience is invalid")
+	}
+	if !slices.Contains([]string{"article", "partner_response_simulator"}, document.ExperienceType) {
+		return errors.New("education experience type is invalid")
+	}
+	if document.ExperienceType == "partner_response_simulator" && document.Audience == "student" {
+		return errors.New("partner simulator cannot target students")
+	}
 	if document.EstimatedMinutes < 1 || document.EstimatedMinutes > 120 {
 		return errors.New("estimated minutes must be between 1 and 120")
 	}
@@ -249,6 +264,7 @@ func (s *EducationService) AdminModule(ctx context.Context, id string) (model.Ed
 }
 
 func (s *EducationService) CreateModule(ctx context.Context, actor, slug string, document model.EducationDocument) (model.EducationModule, error) {
+	document.Audience, document.ExperienceType = normalizedEducationExperience(document)
 	if strings.TrimSpace(slug) == "" || len(document.Translations) == 0 {
 		return model.EducationModule{}, errors.New("slug and initial translations are required")
 	}
@@ -260,14 +276,31 @@ func (s *EducationService) CreateModule(ctx context.Context, actor, slug string,
 	if err := s.repo.CreateEducationModule(ctx, module); err != nil {
 		return model.EducationModule{}, err
 	}
-	return s.repo.GetEducationModuleByID(ctx, id)
+	created, err := s.repo.GetEducationModuleByID(ctx, id)
+	if err != nil {
+		return model.EducationModule{}, err
+	}
+	if err = s.saveEducationRevision(ctx, created, "draft", actor); err != nil {
+		return model.EducationModule{}, err
+	}
+	s.recordEducationAudit(ctx, actor, "education_module_created", created.ID, map[string]any{"revision": created.DraftRevision})
+	return created, nil
 }
 
 func (s *EducationService) UpdateDraft(ctx context.Context, actor, id, slug string, expectedRevision int, document model.EducationDocument) (model.EducationModule, error) {
+	document.Audience, document.ExperienceType = normalizedEducationExperience(document)
 	if strings.TrimSpace(slug) == "" || document.EstimatedMinutes < 1 {
 		return model.EducationModule{}, errors.New("slug and estimated minutes are required")
 	}
-	return s.repo.UpdateEducationDraft(ctx, id, expectedRevision, slug, document, actor)
+	updated, err := s.repo.UpdateEducationDraft(ctx, id, expectedRevision, slug, document, actor)
+	if err != nil {
+		return model.EducationModule{}, err
+	}
+	if err = s.saveEducationRevision(ctx, updated, "draft", actor); err != nil {
+		return model.EducationModule{}, err
+	}
+	s.recordEducationAudit(ctx, actor, "education_module_updated", updated.ID, map[string]any{"revision": updated.DraftRevision})
+	return updated, nil
 }
 
 func (s *EducationService) SubmitReview(ctx context.Context, actor, id string) (model.EducationModule, error) {
@@ -281,7 +314,11 @@ func (s *EducationService) SubmitReview(ctx context.Context, actor, id string) (
 	if _, err = s.ensureMedia(ctx, module.DraftDocument); err != nil {
 		return model.EducationModule{}, err
 	}
-	return s.repo.SetEducationStatus(ctx, id, "in_review", actor, false)
+	updated, err := s.repo.SetEducationStatus(ctx, id, "in_review", actor, false)
+	if err == nil {
+		s.recordEducationAudit(ctx, actor, "education_module_submitted", id, map[string]any{"revision": updated.DraftRevision})
+	}
+	return updated, err
 }
 
 func (s *EducationService) Publish(ctx context.Context, actor, id string) (model.EducationModule, error) {
@@ -302,11 +339,75 @@ func (s *EducationService) Publish(ctx context.Context, actor, id string) (model
 	if err = s.repo.PublishEducationMedia(ctx, mediaIDs); err != nil {
 		return model.EducationModule{}, err
 	}
-	return s.repo.SetEducationStatus(ctx, id, "published", actor, true)
+	published, err := s.repo.SetEducationStatus(ctx, id, "published", actor, true)
+	if err != nil {
+		return model.EducationModule{}, err
+	}
+	if err = s.saveEducationRevision(ctx, published, "published", actor); err != nil {
+		return model.EducationModule{}, err
+	}
+	s.recordEducationAudit(ctx, actor, "education_module_published", id, map[string]any{"revision": published.PublishedRevision})
+	return published, nil
 }
 
 func (s *EducationService) Archive(ctx context.Context, actor, id string) (model.EducationModule, error) {
-	return s.repo.SetEducationStatus(ctx, id, "archived", actor, false)
+	archived, err := s.repo.SetEducationStatus(ctx, id, "archived", actor, false)
+	if err == nil {
+		s.recordEducationAudit(ctx, actor, "education_module_archived", id, nil)
+	}
+	return archived, err
+}
+
+func (s *EducationService) Revisions(ctx context.Context, moduleID string) ([]model.EducationRevision, error) {
+	if _, err := s.repo.GetEducationModuleByID(ctx, moduleID); err != nil {
+		return nil, err
+	}
+	return s.repo.ListEducationRevisions(ctx, moduleID)
+}
+
+func (s *EducationService) Rollback(ctx context.Context, actor, moduleID, revisionID, reason string) (model.EducationModule, error) {
+	if strings.TrimSpace(reason) == "" {
+		return model.EducationModule{}, errors.New("rollback reason is required")
+	}
+	current, err := s.repo.GetEducationModuleByID(ctx, moduleID)
+	if err != nil {
+		return model.EducationModule{}, err
+	}
+	revision, err := s.repo.EducationRevisionByID(ctx, moduleID, revisionID)
+	if err != nil {
+		return model.EducationModule{}, err
+	}
+	updated, err := s.repo.UpdateEducationDraft(ctx, moduleID, current.DraftRevision, revision.Slug, revision.Document, actor)
+	if err != nil {
+		return model.EducationModule{}, err
+	}
+	if err = s.saveEducationRevision(ctx, updated, "rollback", actor); err != nil {
+		return model.EducationModule{}, err
+	}
+	s.recordEducationAudit(ctx, actor, "education_module_rolled_back", moduleID, map[string]any{"source_revision_id": revisionID, "reason": strings.TrimSpace(reason), "revision": updated.DraftRevision})
+	return updated, nil
+}
+
+func (s *EducationService) saveEducationRevision(ctx context.Context, module model.EducationModule, kind, actor string) error {
+	revision, document := module.DraftRevision, module.DraftDocument
+	if kind == "published" && module.PublishedDocument != nil {
+		revision, document = module.PublishedRevision, *module.PublishedDocument
+	}
+	return s.repo.SaveEducationRevision(ctx, model.EducationRevision{
+		ID: "edrev_" + uuid.NewString()[:12], ModuleID: module.ID, Revision: revision,
+		Document: document, Slug: module.Slug, Kind: kind, CreatedBy: actor, CreatedAt: time.Now().UTC(),
+	})
+}
+
+func (s *EducationService) recordEducationAudit(ctx context.Context, actorID, action, moduleID string, metadata map[string]any) {
+	actor, ok := s.repo.UserByID(ctx, actorID)
+	if !ok {
+		return
+	}
+	_ = s.repo.SaveAuditEvent(ctx, model.AuditEvent{
+		ID: "audit_" + uuid.NewString()[:12], ActorID: actor.ID, Actor: actor.Email,
+		Action: action, TargetType: "education_module", Target: moduleID, Metadata: metadata, CreatedAt: time.Now().UTC(),
+	})
 }
 
 func (s *EducationService) localizedModule(ctx context.Context, module model.EducationModule, locale, userID string) (model.LocalizedEducationModule, error) {
@@ -315,6 +416,7 @@ func (s *EducationService) localizedModule(ctx context.Context, module model.Edu
 	}
 	locale = normalizeLocale(locale)
 	document := *module.PublishedDocument
+	document.Audience, document.ExperienceType = normalizedEducationExperience(document)
 	translation := document.Translations[locale]
 	progress, err := s.repo.GetEducationProgress(ctx, userID, module.ID, module.PublishedRevision)
 	if err != nil {
@@ -349,7 +451,7 @@ func (s *EducationService) localizedModule(ctx context.Context, module model.Edu
 	return model.LocalizedEducationModule{
 		ID: module.ID, Slug: module.Slug, Locale: locale, Title: translation.Title, Summary: translation.Summary,
 		LearningObjective: translation.LearningObjective, Disclaimer: translation.Disclaimer,
-		Category: document.Category, EstimatedMinutes: document.EstimatedMinutes,
+		Category: document.Category, Audience: document.Audience, ExperienceType: document.ExperienceType, EstimatedMinutes: document.EstimatedMinutes,
 		ReviewerName: document.ReviewerName, ReviewerRole: firstNonEmpty(translation.ReviewerRole, document.ReviewerRole), ReviewedAt: document.ReviewedAt,
 		Revision: module.PublishedRevision, Thumbnails: document.Thumbnails, ThumbnailURLs: mediaURLs,
 		MediaURLs: mediaURLs, Sources: document.Sources, Sections: sections, Progress: progress, UpdatedAt: module.UpdatedAt,
@@ -362,7 +464,19 @@ func (s *EducationService) PublishedModules(ctx context.Context, userID, locale 
 		return nil, err
 	}
 	localized := make([]model.LocalizedEducationModule, 0, len(modules))
+	role := "user"
+	if user, ok := s.repo.UserByID(ctx, userID); ok {
+		role = user.Role
+	}
 	for _, module := range modules {
+		if module.PublishedDocument == nil {
+			continue
+		}
+		document := *module.PublishedDocument
+		document.Audience, document.ExperienceType = normalizedEducationExperience(document)
+		if !educationAudienceAllows(document.Audience, role) {
+			continue
+		}
 		item, localizeErr := s.localizedModule(ctx, module, locale, userID)
 		if localizeErr != nil {
 			return nil, localizeErr
@@ -377,7 +491,37 @@ func (s *EducationService) PublishedModule(ctx context.Context, userID, slug, lo
 	if err != nil {
 		return model.LocalizedEducationModule{}, err
 	}
+	role := "user"
+	if user, ok := s.repo.UserByID(ctx, userID); ok {
+		role = user.Role
+	}
+	if module.PublishedDocument == nil {
+		return model.LocalizedEducationModule{}, repository.ErrEducationNotFound
+	}
+	document := *module.PublishedDocument
+	document.Audience, document.ExperienceType = normalizedEducationExperience(document)
+	if !educationAudienceAllows(document.Audience, role) {
+		return model.LocalizedEducationModule{}, repository.ErrEducationNotFound
+	}
 	return s.localizedModule(ctx, module, locale, userID)
+}
+
+func normalizedEducationExperience(document model.EducationDocument) (string, string) {
+	audience, experience := document.Audience, document.ExperienceType
+	if audience == "" {
+		audience = "all"
+	}
+	if experience == "" {
+		experience = "article"
+	}
+	return audience, experience
+}
+
+func educationAudienceAllows(audience, role string) bool {
+	if audience == "all" {
+		return role == "user" || role == "partner"
+	}
+	return (audience == "student" && role == "user") || (audience == "partner" && role == "partner")
 }
 
 func requiredItems(document model.EducationDocument) (sections, media, checks []string) {

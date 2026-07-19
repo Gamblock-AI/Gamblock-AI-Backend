@@ -46,6 +46,28 @@ func (_c *ApprovalRequestCreate) SetPartnerLinkID(v string) *ApprovalRequestCrea
 	return _c
 }
 
+// SetNillablePartnerLinkID sets the "partner_link_id" field if the given value is not nil.
+func (_c *ApprovalRequestCreate) SetNillablePartnerLinkID(v *string) *ApprovalRequestCreate {
+	if v != nil {
+		_c.SetPartnerLinkID(*v)
+	}
+	return _c
+}
+
+// SetMembershipID sets the "membership_id" field.
+func (_c *ApprovalRequestCreate) SetMembershipID(v string) *ApprovalRequestCreate {
+	_c.mutation.SetMembershipID(v)
+	return _c
+}
+
+// SetNillableMembershipID sets the "membership_id" field if the given value is not nil.
+func (_c *ApprovalRequestCreate) SetNillableMembershipID(v *string) *ApprovalRequestCreate {
+	if v != nil {
+		_c.SetMembershipID(*v)
+	}
+	return _c
+}
+
 // SetQuickTokenHash sets the "quick_token_hash" field.
 func (_c *ApprovalRequestCreate) SetQuickTokenHash(v string) *ApprovalRequestCreate {
 	_c.mutation.SetQuickTokenHash(v)
@@ -90,6 +112,20 @@ func (_c *ApprovalRequestCreate) SetReason(v string) *ApprovalRequestCreate {
 func (_c *ApprovalRequestCreate) SetNillableReason(v *string) *ApprovalRequestCreate {
 	if v != nil {
 		_c.SetReason(*v)
+	}
+	return _c
+}
+
+// SetSupportiveResponse sets the "supportive_response" field.
+func (_c *ApprovalRequestCreate) SetSupportiveResponse(v string) *ApprovalRequestCreate {
+	_c.mutation.SetSupportiveResponse(v)
+	return _c
+}
+
+// SetNillableSupportiveResponse sets the "supportive_response" field if the given value is not nil.
+func (_c *ApprovalRequestCreate) SetNillableSupportiveResponse(v *string) *ApprovalRequestCreate {
+	if v != nil {
+		_c.SetSupportiveResponse(*v)
 	}
 	return _c
 }
@@ -270,9 +306,6 @@ func (_c *ApprovalRequestCreate) check() error {
 	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "ApprovalRequest.user_id"`)}
 	}
-	if _, ok := _c.mutation.PartnerLinkID(); !ok {
-		return &ValidationError{Name: "partner_link_id", err: errors.New(`ent: missing required field "ApprovalRequest.partner_link_id"`)}
-	}
 	if _, ok := _c.mutation.Action(); !ok {
 		return &ValidationError{Name: "action", err: errors.New(`ent: missing required field "ApprovalRequest.action"`)}
 	}
@@ -343,7 +376,11 @@ func (_c *ApprovalRequestCreate) createSpec() (*ApprovalRequest, *sqlgraph.Creat
 	}
 	if value, ok := _c.mutation.PartnerLinkID(); ok {
 		_spec.SetField(approvalrequest.FieldPartnerLinkID, field.TypeString, value)
-		_node.PartnerLinkID = value
+		_node.PartnerLinkID = &value
+	}
+	if value, ok := _c.mutation.MembershipID(); ok {
+		_spec.SetField(approvalrequest.FieldMembershipID, field.TypeString, value)
+		_node.MembershipID = &value
 	}
 	if value, ok := _c.mutation.QuickTokenHash(); ok {
 		_spec.SetField(approvalrequest.FieldQuickTokenHash, field.TypeString, value)
@@ -360,6 +397,10 @@ func (_c *ApprovalRequestCreate) createSpec() (*ApprovalRequest, *sqlgraph.Creat
 	if value, ok := _c.mutation.Reason(); ok {
 		_spec.SetField(approvalrequest.FieldReason, field.TypeString, value)
 		_node.Reason = &value
+	}
+	if value, ok := _c.mutation.SupportiveResponse(); ok {
+		_spec.SetField(approvalrequest.FieldSupportiveResponse, field.TypeString, value)
+		_node.SupportiveResponse = &value
 	}
 	if value, ok := _c.mutation.RequestedDurationMinutes(); ok {
 		_spec.SetField(approvalrequest.FieldRequestedDurationMinutes, field.TypeInt, value)

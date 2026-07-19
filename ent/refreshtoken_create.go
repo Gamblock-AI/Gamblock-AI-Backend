@@ -46,6 +46,20 @@ func (_c *RefreshTokenCreate) SetNillableDeviceID(v *string) *RefreshTokenCreate
 	return _c
 }
 
+// SetAuthTime sets the "auth_time" field.
+func (_c *RefreshTokenCreate) SetAuthTime(v time.Time) *RefreshTokenCreate {
+	_c.mutation.SetAuthTime(v)
+	return _c
+}
+
+// SetNillableAuthTime sets the "auth_time" field if the given value is not nil.
+func (_c *RefreshTokenCreate) SetNillableAuthTime(v *time.Time) *RefreshTokenCreate {
+	if v != nil {
+		_c.SetAuthTime(*v)
+	}
+	return _c
+}
+
 // SetExpiresAt sets the "expires_at" field.
 func (_c *RefreshTokenCreate) SetExpiresAt(v time.Time) *RefreshTokenCreate {
 	_c.mutation.SetExpiresAt(v)
@@ -129,6 +143,10 @@ func (_c *RefreshTokenCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *RefreshTokenCreate) defaults() {
+	if _, ok := _c.mutation.AuthTime(); !ok {
+		v := refreshtoken.DefaultAuthTime()
+		_c.mutation.SetAuthTime(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := refreshtoken.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -146,6 +164,9 @@ func (_c *RefreshTokenCreate) check() error {
 	}
 	if _, ok := _c.mutation.TokenHash(); !ok {
 		return &ValidationError{Name: "token_hash", err: errors.New(`ent: missing required field "RefreshToken.token_hash"`)}
+	}
+	if _, ok := _c.mutation.AuthTime(); !ok {
+		return &ValidationError{Name: "auth_time", err: errors.New(`ent: missing required field "RefreshToken.auth_time"`)}
 	}
 	if _, ok := _c.mutation.ExpiresAt(); !ok {
 		return &ValidationError{Name: "expires_at", err: errors.New(`ent: missing required field "RefreshToken.expires_at"`)}
@@ -199,6 +220,10 @@ func (_c *RefreshTokenCreate) createSpec() (*RefreshToken, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.DeviceID(); ok {
 		_spec.SetField(refreshtoken.FieldDeviceID, field.TypeString, value)
 		_node.DeviceID = &value
+	}
+	if value, ok := _c.mutation.AuthTime(); ok {
+		_spec.SetField(refreshtoken.FieldAuthTime, field.TypeTime, value)
+		_node.AuthTime = value
 	}
 	if value, ok := _c.mutation.ExpiresAt(); ok {
 		_spec.SetField(refreshtoken.FieldExpiresAt, field.TypeTime, value)

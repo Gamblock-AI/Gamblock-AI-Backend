@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 	entsql "entgo.io/ent/dialect/sql"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 	_ "modernc.org/sqlite" // registers the "sqlite" driver (CGO-free)
 )
 

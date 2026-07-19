@@ -15,12 +15,27 @@ func loadIdentityStore(ctx context.Context, client *ent.Client, out *store.Store
 			Email:            item.Email,
 			DisplayName:      item.DisplayName,
 			Role:             item.Role.String(),
+			EmailVerifiedAt:  item.EmailVerifiedAt,
+			PhoneE164:        value(item.PhoneE164),
+			PhoneVerifiedAt:  item.PhoneVerifiedAt,
 			ExperiencePoints: item.ExperiencePoints,
 			PasswordHash:     value(item.PasswordHash),
 			GoogleSubject:    value(item.GoogleSubject),
 			DisabledAt:       item.DisabledAt,
 			CreatedAt:        item.CreatedAt,
 			UpdatedAt:        item.UpdatedAt,
+		})
+	}
+
+	verifications, err := client.ContactVerification.Query().All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, item := range verifications {
+		out.ContactVerifications = append(out.ContactVerifications, store.ContactVerification{
+			ID: item.ID, UserID: item.UserID, Kind: item.Kind.String(), Destination: item.Destination,
+			TokenHash: item.TokenHash, AttemptCount: item.AttemptCount, ExpiresAt: item.ExpiresAt,
+			ConsumedAt: item.ConsumedAt, CreatedAt: item.CreatedAt,
 		})
 	}
 
@@ -83,7 +98,8 @@ func loadIdentityStore(ctx context.Context, client *ent.Client, out *store.Store
 			ID:                       item.ID,
 			UserID:                   item.UserID,
 			DeviceID:                 value(item.DeviceID),
-			PartnerLinkID:            item.PartnerLinkID,
+			PartnerLinkID:            value(item.PartnerLinkID),
+			MembershipID:             value(item.MembershipID),
 			QuickTokenHash:           value(item.QuickTokenHash),
 			Action:                   item.Action.String(),
 			ActionLabel:              humanApprovalAction(item.Action.String(), duration),
@@ -91,6 +107,8 @@ func loadIdentityStore(ctx context.Context, client *ent.Client, out *store.Store
 			Status:                   item.Status.String(),
 			StatusLabel:              humanApprovalStatus(item.Status.String()),
 			Reason:                   value(item.Reason),
+			SupportiveResponse:       value(item.SupportiveResponse),
+			ResolvedBy:               value(item.ResolvedBy),
 			RequestedDurationMinutes: duration,
 			ResolvedAt:               item.ResolvedAt,
 			AppliedAt:                item.AppliedAt,

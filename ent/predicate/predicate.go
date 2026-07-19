@@ -6,6 +6,12 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// AccountabilityGroup is the predicate function for accountabilitygroup builders.
+type AccountabilityGroup func(*sql.Selector)
+
+// AccountabilityMembership is the predicate function for accountabilitymembership builders.
+type AccountabilityMembership func(*sql.Selector)
+
 // AggregateEvent is the predicate function for aggregateevent builders.
 type AggregateEvent func(*sql.Selector)
 
@@ -17,6 +23,9 @@ type AuditLog func(*sql.Selector)
 
 // CheckIn is the predicate function for checkin builders.
 type CheckIn func(*sql.Selector)
+
+// ContactVerification is the predicate function for contactverification builders.
+type ContactVerification func(*sql.Selector)
 
 // ContentProgress is the predicate function for contentprogress builders.
 type ContentProgress func(*sql.Selector)
@@ -33,11 +42,17 @@ type Device func(*sql.Selector)
 // EducationMedia is the predicate function for educationmedia builders.
 type EducationMedia func(*sql.Selector)
 
+// EducationRevision is the predicate function for educationrevision builders.
+type EducationRevision func(*sql.Selector)
+
 // EmergencyKeyRequest is the predicate function for emergencykeyrequest builders.
 type EmergencyKeyRequest func(*sql.Selector)
 
 // Intention is the predicate function for intention builders.
 type Intention func(*sql.Selector)
+
+// MembershipExitRequest is the predicate function for membershipexitrequest builders.
+type MembershipExitRequest func(*sql.Selector)
 
 // ModelRelease is the predicate function for modelrelease builders.
 type ModelRelease func(*sql.Selector)
@@ -51,6 +66,9 @@ type NetworkRulesetRelease func(*sql.Selector)
 // NotificationDelivery is the predicate function for notificationdelivery builders.
 type NotificationDelivery func(*sql.Selector)
 
+// OperatorInvitation is the predicate function for operatorinvitation builders.
+type OperatorInvitation func(*sql.Selector)
+
 // Organization is the predicate function for organization builders.
 type Organization func(*sql.Selector)
 
@@ -63,6 +81,9 @@ type OrganizationMember func(*sql.Selector)
 // OrganizationPolicy is the predicate function for organizationpolicy builders.
 type OrganizationPolicy func(*sql.Selector)
 
+// PartnerContactRequest is the predicate function for partnercontactrequest builders.
+type PartnerContactRequest func(*sql.Selector)
+
 // PartnerLink is the predicate function for partnerlink builders.
 type PartnerLink func(*sql.Selector)
 
@@ -71,6 +92,15 @@ type PsychoeducationModule func(*sql.Selector)
 
 // PsychoeducationProgress is the predicate function for psychoeducationprogress builders.
 type PsychoeducationProgress func(*sql.Selector)
+
+// RecoveryPracticeSession is the predicate function for recoverypracticesession builders.
+type RecoveryPracticeSession func(*sql.Selector)
+
+// RecoveryRecord is the predicate function for recoveryrecord builders.
+type RecoveryRecord func(*sql.Selector)
+
+// RecoverySpace is the predicate function for recoveryspace builders.
+type RecoverySpace func(*sql.Selector)
 
 // Reflection is the predicate function for reflection builders.
 type Reflection func(*sql.Selector)
@@ -87,11 +117,17 @@ type ReportRollup func(*sql.Selector)
 // RulesetRelease is the predicate function for rulesetrelease builders.
 type RulesetRelease func(*sql.Selector)
 
+// SiteSocialLink is the predicate function for sitesociallink builders.
+type SiteSocialLink func(*sql.Selector)
+
 // SupportActionAudit is the predicate function for supportactionaudit builders.
 type SupportActionAudit func(*sql.Selector)
 
 // SupportCase is the predicate function for supportcase builders.
 type SupportCase func(*sql.Selector)
+
+// SupportMessage is the predicate function for supportmessage builders.
+type SupportMessage func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

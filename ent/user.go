@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -29,6 +30,14 @@ type User struct {
 	GoogleSubject *string `json:"google_subject,omitempty"`
 	// Role holds the value of the "role" field.
 	Role user.Role `json:"role,omitempty"`
+	// EmailVerifiedAt holds the value of the "email_verified_at" field.
+	EmailVerifiedAt *time.Time `json:"email_verified_at,omitempty"`
+	// PhoneE164 holds the value of the "phone_e164" field.
+	PhoneE164 *string `json:"phone_e164,omitempty"`
+	// PhoneVerifiedAt holds the value of the "phone_verified_at" field.
+	PhoneVerifiedAt *time.Time `json:"phone_verified_at,omitempty"`
+	// NotificationPreferencesJSON holds the value of the "notification_preferences_json" field.
+	NotificationPreferencesJSON map[string]interface{} `json:"notification_preferences_json,omitempty"`
 	// ExperiencePoints holds the value of the "experience_points" field.
 	ExperiencePoints int `json:"experience_points,omitempty"`
 	// DisabledAt holds the value of the "disabled_at" field.
@@ -45,11 +54,13 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldNotificationPreferencesJSON:
+			values[i] = new([]byte)
 		case user.FieldExperiencePoints:
 			values[i] = new(sql.NullInt64)
-		case user.FieldID, user.FieldEmail, user.FieldDisplayName, user.FieldPasswordHash, user.FieldAvatarURL, user.FieldGoogleSubject, user.FieldRole:
+		case user.FieldID, user.FieldEmail, user.FieldDisplayName, user.FieldPasswordHash, user.FieldAvatarURL, user.FieldGoogleSubject, user.FieldRole, user.FieldPhoneE164:
 			values[i] = new(sql.NullString)
-		case user.FieldDisabledAt, user.FieldCreatedAt, user.FieldUpdatedAt:
+		case user.FieldEmailVerifiedAt, user.FieldPhoneVerifiedAt, user.FieldDisabledAt, user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -110,6 +121,35 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
 			} else if value.Valid {
 				_m.Role = user.Role(value.String)
+			}
+		case user.FieldEmailVerifiedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field email_verified_at", values[i])
+			} else if value.Valid {
+				_m.EmailVerifiedAt = new(time.Time)
+				*_m.EmailVerifiedAt = value.Time
+			}
+		case user.FieldPhoneE164:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field phone_e164", values[i])
+			} else if value.Valid {
+				_m.PhoneE164 = new(string)
+				*_m.PhoneE164 = value.String
+			}
+		case user.FieldPhoneVerifiedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field phone_verified_at", values[i])
+			} else if value.Valid {
+				_m.PhoneVerifiedAt = new(time.Time)
+				*_m.PhoneVerifiedAt = value.Time
+			}
+		case user.FieldNotificationPreferencesJSON:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field notification_preferences_json", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.NotificationPreferencesJSON); err != nil {
+					return fmt.Errorf("unmarshal field notification_preferences_json: %w", err)
+				}
 			}
 		case user.FieldExperiencePoints:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -192,6 +232,24 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Role))
+	builder.WriteString(", ")
+	if v := _m.EmailVerifiedAt; v != nil {
+		builder.WriteString("email_verified_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.PhoneE164; v != nil {
+		builder.WriteString("phone_e164=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.PhoneVerifiedAt; v != nil {
+		builder.WriteString("phone_verified_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("notification_preferences_json=")
+	builder.WriteString(fmt.Sprintf("%v", _m.NotificationPreferencesJSON))
 	builder.WriteString(", ")
 	builder.WriteString("experience_points=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ExperiencePoints))

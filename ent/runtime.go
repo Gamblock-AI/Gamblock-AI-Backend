@@ -5,36 +5,48 @@ package ent
 import (
 	"time"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitygroup"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitymembership"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/aggregateevent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/approvalrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/auditlog"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/checkin"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/contactverification"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/contentprogress"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/membershipexitrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/networkrulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/notificationdelivery"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/operatorinvitation"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organization"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organizationinvite"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organizationmember"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organizationpolicy"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnercontactrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationprogress"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoverypracticesession"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryrecord"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryspace"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/schema"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/sitesociallink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportactionaudit"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportcase"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportmessage"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/user"
 )
 
@@ -42,6 +54,58 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	accountabilitygroupFields := schema.AccountabilityGroup{}.Fields()
+	_ = accountabilitygroupFields
+	// accountabilitygroupDescDescription is the schema descriptor for description field.
+	accountabilitygroupDescDescription := accountabilitygroupFields[3].Descriptor()
+	// accountabilitygroup.DefaultDescription holds the default value on creation for the description field.
+	accountabilitygroup.DefaultDescription = accountabilitygroupDescDescription.Default.(string)
+	// accountabilitygroupDescCreatedAt is the schema descriptor for created_at field.
+	accountabilitygroupDescCreatedAt := accountabilitygroupFields[8].Descriptor()
+	// accountabilitygroup.DefaultCreatedAt holds the default value on creation for the created_at field.
+	accountabilitygroup.DefaultCreatedAt = accountabilitygroupDescCreatedAt.Default.(func() time.Time)
+	// accountabilitygroupDescUpdatedAt is the schema descriptor for updated_at field.
+	accountabilitygroupDescUpdatedAt := accountabilitygroupFields[9].Descriptor()
+	// accountabilitygroup.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	accountabilitygroup.DefaultUpdatedAt = accountabilitygroupDescUpdatedAt.Default.(func() time.Time)
+	// accountabilitygroup.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	accountabilitygroup.UpdateDefaultUpdatedAt = accountabilitygroupDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// accountabilitygroupDescID is the schema descriptor for id field.
+	accountabilitygroupDescID := accountabilitygroupFields[0].Descriptor()
+	// accountabilitygroup.DefaultID holds the default value on creation for the id field.
+	accountabilitygroup.DefaultID = accountabilitygroupDescID.Default.(func() string)
+	accountabilitymembershipFields := schema.AccountabilityMembership{}.Fields()
+	_ = accountabilitymembershipFields
+	// accountabilitymembershipDescShareProtectionHealth is the schema descriptor for share_protection_health field.
+	accountabilitymembershipDescShareProtectionHealth := accountabilitymembershipFields[4].Descriptor()
+	// accountabilitymembership.DefaultShareProtectionHealth holds the default value on creation for the share_protection_health field.
+	accountabilitymembership.DefaultShareProtectionHealth = accountabilitymembershipDescShareProtectionHealth.Default.(bool)
+	// accountabilitymembershipDescShareProtectionActivity is the schema descriptor for share_protection_activity field.
+	accountabilitymembershipDescShareProtectionActivity := accountabilitymembershipFields[5].Descriptor()
+	// accountabilitymembership.DefaultShareProtectionActivity holds the default value on creation for the share_protection_activity field.
+	accountabilitymembership.DefaultShareProtectionActivity = accountabilitymembershipDescShareProtectionActivity.Default.(bool)
+	// accountabilitymembershipDescShareRecoveryEngagement is the schema descriptor for share_recovery_engagement field.
+	accountabilitymembershipDescShareRecoveryEngagement := accountabilitymembershipFields[6].Descriptor()
+	// accountabilitymembership.DefaultShareRecoveryEngagement holds the default value on creation for the share_recovery_engagement field.
+	accountabilitymembership.DefaultShareRecoveryEngagement = accountabilitymembershipDescShareRecoveryEngagement.Default.(bool)
+	// accountabilitymembershipDescShareEducationProgress is the schema descriptor for share_education_progress field.
+	accountabilitymembershipDescShareEducationProgress := accountabilitymembershipFields[7].Descriptor()
+	// accountabilitymembership.DefaultShareEducationProgress holds the default value on creation for the share_education_progress field.
+	accountabilitymembership.DefaultShareEducationProgress = accountabilitymembershipDescShareEducationProgress.Default.(bool)
+	// accountabilitymembershipDescCreatedAt is the schema descriptor for created_at field.
+	accountabilitymembershipDescCreatedAt := accountabilitymembershipFields[10].Descriptor()
+	// accountabilitymembership.DefaultCreatedAt holds the default value on creation for the created_at field.
+	accountabilitymembership.DefaultCreatedAt = accountabilitymembershipDescCreatedAt.Default.(func() time.Time)
+	// accountabilitymembershipDescUpdatedAt is the schema descriptor for updated_at field.
+	accountabilitymembershipDescUpdatedAt := accountabilitymembershipFields[11].Descriptor()
+	// accountabilitymembership.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	accountabilitymembership.DefaultUpdatedAt = accountabilitymembershipDescUpdatedAt.Default.(func() time.Time)
+	// accountabilitymembership.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	accountabilitymembership.UpdateDefaultUpdatedAt = accountabilitymembershipDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// accountabilitymembershipDescID is the schema descriptor for id field.
+	accountabilitymembershipDescID := accountabilitymembershipFields[0].Descriptor()
+	// accountabilitymembership.DefaultID holds the default value on creation for the id field.
+	accountabilitymembership.DefaultID = accountabilitymembershipDescID.Default.(func() string)
 	aggregateeventFields := schema.AggregateEvent{}.Fields()
 	_ = aggregateeventFields
 	// aggregateeventDescCreatedAt is the schema descriptor for created_at field.
@@ -55,11 +119,11 @@ func init() {
 	approvalrequestFields := schema.ApprovalRequest{}.Fields()
 	_ = approvalrequestFields
 	// approvalrequestDescCreatedAt is the schema descriptor for created_at field.
-	approvalrequestDescCreatedAt := approvalrequestFields[14].Descriptor()
+	approvalrequestDescCreatedAt := approvalrequestFields[16].Descriptor()
 	// approvalrequest.DefaultCreatedAt holds the default value on creation for the created_at field.
 	approvalrequest.DefaultCreatedAt = approvalrequestDescCreatedAt.Default.(func() time.Time)
 	// approvalrequestDescUpdatedAt is the schema descriptor for updated_at field.
-	approvalrequestDescUpdatedAt := approvalrequestFields[15].Descriptor()
+	approvalrequestDescUpdatedAt := approvalrequestFields[17].Descriptor()
 	// approvalrequest.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	approvalrequest.DefaultUpdatedAt = approvalrequestDescUpdatedAt.Default.(func() time.Time)
 	// approvalrequest.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -88,6 +152,20 @@ func init() {
 	checkinDescID := checkinFields[0].Descriptor()
 	// checkin.DefaultID holds the default value on creation for the id field.
 	checkin.DefaultID = checkinDescID.Default.(func() string)
+	contactverificationFields := schema.ContactVerification{}.Fields()
+	_ = contactverificationFields
+	// contactverificationDescAttemptCount is the schema descriptor for attempt_count field.
+	contactverificationDescAttemptCount := contactverificationFields[5].Descriptor()
+	// contactverification.DefaultAttemptCount holds the default value on creation for the attempt_count field.
+	contactverification.DefaultAttemptCount = contactverificationDescAttemptCount.Default.(int)
+	// contactverificationDescCreatedAt is the schema descriptor for created_at field.
+	contactverificationDescCreatedAt := contactverificationFields[8].Descriptor()
+	// contactverification.DefaultCreatedAt holds the default value on creation for the created_at field.
+	contactverification.DefaultCreatedAt = contactverificationDescCreatedAt.Default.(func() time.Time)
+	// contactverificationDescID is the schema descriptor for id field.
+	contactverificationDescID := contactverificationFields[0].Descriptor()
+	// contactverification.DefaultID holds the default value on creation for the id field.
+	contactverification.DefaultID = contactverificationDescID.Default.(func() string)
 	contentprogressFields := schema.ContentProgress{}.Fields()
 	_ = contentprogressFields
 	// contentprogressDescProgress is the schema descriptor for progress field.
@@ -128,10 +206,20 @@ func init() {
 	dailymission.DefaultID = dailymissionDescID.Default.(func() string)
 	datarequestFields := schema.DataRequest{}.Fields()
 	_ = datarequestFields
+	// datarequestDescRetryCount is the schema descriptor for retry_count field.
+	datarequestDescRetryCount := datarequestFields[10].Descriptor()
+	// datarequest.DefaultRetryCount holds the default value on creation for the retry_count field.
+	datarequest.DefaultRetryCount = datarequestDescRetryCount.Default.(int)
 	// datarequestDescRequestedAt is the schema descriptor for requested_at field.
-	datarequestDescRequestedAt := datarequestFields[4].Descriptor()
+	datarequestDescRequestedAt := datarequestFields[11].Descriptor()
 	// datarequest.DefaultRequestedAt holds the default value on creation for the requested_at field.
 	datarequest.DefaultRequestedAt = datarequestDescRequestedAt.Default.(func() time.Time)
+	// datarequestDescUpdatedAt is the schema descriptor for updated_at field.
+	datarequestDescUpdatedAt := datarequestFields[13].Descriptor()
+	// datarequest.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	datarequest.DefaultUpdatedAt = datarequestDescUpdatedAt.Default.(func() time.Time)
+	// datarequest.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	datarequest.UpdateDefaultUpdatedAt = datarequestDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// datarequestDescID is the schema descriptor for id field.
 	datarequestDescID := datarequestFields[0].Descriptor()
 	// datarequest.DefaultID holds the default value on creation for the id field.
@@ -188,6 +276,16 @@ func init() {
 	educationmediaDescID := educationmediaFields[0].Descriptor()
 	// educationmedia.DefaultID holds the default value on creation for the id field.
 	educationmedia.DefaultID = educationmediaDescID.Default.(func() string)
+	educationrevisionFields := schema.EducationRevision{}.Fields()
+	_ = educationrevisionFields
+	// educationrevisionDescCreatedAt is the schema descriptor for created_at field.
+	educationrevisionDescCreatedAt := educationrevisionFields[7].Descriptor()
+	// educationrevision.DefaultCreatedAt holds the default value on creation for the created_at field.
+	educationrevision.DefaultCreatedAt = educationrevisionDescCreatedAt.Default.(func() time.Time)
+	// educationrevisionDescID is the schema descriptor for id field.
+	educationrevisionDescID := educationrevisionFields[0].Descriptor()
+	// educationrevision.DefaultID holds the default value on creation for the id field.
+	educationrevision.DefaultID = educationrevisionDescID.Default.(func() string)
 	emergencykeyrequestFields := schema.EmergencyKeyRequest{}.Fields()
 	_ = emergencykeyrequestFields
 	// emergencykeyrequestDescCreatedAt is the schema descriptor for created_at field.
@@ -220,6 +318,26 @@ func init() {
 	intentionDescID := intentionFields[0].Descriptor()
 	// intention.DefaultID holds the default value on creation for the id field.
 	intention.DefaultID = intentionDescID.Default.(func() string)
+	membershipexitrequestFields := schema.MembershipExitRequest{}.Fields()
+	_ = membershipexitrequestFields
+	// membershipexitrequestDescReason is the schema descriptor for reason field.
+	membershipexitrequestDescReason := membershipexitrequestFields[5].Descriptor()
+	// membershipexitrequest.DefaultReason holds the default value on creation for the reason field.
+	membershipexitrequest.DefaultReason = membershipexitrequestDescReason.Default.(string)
+	// membershipexitrequestDescCreatedAt is the schema descriptor for created_at field.
+	membershipexitrequestDescCreatedAt := membershipexitrequestFields[9].Descriptor()
+	// membershipexitrequest.DefaultCreatedAt holds the default value on creation for the created_at field.
+	membershipexitrequest.DefaultCreatedAt = membershipexitrequestDescCreatedAt.Default.(func() time.Time)
+	// membershipexitrequestDescUpdatedAt is the schema descriptor for updated_at field.
+	membershipexitrequestDescUpdatedAt := membershipexitrequestFields[10].Descriptor()
+	// membershipexitrequest.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	membershipexitrequest.DefaultUpdatedAt = membershipexitrequestDescUpdatedAt.Default.(func() time.Time)
+	// membershipexitrequest.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	membershipexitrequest.UpdateDefaultUpdatedAt = membershipexitrequestDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// membershipexitrequestDescID is the schema descriptor for id field.
+	membershipexitrequestDescID := membershipexitrequestFields[0].Descriptor()
+	// membershipexitrequest.DefaultID holds the default value on creation for the id field.
+	membershipexitrequest.DefaultID = membershipexitrequestDescID.Default.(func() string)
 	modelreleaseFields := schema.ModelRelease{}.Fields()
 	_ = modelreleaseFields
 	// modelreleaseDescThreshold is the schema descriptor for threshold field.
@@ -290,6 +408,22 @@ func init() {
 	notificationdeliveryDescID := notificationdeliveryFields[0].Descriptor()
 	// notificationdelivery.DefaultID holds the default value on creation for the id field.
 	notificationdelivery.DefaultID = notificationdeliveryDescID.Default.(func() string)
+	operatorinvitationFields := schema.OperatorInvitation{}.Fields()
+	_ = operatorinvitationFields
+	// operatorinvitationDescCreatedAt is the schema descriptor for created_at field.
+	operatorinvitationDescCreatedAt := operatorinvitationFields[8].Descriptor()
+	// operatorinvitation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	operatorinvitation.DefaultCreatedAt = operatorinvitationDescCreatedAt.Default.(func() time.Time)
+	// operatorinvitationDescUpdatedAt is the schema descriptor for updated_at field.
+	operatorinvitationDescUpdatedAt := operatorinvitationFields[9].Descriptor()
+	// operatorinvitation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	operatorinvitation.DefaultUpdatedAt = operatorinvitationDescUpdatedAt.Default.(func() time.Time)
+	// operatorinvitation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	operatorinvitation.UpdateDefaultUpdatedAt = operatorinvitationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// operatorinvitationDescID is the schema descriptor for id field.
+	operatorinvitationDescID := operatorinvitationFields[0].Descriptor()
+	// operatorinvitation.DefaultID holds the default value on creation for the id field.
+	operatorinvitation.DefaultID = operatorinvitationDescID.Default.(func() string)
 	organizationFields := schema.Organization{}.Fields()
 	_ = organizationFields
 	// organizationDescCreatedAt is the schema descriptor for created_at field.
@@ -338,6 +472,22 @@ func init() {
 	organizationpolicyDescID := organizationpolicyFields[0].Descriptor()
 	// organizationpolicy.DefaultID holds the default value on creation for the id field.
 	organizationpolicy.DefaultID = organizationpolicyDescID.Default.(func() string)
+	partnercontactrequestFields := schema.PartnerContactRequest{}.Fields()
+	_ = partnercontactrequestFields
+	// partnercontactrequestDescCreatedAt is the schema descriptor for created_at field.
+	partnercontactrequestDescCreatedAt := partnercontactrequestFields[10].Descriptor()
+	// partnercontactrequest.DefaultCreatedAt holds the default value on creation for the created_at field.
+	partnercontactrequest.DefaultCreatedAt = partnercontactrequestDescCreatedAt.Default.(func() time.Time)
+	// partnercontactrequestDescUpdatedAt is the schema descriptor for updated_at field.
+	partnercontactrequestDescUpdatedAt := partnercontactrequestFields[11].Descriptor()
+	// partnercontactrequest.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	partnercontactrequest.DefaultUpdatedAt = partnercontactrequestDescUpdatedAt.Default.(func() time.Time)
+	// partnercontactrequest.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	partnercontactrequest.UpdateDefaultUpdatedAt = partnercontactrequestDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// partnercontactrequestDescID is the schema descriptor for id field.
+	partnercontactrequestDescID := partnercontactrequestFields[0].Descriptor()
+	// partnercontactrequest.DefaultID holds the default value on creation for the id field.
+	partnercontactrequest.DefaultID = partnercontactrequestDescID.Default.(func() string)
 	partnerlinkFields := schema.PartnerLink{}.Fields()
 	_ = partnerlinkFields
 	// partnerlinkDescCreatedAt is the schema descriptor for created_at field.
@@ -410,14 +560,92 @@ func init() {
 	psychoeducationprogressDescID := psychoeducationprogressFields[0].Descriptor()
 	// psychoeducationprogress.DefaultID holds the default value on creation for the id field.
 	psychoeducationprogress.DefaultID = psychoeducationprogressDescID.Default.(func() string)
+	recoverypracticesessionFields := schema.RecoveryPracticeSession{}.Fields()
+	_ = recoverypracticesessionFields
+	// recoverypracticesessionDescDurationSeconds is the schema descriptor for duration_seconds field.
+	recoverypracticesessionDescDurationSeconds := recoverypracticesessionFields[3].Descriptor()
+	// recoverypracticesession.DurationSecondsValidator is a validator for the "duration_seconds" field. It is called by the builders before save.
+	recoverypracticesession.DurationSecondsValidator = func() func(int) error {
+		validators := recoverypracticesessionDescDurationSeconds.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(duration_seconds int) error {
+			for _, fn := range fns {
+				if err := fn(duration_seconds); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// recoverypracticesessionDescCreatedAt is the schema descriptor for created_at field.
+	recoverypracticesessionDescCreatedAt := recoverypracticesessionFields[6].Descriptor()
+	// recoverypracticesession.DefaultCreatedAt holds the default value on creation for the created_at field.
+	recoverypracticesession.DefaultCreatedAt = recoverypracticesessionDescCreatedAt.Default.(func() time.Time)
+	// recoverypracticesessionDescID is the schema descriptor for id field.
+	recoverypracticesessionDescID := recoverypracticesessionFields[0].Descriptor()
+	// recoverypracticesession.DefaultID holds the default value on creation for the id field.
+	recoverypracticesession.DefaultID = recoverypracticesessionDescID.Default.(func() string)
+	recoveryrecordFields := schema.RecoveryRecord{}.Fields()
+	_ = recoveryrecordFields
+	// recoveryrecordDescCreatedAt is the schema descriptor for created_at field.
+	recoveryrecordDescCreatedAt := recoveryrecordFields[7].Descriptor()
+	// recoveryrecord.DefaultCreatedAt holds the default value on creation for the created_at field.
+	recoveryrecord.DefaultCreatedAt = recoveryrecordDescCreatedAt.Default.(func() time.Time)
+	// recoveryrecordDescUpdatedAt is the schema descriptor for updated_at field.
+	recoveryrecordDescUpdatedAt := recoveryrecordFields[8].Descriptor()
+	// recoveryrecord.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	recoveryrecord.DefaultUpdatedAt = recoveryrecordDescUpdatedAt.Default.(func() time.Time)
+	// recoveryrecord.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	recoveryrecord.UpdateDefaultUpdatedAt = recoveryrecordDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// recoveryrecordDescID is the schema descriptor for id field.
+	recoveryrecordDescID := recoveryrecordFields[0].Descriptor()
+	// recoveryrecord.DefaultID holds the default value on creation for the id field.
+	recoveryrecord.DefaultID = recoveryrecordDescID.Default.(func() string)
+	recoveryspaceFields := schema.RecoverySpace{}.Fields()
+	_ = recoveryspaceFields
+	// recoveryspaceDescUnlockedItemsJSON is the schema descriptor for unlocked_items_json field.
+	recoveryspaceDescUnlockedItemsJSON := recoveryspaceFields[3].Descriptor()
+	// recoveryspace.DefaultUnlockedItemsJSON holds the default value on creation for the unlocked_items_json field.
+	recoveryspace.DefaultUnlockedItemsJSON = recoveryspaceDescUnlockedItemsJSON.Default.([]string)
+	// recoveryspaceDescPlacedItemsJSON is the schema descriptor for placed_items_json field.
+	recoveryspaceDescPlacedItemsJSON := recoveryspaceFields[4].Descriptor()
+	// recoveryspace.DefaultPlacedItemsJSON holds the default value on creation for the placed_items_json field.
+	recoveryspace.DefaultPlacedItemsJSON = recoveryspaceDescPlacedItemsJSON.Default.(map[string]interface{})
+	// recoveryspaceDescUnlockRuleVersion is the schema descriptor for unlock_rule_version field.
+	recoveryspaceDescUnlockRuleVersion := recoveryspaceFields[5].Descriptor()
+	// recoveryspace.DefaultUnlockRuleVersion holds the default value on creation for the unlock_rule_version field.
+	recoveryspace.DefaultUnlockRuleVersion = recoveryspaceDescUnlockRuleVersion.Default.(int)
+	// recoveryspace.UnlockRuleVersionValidator is a validator for the "unlock_rule_version" field. It is called by the builders before save.
+	recoveryspace.UnlockRuleVersionValidator = recoveryspaceDescUnlockRuleVersion.Validators[0].(func(int) error)
+	// recoveryspaceDescCreatedAt is the schema descriptor for created_at field.
+	recoveryspaceDescCreatedAt := recoveryspaceFields[6].Descriptor()
+	// recoveryspace.DefaultCreatedAt holds the default value on creation for the created_at field.
+	recoveryspace.DefaultCreatedAt = recoveryspaceDescCreatedAt.Default.(func() time.Time)
+	// recoveryspaceDescUpdatedAt is the schema descriptor for updated_at field.
+	recoveryspaceDescUpdatedAt := recoveryspaceFields[7].Descriptor()
+	// recoveryspace.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	recoveryspace.DefaultUpdatedAt = recoveryspaceDescUpdatedAt.Default.(func() time.Time)
+	// recoveryspace.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	recoveryspace.UpdateDefaultUpdatedAt = recoveryspaceDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// recoveryspaceDescID is the schema descriptor for id field.
+	recoveryspaceDescID := recoveryspaceFields[0].Descriptor()
+	// recoveryspace.DefaultID holds the default value on creation for the id field.
+	recoveryspace.DefaultID = recoveryspaceDescID.Default.(func() string)
 	reflectionFields := schema.Reflection{}.Fields()
 	_ = reflectionFields
+	// reflectionDescIsFocus is the schema descriptor for is_focus field.
+	reflectionDescIsFocus := reflectionFields[5].Descriptor()
+	// reflection.DefaultIsFocus holds the default value on creation for the is_focus field.
+	reflection.DefaultIsFocus = reflectionDescIsFocus.Default.(bool)
 	// reflectionDescCreatedAt is the schema descriptor for created_at field.
-	reflectionDescCreatedAt := reflectionFields[4].Descriptor()
+	reflectionDescCreatedAt := reflectionFields[6].Descriptor()
 	// reflection.DefaultCreatedAt holds the default value on creation for the created_at field.
 	reflection.DefaultCreatedAt = reflectionDescCreatedAt.Default.(func() time.Time)
 	// reflectionDescUpdatedAt is the schema descriptor for updated_at field.
-	reflectionDescUpdatedAt := reflectionFields[5].Descriptor()
+	reflectionDescUpdatedAt := reflectionFields[7].Descriptor()
 	// reflection.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	reflection.DefaultUpdatedAt = reflectionDescUpdatedAt.Default.(func() time.Time)
 	// reflection.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -428,8 +656,12 @@ func init() {
 	reflection.DefaultID = reflectionDescID.Default.(func() string)
 	refreshtokenFields := schema.RefreshToken{}.Fields()
 	_ = refreshtokenFields
+	// refreshtokenDescAuthTime is the schema descriptor for auth_time field.
+	refreshtokenDescAuthTime := refreshtokenFields[4].Descriptor()
+	// refreshtoken.DefaultAuthTime holds the default value on creation for the auth_time field.
+	refreshtoken.DefaultAuthTime = refreshtokenDescAuthTime.Default.(func() time.Time)
 	// refreshtokenDescCreatedAt is the schema descriptor for created_at field.
-	refreshtokenDescCreatedAt := refreshtokenFields[6].Descriptor()
+	refreshtokenDescCreatedAt := refreshtokenFields[7].Descriptor()
 	// refreshtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
 	refreshtoken.DefaultCreatedAt = refreshtokenDescCreatedAt.Default.(func() time.Time)
 	// refreshtokenDescID is the schema descriptor for id field.
@@ -472,6 +704,30 @@ func init() {
 	rulesetreleaseDescID := rulesetreleaseFields[0].Descriptor()
 	// rulesetrelease.DefaultID holds the default value on creation for the id field.
 	rulesetrelease.DefaultID = rulesetreleaseDescID.Default.(func() string)
+	sitesociallinkFields := schema.SiteSocialLink{}.Fields()
+	_ = sitesociallinkFields
+	// sitesociallinkDescEnabled is the schema descriptor for enabled field.
+	sitesociallinkDescEnabled := sitesociallinkFields[4].Descriptor()
+	// sitesociallink.DefaultEnabled holds the default value on creation for the enabled field.
+	sitesociallink.DefaultEnabled = sitesociallinkDescEnabled.Default.(bool)
+	// sitesociallinkDescSortOrder is the schema descriptor for sort_order field.
+	sitesociallinkDescSortOrder := sitesociallinkFields[5].Descriptor()
+	// sitesociallink.DefaultSortOrder holds the default value on creation for the sort_order field.
+	sitesociallink.DefaultSortOrder = sitesociallinkDescSortOrder.Default.(int)
+	// sitesociallinkDescCreatedAt is the schema descriptor for created_at field.
+	sitesociallinkDescCreatedAt := sitesociallinkFields[7].Descriptor()
+	// sitesociallink.DefaultCreatedAt holds the default value on creation for the created_at field.
+	sitesociallink.DefaultCreatedAt = sitesociallinkDescCreatedAt.Default.(func() time.Time)
+	// sitesociallinkDescUpdatedAt is the schema descriptor for updated_at field.
+	sitesociallinkDescUpdatedAt := sitesociallinkFields[8].Descriptor()
+	// sitesociallink.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	sitesociallink.DefaultUpdatedAt = sitesociallinkDescUpdatedAt.Default.(func() time.Time)
+	// sitesociallink.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	sitesociallink.UpdateDefaultUpdatedAt = sitesociallinkDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// sitesociallinkDescID is the schema descriptor for id field.
+	sitesociallinkDescID := sitesociallinkFields[0].Descriptor()
+	// sitesociallink.DefaultID holds the default value on creation for the id field.
+	sitesociallink.DefaultID = sitesociallinkDescID.Default.(func() string)
 	supportactionauditFields := schema.SupportActionAudit{}.Fields()
 	_ = supportactionauditFields
 	// supportactionauditDescCreatedAt is the schema descriptor for created_at field.
@@ -484,12 +740,16 @@ func init() {
 	supportactionaudit.DefaultID = supportactionauditDescID.Default.(func() string)
 	supportcaseFields := schema.SupportCase{}.Fields()
 	_ = supportcaseFields
+	// supportcaseDescImpact is the schema descriptor for impact field.
+	supportcaseDescImpact := supportcaseFields[7].Descriptor()
+	// supportcase.DefaultImpact holds the default value on creation for the impact field.
+	supportcase.DefaultImpact = supportcaseDescImpact.Default.(string)
 	// supportcaseDescCreatedAt is the schema descriptor for created_at field.
-	supportcaseDescCreatedAt := supportcaseFields[7].Descriptor()
+	supportcaseDescCreatedAt := supportcaseFields[11].Descriptor()
 	// supportcase.DefaultCreatedAt holds the default value on creation for the created_at field.
 	supportcase.DefaultCreatedAt = supportcaseDescCreatedAt.Default.(func() time.Time)
 	// supportcaseDescUpdatedAt is the schema descriptor for updated_at field.
-	supportcaseDescUpdatedAt := supportcaseFields[8].Descriptor()
+	supportcaseDescUpdatedAt := supportcaseFields[12].Descriptor()
 	// supportcase.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	supportcase.DefaultUpdatedAt = supportcaseDescUpdatedAt.Default.(func() time.Time)
 	// supportcase.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -498,20 +758,30 @@ func init() {
 	supportcaseDescID := supportcaseFields[0].Descriptor()
 	// supportcase.DefaultID holds the default value on creation for the id field.
 	supportcase.DefaultID = supportcaseDescID.Default.(func() string)
+	supportmessageFields := schema.SupportMessage{}.Fields()
+	_ = supportmessageFields
+	// supportmessageDescCreatedAt is the schema descriptor for created_at field.
+	supportmessageDescCreatedAt := supportmessageFields[6].Descriptor()
+	// supportmessage.DefaultCreatedAt holds the default value on creation for the created_at field.
+	supportmessage.DefaultCreatedAt = supportmessageDescCreatedAt.Default.(func() time.Time)
+	// supportmessageDescID is the schema descriptor for id field.
+	supportmessageDescID := supportmessageFields[0].Descriptor()
+	// supportmessage.DefaultID holds the default value on creation for the id field.
+	supportmessage.DefaultID = supportmessageDescID.Default.(func() string)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescExperiencePoints is the schema descriptor for experience_points field.
-	userDescExperiencePoints := userFields[7].Descriptor()
+	userDescExperiencePoints := userFields[11].Descriptor()
 	// user.DefaultExperiencePoints holds the default value on creation for the experience_points field.
 	user.DefaultExperiencePoints = userDescExperiencePoints.Default.(int)
 	// user.ExperiencePointsValidator is a validator for the "experience_points" field. It is called by the builders before save.
 	user.ExperiencePointsValidator = userDescExperiencePoints.Validators[0].(func(int) error)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[9].Descriptor()
+	userDescCreatedAt := userFields[13].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[10].Descriptor()
+	userDescUpdatedAt := userFields[14].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

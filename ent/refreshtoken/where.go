@@ -79,6 +79,11 @@ func DeviceID(v string) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldEQ(FieldDeviceID, v))
 }
 
+// AuthTime applies equality check predicate on the "auth_time" field. It's identical to AuthTimeEQ.
+func AuthTime(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldEQ(FieldAuthTime, v))
+}
+
 // ExpiresAt applies equality check predicate on the "expires_at" field. It's identical to ExpiresAtEQ.
 func ExpiresAt(v time.Time) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldEQ(FieldExpiresAt, v))
@@ -297,6 +302,46 @@ func DeviceIDEqualFold(v string) predicate.RefreshToken {
 // DeviceIDContainsFold applies the ContainsFold predicate on the "device_id" field.
 func DeviceIDContainsFold(v string) predicate.RefreshToken {
 	return predicate.RefreshToken(sql.FieldContainsFold(FieldDeviceID, v))
+}
+
+// AuthTimeEQ applies the EQ predicate on the "auth_time" field.
+func AuthTimeEQ(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldEQ(FieldAuthTime, v))
+}
+
+// AuthTimeNEQ applies the NEQ predicate on the "auth_time" field.
+func AuthTimeNEQ(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldNEQ(FieldAuthTime, v))
+}
+
+// AuthTimeIn applies the In predicate on the "auth_time" field.
+func AuthTimeIn(vs ...time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldIn(FieldAuthTime, vs...))
+}
+
+// AuthTimeNotIn applies the NotIn predicate on the "auth_time" field.
+func AuthTimeNotIn(vs ...time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldNotIn(FieldAuthTime, vs...))
+}
+
+// AuthTimeGT applies the GT predicate on the "auth_time" field.
+func AuthTimeGT(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldGT(FieldAuthTime, v))
+}
+
+// AuthTimeGTE applies the GTE predicate on the "auth_time" field.
+func AuthTimeGTE(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldGTE(FieldAuthTime, v))
+}
+
+// AuthTimeLT applies the LT predicate on the "auth_time" field.
+func AuthTimeLT(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldLT(FieldAuthTime, v))
+}
+
+// AuthTimeLTE applies the LTE predicate on the "auth_time" field.
+func AuthTimeLTE(v time.Time) predicate.RefreshToken {
+	return predicate.RefreshToken(sql.FieldLTE(FieldAuthTime, v))
 }
 
 // ExpiresAtEQ applies the EQ predicate on the "expires_at" field.

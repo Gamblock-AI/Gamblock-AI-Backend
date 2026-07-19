@@ -46,6 +46,104 @@ func (_c *DataRequestCreate) SetNillableStatus(v *datarequest.Status) *DataReque
 	return _c
 }
 
+// SetConfirmationTokenHash sets the "confirmation_token_hash" field.
+func (_c *DataRequestCreate) SetConfirmationTokenHash(v string) *DataRequestCreate {
+	_c.mutation.SetConfirmationTokenHash(v)
+	return _c
+}
+
+// SetNillableConfirmationTokenHash sets the "confirmation_token_hash" field if the given value is not nil.
+func (_c *DataRequestCreate) SetNillableConfirmationTokenHash(v *string) *DataRequestCreate {
+	if v != nil {
+		_c.SetConfirmationTokenHash(*v)
+	}
+	return _c
+}
+
+// SetConfirmationExpiresAt sets the "confirmation_expires_at" field.
+func (_c *DataRequestCreate) SetConfirmationExpiresAt(v time.Time) *DataRequestCreate {
+	_c.mutation.SetConfirmationExpiresAt(v)
+	return _c
+}
+
+// SetNillableConfirmationExpiresAt sets the "confirmation_expires_at" field if the given value is not nil.
+func (_c *DataRequestCreate) SetNillableConfirmationExpiresAt(v *time.Time) *DataRequestCreate {
+	if v != nil {
+		_c.SetConfirmationExpiresAt(*v)
+	}
+	return _c
+}
+
+// SetConfirmedAt sets the "confirmed_at" field.
+func (_c *DataRequestCreate) SetConfirmedAt(v time.Time) *DataRequestCreate {
+	_c.mutation.SetConfirmedAt(v)
+	return _c
+}
+
+// SetNillableConfirmedAt sets the "confirmed_at" field if the given value is not nil.
+func (_c *DataRequestCreate) SetNillableConfirmedAt(v *time.Time) *DataRequestCreate {
+	if v != nil {
+		_c.SetConfirmedAt(*v)
+	}
+	return _c
+}
+
+// SetResultPath sets the "result_path" field.
+func (_c *DataRequestCreate) SetResultPath(v string) *DataRequestCreate {
+	_c.mutation.SetResultPath(v)
+	return _c
+}
+
+// SetNillableResultPath sets the "result_path" field if the given value is not nil.
+func (_c *DataRequestCreate) SetNillableResultPath(v *string) *DataRequestCreate {
+	if v != nil {
+		_c.SetResultPath(*v)
+	}
+	return _c
+}
+
+// SetResultExpiresAt sets the "result_expires_at" field.
+func (_c *DataRequestCreate) SetResultExpiresAt(v time.Time) *DataRequestCreate {
+	_c.mutation.SetResultExpiresAt(v)
+	return _c
+}
+
+// SetNillableResultExpiresAt sets the "result_expires_at" field if the given value is not nil.
+func (_c *DataRequestCreate) SetNillableResultExpiresAt(v *time.Time) *DataRequestCreate {
+	if v != nil {
+		_c.SetResultExpiresAt(*v)
+	}
+	return _c
+}
+
+// SetFailureCode sets the "failure_code" field.
+func (_c *DataRequestCreate) SetFailureCode(v string) *DataRequestCreate {
+	_c.mutation.SetFailureCode(v)
+	return _c
+}
+
+// SetNillableFailureCode sets the "failure_code" field if the given value is not nil.
+func (_c *DataRequestCreate) SetNillableFailureCode(v *string) *DataRequestCreate {
+	if v != nil {
+		_c.SetFailureCode(*v)
+	}
+	return _c
+}
+
+// SetRetryCount sets the "retry_count" field.
+func (_c *DataRequestCreate) SetRetryCount(v int) *DataRequestCreate {
+	_c.mutation.SetRetryCount(v)
+	return _c
+}
+
+// SetNillableRetryCount sets the "retry_count" field if the given value is not nil.
+func (_c *DataRequestCreate) SetNillableRetryCount(v *int) *DataRequestCreate {
+	if v != nil {
+		_c.SetRetryCount(*v)
+	}
+	return _c
+}
+
 // SetRequestedAt sets the "requested_at" field.
 func (_c *DataRequestCreate) SetRequestedAt(v time.Time) *DataRequestCreate {
 	_c.mutation.SetRequestedAt(v)
@@ -74,16 +172,16 @@ func (_c *DataRequestCreate) SetNillableCompletedAt(v *time.Time) *DataRequestCr
 	return _c
 }
 
-// SetResultPath sets the "result_path" field.
-func (_c *DataRequestCreate) SetResultPath(v string) *DataRequestCreate {
-	_c.mutation.SetResultPath(v)
+// SetUpdatedAt sets the "updated_at" field.
+func (_c *DataRequestCreate) SetUpdatedAt(v time.Time) *DataRequestCreate {
+	_c.mutation.SetUpdatedAt(v)
 	return _c
 }
 
-// SetNillableResultPath sets the "result_path" field if the given value is not nil.
-func (_c *DataRequestCreate) SetNillableResultPath(v *string) *DataRequestCreate {
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_c *DataRequestCreate) SetNillableUpdatedAt(v *time.Time) *DataRequestCreate {
 	if v != nil {
-		_c.SetResultPath(*v)
+		_c.SetUpdatedAt(*v)
 	}
 	return _c
 }
@@ -141,9 +239,17 @@ func (_c *DataRequestCreate) defaults() {
 		v := datarequest.DefaultStatus
 		_c.mutation.SetStatus(v)
 	}
+	if _, ok := _c.mutation.RetryCount(); !ok {
+		v := datarequest.DefaultRetryCount
+		_c.mutation.SetRetryCount(v)
+	}
 	if _, ok := _c.mutation.RequestedAt(); !ok {
 		v := datarequest.DefaultRequestedAt()
 		_c.mutation.SetRequestedAt(v)
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		v := datarequest.DefaultUpdatedAt()
+		_c.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := datarequest.DefaultID()
@@ -172,8 +278,14 @@ func (_c *DataRequestCreate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "DataRequest.status": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.RetryCount(); !ok {
+		return &ValidationError{Name: "retry_count", err: errors.New(`ent: missing required field "DataRequest.retry_count"`)}
+	}
 	if _, ok := _c.mutation.RequestedAt(); !ok {
 		return &ValidationError{Name: "requested_at", err: errors.New(`ent: missing required field "DataRequest.requested_at"`)}
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "DataRequest.updated_at"`)}
 	}
 	return nil
 }
@@ -222,6 +334,34 @@ func (_c *DataRequestCreate) createSpec() (*DataRequest, *sqlgraph.CreateSpec) {
 		_spec.SetField(datarequest.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
 	}
+	if value, ok := _c.mutation.ConfirmationTokenHash(); ok {
+		_spec.SetField(datarequest.FieldConfirmationTokenHash, field.TypeString, value)
+		_node.ConfirmationTokenHash = &value
+	}
+	if value, ok := _c.mutation.ConfirmationExpiresAt(); ok {
+		_spec.SetField(datarequest.FieldConfirmationExpiresAt, field.TypeTime, value)
+		_node.ConfirmationExpiresAt = &value
+	}
+	if value, ok := _c.mutation.ConfirmedAt(); ok {
+		_spec.SetField(datarequest.FieldConfirmedAt, field.TypeTime, value)
+		_node.ConfirmedAt = &value
+	}
+	if value, ok := _c.mutation.ResultPath(); ok {
+		_spec.SetField(datarequest.FieldResultPath, field.TypeString, value)
+		_node.ResultPath = &value
+	}
+	if value, ok := _c.mutation.ResultExpiresAt(); ok {
+		_spec.SetField(datarequest.FieldResultExpiresAt, field.TypeTime, value)
+		_node.ResultExpiresAt = &value
+	}
+	if value, ok := _c.mutation.FailureCode(); ok {
+		_spec.SetField(datarequest.FieldFailureCode, field.TypeString, value)
+		_node.FailureCode = &value
+	}
+	if value, ok := _c.mutation.RetryCount(); ok {
+		_spec.SetField(datarequest.FieldRetryCount, field.TypeInt, value)
+		_node.RetryCount = value
+	}
 	if value, ok := _c.mutation.RequestedAt(); ok {
 		_spec.SetField(datarequest.FieldRequestedAt, field.TypeTime, value)
 		_node.RequestedAt = value
@@ -230,9 +370,9 @@ func (_c *DataRequestCreate) createSpec() (*DataRequest, *sqlgraph.CreateSpec) {
 		_spec.SetField(datarequest.FieldCompletedAt, field.TypeTime, value)
 		_node.CompletedAt = &value
 	}
-	if value, ok := _c.mutation.ResultPath(); ok {
-		_spec.SetField(datarequest.FieldResultPath, field.TypeString, value)
-		_node.ResultPath = &value
+	if value, ok := _c.mutation.UpdatedAt(); ok {
+		_spec.SetField(datarequest.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
 	}
 	return _node, _spec
 }

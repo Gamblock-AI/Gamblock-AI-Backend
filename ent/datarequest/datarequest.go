@@ -20,12 +20,26 @@ const (
 	FieldType = "type"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldConfirmationTokenHash holds the string denoting the confirmation_token_hash field in the database.
+	FieldConfirmationTokenHash = "confirmation_token_hash"
+	// FieldConfirmationExpiresAt holds the string denoting the confirmation_expires_at field in the database.
+	FieldConfirmationExpiresAt = "confirmation_expires_at"
+	// FieldConfirmedAt holds the string denoting the confirmed_at field in the database.
+	FieldConfirmedAt = "confirmed_at"
+	// FieldResultPath holds the string denoting the result_path field in the database.
+	FieldResultPath = "result_path"
+	// FieldResultExpiresAt holds the string denoting the result_expires_at field in the database.
+	FieldResultExpiresAt = "result_expires_at"
+	// FieldFailureCode holds the string denoting the failure_code field in the database.
+	FieldFailureCode = "failure_code"
+	// FieldRetryCount holds the string denoting the retry_count field in the database.
+	FieldRetryCount = "retry_count"
 	// FieldRequestedAt holds the string denoting the requested_at field in the database.
 	FieldRequestedAt = "requested_at"
 	// FieldCompletedAt holds the string denoting the completed_at field in the database.
 	FieldCompletedAt = "completed_at"
-	// FieldResultPath holds the string denoting the result_path field in the database.
-	FieldResultPath = "result_path"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the datarequest in the database.
 	Table = "data_requests"
 )
@@ -36,9 +50,16 @@ var Columns = []string{
 	FieldUserID,
 	FieldType,
 	FieldStatus,
+	FieldConfirmationTokenHash,
+	FieldConfirmationExpiresAt,
+	FieldConfirmedAt,
+	FieldResultPath,
+	FieldResultExpiresAt,
+	FieldFailureCode,
+	FieldRetryCount,
 	FieldRequestedAt,
 	FieldCompletedAt,
-	FieldResultPath,
+	FieldUpdatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -52,8 +73,14 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultRetryCount holds the default value on creation for the "retry_count" field.
+	DefaultRetryCount int
 	// DefaultRequestedAt holds the default value on creation for the "requested_at" field.
 	DefaultRequestedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() string
 )
@@ -85,16 +112,18 @@ func TypeValidator(_type Type) error {
 // Status defines the type for the "status" enum field.
 type Status string
 
-// StatusPending is the default value of the Status enum.
-const DefaultStatus = StatusPending
+// StatusQueued is the default value of the Status enum.
+const DefaultStatus = StatusQueued
 
 // Status values.
 const (
-	StatusPending    Status = "pending"
-	StatusProcessing Status = "processing"
-	StatusCompleted  Status = "completed"
-	StatusRejected   Status = "rejected"
-	StatusCancelled  Status = "cancelled"
+	StatusPendingConfirmation Status = "pending_confirmation"
+	StatusQueued              Status = "queued"
+	StatusProcessing          Status = "processing"
+	StatusCompleted           Status = "completed"
+	StatusFailed              Status = "failed"
+	StatusRejected            Status = "rejected"
+	StatusCancelled           Status = "cancelled"
 )
 
 func (s Status) String() string {
@@ -104,7 +133,7 @@ func (s Status) String() string {
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s Status) error {
 	switch s {
-	case StatusPending, StatusProcessing, StatusCompleted, StatusRejected, StatusCancelled:
+	case StatusPendingConfirmation, StatusQueued, StatusProcessing, StatusCompleted, StatusFailed, StatusRejected, StatusCancelled:
 		return nil
 	default:
 		return fmt.Errorf("datarequest: invalid enum value for status field: %q", s)
@@ -134,6 +163,41 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
+// ByConfirmationTokenHash orders the results by the confirmation_token_hash field.
+func ByConfirmationTokenHash(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConfirmationTokenHash, opts...).ToFunc()
+}
+
+// ByConfirmationExpiresAt orders the results by the confirmation_expires_at field.
+func ByConfirmationExpiresAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConfirmationExpiresAt, opts...).ToFunc()
+}
+
+// ByConfirmedAt orders the results by the confirmed_at field.
+func ByConfirmedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConfirmedAt, opts...).ToFunc()
+}
+
+// ByResultPath orders the results by the result_path field.
+func ByResultPath(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldResultPath, opts...).ToFunc()
+}
+
+// ByResultExpiresAt orders the results by the result_expires_at field.
+func ByResultExpiresAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldResultExpiresAt, opts...).ToFunc()
+}
+
+// ByFailureCode orders the results by the failure_code field.
+func ByFailureCode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFailureCode, opts...).ToFunc()
+}
+
+// ByRetryCount orders the results by the retry_count field.
+func ByRetryCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRetryCount, opts...).ToFunc()
+}
+
 // ByRequestedAt orders the results by the requested_at field.
 func ByRequestedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRequestedAt, opts...).ToFunc()
@@ -144,7 +208,7 @@ func ByCompletedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCompletedAt, opts...).ToFunc()
 }
 
-// ByResultPath orders the results by the result_path field.
-func ByResultPath(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldResultPath, opts...).ToFunc()
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }

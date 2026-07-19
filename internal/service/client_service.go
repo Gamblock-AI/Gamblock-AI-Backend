@@ -6,13 +6,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/repository"
 	"github.com/google/uuid"
 )
 
 type ClientService struct {
-	repo *repository.Repository
+	repo              *repository.Repository
+	avatarStoragePath string
 }
 
 func (s *ClientService) RecordAggregate(ctx context.Context, userID, deviceID, eventType, date, idempotencyKey string, count int) (model.AggregateEvent, error) {
@@ -64,10 +66,14 @@ func (s *ClientService) ProtectionAnalytics(ctx context.Context, userID, deviceI
 	return s.repo.GetProtectionAnalytics(ctx, userID, deviceID, days, time.Now().UTC())
 }
 
-func NewClientService(repo *repository.Repository) *ClientService {
-	return &ClientService{repo: repo}
+func NewClientService(repo *repository.Repository, cfg config.Config) *ClientService {
+	return &ClientService{repo: repo, avatarStoragePath: cfg.AvatarStoragePath}
 }
 
 func (s *ClientService) Dashboard(ctx context.Context, userID string) (model.DashboardSummary, model.ProtectionStatus, model.ProgressSnapshot, error) {
 	return s.repo.GetDashboardData(ctx, userID, time.Now().UTC())
+}
+
+func (s *ClientService) Progress(ctx context.Context, userID string, days int) (model.ProgressSnapshot, error) {
+	return s.repo.GetProgressData(ctx, userID, days, time.Now().UTC())
 }

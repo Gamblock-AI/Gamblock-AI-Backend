@@ -23,12 +23,26 @@ type DataRequest struct {
 	Type datarequest.Type `json:"type,omitempty"`
 	// Status holds the value of the "status" field.
 	Status datarequest.Status `json:"status,omitempty"`
+	// ConfirmationTokenHash holds the value of the "confirmation_token_hash" field.
+	ConfirmationTokenHash *string `json:"-"`
+	// ConfirmationExpiresAt holds the value of the "confirmation_expires_at" field.
+	ConfirmationExpiresAt *time.Time `json:"confirmation_expires_at,omitempty"`
+	// ConfirmedAt holds the value of the "confirmed_at" field.
+	ConfirmedAt *time.Time `json:"confirmed_at,omitempty"`
+	// ResultPath holds the value of the "result_path" field.
+	ResultPath *string `json:"-"`
+	// ResultExpiresAt holds the value of the "result_expires_at" field.
+	ResultExpiresAt *time.Time `json:"result_expires_at,omitempty"`
+	// FailureCode holds the value of the "failure_code" field.
+	FailureCode *string `json:"failure_code,omitempty"`
+	// RetryCount holds the value of the "retry_count" field.
+	RetryCount int `json:"retry_count,omitempty"`
 	// RequestedAt holds the value of the "requested_at" field.
 	RequestedAt time.Time `json:"requested_at,omitempty"`
 	// CompletedAt holds the value of the "completed_at" field.
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
-	// ResultPath holds the value of the "result_path" field.
-	ResultPath   *string `json:"result_path,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt    time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -37,9 +51,11 @@ func (*DataRequest) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case datarequest.FieldID, datarequest.FieldUserID, datarequest.FieldType, datarequest.FieldStatus, datarequest.FieldResultPath:
+		case datarequest.FieldRetryCount:
+			values[i] = new(sql.NullInt64)
+		case datarequest.FieldID, datarequest.FieldUserID, datarequest.FieldType, datarequest.FieldStatus, datarequest.FieldConfirmationTokenHash, datarequest.FieldResultPath, datarequest.FieldFailureCode:
 			values[i] = new(sql.NullString)
-		case datarequest.FieldRequestedAt, datarequest.FieldCompletedAt:
+		case datarequest.FieldConfirmationExpiresAt, datarequest.FieldConfirmedAt, datarequest.FieldResultExpiresAt, datarequest.FieldRequestedAt, datarequest.FieldCompletedAt, datarequest.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -80,6 +96,54 @@ func (_m *DataRequest) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Status = datarequest.Status(value.String)
 			}
+		case datarequest.FieldConfirmationTokenHash:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field confirmation_token_hash", values[i])
+			} else if value.Valid {
+				_m.ConfirmationTokenHash = new(string)
+				*_m.ConfirmationTokenHash = value.String
+			}
+		case datarequest.FieldConfirmationExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field confirmation_expires_at", values[i])
+			} else if value.Valid {
+				_m.ConfirmationExpiresAt = new(time.Time)
+				*_m.ConfirmationExpiresAt = value.Time
+			}
+		case datarequest.FieldConfirmedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field confirmed_at", values[i])
+			} else if value.Valid {
+				_m.ConfirmedAt = new(time.Time)
+				*_m.ConfirmedAt = value.Time
+			}
+		case datarequest.FieldResultPath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field result_path", values[i])
+			} else if value.Valid {
+				_m.ResultPath = new(string)
+				*_m.ResultPath = value.String
+			}
+		case datarequest.FieldResultExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field result_expires_at", values[i])
+			} else if value.Valid {
+				_m.ResultExpiresAt = new(time.Time)
+				*_m.ResultExpiresAt = value.Time
+			}
+		case datarequest.FieldFailureCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field failure_code", values[i])
+			} else if value.Valid {
+				_m.FailureCode = new(string)
+				*_m.FailureCode = value.String
+			}
+		case datarequest.FieldRetryCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field retry_count", values[i])
+			} else if value.Valid {
+				_m.RetryCount = int(value.Int64)
+			}
 		case datarequest.FieldRequestedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field requested_at", values[i])
@@ -93,12 +157,11 @@ func (_m *DataRequest) assignValues(columns []string, values []any) error {
 				_m.CompletedAt = new(time.Time)
 				*_m.CompletedAt = value.Time
 			}
-		case datarequest.FieldResultPath:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field result_path", values[i])
+		case datarequest.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				_m.ResultPath = new(string)
-				*_m.ResultPath = value.String
+				_m.UpdatedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -145,6 +208,33 @@ func (_m *DataRequest) String() string {
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
 	builder.WriteString(", ")
+	builder.WriteString("confirmation_token_hash=<sensitive>")
+	builder.WriteString(", ")
+	if v := _m.ConfirmationExpiresAt; v != nil {
+		builder.WriteString("confirmation_expires_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.ConfirmedAt; v != nil {
+		builder.WriteString("confirmed_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("result_path=<sensitive>")
+	builder.WriteString(", ")
+	if v := _m.ResultExpiresAt; v != nil {
+		builder.WriteString("result_expires_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.FailureCode; v != nil {
+		builder.WriteString("failure_code=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("retry_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.RetryCount))
+	builder.WriteString(", ")
 	builder.WriteString("requested_at=")
 	builder.WriteString(_m.RequestedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
@@ -153,10 +243,8 @@ func (_m *DataRequest) String() string {
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	if v := _m.ResultPath; v != nil {
-		builder.WriteString("result_path=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("updated_at=")
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

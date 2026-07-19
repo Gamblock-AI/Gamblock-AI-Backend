@@ -31,11 +31,16 @@ func (s *AuthService) ParseAccessToken(tokenValue string) (*model.Claims, error)
 }
 
 func (s *AuthService) issueToken(user model.User) (string, error) {
+	return s.issueTokenAt(user, time.Now().UTC())
+}
+
+func (s *AuthService) issueTokenAt(user model.User, authTime time.Time) (string, error) {
 	now := time.Now().UTC()
 	claims := model.Claims{
-		UserID: user.ID,
-		Email:  user.Email,
-		Role:   user.Role,
+		UserID:   user.ID,
+		Email:    user.Email,
+		Role:     user.Role,
+		AuthTime: jwt.NewNumericDate(authTime),
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   user.ID,
 			IssuedAt:  jwt.NewNumericDate(now),

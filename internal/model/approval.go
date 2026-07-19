@@ -7,6 +7,7 @@ type ApprovalRequest struct {
 	UserID                   string     `json:"-"`
 	DeviceID                 string     `json:"device_id"`
 	PartnerLinkID            string     `json:"partner_link_id"`
+	MembershipID             string     `json:"membership_id"`
 	QuickTokenHash           string     `json:"-"`
 	Action                   string     `json:"action"`
 	ActionLabel              string     `json:"action_label"`
@@ -14,6 +15,8 @@ type ApprovalRequest struct {
 	Status                   string     `json:"status"`
 	StatusLabel              string     `json:"status_label"`
 	Reason                   string     `json:"reason"`
+	SupportiveResponse       string     `json:"supportive_response,omitempty"`
+	ResolvedBy               string     `json:"-"`
 	RequestedDurationMinutes int        `json:"requested_duration_minutes"`
 	ResolvedAt               *time.Time `json:"resolved_at,omitempty"`
 	AppliedAt                *time.Time `json:"applied_at,omitempty"`

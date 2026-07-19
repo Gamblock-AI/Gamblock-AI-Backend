@@ -13,10 +13,10 @@ func (m *Middleware) RateLimitMiddleware(rateString string) gin.HandlerFunc {
 	if err != nil {
 		m.logger.Fatal("Failed to parse rate limit", zap.Error(err))
 	}
-	
+
 	store := memory.NewStore()
 	instance := limiter.New(store, rate)
-	
+
 	middleware := ginmiddleware.NewMiddleware(instance)
 	return middleware
 }

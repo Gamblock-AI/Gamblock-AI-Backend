@@ -14,7 +14,7 @@ func (r *Repository) UserByEmail(ctx context.Context, email string) (model.User,
 		if !ok {
 			return model.User{}, false
 		}
-		return user, true
+		return userForResponse(user), true
 	}
 	row, err := r.db.User.Query().Where(entuser.EmailEqualFold(email)).Only(ctx)
 	if err != nil {
@@ -27,7 +27,7 @@ func (r *Repository) UserByID(ctx context.Context, id string) (model.User, bool)
 	if r.db == nil {
 		for _, user := range r.store.Snapshot().Users {
 			if user.ID == id {
-				return user, true
+				return userForResponse(user), true
 			}
 		}
 		return model.User{}, false
@@ -43,7 +43,7 @@ func (r *Repository) GetUserByGoogleSubject(ctx context.Context, subject string)
 	if r.db == nil {
 		for _, user := range r.store.Snapshot().Users {
 			if user.GoogleSubject == subject {
-				return user, nil
+				return userForResponse(user), nil
 			}
 		}
 		return model.User{}, fmt.Errorf("user not found")

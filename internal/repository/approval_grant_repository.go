@@ -110,7 +110,7 @@ func approvalGrantExpiry(action string, duration int, now time.Time) (time.Time,
 			return time.Time{}, fmt.Errorf("pause duration is required")
 		}
 		return now.Add(time.Duration(duration) * time.Minute), nil
-	case "disable_protection", "uninstall_detected":
+	case "uninstall_detected":
 		return now.Add(10 * time.Minute), nil
 	default:
 		return time.Time{}, fmt.Errorf("approval action cannot be applied by a protection client")

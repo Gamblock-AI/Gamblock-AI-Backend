@@ -117,7 +117,24 @@ func (r *Repository) GetCheckIns(ctx context.Context, userID string) ([]model.Ch
 
 func (r *Repository) SaveCheckIn(ctx context.Context, userID string, mood, urge int, contextText string) (model.CheckIn, error) {
 	now := time.Now().UTC()
+	jakarta := time.FixedZone("Asia/Jakarta", 7*60*60)
+	localNow := now.In(jakarta)
+	dayStartLocal := time.Date(localNow.Year(), localNow.Month(), localNow.Day(), 0, 0, 0, 0, jakarta)
+	dayStart := dayStartLocal.UTC()
+	dayEnd := dayStartLocal.Add(24 * time.Hour).UTC()
 	if r.db != nil {
+		existing, existingErr := r.db.CheckIn.Query().Where(
+			checkin.UserIDEQ(userID), checkin.CreatedAtGTE(dayStart), checkin.CreatedAtLT(dayEnd),
+		).Only(ctx)
+		if existingErr == nil {
+			item, err := existing.Update().SetMoodScore(mood).SetUrgeScore(urge).
+				SetNillableContextText(optional(contextText)).Save(ctx)
+			if err != nil {
+				return model.CheckIn{}, err
+			}
+			r.RefreshStore(ctx)
+			return model.CheckIn{ID: item.ID, UserID: item.UserID, Mood: item.MoodScore, Urge: item.UrgeScore, Context: value(item.ContextText), CreatedAt: item.CreatedAt}, nil
+		}
 		item, err := r.db.CheckIn.Create().
 			SetID("chk_" + uuid.NewString()[:8]).
 			SetUserID(userID).
@@ -131,6 +148,18 @@ func (r *Repository) SaveCheckIn(ctx context.Context, userID string, mood, urge 
 		r.RefreshStore(ctx)
 		return model.CheckIn{ID: item.ID, UserID: item.UserID, Mood: item.MoodScore, Urge: item.UrgeScore, Context: value(item.ContextText), CreatedAt: item.CreatedAt}, nil
 	}
+	r.store.Lock()
+	for i := range r.store.CheckIns {
+		item := &r.store.CheckIns[i]
+		if item.UserID == userID && !item.CreatedAt.Before(dayStart) && item.CreatedAt.Before(dayEnd) {
+			item.Mood = mood
+			item.Urge = urge
+			item.Context = contextText
+			updated := *item
+			r.store.Unlock()
+			return updated, nil
+		}
+	}
 	newEntry := store.CheckIn{
 		ID:        "chk_" + uuid.NewString()[:8],
 		UserID:    userID,
@@ -139,7 +168,6 @@ func (r *Repository) SaveCheckIn(ctx context.Context, userID string, mood, urge 
 		Context:   contextText,
 		CreatedAt: now,
 	}
-	r.store.Lock()
 	r.store.CheckIns = append(r.store.CheckIns, newEntry)
 	r.store.Unlock()
 	return newEntry, nil

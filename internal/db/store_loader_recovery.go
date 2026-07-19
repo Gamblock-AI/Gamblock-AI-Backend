@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoverypracticesession"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
 )
 
@@ -17,6 +18,8 @@ func loadRecoveryStore(ctx context.Context, client *ent.Client, out *store.Store
 				UserID:    item.UserID,
 				Text:      item.ContentEncrypted, // Store only the encrypted payload.
 				Mood:      value(item.PromptKey),
+				Status:    item.Status.String(),
+				IsFocus:   item.IsFocus,
 				CreatedAt: item.CreatedAt,
 				UpdatedAt: item.UpdatedAt,
 			})
@@ -78,6 +81,37 @@ func loadRecoveryStore(ctx context.Context, client *ent.Client, out *store.Store
 		}
 	}
 
+	if records, err := client.RecoveryRecord.Query().All(ctx); err == nil {
+		for _, item := range records {
+			out.RecoveryRecords = append(out.RecoveryRecords, store.RecoveryRecord{
+				ID: item.ID, UserID: item.UserID, Kind: item.Kind.String(),
+				RecordDate: item.RecordDate, Metadata: item.MetadataJSON,
+				Content: value(item.ContentEncrypted), Status: item.Status.String(),
+				CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt,
+			})
+		}
+	}
+
+	if sessions, err := client.RecoveryPracticeSession.Query().All(ctx); err == nil {
+		for _, item := range sessions {
+			out.RecoveryPracticeSessions = append(out.RecoveryPracticeSessions, store.RecoveryPracticeSession{
+				ID: item.ID, UserID: item.UserID, PracticeKind: item.PracticeKind.String(),
+				DurationSeconds: item.DurationSeconds, Feedback: recoveryFeedback(item.Feedback),
+				CompletedAt: item.CompletedAt, CreatedAt: item.CreatedAt,
+			})
+		}
+	}
+
+	if spaces, err := client.RecoverySpace.Query().All(ctx); err == nil {
+		for _, item := range spaces {
+			out.RecoverySpaces = append(out.RecoverySpaces, store.RecoverySpace{
+				ID: item.ID, UserID: item.UserID, Theme: item.Theme.String(),
+				UnlockedItems: item.UnlockedItemsJSON, PlacedItems: item.PlacedItemsJSON,
+				UnlockRuleVersion: item.UnlockRuleVersion, CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt,
+			})
+		}
+	}
+
 	if aggregates, err := client.AggregateEvent.Query().All(ctx); err == nil {
 		for _, item := range aggregates {
 			out.AggregateEvents = append(out.AggregateEvents, store.AggregateEvent{
@@ -113,4 +147,11 @@ func loadRecoveryStore(ctx context.Context, client *ent.Client, out *store.Store
 			})
 		}
 	}
+}
+
+func recoveryFeedback(value *recoverypracticesession.Feedback) string {
+	if value == nil {
+		return ""
+	}
+	return value.String()
 }

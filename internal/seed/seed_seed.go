@@ -15,6 +15,9 @@ func Seed(ctx context.Context, client *ent.Client, mediaPath ...string) error {
 	if err := SeedEducationModules(ctx, client, mediaPath...); err != nil {
 		return err
 	}
+	if err := SeedSiteSocialLinks(ctx, client); err != nil {
+		return err
+	}
 	if count > 0 {
 		return nil
 	}
@@ -27,6 +30,9 @@ func Seed(ctx context.Context, client *ent.Client, mediaPath ...string) error {
 		return err
 	}
 	if err := SeedPartners(ctx, client, now); err != nil {
+		return err
+	}
+	if err := SeedAccountabilityGroups(ctx, client, now); err != nil {
 		return err
 	}
 	if err := SeedApprovals(ctx, client, now); err != nil {

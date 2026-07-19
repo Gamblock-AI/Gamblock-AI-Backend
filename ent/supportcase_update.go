@@ -118,6 +118,80 @@ func (_u *SupportCaseUpdate) SetNillableSummary(v *string) *SupportCaseUpdate {
 	return _u
 }
 
+// SetImpact sets the "impact" field.
+func (_u *SupportCaseUpdate) SetImpact(v string) *SupportCaseUpdate {
+	_u.mutation.SetImpact(v)
+	return _u
+}
+
+// SetNillableImpact sets the "impact" field if the given value is not nil.
+func (_u *SupportCaseUpdate) SetNillableImpact(v *string) *SupportCaseUpdate {
+	if v != nil {
+		_u.SetImpact(*v)
+	}
+	return _u
+}
+
+// SetAssignedOperatorID sets the "assigned_operator_id" field.
+func (_u *SupportCaseUpdate) SetAssignedOperatorID(v string) *SupportCaseUpdate {
+	_u.mutation.SetAssignedOperatorID(v)
+	return _u
+}
+
+// SetNillableAssignedOperatorID sets the "assigned_operator_id" field if the given value is not nil.
+func (_u *SupportCaseUpdate) SetNillableAssignedOperatorID(v *string) *SupportCaseUpdate {
+	if v != nil {
+		_u.SetAssignedOperatorID(*v)
+	}
+	return _u
+}
+
+// ClearAssignedOperatorID clears the value of the "assigned_operator_id" field.
+func (_u *SupportCaseUpdate) ClearAssignedOperatorID() *SupportCaseUpdate {
+	_u.mutation.ClearAssignedOperatorID()
+	return _u
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (_u *SupportCaseUpdate) SetResolvedAt(v time.Time) *SupportCaseUpdate {
+	_u.mutation.SetResolvedAt(v)
+	return _u
+}
+
+// SetNillableResolvedAt sets the "resolved_at" field if the given value is not nil.
+func (_u *SupportCaseUpdate) SetNillableResolvedAt(v *time.Time) *SupportCaseUpdate {
+	if v != nil {
+		_u.SetResolvedAt(*v)
+	}
+	return _u
+}
+
+// ClearResolvedAt clears the value of the "resolved_at" field.
+func (_u *SupportCaseUpdate) ClearResolvedAt() *SupportCaseUpdate {
+	_u.mutation.ClearResolvedAt()
+	return _u
+}
+
+// SetClosedAt sets the "closed_at" field.
+func (_u *SupportCaseUpdate) SetClosedAt(v time.Time) *SupportCaseUpdate {
+	_u.mutation.SetClosedAt(v)
+	return _u
+}
+
+// SetNillableClosedAt sets the "closed_at" field if the given value is not nil.
+func (_u *SupportCaseUpdate) SetNillableClosedAt(v *time.Time) *SupportCaseUpdate {
+	if v != nil {
+		_u.SetClosedAt(*v)
+	}
+	return _u
+}
+
+// ClearClosedAt clears the value of the "closed_at" field.
+func (_u *SupportCaseUpdate) ClearClosedAt() *SupportCaseUpdate {
+	_u.mutation.ClearClosedAt()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *SupportCaseUpdate) SetUpdatedAt(v time.Time) *SupportCaseUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -217,6 +291,27 @@ func (_u *SupportCaseUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if value, ok := _u.mutation.Summary(); ok {
 		_spec.SetField(supportcase.FieldSummary, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Impact(); ok {
+		_spec.SetField(supportcase.FieldImpact, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.AssignedOperatorID(); ok {
+		_spec.SetField(supportcase.FieldAssignedOperatorID, field.TypeString, value)
+	}
+	if _u.mutation.AssignedOperatorIDCleared() {
+		_spec.ClearField(supportcase.FieldAssignedOperatorID, field.TypeString)
+	}
+	if value, ok := _u.mutation.ResolvedAt(); ok {
+		_spec.SetField(supportcase.FieldResolvedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ResolvedAtCleared() {
+		_spec.ClearField(supportcase.FieldResolvedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ClosedAt(); ok {
+		_spec.SetField(supportcase.FieldClosedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ClosedAtCleared() {
+		_spec.ClearField(supportcase.FieldClosedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(supportcase.FieldUpdatedAt, field.TypeTime, value)
@@ -328,6 +423,80 @@ func (_u *SupportCaseUpdateOne) SetNillableSummary(v *string) *SupportCaseUpdate
 	if v != nil {
 		_u.SetSummary(*v)
 	}
+	return _u
+}
+
+// SetImpact sets the "impact" field.
+func (_u *SupportCaseUpdateOne) SetImpact(v string) *SupportCaseUpdateOne {
+	_u.mutation.SetImpact(v)
+	return _u
+}
+
+// SetNillableImpact sets the "impact" field if the given value is not nil.
+func (_u *SupportCaseUpdateOne) SetNillableImpact(v *string) *SupportCaseUpdateOne {
+	if v != nil {
+		_u.SetImpact(*v)
+	}
+	return _u
+}
+
+// SetAssignedOperatorID sets the "assigned_operator_id" field.
+func (_u *SupportCaseUpdateOne) SetAssignedOperatorID(v string) *SupportCaseUpdateOne {
+	_u.mutation.SetAssignedOperatorID(v)
+	return _u
+}
+
+// SetNillableAssignedOperatorID sets the "assigned_operator_id" field if the given value is not nil.
+func (_u *SupportCaseUpdateOne) SetNillableAssignedOperatorID(v *string) *SupportCaseUpdateOne {
+	if v != nil {
+		_u.SetAssignedOperatorID(*v)
+	}
+	return _u
+}
+
+// ClearAssignedOperatorID clears the value of the "assigned_operator_id" field.
+func (_u *SupportCaseUpdateOne) ClearAssignedOperatorID() *SupportCaseUpdateOne {
+	_u.mutation.ClearAssignedOperatorID()
+	return _u
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (_u *SupportCaseUpdateOne) SetResolvedAt(v time.Time) *SupportCaseUpdateOne {
+	_u.mutation.SetResolvedAt(v)
+	return _u
+}
+
+// SetNillableResolvedAt sets the "resolved_at" field if the given value is not nil.
+func (_u *SupportCaseUpdateOne) SetNillableResolvedAt(v *time.Time) *SupportCaseUpdateOne {
+	if v != nil {
+		_u.SetResolvedAt(*v)
+	}
+	return _u
+}
+
+// ClearResolvedAt clears the value of the "resolved_at" field.
+func (_u *SupportCaseUpdateOne) ClearResolvedAt() *SupportCaseUpdateOne {
+	_u.mutation.ClearResolvedAt()
+	return _u
+}
+
+// SetClosedAt sets the "closed_at" field.
+func (_u *SupportCaseUpdateOne) SetClosedAt(v time.Time) *SupportCaseUpdateOne {
+	_u.mutation.SetClosedAt(v)
+	return _u
+}
+
+// SetNillableClosedAt sets the "closed_at" field if the given value is not nil.
+func (_u *SupportCaseUpdateOne) SetNillableClosedAt(v *time.Time) *SupportCaseUpdateOne {
+	if v != nil {
+		_u.SetClosedAt(*v)
+	}
+	return _u
+}
+
+// ClearClosedAt clears the value of the "closed_at" field.
+func (_u *SupportCaseUpdateOne) ClearClosedAt() *SupportCaseUpdateOne {
+	_u.mutation.ClearClosedAt()
 	return _u
 }
 
@@ -460,6 +629,27 @@ func (_u *SupportCaseUpdateOne) sqlSave(ctx context.Context) (_node *SupportCase
 	}
 	if value, ok := _u.mutation.Summary(); ok {
 		_spec.SetField(supportcase.FieldSummary, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Impact(); ok {
+		_spec.SetField(supportcase.FieldImpact, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.AssignedOperatorID(); ok {
+		_spec.SetField(supportcase.FieldAssignedOperatorID, field.TypeString, value)
+	}
+	if _u.mutation.AssignedOperatorIDCleared() {
+		_spec.ClearField(supportcase.FieldAssignedOperatorID, field.TypeString)
+	}
+	if value, ok := _u.mutation.ResolvedAt(); ok {
+		_spec.SetField(supportcase.FieldResolvedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ResolvedAtCleared() {
+		_spec.ClearField(supportcase.FieldResolvedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.ClosedAt(); ok {
+		_spec.SetField(supportcase.FieldClosedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ClosedAtCleared() {
+		_spec.ClearField(supportcase.FieldClosedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(supportcase.FieldUpdatedAt, field.TypeTime, value)

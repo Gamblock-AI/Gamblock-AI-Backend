@@ -81,6 +81,33 @@ func (h *Handler) ArchiveAdminModule(c *gin.Context) {
 	h.respond(c, http.StatusOK, module)
 }
 
+func (h *Handler) AdminModuleRevisions(c *gin.Context) {
+	items, err := h.services.Education.Revisions(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		status, code := educationStatus(err)
+		h.respondErrorErr(c, status, code, err)
+		return
+	}
+	h.respond(c, http.StatusOK, items)
+}
+
+func (h *Handler) RollbackAdminModule(c *gin.Context) {
+	var input struct {
+		Reason string `json:"reason"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		h.respondCode(c, http.StatusBadRequest, "err_validation")
+		return
+	}
+	module, err := h.services.Education.Rollback(c.Request.Context(), h.currentUserID(c), c.Param("id"), c.Param("revision_id"), input.Reason)
+	if err != nil {
+		status, code := educationStatus(err)
+		h.respondErrorErr(c, status, code, err)
+		return
+	}
+	h.respond(c, http.StatusOK, module)
+}
+
 func (h *Handler) UploadAdminEducationMedia(c *gin.Context) {
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 101<<20)
 	file, header, err := c.Request.FormFile("file")

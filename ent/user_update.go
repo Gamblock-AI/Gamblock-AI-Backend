@@ -130,6 +130,78 @@ func (_u *UserUpdate) SetNillableRole(v *user.Role) *UserUpdate {
 	return _u
 }
 
+// SetEmailVerifiedAt sets the "email_verified_at" field.
+func (_u *UserUpdate) SetEmailVerifiedAt(v time.Time) *UserUpdate {
+	_u.mutation.SetEmailVerifiedAt(v)
+	return _u
+}
+
+// SetNillableEmailVerifiedAt sets the "email_verified_at" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableEmailVerifiedAt(v *time.Time) *UserUpdate {
+	if v != nil {
+		_u.SetEmailVerifiedAt(*v)
+	}
+	return _u
+}
+
+// ClearEmailVerifiedAt clears the value of the "email_verified_at" field.
+func (_u *UserUpdate) ClearEmailVerifiedAt() *UserUpdate {
+	_u.mutation.ClearEmailVerifiedAt()
+	return _u
+}
+
+// SetPhoneE164 sets the "phone_e164" field.
+func (_u *UserUpdate) SetPhoneE164(v string) *UserUpdate {
+	_u.mutation.SetPhoneE164(v)
+	return _u
+}
+
+// SetNillablePhoneE164 sets the "phone_e164" field if the given value is not nil.
+func (_u *UserUpdate) SetNillablePhoneE164(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetPhoneE164(*v)
+	}
+	return _u
+}
+
+// ClearPhoneE164 clears the value of the "phone_e164" field.
+func (_u *UserUpdate) ClearPhoneE164() *UserUpdate {
+	_u.mutation.ClearPhoneE164()
+	return _u
+}
+
+// SetPhoneVerifiedAt sets the "phone_verified_at" field.
+func (_u *UserUpdate) SetPhoneVerifiedAt(v time.Time) *UserUpdate {
+	_u.mutation.SetPhoneVerifiedAt(v)
+	return _u
+}
+
+// SetNillablePhoneVerifiedAt sets the "phone_verified_at" field if the given value is not nil.
+func (_u *UserUpdate) SetNillablePhoneVerifiedAt(v *time.Time) *UserUpdate {
+	if v != nil {
+		_u.SetPhoneVerifiedAt(*v)
+	}
+	return _u
+}
+
+// ClearPhoneVerifiedAt clears the value of the "phone_verified_at" field.
+func (_u *UserUpdate) ClearPhoneVerifiedAt() *UserUpdate {
+	_u.mutation.ClearPhoneVerifiedAt()
+	return _u
+}
+
+// SetNotificationPreferencesJSON sets the "notification_preferences_json" field.
+func (_u *UserUpdate) SetNotificationPreferencesJSON(v map[string]interface{}) *UserUpdate {
+	_u.mutation.SetNotificationPreferencesJSON(v)
+	return _u
+}
+
+// ClearNotificationPreferencesJSON clears the value of the "notification_preferences_json" field.
+func (_u *UserUpdate) ClearNotificationPreferencesJSON() *UserUpdate {
+	_u.mutation.ClearNotificationPreferencesJSON()
+	return _u
+}
+
 // SetExperiencePoints sets the "experience_points" field.
 func (_u *UserUpdate) SetExperiencePoints(v int) *UserUpdate {
 	_u.mutation.ResetExperiencePoints()
@@ -272,6 +344,30 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 	}
+	if value, ok := _u.mutation.EmailVerifiedAt(); ok {
+		_spec.SetField(user.FieldEmailVerifiedAt, field.TypeTime, value)
+	}
+	if _u.mutation.EmailVerifiedAtCleared() {
+		_spec.ClearField(user.FieldEmailVerifiedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.PhoneE164(); ok {
+		_spec.SetField(user.FieldPhoneE164, field.TypeString, value)
+	}
+	if _u.mutation.PhoneE164Cleared() {
+		_spec.ClearField(user.FieldPhoneE164, field.TypeString)
+	}
+	if value, ok := _u.mutation.PhoneVerifiedAt(); ok {
+		_spec.SetField(user.FieldPhoneVerifiedAt, field.TypeTime, value)
+	}
+	if _u.mutation.PhoneVerifiedAtCleared() {
+		_spec.ClearField(user.FieldPhoneVerifiedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.NotificationPreferencesJSON(); ok {
+		_spec.SetField(user.FieldNotificationPreferencesJSON, field.TypeJSON, value)
+	}
+	if _u.mutation.NotificationPreferencesJSONCleared() {
+		_spec.ClearField(user.FieldNotificationPreferencesJSON, field.TypeJSON)
+	}
 	if value, ok := _u.mutation.ExperiencePoints(); ok {
 		_spec.SetField(user.FieldExperiencePoints, field.TypeInt, value)
 	}
@@ -406,6 +502,78 @@ func (_u *UserUpdateOne) SetNillableRole(v *user.Role) *UserUpdateOne {
 	if v != nil {
 		_u.SetRole(*v)
 	}
+	return _u
+}
+
+// SetEmailVerifiedAt sets the "email_verified_at" field.
+func (_u *UserUpdateOne) SetEmailVerifiedAt(v time.Time) *UserUpdateOne {
+	_u.mutation.SetEmailVerifiedAt(v)
+	return _u
+}
+
+// SetNillableEmailVerifiedAt sets the "email_verified_at" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableEmailVerifiedAt(v *time.Time) *UserUpdateOne {
+	if v != nil {
+		_u.SetEmailVerifiedAt(*v)
+	}
+	return _u
+}
+
+// ClearEmailVerifiedAt clears the value of the "email_verified_at" field.
+func (_u *UserUpdateOne) ClearEmailVerifiedAt() *UserUpdateOne {
+	_u.mutation.ClearEmailVerifiedAt()
+	return _u
+}
+
+// SetPhoneE164 sets the "phone_e164" field.
+func (_u *UserUpdateOne) SetPhoneE164(v string) *UserUpdateOne {
+	_u.mutation.SetPhoneE164(v)
+	return _u
+}
+
+// SetNillablePhoneE164 sets the "phone_e164" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillablePhoneE164(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetPhoneE164(*v)
+	}
+	return _u
+}
+
+// ClearPhoneE164 clears the value of the "phone_e164" field.
+func (_u *UserUpdateOne) ClearPhoneE164() *UserUpdateOne {
+	_u.mutation.ClearPhoneE164()
+	return _u
+}
+
+// SetPhoneVerifiedAt sets the "phone_verified_at" field.
+func (_u *UserUpdateOne) SetPhoneVerifiedAt(v time.Time) *UserUpdateOne {
+	_u.mutation.SetPhoneVerifiedAt(v)
+	return _u
+}
+
+// SetNillablePhoneVerifiedAt sets the "phone_verified_at" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillablePhoneVerifiedAt(v *time.Time) *UserUpdateOne {
+	if v != nil {
+		_u.SetPhoneVerifiedAt(*v)
+	}
+	return _u
+}
+
+// ClearPhoneVerifiedAt clears the value of the "phone_verified_at" field.
+func (_u *UserUpdateOne) ClearPhoneVerifiedAt() *UserUpdateOne {
+	_u.mutation.ClearPhoneVerifiedAt()
+	return _u
+}
+
+// SetNotificationPreferencesJSON sets the "notification_preferences_json" field.
+func (_u *UserUpdateOne) SetNotificationPreferencesJSON(v map[string]interface{}) *UserUpdateOne {
+	_u.mutation.SetNotificationPreferencesJSON(v)
+	return _u
+}
+
+// ClearNotificationPreferencesJSON clears the value of the "notification_preferences_json" field.
+func (_u *UserUpdateOne) ClearNotificationPreferencesJSON() *UserUpdateOne {
+	_u.mutation.ClearNotificationPreferencesJSON()
 	return _u
 }
 
@@ -580,6 +748,30 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.EmailVerifiedAt(); ok {
+		_spec.SetField(user.FieldEmailVerifiedAt, field.TypeTime, value)
+	}
+	if _u.mutation.EmailVerifiedAtCleared() {
+		_spec.ClearField(user.FieldEmailVerifiedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.PhoneE164(); ok {
+		_spec.SetField(user.FieldPhoneE164, field.TypeString, value)
+	}
+	if _u.mutation.PhoneE164Cleared() {
+		_spec.ClearField(user.FieldPhoneE164, field.TypeString)
+	}
+	if value, ok := _u.mutation.PhoneVerifiedAt(); ok {
+		_spec.SetField(user.FieldPhoneVerifiedAt, field.TypeTime, value)
+	}
+	if _u.mutation.PhoneVerifiedAtCleared() {
+		_spec.ClearField(user.FieldPhoneVerifiedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.NotificationPreferencesJSON(); ok {
+		_spec.SetField(user.FieldNotificationPreferencesJSON, field.TypeJSON, value)
+	}
+	if _u.mutation.NotificationPreferencesJSONCleared() {
+		_spec.ClearField(user.FieldNotificationPreferencesJSON, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.ExperiencePoints(); ok {
 		_spec.SetField(user.FieldExperiencePoints, field.TypeInt, value)

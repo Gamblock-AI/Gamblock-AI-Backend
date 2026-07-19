@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 )
 
 func (m *Middleware) AuthOptional() gin.HandlerFunc {
@@ -16,7 +19,10 @@ func (m *Middleware) AuthOptional() gin.HandlerFunc {
 			return
 		}
 		if claims, err := m.auth.ParseAccessToken(strings.TrimPrefix(header, "Bearer ")); err == nil {
-			setAuthenticatedContext(c, claims.UserID, claims.Email, claims.Role)
+			if role, active := m.auth.ActiveIdentity(c.Request.Context(), claims.UserID); active {
+				setAuthenticatedContext(c, claims)
+				c.Set("role", role)
+			}
 		}
 		c.Next()
 	}
@@ -40,7 +46,27 @@ func (m *Middleware) AuthRequired() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		setAuthenticatedContext(c, claims.UserID, claims.Email, claims.Role)
+		role, active := m.auth.ActiveIdentity(c.Request.Context(), claims.UserID)
+		if !active {
+			m.respondError(c, http.StatusUnauthorized, "invalid_token", "Account is unavailable")
+			c.Abort()
+			return
+		}
+		setAuthenticatedContext(c, claims)
+		c.Set("role", role)
+		c.Next()
+	}
+}
+
+func (m *Middleware) RequireRecentAuth(maxAge time.Duration) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authTime, ok := c.Get("auth_time")
+		issuedAt, valid := authTime.(time.Time)
+		if !ok || !valid || time.Since(issuedAt) > maxAge {
+			m.respondError(c, http.StatusUnauthorized, "recent_auth_required", "Sign in again before completing this decision")
+			c.Abort()
+			return
+		}
 		c.Next()
 	}
 }
@@ -61,8 +87,11 @@ func (m *Middleware) RequireRoles(roles ...string) gin.HandlerFunc {
 	}
 }
 
-func setAuthenticatedContext(c *gin.Context, userID, email, role string) {
-	c.Set("user_id", userID)
-	c.Set("email", email)
-	c.Set("role", role)
+func setAuthenticatedContext(c *gin.Context, claims *model.Claims) {
+	c.Set("user_id", claims.UserID)
+	c.Set("email", claims.Email)
+	c.Set("role", claims.Role)
+	if claims.AuthTime != nil {
+		c.Set("auth_time", claims.AuthTime.Time)
+	}
 }

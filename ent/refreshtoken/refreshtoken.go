@@ -19,6 +19,8 @@ const (
 	FieldTokenHash = "token_hash"
 	// FieldDeviceID holds the string denoting the device_id field in the database.
 	FieldDeviceID = "device_id"
+	// FieldAuthTime holds the string denoting the auth_time field in the database.
+	FieldAuthTime = "auth_time"
 	// FieldExpiresAt holds the string denoting the expires_at field in the database.
 	FieldExpiresAt = "expires_at"
 	// FieldRevokedAt holds the string denoting the revoked_at field in the database.
@@ -35,6 +37,7 @@ var Columns = []string{
 	FieldUserID,
 	FieldTokenHash,
 	FieldDeviceID,
+	FieldAuthTime,
 	FieldExpiresAt,
 	FieldRevokedAt,
 	FieldCreatedAt,
@@ -51,6 +54,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultAuthTime holds the default value on creation for the "auth_time" field.
+	DefaultAuthTime func() time.Time
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -78,6 +83,11 @@ func ByTokenHash(opts ...sql.OrderTermOption) OrderOption {
 // ByDeviceID orders the results by the device_id field.
 func ByDeviceID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeviceID, opts...).ToFunc()
+}
+
+// ByAuthTime orders the results by the auth_time field.
+func ByAuthTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuthTime, opts...).ToFunc()
 }
 
 // ByExpiresAt orders the results by the expires_at field.

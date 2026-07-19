@@ -26,6 +26,14 @@ const (
 	FieldPriority = "priority"
 	// FieldSummary holds the string denoting the summary field in the database.
 	FieldSummary = "summary"
+	// FieldImpact holds the string denoting the impact field in the database.
+	FieldImpact = "impact"
+	// FieldAssignedOperatorID holds the string denoting the assigned_operator_id field in the database.
+	FieldAssignedOperatorID = "assigned_operator_id"
+	// FieldResolvedAt holds the string denoting the resolved_at field in the database.
+	FieldResolvedAt = "resolved_at"
+	// FieldClosedAt holds the string denoting the closed_at field in the database.
+	FieldClosedAt = "closed_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -43,6 +51,10 @@ var Columns = []string{
 	FieldStatus,
 	FieldPriority,
 	FieldSummary,
+	FieldImpact,
+	FieldAssignedOperatorID,
+	FieldResolvedAt,
+	FieldClosedAt,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -58,6 +70,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultImpact holds the default value on creation for the "impact" field.
+	DefaultImpact string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -82,6 +96,7 @@ const (
 	TypeOrganizationDispute    Type = "organization_dispute"
 	TypeAccountabilityGuidance Type = "accountability_guidance"
 	TypePrivacyRequest         Type = "privacy_request"
+	TypeSafetySupport          Type = "safety_support"
 )
 
 func (_type Type) String() string {
@@ -91,7 +106,7 @@ func (_type Type) String() string {
 // TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
 func TypeValidator(_type Type) error {
 	switch _type {
-	case TypeTechnicalSupport, TypeAccountRecovery, TypePartnerAbuse, TypeStuckApproval, TypeDeviceRecovery, TypeNotificationFailure, TypeOrganizationDispute, TypeAccountabilityGuidance, TypePrivacyRequest:
+	case TypeTechnicalSupport, TypeAccountRecovery, TypePartnerAbuse, TypeStuckApproval, TypeDeviceRecovery, TypeNotificationFailure, TypeOrganizationDispute, TypeAccountabilityGuidance, TypePrivacyRequest, TypeSafetySupport:
 		return nil
 	default:
 		return fmt.Errorf("supportcase: invalid enum value for type field: %q", _type)
@@ -101,16 +116,15 @@ func TypeValidator(_type Type) error {
 // Status defines the type for the "status" enum field.
 type Status string
 
-// StatusOpen is the default value of the Status enum.
-const DefaultStatus = StatusOpen
+// StatusWaitingSupport is the default value of the Status enum.
+const DefaultStatus = StatusWaitingSupport
 
 // Status values.
 const (
-	StatusOpen            Status = "open"
-	StatusWaitingUser     Status = "waiting_user"
-	StatusWaitingInternal Status = "waiting_internal"
-	StatusResolved        Status = "resolved"
-	StatusClosed          Status = "closed"
+	StatusWaitingSupport Status = "waiting_support"
+	StatusWaitingUser    Status = "waiting_user"
+	StatusResolved       Status = "resolved"
+	StatusClosed         Status = "closed"
 )
 
 func (s Status) String() string {
@@ -120,7 +134,7 @@ func (s Status) String() string {
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s Status) error {
 	switch s {
-	case StatusOpen, StatusWaitingUser, StatusWaitingInternal, StatusResolved, StatusClosed:
+	case StatusWaitingSupport, StatusWaitingUser, StatusResolved, StatusClosed:
 		return nil
 	default:
 		return fmt.Errorf("supportcase: invalid enum value for status field: %q", s)
@@ -191,6 +205,26 @@ func ByPriority(opts ...sql.OrderTermOption) OrderOption {
 // BySummary orders the results by the summary field.
 func BySummary(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSummary, opts...).ToFunc()
+}
+
+// ByImpact orders the results by the impact field.
+func ByImpact(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldImpact, opts...).ToFunc()
+}
+
+// ByAssignedOperatorID orders the results by the assigned_operator_id field.
+func ByAssignedOperatorID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAssignedOperatorID, opts...).ToFunc()
+}
+
+// ByResolvedAt orders the results by the resolved_at field.
+func ByResolvedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldResolvedAt, opts...).ToFunc()
+}
+
+// ByClosedAt orders the results by the closed_at field.
+func ByClosedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldClosedAt, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

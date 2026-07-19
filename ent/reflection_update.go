@@ -76,6 +76,34 @@ func (_u *ReflectionUpdate) ClearPromptKey() *ReflectionUpdate {
 	return _u
 }
 
+// SetStatus sets the "status" field.
+func (_u *ReflectionUpdate) SetStatus(v reflection.Status) *ReflectionUpdate {
+	_u.mutation.SetStatus(v)
+	return _u
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_u *ReflectionUpdate) SetNillableStatus(v *reflection.Status) *ReflectionUpdate {
+	if v != nil {
+		_u.SetStatus(*v)
+	}
+	return _u
+}
+
+// SetIsFocus sets the "is_focus" field.
+func (_u *ReflectionUpdate) SetIsFocus(v bool) *ReflectionUpdate {
+	_u.mutation.SetIsFocus(v)
+	return _u
+}
+
+// SetNillableIsFocus sets the "is_focus" field if the given value is not nil.
+func (_u *ReflectionUpdate) SetNillableIsFocus(v *bool) *ReflectionUpdate {
+	if v != nil {
+		_u.SetIsFocus(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *ReflectionUpdate) SetUpdatedAt(v time.Time) *ReflectionUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -123,7 +151,20 @@ func (_u *ReflectionUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *ReflectionUpdate) check() error {
+	if v, ok := _u.mutation.Status(); ok {
+		if err := reflection.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Reflection.status": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *ReflectionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(reflection.Table, reflection.Columns, sqlgraph.NewFieldSpec(reflection.FieldID, field.TypeString))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -143,6 +184,12 @@ func (_u *ReflectionUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 	}
 	if _u.mutation.PromptKeyCleared() {
 		_spec.ClearField(reflection.FieldPromptKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.Status(); ok {
+		_spec.SetField(reflection.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.IsFocus(); ok {
+		_spec.SetField(reflection.FieldIsFocus, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(reflection.FieldUpdatedAt, field.TypeTime, value)
@@ -215,6 +262,34 @@ func (_u *ReflectionUpdateOne) ClearPromptKey() *ReflectionUpdateOne {
 	return _u
 }
 
+// SetStatus sets the "status" field.
+func (_u *ReflectionUpdateOne) SetStatus(v reflection.Status) *ReflectionUpdateOne {
+	_u.mutation.SetStatus(v)
+	return _u
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_u *ReflectionUpdateOne) SetNillableStatus(v *reflection.Status) *ReflectionUpdateOne {
+	if v != nil {
+		_u.SetStatus(*v)
+	}
+	return _u
+}
+
+// SetIsFocus sets the "is_focus" field.
+func (_u *ReflectionUpdateOne) SetIsFocus(v bool) *ReflectionUpdateOne {
+	_u.mutation.SetIsFocus(v)
+	return _u
+}
+
+// SetNillableIsFocus sets the "is_focus" field if the given value is not nil.
+func (_u *ReflectionUpdateOne) SetNillableIsFocus(v *bool) *ReflectionUpdateOne {
+	if v != nil {
+		_u.SetIsFocus(*v)
+	}
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *ReflectionUpdateOne) SetUpdatedAt(v time.Time) *ReflectionUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -275,7 +350,20 @@ func (_u *ReflectionUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *ReflectionUpdateOne) check() error {
+	if v, ok := _u.mutation.Status(); ok {
+		if err := reflection.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Reflection.status": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *ReflectionUpdateOne) sqlSave(ctx context.Context) (_node *Reflection, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(reflection.Table, reflection.Columns, sqlgraph.NewFieldSpec(reflection.FieldID, field.TypeString))
 	id, ok := _u.mutation.ID()
 	if !ok {
@@ -312,6 +400,12 @@ func (_u *ReflectionUpdateOne) sqlSave(ctx context.Context) (_node *Reflection, 
 	}
 	if _u.mutation.PromptKeyCleared() {
 		_spec.ClearField(reflection.FieldPromptKey, field.TypeString)
+	}
+	if value, ok := _u.mutation.Status(); ok {
+		_spec.SetField(reflection.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.IsFocus(); ok {
+		_spec.SetField(reflection.FieldIsFocus, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(reflection.FieldUpdatedAt, field.TypeTime, value)

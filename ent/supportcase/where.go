@@ -79,6 +79,26 @@ func Summary(v string) predicate.SupportCase {
 	return predicate.SupportCase(sql.FieldEQ(FieldSummary, v))
 }
 
+// Impact applies equality check predicate on the "impact" field. It's identical to ImpactEQ.
+func Impact(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldEQ(FieldImpact, v))
+}
+
+// AssignedOperatorID applies equality check predicate on the "assigned_operator_id" field. It's identical to AssignedOperatorIDEQ.
+func AssignedOperatorID(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldEQ(FieldAssignedOperatorID, v))
+}
+
+// ResolvedAt applies equality check predicate on the "resolved_at" field. It's identical to ResolvedAtEQ.
+func ResolvedAt(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldEQ(FieldResolvedAt, v))
+}
+
+// ClosedAt applies equality check predicate on the "closed_at" field. It's identical to ClosedAtEQ.
+func ClosedAt(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldEQ(FieldClosedAt, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.SupportCase {
 	return predicate.SupportCase(sql.FieldEQ(FieldCreatedAt, v))
@@ -352,6 +372,246 @@ func SummaryEqualFold(v string) predicate.SupportCase {
 // SummaryContainsFold applies the ContainsFold predicate on the "summary" field.
 func SummaryContainsFold(v string) predicate.SupportCase {
 	return predicate.SupportCase(sql.FieldContainsFold(FieldSummary, v))
+}
+
+// ImpactEQ applies the EQ predicate on the "impact" field.
+func ImpactEQ(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldEQ(FieldImpact, v))
+}
+
+// ImpactNEQ applies the NEQ predicate on the "impact" field.
+func ImpactNEQ(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldNEQ(FieldImpact, v))
+}
+
+// ImpactIn applies the In predicate on the "impact" field.
+func ImpactIn(vs ...string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldIn(FieldImpact, vs...))
+}
+
+// ImpactNotIn applies the NotIn predicate on the "impact" field.
+func ImpactNotIn(vs ...string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldNotIn(FieldImpact, vs...))
+}
+
+// ImpactGT applies the GT predicate on the "impact" field.
+func ImpactGT(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldGT(FieldImpact, v))
+}
+
+// ImpactGTE applies the GTE predicate on the "impact" field.
+func ImpactGTE(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldGTE(FieldImpact, v))
+}
+
+// ImpactLT applies the LT predicate on the "impact" field.
+func ImpactLT(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldLT(FieldImpact, v))
+}
+
+// ImpactLTE applies the LTE predicate on the "impact" field.
+func ImpactLTE(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldLTE(FieldImpact, v))
+}
+
+// ImpactContains applies the Contains predicate on the "impact" field.
+func ImpactContains(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldContains(FieldImpact, v))
+}
+
+// ImpactHasPrefix applies the HasPrefix predicate on the "impact" field.
+func ImpactHasPrefix(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldHasPrefix(FieldImpact, v))
+}
+
+// ImpactHasSuffix applies the HasSuffix predicate on the "impact" field.
+func ImpactHasSuffix(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldHasSuffix(FieldImpact, v))
+}
+
+// ImpactEqualFold applies the EqualFold predicate on the "impact" field.
+func ImpactEqualFold(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldEqualFold(FieldImpact, v))
+}
+
+// ImpactContainsFold applies the ContainsFold predicate on the "impact" field.
+func ImpactContainsFold(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldContainsFold(FieldImpact, v))
+}
+
+// AssignedOperatorIDEQ applies the EQ predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDEQ(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldEQ(FieldAssignedOperatorID, v))
+}
+
+// AssignedOperatorIDNEQ applies the NEQ predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDNEQ(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldNEQ(FieldAssignedOperatorID, v))
+}
+
+// AssignedOperatorIDIn applies the In predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDIn(vs ...string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldIn(FieldAssignedOperatorID, vs...))
+}
+
+// AssignedOperatorIDNotIn applies the NotIn predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDNotIn(vs ...string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldNotIn(FieldAssignedOperatorID, vs...))
+}
+
+// AssignedOperatorIDGT applies the GT predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDGT(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldGT(FieldAssignedOperatorID, v))
+}
+
+// AssignedOperatorIDGTE applies the GTE predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDGTE(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldGTE(FieldAssignedOperatorID, v))
+}
+
+// AssignedOperatorIDLT applies the LT predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDLT(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldLT(FieldAssignedOperatorID, v))
+}
+
+// AssignedOperatorIDLTE applies the LTE predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDLTE(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldLTE(FieldAssignedOperatorID, v))
+}
+
+// AssignedOperatorIDContains applies the Contains predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDContains(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldContains(FieldAssignedOperatorID, v))
+}
+
+// AssignedOperatorIDHasPrefix applies the HasPrefix predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDHasPrefix(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldHasPrefix(FieldAssignedOperatorID, v))
+}
+
+// AssignedOperatorIDHasSuffix applies the HasSuffix predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDHasSuffix(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldHasSuffix(FieldAssignedOperatorID, v))
+}
+
+// AssignedOperatorIDIsNil applies the IsNil predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDIsNil() predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldIsNull(FieldAssignedOperatorID))
+}
+
+// AssignedOperatorIDNotNil applies the NotNil predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDNotNil() predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldNotNull(FieldAssignedOperatorID))
+}
+
+// AssignedOperatorIDEqualFold applies the EqualFold predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDEqualFold(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldEqualFold(FieldAssignedOperatorID, v))
+}
+
+// AssignedOperatorIDContainsFold applies the ContainsFold predicate on the "assigned_operator_id" field.
+func AssignedOperatorIDContainsFold(v string) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldContainsFold(FieldAssignedOperatorID, v))
+}
+
+// ResolvedAtEQ applies the EQ predicate on the "resolved_at" field.
+func ResolvedAtEQ(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldEQ(FieldResolvedAt, v))
+}
+
+// ResolvedAtNEQ applies the NEQ predicate on the "resolved_at" field.
+func ResolvedAtNEQ(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldNEQ(FieldResolvedAt, v))
+}
+
+// ResolvedAtIn applies the In predicate on the "resolved_at" field.
+func ResolvedAtIn(vs ...time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldIn(FieldResolvedAt, vs...))
+}
+
+// ResolvedAtNotIn applies the NotIn predicate on the "resolved_at" field.
+func ResolvedAtNotIn(vs ...time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldNotIn(FieldResolvedAt, vs...))
+}
+
+// ResolvedAtGT applies the GT predicate on the "resolved_at" field.
+func ResolvedAtGT(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldGT(FieldResolvedAt, v))
+}
+
+// ResolvedAtGTE applies the GTE predicate on the "resolved_at" field.
+func ResolvedAtGTE(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldGTE(FieldResolvedAt, v))
+}
+
+// ResolvedAtLT applies the LT predicate on the "resolved_at" field.
+func ResolvedAtLT(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldLT(FieldResolvedAt, v))
+}
+
+// ResolvedAtLTE applies the LTE predicate on the "resolved_at" field.
+func ResolvedAtLTE(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldLTE(FieldResolvedAt, v))
+}
+
+// ResolvedAtIsNil applies the IsNil predicate on the "resolved_at" field.
+func ResolvedAtIsNil() predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldIsNull(FieldResolvedAt))
+}
+
+// ResolvedAtNotNil applies the NotNil predicate on the "resolved_at" field.
+func ResolvedAtNotNil() predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldNotNull(FieldResolvedAt))
+}
+
+// ClosedAtEQ applies the EQ predicate on the "closed_at" field.
+func ClosedAtEQ(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldEQ(FieldClosedAt, v))
+}
+
+// ClosedAtNEQ applies the NEQ predicate on the "closed_at" field.
+func ClosedAtNEQ(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldNEQ(FieldClosedAt, v))
+}
+
+// ClosedAtIn applies the In predicate on the "closed_at" field.
+func ClosedAtIn(vs ...time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldIn(FieldClosedAt, vs...))
+}
+
+// ClosedAtNotIn applies the NotIn predicate on the "closed_at" field.
+func ClosedAtNotIn(vs ...time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldNotIn(FieldClosedAt, vs...))
+}
+
+// ClosedAtGT applies the GT predicate on the "closed_at" field.
+func ClosedAtGT(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldGT(FieldClosedAt, v))
+}
+
+// ClosedAtGTE applies the GTE predicate on the "closed_at" field.
+func ClosedAtGTE(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldGTE(FieldClosedAt, v))
+}
+
+// ClosedAtLT applies the LT predicate on the "closed_at" field.
+func ClosedAtLT(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldLT(FieldClosedAt, v))
+}
+
+// ClosedAtLTE applies the LTE predicate on the "closed_at" field.
+func ClosedAtLTE(v time.Time) predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldLTE(FieldClosedAt, v))
+}
+
+// ClosedAtIsNil applies the IsNil predicate on the "closed_at" field.
+func ClosedAtIsNil() predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldIsNull(FieldClosedAt))
+}
+
+// ClosedAtNotNil applies the NotNil predicate on the "closed_at" field.
+func ClosedAtNotNil() predicate.SupportCase {
+	return predicate.SupportCase(sql.FieldNotNull(FieldClosedAt))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

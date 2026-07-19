@@ -46,6 +46,34 @@ func (_c *ReflectionCreate) SetNillablePromptKey(v *string) *ReflectionCreate {
 	return _c
 }
 
+// SetStatus sets the "status" field.
+func (_c *ReflectionCreate) SetStatus(v reflection.Status) *ReflectionCreate {
+	_c.mutation.SetStatus(v)
+	return _c
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_c *ReflectionCreate) SetNillableStatus(v *reflection.Status) *ReflectionCreate {
+	if v != nil {
+		_c.SetStatus(*v)
+	}
+	return _c
+}
+
+// SetIsFocus sets the "is_focus" field.
+func (_c *ReflectionCreate) SetIsFocus(v bool) *ReflectionCreate {
+	_c.mutation.SetIsFocus(v)
+	return _c
+}
+
+// SetNillableIsFocus sets the "is_focus" field if the given value is not nil.
+func (_c *ReflectionCreate) SetNillableIsFocus(v *bool) *ReflectionCreate {
+	if v != nil {
+		_c.SetIsFocus(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *ReflectionCreate) SetCreatedAt(v time.Time) *ReflectionCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -123,6 +151,14 @@ func (_c *ReflectionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *ReflectionCreate) defaults() {
+	if _, ok := _c.mutation.Status(); !ok {
+		v := reflection.DefaultStatus
+		_c.mutation.SetStatus(v)
+	}
+	if _, ok := _c.mutation.IsFocus(); !ok {
+		v := reflection.DefaultIsFocus
+		_c.mutation.SetIsFocus(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := reflection.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -144,6 +180,17 @@ func (_c *ReflectionCreate) check() error {
 	}
 	if _, ok := _c.mutation.ContentEncrypted(); !ok {
 		return &ValidationError{Name: "content_encrypted", err: errors.New(`ent: missing required field "Reflection.content_encrypted"`)}
+	}
+	if _, ok := _c.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Reflection.status"`)}
+	}
+	if v, ok := _c.mutation.Status(); ok {
+		if err := reflection.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Reflection.status": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.IsFocus(); !ok {
+		return &ValidationError{Name: "is_focus", err: errors.New(`ent: missing required field "Reflection.is_focus"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Reflection.created_at"`)}
@@ -197,6 +244,14 @@ func (_c *ReflectionCreate) createSpec() (*Reflection, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.PromptKey(); ok {
 		_spec.SetField(reflection.FieldPromptKey, field.TypeString, value)
 		_node.PromptKey = &value
+	}
+	if value, ok := _c.mutation.Status(); ok {
+		_spec.SetField(reflection.FieldStatus, field.TypeEnum, value)
+		_node.Status = value
+	}
+	if value, ok := _c.mutation.IsFocus(); ok {
+		_spec.SetField(reflection.FieldIsFocus, field.TypeBool, value)
+		_node.IsFocus = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(reflection.FieldCreatedAt, field.TypeTime, value)

@@ -20,9 +20,13 @@ type Reflection struct {
 	// UserID holds the value of the "user_id" field.
 	UserID string `json:"user_id,omitempty"`
 	// ContentEncrypted holds the value of the "content_encrypted" field.
-	ContentEncrypted string `json:"content_encrypted,omitempty"`
+	ContentEncrypted string `json:"-"`
 	// PromptKey holds the value of the "prompt_key" field.
 	PromptKey *string `json:"prompt_key,omitempty"`
+	// Status holds the value of the "status" field.
+	Status reflection.Status `json:"status,omitempty"`
+	// IsFocus holds the value of the "is_focus" field.
+	IsFocus bool `json:"is_focus,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -35,7 +39,9 @@ func (*Reflection) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case reflection.FieldID, reflection.FieldUserID, reflection.FieldContentEncrypted, reflection.FieldPromptKey:
+		case reflection.FieldIsFocus:
+			values[i] = new(sql.NullBool)
+		case reflection.FieldID, reflection.FieldUserID, reflection.FieldContentEncrypted, reflection.FieldPromptKey, reflection.FieldStatus:
 			values[i] = new(sql.NullString)
 		case reflection.FieldCreatedAt, reflection.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -78,6 +84,18 @@ func (_m *Reflection) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.PromptKey = new(string)
 				*_m.PromptKey = value.String
+			}
+		case reflection.FieldStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
+			} else if value.Valid {
+				_m.Status = reflection.Status(value.String)
+			}
+		case reflection.FieldIsFocus:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_focus", values[i])
+			} else if value.Valid {
+				_m.IsFocus = value.Bool
 			}
 		case reflection.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -130,13 +148,18 @@ func (_m *Reflection) String() string {
 	builder.WriteString("user_id=")
 	builder.WriteString(_m.UserID)
 	builder.WriteString(", ")
-	builder.WriteString("content_encrypted=")
-	builder.WriteString(_m.ContentEncrypted)
+	builder.WriteString("content_encrypted=<sensitive>")
 	builder.WriteString(", ")
 	if v := _m.PromptKey; v != nil {
 		builder.WriteString("prompt_key=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("status=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Status))
+	builder.WriteString(", ")
+	builder.WriteString("is_focus=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsFocus))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

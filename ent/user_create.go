@@ -88,6 +88,54 @@ func (_c *UserCreate) SetNillableRole(v *user.Role) *UserCreate {
 	return _c
 }
 
+// SetEmailVerifiedAt sets the "email_verified_at" field.
+func (_c *UserCreate) SetEmailVerifiedAt(v time.Time) *UserCreate {
+	_c.mutation.SetEmailVerifiedAt(v)
+	return _c
+}
+
+// SetNillableEmailVerifiedAt sets the "email_verified_at" field if the given value is not nil.
+func (_c *UserCreate) SetNillableEmailVerifiedAt(v *time.Time) *UserCreate {
+	if v != nil {
+		_c.SetEmailVerifiedAt(*v)
+	}
+	return _c
+}
+
+// SetPhoneE164 sets the "phone_e164" field.
+func (_c *UserCreate) SetPhoneE164(v string) *UserCreate {
+	_c.mutation.SetPhoneE164(v)
+	return _c
+}
+
+// SetNillablePhoneE164 sets the "phone_e164" field if the given value is not nil.
+func (_c *UserCreate) SetNillablePhoneE164(v *string) *UserCreate {
+	if v != nil {
+		_c.SetPhoneE164(*v)
+	}
+	return _c
+}
+
+// SetPhoneVerifiedAt sets the "phone_verified_at" field.
+func (_c *UserCreate) SetPhoneVerifiedAt(v time.Time) *UserCreate {
+	_c.mutation.SetPhoneVerifiedAt(v)
+	return _c
+}
+
+// SetNillablePhoneVerifiedAt sets the "phone_verified_at" field if the given value is not nil.
+func (_c *UserCreate) SetNillablePhoneVerifiedAt(v *time.Time) *UserCreate {
+	if v != nil {
+		_c.SetPhoneVerifiedAt(*v)
+	}
+	return _c
+}
+
+// SetNotificationPreferencesJSON sets the "notification_preferences_json" field.
+func (_c *UserCreate) SetNotificationPreferencesJSON(v map[string]interface{}) *UserCreate {
+	_c.mutation.SetNotificationPreferencesJSON(v)
+	return _c
+}
+
 // SetExperiencePoints sets the "experience_points" field.
 func (_c *UserCreate) SetExperiencePoints(v int) *UserCreate {
 	_c.mutation.SetExperiencePoints(v)
@@ -303,6 +351,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 		_node.Role = value
+	}
+	if value, ok := _c.mutation.EmailVerifiedAt(); ok {
+		_spec.SetField(user.FieldEmailVerifiedAt, field.TypeTime, value)
+		_node.EmailVerifiedAt = &value
+	}
+	if value, ok := _c.mutation.PhoneE164(); ok {
+		_spec.SetField(user.FieldPhoneE164, field.TypeString, value)
+		_node.PhoneE164 = &value
+	}
+	if value, ok := _c.mutation.PhoneVerifiedAt(); ok {
+		_spec.SetField(user.FieldPhoneVerifiedAt, field.TypeTime, value)
+		_node.PhoneVerifiedAt = &value
+	}
+	if value, ok := _c.mutation.NotificationPreferencesJSON(); ok {
+		_spec.SetField(user.FieldNotificationPreferencesJSON, field.TypeJSON, value)
+		_node.NotificationPreferencesJSON = value
 	}
 	if value, ok := _c.mutation.ExperiencePoints(); ok {
 		_spec.SetField(user.FieldExperiencePoints, field.TypeInt, value)

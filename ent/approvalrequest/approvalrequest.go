@@ -20,6 +20,8 @@ const (
 	FieldDeviceID = "device_id"
 	// FieldPartnerLinkID holds the string denoting the partner_link_id field in the database.
 	FieldPartnerLinkID = "partner_link_id"
+	// FieldMembershipID holds the string denoting the membership_id field in the database.
+	FieldMembershipID = "membership_id"
 	// FieldQuickTokenHash holds the string denoting the quick_token_hash field in the database.
 	FieldQuickTokenHash = "quick_token_hash"
 	// FieldAction holds the string denoting the action field in the database.
@@ -28,6 +30,8 @@ const (
 	FieldStatus = "status"
 	// FieldReason holds the string denoting the reason field in the database.
 	FieldReason = "reason"
+	// FieldSupportiveResponse holds the string denoting the supportive_response field in the database.
+	FieldSupportiveResponse = "supportive_response"
 	// FieldRequestedDurationMinutes holds the string denoting the requested_duration_minutes field in the database.
 	FieldRequestedDurationMinutes = "requested_duration_minutes"
 	// FieldExpiresAt holds the string denoting the expires_at field in the database.
@@ -54,10 +58,12 @@ var Columns = []string{
 	FieldUserID,
 	FieldDeviceID,
 	FieldPartnerLinkID,
+	FieldMembershipID,
 	FieldQuickTokenHash,
 	FieldAction,
 	FieldStatus,
 	FieldReason,
+	FieldSupportiveResponse,
 	FieldRequestedDurationMinutes,
 	FieldExpiresAt,
 	FieldResolvedBy,
@@ -94,12 +100,8 @@ type Action string
 
 // Action values.
 const (
-	ActionDisableProtection Action = "disable_protection"
-	ActionRemovePartner     Action = "remove_partner"
 	ActionUninstallDetected Action = "uninstall_detected"
-	ActionResetSettings     Action = "reset_settings"
 	ActionPauseProtection   Action = "pause_protection"
-	ActionEmergencyAccess   Action = "emergency_access"
 )
 
 func (a Action) String() string {
@@ -109,7 +111,7 @@ func (a Action) String() string {
 // ActionValidator is a validator for the "action" field enum values. It is called by the builders before save.
 func ActionValidator(a Action) error {
 	switch a {
-	case ActionDisableProtection, ActionRemovePartner, ActionUninstallDetected, ActionResetSettings, ActionPauseProtection, ActionEmergencyAccess:
+	case ActionUninstallDetected, ActionPauseProtection:
 		return nil
 	default:
 		return fmt.Errorf("approvalrequest: invalid enum value for action field: %q", a)
@@ -168,6 +170,11 @@ func ByPartnerLinkID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPartnerLinkID, opts...).ToFunc()
 }
 
+// ByMembershipID orders the results by the membership_id field.
+func ByMembershipID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMembershipID, opts...).ToFunc()
+}
+
 // ByQuickTokenHash orders the results by the quick_token_hash field.
 func ByQuickTokenHash(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldQuickTokenHash, opts...).ToFunc()
@@ -186,6 +193,11 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 // ByReason orders the results by the reason field.
 func ByReason(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldReason, opts...).ToFunc()
+}
+
+// BySupportiveResponse orders the results by the supportive_response field.
+func BySupportiveResponse(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSupportiveResponse, opts...).ToFunc()
 }
 
 // ByRequestedDurationMinutes orders the results by the requested_duration_minutes field.

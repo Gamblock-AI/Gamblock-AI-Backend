@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"time"
 
@@ -143,6 +144,105 @@ func (r *Repository) GetDashboardData(ctx context.Context, userID string, now ti
 		ActiveDays: len(activityDays), Reflections: reflectionCount, DataState: dataState,
 	}
 	return summary, protection, progress, nil
+}
+
+func (r *Repository) GetProgressData(ctx context.Context, userID string, days int, now time.Time) (model.ProgressSnapshot, error) {
+	if days != 7 && days != 30 && days != 90 {
+		return model.ProgressSnapshot{}, fmt.Errorf("progress range must be 7, 30, or 90 days")
+	}
+	if r.db != nil {
+		r.RefreshStore(ctx)
+	}
+	start := startOfDay(now.UTC()).AddDate(0, 0, -(days - 1))
+	dailyBlocks := make([]int, days)
+	moodPoints := []model.MoodPoint{}
+	activityDays := map[string]struct{}{}
+	activityByDate := map[string]*model.ProgressActivityDay{}
+	reflections := 0
+	snapshot := r.store.Snapshot()
+	for _, event := range snapshot.AggregateEvents {
+		if event.UserID != userID || event.EventType != "block_count_sync" || event.EventDate.Before(start) {
+			continue
+		}
+		index := int(startOfDay(event.EventDate).Sub(start).Hours() / 24)
+		if index >= 0 && index < days {
+			dailyBlocks[index] += event.Count
+		}
+	}
+	for _, checkIn := range snapshot.CheckIns {
+		if checkIn.UserID != userID || checkIn.CreatedAt.Before(start) {
+			continue
+		}
+		date := checkIn.CreatedAt.UTC().Format("2006-01-02")
+		moodPoints = append(moodPoints, model.MoodPoint{Date: date, Mood: checkIn.Mood, Urge: checkIn.Urge})
+		activityDays[date] = struct{}{}
+		activityForDate(activityByDate, date).CheckIns++
+	}
+	for _, reflection := range snapshot.JournalEntries {
+		if reflection.UserID == userID && !reflection.CreatedAt.Before(start) {
+			reflections++
+			date := reflection.CreatedAt.UTC().Format("2006-01-02")
+			activityDays[date] = struct{}{}
+			activityForDate(activityByDate, date).Journals++
+		}
+	}
+	for _, practice := range snapshot.RecoveryPracticeSessions {
+		if practice.UserID == userID && !practice.CompletedAt.Before(start) {
+			date := practice.CompletedAt.UTC().Format("2006-01-02")
+			activityDays[date] = struct{}{}
+			activityForDate(activityByDate, date).Practices++
+		}
+	}
+	for _, mission := range snapshot.Missions {
+		if mission.UserID != userID || mission.Date < start.Format("2006-01-02") {
+			continue
+		}
+		count := 0
+		for _, completed := range []bool{mission.Mission1, mission.Mission2, mission.Mission3, mission.Mission4, mission.Mission5} {
+			if completed {
+				count++
+			}
+		}
+		if count > 0 {
+			activityDays[mission.Date] = struct{}{}
+			activityForDate(activityByDate, mission.Date).Missions += count
+		}
+	}
+	for _, education := range snapshot.EducationProgress {
+		if education.UserID == userID && !education.UpdatedAt.Before(start) {
+			date := education.UpdatedAt.UTC().Format("2006-01-02")
+			activityDays[date] = struct{}{}
+			activityForDate(activityByDate, date).Education++
+		}
+	}
+	for _, record := range snapshot.RecoveryRecords {
+		if record.UserID == userID && record.Kind == "weekly_review" && record.RecordDate >= start.Format("2006-01-02") {
+			activityDays[record.RecordDate] = struct{}{}
+			activityForDate(activityByDate, record.RecordDate).Reviews++
+		}
+	}
+	sort.Slice(moodPoints, func(i, j int) bool { return moodPoints[i].Date < moodPoints[j].Date })
+	weekly := dailyBlocks
+	if len(dailyBlocks) > 7 {
+		weekly = dailyBlocks[len(dailyBlocks)-7:]
+	}
+	activityList := make([]model.ProgressActivityDay, 0, len(activityByDate))
+	for _, item := range activityByDate {
+		activityList = append(activityList, *item)
+	}
+	sort.Slice(activityList, func(i, j int) bool { return activityList[i].Date < activityList[j].Date })
+	return model.ProgressSnapshot{
+		WeeklyBlocks: weekly, RangeDays: days, DailyBlocks: dailyBlocks,
+		MoodPoints: moodPoints, CheckInCount: len(moodPoints), TrendAvailable: len(moodPoints) >= 3,
+		ActiveDays: len(activityDays), Reflections: reflections, DataState: "synced", ActivityDays: activityList,
+	}, nil
+}
+
+func activityForDate(items map[string]*model.ProgressActivityDay, date string) *model.ProgressActivityDay {
+	if items[date] == nil {
+		items[date] = &model.ProgressActivityDay{Date: date}
+	}
+	return items[date]
 }
 
 func startOfDay(value time.Time) time.Time {

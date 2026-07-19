@@ -1,5 +1,5 @@
 schema_version: 1
-context_version: 2026-07-18.3
+context_version: 2026-07-19.1
 component: backend
 contracts:
   proposal_authority: 1

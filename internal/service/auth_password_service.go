@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/authn"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
@@ -16,27 +17,54 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (model.
 	if !ok || user.DisabledAt != nil || !authn.VerifyPassword(password, user.PasswordHash) {
 		return model.AuthResponse{}, fmt.Errorf("user not found or invalid credentials")
 	}
-	return s.authPair(ctx, user, nil)
+	response, err := s.authPair(ctx, user, nil)
+	response.VerificationRequired = user.EmailVerifiedAt == nil
+	return response, err
 }
 
-func (s *AuthService) Register(ctx context.Context, email, password, name string) (model.AuthResponse, error) {
+// ActiveIdentity revalidates mutable account state for bearer-token requests.
+// This makes operator disablement and role changes effective immediately,
+// rather than waiting for an already-issued access token to expire.
+func (s *AuthService) ActiveIdentity(ctx context.Context, userID string) (string, bool) {
+	user, ok := s.repo.UserByID(ctx, userID)
+	return user.Role, ok && user.DisabledAt == nil
+}
+
+func (s *AuthService) Register(ctx context.Context, email, password, name string, requestedRole ...string) (model.AuthResponse, error) {
 	email = strings.TrimSpace(strings.ToLower(email))
 	name = strings.TrimSpace(name)
+	role := "user"
+	if len(requestedRole) > 0 && requestedRole[0] != "" {
+		role = requestedRole[0]
+	}
 	if len(password) < 8 {
 		return model.AuthResponse{}, fmt.Errorf("password must contain at least 8 characters")
 	}
 	if _, ok := s.repo.UserByEmail(ctx, email); ok {
 		return model.AuthResponse{}, fmt.Errorf("email already exists")
 	}
+	if role != "user" && role != "partner" {
+		return model.AuthResponse{}, fmt.Errorf("role must be user or partner")
+	}
 	passwordHash, err := authn.HashPassword(password)
 	if err != nil {
 		return model.AuthResponse{}, err
 	}
-	user, err := s.repo.CreateUserWithPassword(ctx, "usr_"+uuid.NewString()[:8], email, name, passwordHash)
+	user, err := s.repo.CreateUserWithPassword(ctx, "usr_"+uuid.NewString()[:8], email, name, passwordHash, role)
 	if err != nil {
 		return model.AuthResponse{}, err
 	}
-	return s.authPair(ctx, user, nil)
+	response, err := s.authPair(ctx, user, nil)
+	if err != nil {
+		return model.AuthResponse{}, err
+	}
+	previewURL, deliveryErr := s.BeginEmailVerification(ctx, user)
+	if deliveryErr != nil {
+		s.logger.Warn("email verification delivery failed", zap.String("user_id", user.ID))
+	}
+	response.VerificationRequired = true
+	response.VerificationPreviewURL = previewURL
+	return response, nil
 }
 
 func (s *AuthService) DevLogin(ctx context.Context, email, role, deviceID string) (model.AuthResponse, error) {

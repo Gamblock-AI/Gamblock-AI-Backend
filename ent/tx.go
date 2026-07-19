@@ -12,6 +12,10 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// AccountabilityGroup is the client for interacting with the AccountabilityGroup builders.
+	AccountabilityGroup *AccountabilityGroupClient
+	// AccountabilityMembership is the client for interacting with the AccountabilityMembership builders.
+	AccountabilityMembership *AccountabilityMembershipClient
 	// AggregateEvent is the client for interacting with the AggregateEvent builders.
 	AggregateEvent *AggregateEventClient
 	// ApprovalRequest is the client for interacting with the ApprovalRequest builders.
@@ -20,6 +24,8 @@ type Tx struct {
 	AuditLog *AuditLogClient
 	// CheckIn is the client for interacting with the CheckIn builders.
 	CheckIn *CheckInClient
+	// ContactVerification is the client for interacting with the ContactVerification builders.
+	ContactVerification *ContactVerificationClient
 	// ContentProgress is the client for interacting with the ContentProgress builders.
 	ContentProgress *ContentProgressClient
 	// DailyMission is the client for interacting with the DailyMission builders.
@@ -30,10 +36,14 @@ type Tx struct {
 	Device *DeviceClient
 	// EducationMedia is the client for interacting with the EducationMedia builders.
 	EducationMedia *EducationMediaClient
+	// EducationRevision is the client for interacting with the EducationRevision builders.
+	EducationRevision *EducationRevisionClient
 	// EmergencyKeyRequest is the client for interacting with the EmergencyKeyRequest builders.
 	EmergencyKeyRequest *EmergencyKeyRequestClient
 	// Intention is the client for interacting with the Intention builders.
 	Intention *IntentionClient
+	// MembershipExitRequest is the client for interacting with the MembershipExitRequest builders.
+	MembershipExitRequest *MembershipExitRequestClient
 	// ModelRelease is the client for interacting with the ModelRelease builders.
 	ModelRelease *ModelReleaseClient
 	// ModelRollout is the client for interacting with the ModelRollout builders.
@@ -42,6 +52,8 @@ type Tx struct {
 	NetworkRulesetRelease *NetworkRulesetReleaseClient
 	// NotificationDelivery is the client for interacting with the NotificationDelivery builders.
 	NotificationDelivery *NotificationDeliveryClient
+	// OperatorInvitation is the client for interacting with the OperatorInvitation builders.
+	OperatorInvitation *OperatorInvitationClient
 	// Organization is the client for interacting with the Organization builders.
 	Organization *OrganizationClient
 	// OrganizationInvite is the client for interacting with the OrganizationInvite builders.
@@ -50,12 +62,20 @@ type Tx struct {
 	OrganizationMember *OrganizationMemberClient
 	// OrganizationPolicy is the client for interacting with the OrganizationPolicy builders.
 	OrganizationPolicy *OrganizationPolicyClient
+	// PartnerContactRequest is the client for interacting with the PartnerContactRequest builders.
+	PartnerContactRequest *PartnerContactRequestClient
 	// PartnerLink is the client for interacting with the PartnerLink builders.
 	PartnerLink *PartnerLinkClient
 	// PsychoeducationModule is the client for interacting with the PsychoeducationModule builders.
 	PsychoeducationModule *PsychoeducationModuleClient
 	// PsychoeducationProgress is the client for interacting with the PsychoeducationProgress builders.
 	PsychoeducationProgress *PsychoeducationProgressClient
+	// RecoveryPracticeSession is the client for interacting with the RecoveryPracticeSession builders.
+	RecoveryPracticeSession *RecoveryPracticeSessionClient
+	// RecoveryRecord is the client for interacting with the RecoveryRecord builders.
+	RecoveryRecord *RecoveryRecordClient
+	// RecoverySpace is the client for interacting with the RecoverySpace builders.
+	RecoverySpace *RecoverySpaceClient
 	// Reflection is the client for interacting with the Reflection builders.
 	Reflection *ReflectionClient
 	// RefreshToken is the client for interacting with the RefreshToken builders.
@@ -66,10 +86,14 @@ type Tx struct {
 	ReportRollup *ReportRollupClient
 	// RulesetRelease is the client for interacting with the RulesetRelease builders.
 	RulesetRelease *RulesetReleaseClient
+	// SiteSocialLink is the client for interacting with the SiteSocialLink builders.
+	SiteSocialLink *SiteSocialLinkClient
 	// SupportActionAudit is the client for interacting with the SupportActionAudit builders.
 	SupportActionAudit *SupportActionAuditClient
 	// SupportCase is the client for interacting with the SupportCase builders.
 	SupportCase *SupportCaseClient
+	// SupportMessage is the client for interacting with the SupportMessage builders.
+	SupportMessage *SupportMessageClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -203,35 +227,47 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.AccountabilityGroup = NewAccountabilityGroupClient(tx.config)
+	tx.AccountabilityMembership = NewAccountabilityMembershipClient(tx.config)
 	tx.AggregateEvent = NewAggregateEventClient(tx.config)
 	tx.ApprovalRequest = NewApprovalRequestClient(tx.config)
 	tx.AuditLog = NewAuditLogClient(tx.config)
 	tx.CheckIn = NewCheckInClient(tx.config)
+	tx.ContactVerification = NewContactVerificationClient(tx.config)
 	tx.ContentProgress = NewContentProgressClient(tx.config)
 	tx.DailyMission = NewDailyMissionClient(tx.config)
 	tx.DataRequest = NewDataRequestClient(tx.config)
 	tx.Device = NewDeviceClient(tx.config)
 	tx.EducationMedia = NewEducationMediaClient(tx.config)
+	tx.EducationRevision = NewEducationRevisionClient(tx.config)
 	tx.EmergencyKeyRequest = NewEmergencyKeyRequestClient(tx.config)
 	tx.Intention = NewIntentionClient(tx.config)
+	tx.MembershipExitRequest = NewMembershipExitRequestClient(tx.config)
 	tx.ModelRelease = NewModelReleaseClient(tx.config)
 	tx.ModelRollout = NewModelRolloutClient(tx.config)
 	tx.NetworkRulesetRelease = NewNetworkRulesetReleaseClient(tx.config)
 	tx.NotificationDelivery = NewNotificationDeliveryClient(tx.config)
+	tx.OperatorInvitation = NewOperatorInvitationClient(tx.config)
 	tx.Organization = NewOrganizationClient(tx.config)
 	tx.OrganizationInvite = NewOrganizationInviteClient(tx.config)
 	tx.OrganizationMember = NewOrganizationMemberClient(tx.config)
 	tx.OrganizationPolicy = NewOrganizationPolicyClient(tx.config)
+	tx.PartnerContactRequest = NewPartnerContactRequestClient(tx.config)
 	tx.PartnerLink = NewPartnerLinkClient(tx.config)
 	tx.PsychoeducationModule = NewPsychoeducationModuleClient(tx.config)
 	tx.PsychoeducationProgress = NewPsychoeducationProgressClient(tx.config)
+	tx.RecoveryPracticeSession = NewRecoveryPracticeSessionClient(tx.config)
+	tx.RecoveryRecord = NewRecoveryRecordClient(tx.config)
+	tx.RecoverySpace = NewRecoverySpaceClient(tx.config)
 	tx.Reflection = NewReflectionClient(tx.config)
 	tx.RefreshToken = NewRefreshTokenClient(tx.config)
 	tx.ReleaseCohort = NewReleaseCohortClient(tx.config)
 	tx.ReportRollup = NewReportRollupClient(tx.config)
 	tx.RulesetRelease = NewRulesetReleaseClient(tx.config)
+	tx.SiteSocialLink = NewSiteSocialLinkClient(tx.config)
 	tx.SupportActionAudit = NewSupportActionAuditClient(tx.config)
 	tx.SupportCase = NewSupportCaseClient(tx.config)
+	tx.SupportMessage = NewSupportMessageClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 
@@ -242,7 +278,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: AggregateEvent.QueryXXX(), the query will be executed
+// applies a query, for example: AccountabilityGroup.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

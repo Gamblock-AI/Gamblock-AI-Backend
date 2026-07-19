@@ -20,13 +20,45 @@ func updatedAt() ent.Field { return field.Time("updated_at").Default(time.Now).U
 type User struct{ ent.Schema }
 
 func (User) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("email").Unique(), field.String("display_name"), field.String("password_hash").Optional().Nillable().Sensitive(), field.String("avatar_url").Optional().Nillable(), field.String("google_subject").Optional().Nillable().Unique(), field.Enum("role").Values("user", "partner", "organization_owner", "organization_admin", "content_admin", "model_release_operator", "support_operator", "research_evaluator", "platform_admin").Default("user"), field.Int("experience_points").Default(0).NonNegative(), field.Time("disabled_at").Optional().Nillable(), createdAt(), updatedAt()}
+	return []ent.Field{
+		idField(),
+		field.String("email").Unique(),
+		field.String("display_name"),
+		field.String("password_hash").Optional().Nillable().Sensitive(),
+		field.String("avatar_url").Optional().Nillable(),
+		field.String("google_subject").Optional().Nillable().Unique(),
+		field.Enum("role").Values("user", "partner", "organization_owner", "organization_admin", "content_admin", "model_release_operator", "support_operator", "research_evaluator", "platform_admin").Default("user"),
+		field.Time("email_verified_at").Optional().Nillable(),
+		field.String("phone_e164").Optional().Nillable(),
+		field.Time("phone_verified_at").Optional().Nillable(),
+		field.JSON("notification_preferences_json", map[string]any{}).Optional(),
+		field.Int("experience_points").Default(0).NonNegative(),
+		field.Time("disabled_at").Optional().Nillable(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+type ContactVerification struct{ ent.Schema }
+
+func (ContactVerification) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("user_id"),
+		field.Enum("kind").Values("email", "phone"),
+		field.String("destination"),
+		field.String("token_hash").Unique().Sensitive(),
+		field.Int("attempt_count").Default(0),
+		field.Time("expires_at"),
+		field.Time("consumed_at").Optional().Nillable(),
+		createdAt(),
+	}
 }
 
 type RefreshToken struct{ ent.Schema }
 
 func (RefreshToken) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.String("token_hash"), field.String("device_id").Optional().Nillable(), field.Time("expires_at"), field.Time("revoked_at").Optional().Nillable(), createdAt()}
+	return []ent.Field{idField(), field.String("user_id"), field.String("token_hash"), field.String("device_id").Optional().Nillable(), field.Time("auth_time").Default(time.Now), field.Time("expires_at"), field.Time("revoked_at").Optional().Nillable(), createdAt()}
 }
 
 type Device struct{ ent.Schema }
@@ -45,10 +77,87 @@ func (PartnerLink) Fields() []ent.Field {
 	return []ent.Field{idField(), field.String("user_id"), field.String("partner_user_id").Optional().Nillable(), field.String("partner_email"), field.String("partner_phone").Optional().Nillable(), field.Enum("status").Values("invited", "active", "revoked", "expired").Default("invited"), field.String("invite_token_hash").Optional().Nillable(), field.Time("accepted_at").Optional().Nillable(), field.Time("revoked_at").Optional().Nillable(), createdAt(), updatedAt()}
 }
 
+type AccountabilityGroup struct{ ent.Schema }
+
+func (AccountabilityGroup) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("owner_partner_id"),
+		field.String("name"),
+		field.String("description").Default(""),
+		field.String("join_code_hash").Unique().Sensitive(),
+		field.String("join_code_hint"),
+		field.Enum("status").Values("active", "archived").Default("active"),
+		field.Time("code_rotated_at"),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+type AccountabilityMembership struct{ ent.Schema }
+
+func (AccountabilityMembership) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("group_id"),
+		field.String("student_id"),
+		field.Enum("status").Values("active", "leave_pending", "support_review", "safety_suspended", "left", "removed").Default("active"),
+		field.Bool("share_protection_health").Default(true),
+		field.Bool("share_protection_activity").Default(true),
+		field.Bool("share_recovery_engagement").Default(true),
+		field.Bool("share_education_progress").Default(true),
+		field.Time("joined_at"),
+		field.Time("ended_at").Optional().Nillable(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+func (AccountabilityMembership) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("group_id", "student_id").Unique()}
+}
+
+type MembershipExitRequest struct{ ent.Schema }
+
+func (MembershipExitRequest) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("membership_id"),
+		field.String("requested_by"),
+		field.Enum("kind").Values("normal", "unsafe", "partner_removal"),
+		field.Enum("status").Values("pending", "approved", "denied", "auto_reviewed", "cancelled").Default("pending"),
+		field.String("reason").Default(""),
+		field.Time("review_due_at").Optional().Nillable(),
+		field.String("resolved_by").Optional().Nillable(),
+		field.Time("resolved_at").Optional().Nillable(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+type PartnerContactRequest struct{ ent.Schema }
+
+func (PartnerContactRequest) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("membership_id"),
+		field.String("student_id"),
+		field.String("partner_id"),
+		field.Enum("category").Values("check_in", "practical_help", "accountability", "other"),
+		field.Text("message_encrypted").Optional().Nillable().Sensitive(),
+		field.Enum("status").Values("pending", "acknowledged", "closed", "cancelled").Default("pending"),
+		field.Time("acknowledged_at").Optional().Nillable(),
+		field.Time("closed_at").Optional().Nillable(),
+		field.Time("escalated_at").Optional().Nillable(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
 type ApprovalRequest struct{ ent.Schema }
 
 func (ApprovalRequest) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.String("device_id").Optional().Nillable(), field.String("partner_link_id"), field.String("quick_token_hash").Optional().Nillable().Unique().Sensitive(), field.Enum("action").Values("disable_protection", "remove_partner", "uninstall_detected", "reset_settings", "pause_protection", "emergency_access"), field.Enum("status").Values("pending", "approved", "denied", "expired", "cancelled").Default("pending"), field.String("reason").Optional().Nillable(), field.Int("requested_duration_minutes").Optional().Nillable(), field.Time("expires_at"), field.String("resolved_by").Optional().Nillable(), field.Time("resolved_at").Optional().Nillable(), field.Time("applied_at").Optional().Nillable(), field.Time("grant_expires_at").Optional().Nillable(), createdAt(), updatedAt()}
+	return []ent.Field{idField(), field.String("user_id"), field.String("device_id").Optional().Nillable(), field.String("partner_link_id").Optional().Nillable(), field.String("membership_id").Optional().Nillable(), field.String("quick_token_hash").Optional().Nillable().Unique().Sensitive(), field.Enum("action").Values("uninstall_detected", "pause_protection"), field.Enum("status").Values("pending", "approved", "denied", "expired", "cancelled").Default("pending"), field.String("reason").Optional().Nillable(), field.String("supportive_response").Optional().Nillable(), field.Int("requested_duration_minutes").Optional().Nillable(), field.Time("expires_at"), field.String("resolved_by").Optional().Nillable(), field.Time("resolved_at").Optional().Nillable(), field.Time("applied_at").Optional().Nillable(), field.Time("grant_expires_at").Optional().Nillable(), createdAt(), updatedAt()}
 }
 
 type NotificationDelivery struct{ ent.Schema }
@@ -81,6 +190,25 @@ func (PsychoeducationModule) Fields() []ent.Field {
 		createdAt(),
 		updatedAt(),
 	}
+}
+
+type EducationRevision struct{ ent.Schema }
+
+func (EducationRevision) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("module_id"),
+		field.Int("revision"),
+		field.JSON("document_json", model.EducationDocument{}),
+		field.String("slug"),
+		field.Enum("kind").Values("draft", "published", "rollback"),
+		field.String("created_by"),
+		createdAt(),
+	}
+}
+
+func (EducationRevision) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("module_id", "revision", "kind").Unique()}
 }
 
 type EducationMedia struct{ ent.Schema }
@@ -143,7 +271,7 @@ func (RulesetRelease) Fields() []ent.Field {
 type NetworkRulesetRelease struct{ ent.Schema }
 
 func (NetworkRulesetRelease) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("version").Unique(), field.String("artifact_path"), field.String("sha256"), field.Enum("status").Values("draft", "validated", "published", "retired").Default("draft"), field.JSON("rules_json", map[string]any{}).Optional(), field.String("created_by").Optional().Nillable(), field.Time("published_at").Optional().Nillable(), createdAt()}
+	return []ent.Field{idField(), field.String("version").Unique(), field.String("artifact_path"), field.String("sha256"), field.Enum("status").Values("draft", "validated", "staged", "published", "paused", "rolled_back", "retired").Default("draft"), field.JSON("rules_json", map[string]any{}).Optional(), field.String("created_by").Optional().Nillable(), field.Time("published_at").Optional().Nillable(), createdAt()}
 }
 
 type AggregateEvent struct{ ent.Schema }
@@ -185,7 +313,21 @@ func (ReportRollup) Fields() []ent.Field {
 type SupportCase struct{ ent.Schema }
 
 func (SupportCase) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.String("organization_id").Optional().Nillable(), field.Enum("type").Values("technical_support", "account_recovery", "partner_abuse", "stuck_approval", "device_recovery", "notification_failure", "organization_dispute", "accountability_guidance", "privacy_request"), field.Enum("status").Values("open", "waiting_user", "waiting_internal", "resolved", "closed").Default("open"), field.Enum("priority").Values("low", "normal", "high", "urgent").Default("normal"), field.String("summary"), createdAt(), updatedAt()}
+	return []ent.Field{idField(), field.String("user_id"), field.String("organization_id").Optional().Nillable(), field.Enum("type").Values("technical_support", "account_recovery", "partner_abuse", "stuck_approval", "device_recovery", "notification_failure", "organization_dispute", "accountability_guidance", "privacy_request", "safety_support"), field.Enum("status").Values("waiting_support", "waiting_user", "resolved", "closed").Default("waiting_support"), field.Enum("priority").Values("low", "normal", "high", "urgent").Default("normal"), field.String("summary"), field.String("impact").Default("blocked"), field.String("assigned_operator_id").Optional().Nillable(), field.Time("resolved_at").Optional().Nillable(), field.Time("closed_at").Optional().Nillable(), createdAt(), updatedAt()}
+}
+
+type SupportMessage struct{ ent.Schema }
+
+func (SupportMessage) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("support_case_id"),
+		field.String("author_id"),
+		field.Enum("author_role").Values("requester", "support_operator"),
+		field.Text("content_encrypted").Sensitive(),
+		field.Time("read_at").Optional().Nillable(),
+		createdAt(),
+	}
 }
 
 type SupportActionAudit struct{ ent.Schema }
@@ -203,7 +345,22 @@ func (EmergencyKeyRequest) Fields() []ent.Field {
 type DataRequest struct{ ent.Schema }
 
 func (DataRequest) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.Enum("type").Values("export", "delete", "retention_review"), field.Enum("status").Values("pending", "processing", "completed", "rejected", "cancelled").Default("pending"), field.Time("requested_at").Default(time.Now), field.Time("completed_at").Optional().Nillable(), field.String("result_path").Optional().Nillable()}
+	return []ent.Field{
+		idField(),
+		field.String("user_id"),
+		field.Enum("type").Values("export", "delete", "retention_review"),
+		field.Enum("status").Values("pending_confirmation", "queued", "processing", "completed", "failed", "rejected", "cancelled").Default("queued"),
+		field.String("confirmation_token_hash").Optional().Nillable().Sensitive(),
+		field.Time("confirmation_expires_at").Optional().Nillable(),
+		field.Time("confirmed_at").Optional().Nillable(),
+		field.String("result_path").Optional().Nillable().Sensitive(),
+		field.Time("result_expires_at").Optional().Nillable(),
+		field.String("failure_code").Optional().Nillable(),
+		field.Int("retry_count").Default(0),
+		field.Time("requested_at").Default(time.Now),
+		field.Time("completed_at").Optional().Nillable(),
+		updatedAt(),
+	}
 }
 
 type ModelRollout struct{ ent.Schema }
@@ -216,6 +373,43 @@ type ReleaseCohort struct{ ent.Schema }
 
 func (ReleaseCohort) Fields() []ent.Field {
 	return []ent.Field{idField(), field.String("rollout_id"), field.Enum("platform").Values("android", "windows", "linux", "macos", "web", "all"), field.Int("percentage"), field.String("organization_id").Optional().Nillable(), field.String("app_version_constraint").Optional().Nillable(), createdAt()}
+}
+
+type OperatorInvitation struct{ ent.Schema }
+
+func (OperatorInvitation) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("email"),
+		field.Enum("role").Values("content_admin", "model_release_operator", "support_operator"),
+		field.String("token_hash").Unique().Sensitive(),
+		field.Enum("status").Values("pending", "accepted", "expired", "revoked").Default("pending"),
+		field.String("invited_by"),
+		field.Time("expires_at"),
+		field.Time("accepted_at").Optional().Nillable(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+type SiteSocialLink struct{ ent.Schema }
+
+func (SiteSocialLink) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.Enum("platform").Values("instagram", "tiktok", "youtube", "facebook", "linkedin", "x", "threads", "github"),
+		field.String("label"),
+		field.String("url").Optional().Nillable(),
+		field.Bool("enabled").Default(false),
+		field.Int("sort_order").Default(0),
+		field.String("updated_by"),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+func (SiteSocialLink) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("platform").Unique()}
 }
 
 type AuditLog struct{ ent.Schema }
@@ -265,5 +459,71 @@ func (DailyMission) Indexes() []ent.Index {
 type Reflection struct{ ent.Schema }
 
 func (Reflection) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.Text("content_encrypted"), field.String("prompt_key").Optional().Nillable(), createdAt(), updatedAt()}
+	return []ent.Field{
+		idField(),
+		field.String("user_id"),
+		field.Text("content_encrypted").Sensitive(),
+		field.String("prompt_key").Optional().Nillable(),
+		field.Enum("status").Values("active", "archived").Default("active"),
+		field.Bool("is_focus").Default(false),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+func (Reflection) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("user_id", "status", "is_focus")}
+}
+
+type RecoveryPracticeSession struct{ ent.Schema }
+
+func (RecoveryPracticeSession) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("user_id"),
+		field.Enum("practice_kind").Values("urge_surfing", "grounding_54321", "focus_sprint"),
+		field.Int("duration_seconds").Positive().Max(7200),
+		field.Enum("feedback").Values("lighter", "same", "heavier", "prefer_not_say").Optional().Nillable(),
+		field.Time("completed_at"),
+		createdAt(),
+	}
+}
+
+func (RecoveryPracticeSession) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("user_id", "completed_at")}
+}
+
+type RecoverySpace struct{ ent.Schema }
+
+func (RecoverySpace) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("user_id").Unique(),
+		field.Enum("theme").Values("dorm_room").Default("dorm_room"),
+		field.JSON("unlocked_items_json", []string{}).Default([]string{}),
+		field.JSON("placed_items_json", map[string]any{}).Default(map[string]any{}),
+		field.Int("unlock_rule_version").Default(1).Positive(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+type RecoveryRecord struct{ ent.Schema }
+
+func (RecoveryRecord) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("user_id"),
+		field.Enum("kind").Values("coping_plan", "weekly_review", "urge_practice", "grounding_practice", "mission_reflection", "saved_skill", "reminder_preferences"),
+		field.String("record_date"),
+		field.JSON("metadata_json", map[string]any{}).Optional(),
+		field.Text("content_encrypted").Optional().Nillable().Sensitive(),
+		field.Enum("status").Values("active", "archived").Default("active"),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+func (RecoveryRecord) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("user_id", "kind", "record_date")}
 }

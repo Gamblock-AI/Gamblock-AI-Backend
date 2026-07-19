@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitygroup"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitymembership"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/approvalrequest"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 )
 
@@ -27,10 +28,21 @@ func (r *Repository) GetApprovalRequests(ctx context.Context, userID string) ([]
 		r.store.Unlock()
 
 		snapshot := r.store.Snapshot()
-		partnerLinks := activePartnerLinkIDs(snapshot.Partners, userID)
+		groupIDs := map[string]bool{}
+		for _, group := range snapshot.AccountabilityGroups {
+			if group.OwnerPartnerID == userID {
+				groupIDs[group.ID] = true
+			}
+		}
+		membershipIDs := map[string]bool{}
+		for _, membership := range snapshot.AccountabilityMemberships {
+			if groupIDs[membership.GroupID] {
+				membershipIDs[membership.ID] = true
+			}
+		}
 		var list []model.ApprovalRequest
 		for _, item := range snapshot.Approvals {
-			if _, isPartnerRequest := partnerLinks[item.PartnerLinkID]; item.UserID != userID && !isPartnerRequest {
+			if item.UserID != userID && !membershipIDs[item.MembershipID] {
 				continue
 			}
 			list = append(list, model.ApprovalRequest{
@@ -38,12 +50,15 @@ func (r *Repository) GetApprovalRequests(ctx context.Context, userID string) ([]
 				UserID:                   item.UserID,
 				DeviceID:                 item.DeviceID,
 				PartnerLinkID:            item.PartnerLinkID,
+				MembershipID:             item.MembershipID,
 				Action:                   item.Action,
 				ActionLabel:              approvalActionLabel(item.Action, item.RequestedDurationMinutes),
 				ExpiresIn:                item.ExpiresIn,
 				Status:                   item.Status,
 				StatusLabel:              approvalStatusLabel(item.Status),
 				Reason:                   item.Reason,
+				SupportiveResponse:       item.SupportiveResponse,
+				ResolvedBy:               item.ResolvedBy,
 				RequestedDurationMinutes: item.RequestedDurationMinutes,
 				ResolvedAt:               item.ResolvedAt,
 				AppliedAt:                item.AppliedAt,
@@ -56,11 +71,19 @@ func (r *Repository) GetApprovalRequests(ctx context.Context, userID string) ([]
 		return list, nil
 	}
 
-	partnerLinkIDs, err := r.db.PartnerLink.Query().
-		Where(partnerlink.PartnerUserID(userID), partnerlink.StatusEQ(partnerlink.StatusActive)).
+	groupIDs, err := r.db.AccountabilityGroup.Query().
+		Where(accountabilitygroup.OwnerPartnerIDEQ(userID)).
 		IDs(ctx)
 	if err != nil {
 		return nil, err
+	}
+	membershipIDs := []string{}
+	if len(groupIDs) > 0 {
+		membershipIDs, err = r.db.AccountabilityMembership.Query().
+			Where(accountabilitymembership.GroupIDIn(groupIDs...)).IDs(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 	_, _ = r.db.ApprovalRequest.Update().
 		Where(
@@ -71,8 +94,8 @@ func (r *Repository) GetApprovalRequests(ctx context.Context, userID string) ([]
 		Save(ctx)
 
 	predicate := approvalrequest.UserID(userID)
-	if len(partnerLinkIDs) > 0 {
-		predicate = approvalrequest.Or(predicate, approvalrequest.PartnerLinkIDIn(partnerLinkIDs...))
+	if len(membershipIDs) > 0 {
+		predicate = approvalrequest.Or(predicate, approvalrequest.MembershipIDIn(membershipIDs...))
 	}
 	rows, err := r.db.ApprovalRequest.Query().
 		Where(predicate).
@@ -88,13 +111,16 @@ func (r *Repository) GetApprovalRequests(ctx context.Context, userID string) ([]
 			ID:                       item.ID,
 			UserID:                   item.UserID,
 			DeviceID:                 value(item.DeviceID),
-			PartnerLinkID:            item.PartnerLinkID,
+			PartnerLinkID:            value(item.PartnerLinkID),
+			MembershipID:             value(item.MembershipID),
 			Action:                   item.Action.String(),
 			ActionLabel:              approvalActionLabel(item.Action.String(), valueInt(item.RequestedDurationMinutes)),
 			ExpiresIn:                humanExpiry(item.ExpiresAt),
 			Status:                   item.Status.String(),
 			StatusLabel:              approvalStatusLabel(item.Status.String()),
 			Reason:                   value(item.Reason),
+			SupportiveResponse:       value(item.SupportiveResponse),
+			ResolvedBy:               value(item.ResolvedBy),
 			RequestedDurationMinutes: valueInt(item.RequestedDurationMinutes),
 			ResolvedAt:               item.ResolvedAt,
 			AppliedAt:                item.AppliedAt,

@@ -8,6 +8,53 @@ import (
 )
 
 var (
+	// AccountabilityGroupsColumns holds the columns for the "accountability_groups" table.
+	AccountabilityGroupsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "owner_partner_id", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Default: ""},
+		{Name: "join_code_hash", Type: field.TypeString, Unique: true},
+		{Name: "join_code_hint", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "archived"}, Default: "active"},
+		{Name: "code_rotated_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// AccountabilityGroupsTable holds the schema information for the "accountability_groups" table.
+	AccountabilityGroupsTable = &schema.Table{
+		Name:       "accountability_groups",
+		Columns:    AccountabilityGroupsColumns,
+		PrimaryKey: []*schema.Column{AccountabilityGroupsColumns[0]},
+	}
+	// AccountabilityMembershipsColumns holds the columns for the "accountability_memberships" table.
+	AccountabilityMembershipsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "group_id", Type: field.TypeString},
+		{Name: "student_id", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "leave_pending", "support_review", "safety_suspended", "left", "removed"}, Default: "active"},
+		{Name: "share_protection_health", Type: field.TypeBool, Default: true},
+		{Name: "share_protection_activity", Type: field.TypeBool, Default: true},
+		{Name: "share_recovery_engagement", Type: field.TypeBool, Default: true},
+		{Name: "share_education_progress", Type: field.TypeBool, Default: true},
+		{Name: "joined_at", Type: field.TypeTime},
+		{Name: "ended_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// AccountabilityMembershipsTable holds the schema information for the "accountability_memberships" table.
+	AccountabilityMembershipsTable = &schema.Table{
+		Name:       "accountability_memberships",
+		Columns:    AccountabilityMembershipsColumns,
+		PrimaryKey: []*schema.Column{AccountabilityMembershipsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "accountabilitymembership_group_id_student_id",
+				Unique:  true,
+				Columns: []*schema.Column{AccountabilityMembershipsColumns[1], AccountabilityMembershipsColumns[2]},
+			},
+		},
+	}
 	// AggregateEventsColumns holds the columns for the "aggregate_events" table.
 	AggregateEventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -31,11 +78,13 @@ var (
 		{Name: "id", Type: field.TypeString},
 		{Name: "user_id", Type: field.TypeString},
 		{Name: "device_id", Type: field.TypeString, Nullable: true},
-		{Name: "partner_link_id", Type: field.TypeString},
+		{Name: "partner_link_id", Type: field.TypeString, Nullable: true},
+		{Name: "membership_id", Type: field.TypeString, Nullable: true},
 		{Name: "quick_token_hash", Type: field.TypeString, Unique: true, Nullable: true},
-		{Name: "action", Type: field.TypeEnum, Enums: []string{"disable_protection", "remove_partner", "uninstall_detected", "reset_settings", "pause_protection", "emergency_access"}},
+		{Name: "action", Type: field.TypeEnum, Enums: []string{"uninstall_detected", "pause_protection"}},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "approved", "denied", "expired", "cancelled"}, Default: "pending"},
 		{Name: "reason", Type: field.TypeString, Nullable: true},
+		{Name: "supportive_response", Type: field.TypeString, Nullable: true},
 		{Name: "requested_duration_minutes", Type: field.TypeInt, Nullable: true},
 		{Name: "expires_at", Type: field.TypeTime},
 		{Name: "resolved_by", Type: field.TypeString, Nullable: true},
@@ -84,6 +133,24 @@ var (
 		Columns:    CheckInsColumns,
 		PrimaryKey: []*schema.Column{CheckInsColumns[0]},
 	}
+	// ContactVerificationsColumns holds the columns for the "contact_verifications" table.
+	ContactVerificationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"email", "phone"}},
+		{Name: "destination", Type: field.TypeString},
+		{Name: "token_hash", Type: field.TypeString, Unique: true},
+		{Name: "attempt_count", Type: field.TypeInt, Default: 0},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "consumed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// ContactVerificationsTable holds the schema information for the "contact_verifications" table.
+	ContactVerificationsTable = &schema.Table{
+		Name:       "contact_verifications",
+		Columns:    ContactVerificationsColumns,
+		PrimaryKey: []*schema.Column{ContactVerificationsColumns[0]},
+	}
 	// ContentProgressesColumns holds the columns for the "content_progresses" table.
 	ContentProgressesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -129,10 +196,17 @@ var (
 		{Name: "id", Type: field.TypeString},
 		{Name: "user_id", Type: field.TypeString},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"export", "delete", "retention_review"}},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "processing", "completed", "rejected", "cancelled"}, Default: "pending"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending_confirmation", "queued", "processing", "completed", "failed", "rejected", "cancelled"}, Default: "queued"},
+		{Name: "confirmation_token_hash", Type: field.TypeString, Nullable: true},
+		{Name: "confirmation_expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "confirmed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "result_path", Type: field.TypeString, Nullable: true},
+		{Name: "result_expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "failure_code", Type: field.TypeString, Nullable: true},
+		{Name: "retry_count", Type: field.TypeInt, Default: 0},
 		{Name: "requested_at", Type: field.TypeTime},
 		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
-		{Name: "result_path", Type: field.TypeString, Nullable: true},
+		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// DataRequestsTable holds the schema information for the "data_requests" table.
 	DataRequestsTable = &schema.Table{
@@ -194,6 +268,30 @@ var (
 		Columns:    EducationMediaColumns,
 		PrimaryKey: []*schema.Column{EducationMediaColumns[0]},
 	}
+	// EducationRevisionsColumns holds the columns for the "education_revisions" table.
+	EducationRevisionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "module_id", Type: field.TypeString},
+		{Name: "revision", Type: field.TypeInt},
+		{Name: "document_json", Type: field.TypeJSON},
+		{Name: "slug", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"draft", "published", "rollback"}},
+		{Name: "created_by", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// EducationRevisionsTable holds the schema information for the "education_revisions" table.
+	EducationRevisionsTable = &schema.Table{
+		Name:       "education_revisions",
+		Columns:    EducationRevisionsColumns,
+		PrimaryKey: []*schema.Column{EducationRevisionsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "educationrevision_module_id_revision_kind",
+				Unique:  true,
+				Columns: []*schema.Column{EducationRevisionsColumns[1], EducationRevisionsColumns[2], EducationRevisionsColumns[5]},
+			},
+		},
+	}
 	// EmergencyKeyRequestsColumns holds the columns for the "emergency_key_requests" table.
 	EmergencyKeyRequestsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -231,6 +329,26 @@ var (
 		Name:       "intentions",
 		Columns:    IntentionsColumns,
 		PrimaryKey: []*schema.Column{IntentionsColumns[0]},
+	}
+	// MembershipExitRequestsColumns holds the columns for the "membership_exit_requests" table.
+	MembershipExitRequestsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "membership_id", Type: field.TypeString},
+		{Name: "requested_by", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"normal", "unsafe", "partner_removal"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "approved", "denied", "auto_reviewed", "cancelled"}, Default: "pending"},
+		{Name: "reason", Type: field.TypeString, Default: ""},
+		{Name: "review_due_at", Type: field.TypeTime, Nullable: true},
+		{Name: "resolved_by", Type: field.TypeString, Nullable: true},
+		{Name: "resolved_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// MembershipExitRequestsTable holds the schema information for the "membership_exit_requests" table.
+	MembershipExitRequestsTable = &schema.Table{
+		Name:       "membership_exit_requests",
+		Columns:    MembershipExitRequestsColumns,
+		PrimaryKey: []*schema.Column{MembershipExitRequestsColumns[0]},
 	}
 	// ModelReleasesColumns holds the columns for the "model_releases" table.
 	ModelReleasesColumns = []*schema.Column{
@@ -277,7 +395,7 @@ var (
 		{Name: "version", Type: field.TypeString, Unique: true},
 		{Name: "artifact_path", Type: field.TypeString},
 		{Name: "sha256", Type: field.TypeString},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "validated", "published", "retired"}, Default: "draft"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "validated", "staged", "published", "paused", "rolled_back", "retired"}, Default: "draft"},
 		{Name: "rules_json", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_by", Type: field.TypeString, Nullable: true},
 		{Name: "published_at", Type: field.TypeTime, Nullable: true},
@@ -308,6 +426,25 @@ var (
 		Name:       "notification_deliveries",
 		Columns:    NotificationDeliveriesColumns,
 		PrimaryKey: []*schema.Column{NotificationDeliveriesColumns[0]},
+	}
+	// OperatorInvitationsColumns holds the columns for the "operator_invitations" table.
+	OperatorInvitationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"content_admin", "model_release_operator", "support_operator"}},
+		{Name: "token_hash", Type: field.TypeString, Unique: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "accepted", "expired", "revoked"}, Default: "pending"},
+		{Name: "invited_by", Type: field.TypeString},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "accepted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// OperatorInvitationsTable holds the schema information for the "operator_invitations" table.
+	OperatorInvitationsTable = &schema.Table{
+		Name:       "operator_invitations",
+		Columns:    OperatorInvitationsColumns,
+		PrimaryKey: []*schema.Column{OperatorInvitationsColumns[0]},
 	}
 	// OrganizationsColumns holds the columns for the "organizations" table.
 	OrganizationsColumns = []*schema.Column{
@@ -373,6 +510,27 @@ var (
 		Name:       "organization_policies",
 		Columns:    OrganizationPoliciesColumns,
 		PrimaryKey: []*schema.Column{OrganizationPoliciesColumns[0]},
+	}
+	// PartnerContactRequestsColumns holds the columns for the "partner_contact_requests" table.
+	PartnerContactRequestsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "membership_id", Type: field.TypeString},
+		{Name: "student_id", Type: field.TypeString},
+		{Name: "partner_id", Type: field.TypeString},
+		{Name: "category", Type: field.TypeEnum, Enums: []string{"check_in", "practical_help", "accountability", "other"}},
+		{Name: "message_encrypted", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "acknowledged", "closed", "cancelled"}, Default: "pending"},
+		{Name: "acknowledged_at", Type: field.TypeTime, Nullable: true},
+		{Name: "closed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "escalated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// PartnerContactRequestsTable holds the schema information for the "partner_contact_requests" table.
+	PartnerContactRequestsTable = &schema.Table{
+		Name:       "partner_contact_requests",
+		Columns:    PartnerContactRequestsColumns,
+		PrimaryKey: []*schema.Column{PartnerContactRequestsColumns[0]},
 	}
 	// PartnerLinksColumns holds the columns for the "partner_links" table.
 	PartnerLinksColumns = []*schema.Column{
@@ -447,12 +605,79 @@ var (
 			},
 		},
 	}
+	// RecoveryPracticeSessionsColumns holds the columns for the "recovery_practice_sessions" table.
+	RecoveryPracticeSessionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "practice_kind", Type: field.TypeEnum, Enums: []string{"urge_surfing", "grounding_54321", "focus_sprint"}},
+		{Name: "duration_seconds", Type: field.TypeInt},
+		{Name: "feedback", Type: field.TypeEnum, Nullable: true, Enums: []string{"lighter", "same", "heavier", "prefer_not_say"}},
+		{Name: "completed_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// RecoveryPracticeSessionsTable holds the schema information for the "recovery_practice_sessions" table.
+	RecoveryPracticeSessionsTable = &schema.Table{
+		Name:       "recovery_practice_sessions",
+		Columns:    RecoveryPracticeSessionsColumns,
+		PrimaryKey: []*schema.Column{RecoveryPracticeSessionsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "recoverypracticesession_user_id_completed_at",
+				Unique:  false,
+				Columns: []*schema.Column{RecoveryPracticeSessionsColumns[1], RecoveryPracticeSessionsColumns[5]},
+			},
+		},
+	}
+	// RecoveryRecordsColumns holds the columns for the "recovery_records" table.
+	RecoveryRecordsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"coping_plan", "weekly_review", "urge_practice", "grounding_practice", "mission_reflection", "saved_skill", "reminder_preferences"}},
+		{Name: "record_date", Type: field.TypeString},
+		{Name: "metadata_json", Type: field.TypeJSON, Nullable: true},
+		{Name: "content_encrypted", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "archived"}, Default: "active"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// RecoveryRecordsTable holds the schema information for the "recovery_records" table.
+	RecoveryRecordsTable = &schema.Table{
+		Name:       "recovery_records",
+		Columns:    RecoveryRecordsColumns,
+		PrimaryKey: []*schema.Column{RecoveryRecordsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "recoveryrecord_user_id_kind_record_date",
+				Unique:  false,
+				Columns: []*schema.Column{RecoveryRecordsColumns[1], RecoveryRecordsColumns[2], RecoveryRecordsColumns[3]},
+			},
+		},
+	}
+	// RecoverySpacesColumns holds the columns for the "recovery_spaces" table.
+	RecoverySpacesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString, Unique: true},
+		{Name: "theme", Type: field.TypeEnum, Enums: []string{"dorm_room"}, Default: "dorm_room"},
+		{Name: "unlocked_items_json", Type: field.TypeJSON},
+		{Name: "placed_items_json", Type: field.TypeJSON},
+		{Name: "unlock_rule_version", Type: field.TypeInt, Default: 1},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// RecoverySpacesTable holds the schema information for the "recovery_spaces" table.
+	RecoverySpacesTable = &schema.Table{
+		Name:       "recovery_spaces",
+		Columns:    RecoverySpacesColumns,
+		PrimaryKey: []*schema.Column{RecoverySpacesColumns[0]},
+	}
 	// ReflectionsColumns holds the columns for the "reflections" table.
 	ReflectionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
 		{Name: "user_id", Type: field.TypeString},
 		{Name: "content_encrypted", Type: field.TypeString, Size: 2147483647},
 		{Name: "prompt_key", Type: field.TypeString, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "archived"}, Default: "active"},
+		{Name: "is_focus", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -461,6 +686,13 @@ var (
 		Name:       "reflections",
 		Columns:    ReflectionsColumns,
 		PrimaryKey: []*schema.Column{ReflectionsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "reflection_user_id_status_is_focus",
+				Unique:  false,
+				Columns: []*schema.Column{ReflectionsColumns[1], ReflectionsColumns[4], ReflectionsColumns[5]},
+			},
+		},
 	}
 	// RefreshTokensColumns holds the columns for the "refresh_tokens" table.
 	RefreshTokensColumns = []*schema.Column{
@@ -468,6 +700,7 @@ var (
 		{Name: "user_id", Type: field.TypeString},
 		{Name: "token_hash", Type: field.TypeString},
 		{Name: "device_id", Type: field.TypeString, Nullable: true},
+		{Name: "auth_time", Type: field.TypeTime},
 		{Name: "expires_at", Type: field.TypeTime},
 		{Name: "revoked_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
@@ -528,6 +761,31 @@ var (
 		Columns:    RulesetReleasesColumns,
 		PrimaryKey: []*schema.Column{RulesetReleasesColumns[0]},
 	}
+	// SiteSocialLinksColumns holds the columns for the "site_social_links" table.
+	SiteSocialLinksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "platform", Type: field.TypeEnum, Enums: []string{"instagram", "tiktok", "youtube", "facebook", "linkedin", "x", "threads", "github"}},
+		{Name: "label", Type: field.TypeString},
+		{Name: "url", Type: field.TypeString, Nullable: true},
+		{Name: "enabled", Type: field.TypeBool, Default: false},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
+		{Name: "updated_by", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// SiteSocialLinksTable holds the schema information for the "site_social_links" table.
+	SiteSocialLinksTable = &schema.Table{
+		Name:       "site_social_links",
+		Columns:    SiteSocialLinksColumns,
+		PrimaryKey: []*schema.Column{SiteSocialLinksColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "sitesociallink_platform",
+				Unique:  true,
+				Columns: []*schema.Column{SiteSocialLinksColumns[1]},
+			},
+		},
+	}
 	// SupportActionAuditsColumns holds the columns for the "support_action_audits" table.
 	SupportActionAuditsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -550,10 +808,14 @@ var (
 		{Name: "id", Type: field.TypeString},
 		{Name: "user_id", Type: field.TypeString},
 		{Name: "organization_id", Type: field.TypeString, Nullable: true},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"technical_support", "account_recovery", "partner_abuse", "stuck_approval", "device_recovery", "notification_failure", "organization_dispute", "accountability_guidance", "privacy_request"}},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"open", "waiting_user", "waiting_internal", "resolved", "closed"}, Default: "open"},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"technical_support", "account_recovery", "partner_abuse", "stuck_approval", "device_recovery", "notification_failure", "organization_dispute", "accountability_guidance", "privacy_request", "safety_support"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"waiting_support", "waiting_user", "resolved", "closed"}, Default: "waiting_support"},
 		{Name: "priority", Type: field.TypeEnum, Enums: []string{"low", "normal", "high", "urgent"}, Default: "normal"},
 		{Name: "summary", Type: field.TypeString},
+		{Name: "impact", Type: field.TypeString, Default: "blocked"},
+		{Name: "assigned_operator_id", Type: field.TypeString, Nullable: true},
+		{Name: "resolved_at", Type: field.TypeTime, Nullable: true},
+		{Name: "closed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -562,6 +824,22 @@ var (
 		Name:       "support_cases",
 		Columns:    SupportCasesColumns,
 		PrimaryKey: []*schema.Column{SupportCasesColumns[0]},
+	}
+	// SupportMessagesColumns holds the columns for the "support_messages" table.
+	SupportMessagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "support_case_id", Type: field.TypeString},
+		{Name: "author_id", Type: field.TypeString},
+		{Name: "author_role", Type: field.TypeEnum, Enums: []string{"requester", "support_operator"}},
+		{Name: "content_encrypted", Type: field.TypeString, Size: 2147483647},
+		{Name: "read_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// SupportMessagesTable holds the schema information for the "support_messages" table.
+	SupportMessagesTable = &schema.Table{
+		Name:       "support_messages",
+		Columns:    SupportMessagesColumns,
+		PrimaryKey: []*schema.Column{SupportMessagesColumns[0]},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -572,6 +850,10 @@ var (
 		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
 		{Name: "google_subject", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"user", "partner", "organization_owner", "organization_admin", "content_admin", "model_release_operator", "support_operator", "research_evaluator", "platform_admin"}, Default: "user"},
+		{Name: "email_verified_at", Type: field.TypeTime, Nullable: true},
+		{Name: "phone_e164", Type: field.TypeString, Nullable: true},
+		{Name: "phone_verified_at", Type: field.TypeTime, Nullable: true},
+		{Name: "notification_preferences_json", Type: field.TypeJSON, Nullable: true},
 		{Name: "experience_points", Type: field.TypeInt, Default: 0},
 		{Name: "disabled_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
@@ -585,35 +867,47 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AccountabilityGroupsTable,
+		AccountabilityMembershipsTable,
 		AggregateEventsTable,
 		ApprovalRequestsTable,
 		AuditLogsTable,
 		CheckInsTable,
+		ContactVerificationsTable,
 		ContentProgressesTable,
 		DailyMissionsTable,
 		DataRequestsTable,
 		DevicesTable,
 		EducationMediaTable,
+		EducationRevisionsTable,
 		EmergencyKeyRequestsTable,
 		IntentionsTable,
+		MembershipExitRequestsTable,
 		ModelReleasesTable,
 		ModelRolloutsTable,
 		NetworkRulesetReleasesTable,
 		NotificationDeliveriesTable,
+		OperatorInvitationsTable,
 		OrganizationsTable,
 		OrganizationInvitesTable,
 		OrganizationMembersTable,
 		OrganizationPoliciesTable,
+		PartnerContactRequestsTable,
 		PartnerLinksTable,
 		PsychoeducationModulesTable,
 		PsychoeducationProgressesTable,
+		RecoveryPracticeSessionsTable,
+		RecoveryRecordsTable,
+		RecoverySpacesTable,
 		ReflectionsTable,
 		RefreshTokensTable,
 		ReleaseCohortsTable,
 		ReportRollupsTable,
 		RulesetReleasesTable,
+		SiteSocialLinksTable,
 		SupportActionAuditsTable,
 		SupportCasesTable,
+		SupportMessagesTable,
 		UsersTable,
 	}
 )

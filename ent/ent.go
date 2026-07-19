@@ -12,35 +12,47 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitygroup"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitymembership"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/aggregateevent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/approvalrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/auditlog"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/checkin"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/contactverification"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/contentprogress"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/membershipexitrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/networkrulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/notificationdelivery"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/operatorinvitation"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organization"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organizationinvite"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organizationmember"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organizationpolicy"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnercontactrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationprogress"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoverypracticesession"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryrecord"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryspace"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/sitesociallink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportactionaudit"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportcase"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportmessage"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/user"
 )
 
@@ -102,36 +114,48 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			aggregateevent.Table:          aggregateevent.ValidColumn,
-			approvalrequest.Table:         approvalrequest.ValidColumn,
-			auditlog.Table:                auditlog.ValidColumn,
-			checkin.Table:                 checkin.ValidColumn,
-			contentprogress.Table:         contentprogress.ValidColumn,
-			dailymission.Table:            dailymission.ValidColumn,
-			datarequest.Table:             datarequest.ValidColumn,
-			device.Table:                  device.ValidColumn,
-			educationmedia.Table:          educationmedia.ValidColumn,
-			emergencykeyrequest.Table:     emergencykeyrequest.ValidColumn,
-			intention.Table:               intention.ValidColumn,
-			modelrelease.Table:            modelrelease.ValidColumn,
-			modelrollout.Table:            modelrollout.ValidColumn,
-			networkrulesetrelease.Table:   networkrulesetrelease.ValidColumn,
-			notificationdelivery.Table:    notificationdelivery.ValidColumn,
-			organization.Table:            organization.ValidColumn,
-			organizationinvite.Table:      organizationinvite.ValidColumn,
-			organizationmember.Table:      organizationmember.ValidColumn,
-			organizationpolicy.Table:      organizationpolicy.ValidColumn,
-			partnerlink.Table:             partnerlink.ValidColumn,
-			psychoeducationmodule.Table:   psychoeducationmodule.ValidColumn,
-			psychoeducationprogress.Table: psychoeducationprogress.ValidColumn,
-			reflection.Table:              reflection.ValidColumn,
-			refreshtoken.Table:            refreshtoken.ValidColumn,
-			releasecohort.Table:           releasecohort.ValidColumn,
-			reportrollup.Table:            reportrollup.ValidColumn,
-			rulesetrelease.Table:          rulesetrelease.ValidColumn,
-			supportactionaudit.Table:      supportactionaudit.ValidColumn,
-			supportcase.Table:             supportcase.ValidColumn,
-			user.Table:                    user.ValidColumn,
+			accountabilitygroup.Table:      accountabilitygroup.ValidColumn,
+			accountabilitymembership.Table: accountabilitymembership.ValidColumn,
+			aggregateevent.Table:           aggregateevent.ValidColumn,
+			approvalrequest.Table:          approvalrequest.ValidColumn,
+			auditlog.Table:                 auditlog.ValidColumn,
+			checkin.Table:                  checkin.ValidColumn,
+			contactverification.Table:      contactverification.ValidColumn,
+			contentprogress.Table:          contentprogress.ValidColumn,
+			dailymission.Table:             dailymission.ValidColumn,
+			datarequest.Table:              datarequest.ValidColumn,
+			device.Table:                   device.ValidColumn,
+			educationmedia.Table:           educationmedia.ValidColumn,
+			educationrevision.Table:        educationrevision.ValidColumn,
+			emergencykeyrequest.Table:      emergencykeyrequest.ValidColumn,
+			intention.Table:                intention.ValidColumn,
+			membershipexitrequest.Table:    membershipexitrequest.ValidColumn,
+			modelrelease.Table:             modelrelease.ValidColumn,
+			modelrollout.Table:             modelrollout.ValidColumn,
+			networkrulesetrelease.Table:    networkrulesetrelease.ValidColumn,
+			notificationdelivery.Table:     notificationdelivery.ValidColumn,
+			operatorinvitation.Table:       operatorinvitation.ValidColumn,
+			organization.Table:             organization.ValidColumn,
+			organizationinvite.Table:       organizationinvite.ValidColumn,
+			organizationmember.Table:       organizationmember.ValidColumn,
+			organizationpolicy.Table:       organizationpolicy.ValidColumn,
+			partnercontactrequest.Table:    partnercontactrequest.ValidColumn,
+			partnerlink.Table:              partnerlink.ValidColumn,
+			psychoeducationmodule.Table:    psychoeducationmodule.ValidColumn,
+			psychoeducationprogress.Table:  psychoeducationprogress.ValidColumn,
+			recoverypracticesession.Table:  recoverypracticesession.ValidColumn,
+			recoveryrecord.Table:           recoveryrecord.ValidColumn,
+			recoveryspace.Table:            recoveryspace.ValidColumn,
+			reflection.Table:               reflection.ValidColumn,
+			refreshtoken.Table:             refreshtoken.ValidColumn,
+			releasecohort.Table:            releasecohort.ValidColumn,
+			reportrollup.Table:             reportrollup.ValidColumn,
+			rulesetrelease.Table:           rulesetrelease.ValidColumn,
+			sitesociallink.Table:           sitesociallink.ValidColumn,
+			supportactionaudit.Table:       supportactionaudit.ValidColumn,
+			supportcase.Table:              supportcase.ValidColumn,
+			supportmessage.Table:           supportmessage.ValidColumn,
+			user.Table:                     user.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

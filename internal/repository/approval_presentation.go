@@ -20,8 +20,6 @@ func approvalActionLabel(action string, duration int) string {
 	switch action {
 	case "pause_protection":
 		return fmt.Sprintf("Pause protection for %d minutes", duration)
-	case "disable_protection":
-		return "Temporarily disable protection"
 	case "uninstall_detected":
 		return "Allow protected app removal"
 	default:

@@ -26,6 +26,14 @@ const (
 	FieldGoogleSubject = "google_subject"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
+	// FieldEmailVerifiedAt holds the string denoting the email_verified_at field in the database.
+	FieldEmailVerifiedAt = "email_verified_at"
+	// FieldPhoneE164 holds the string denoting the phone_e164 field in the database.
+	FieldPhoneE164 = "phone_e164"
+	// FieldPhoneVerifiedAt holds the string denoting the phone_verified_at field in the database.
+	FieldPhoneVerifiedAt = "phone_verified_at"
+	// FieldNotificationPreferencesJSON holds the string denoting the notification_preferences_json field in the database.
+	FieldNotificationPreferencesJSON = "notification_preferences_json"
 	// FieldExperiencePoints holds the string denoting the experience_points field in the database.
 	FieldExperiencePoints = "experience_points"
 	// FieldDisabledAt holds the string denoting the disabled_at field in the database.
@@ -47,6 +55,10 @@ var Columns = []string{
 	FieldAvatarURL,
 	FieldGoogleSubject,
 	FieldRole,
+	FieldEmailVerifiedAt,
+	FieldPhoneE164,
+	FieldPhoneVerifiedAt,
+	FieldNotificationPreferencesJSON,
 	FieldExperiencePoints,
 	FieldDisabledAt,
 	FieldCreatedAt,
@@ -147,6 +159,21 @@ func ByGoogleSubject(opts ...sql.OrderTermOption) OrderOption {
 // ByRole orders the results by the role field.
 func ByRole(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
+// ByEmailVerifiedAt orders the results by the email_verified_at field.
+func ByEmailVerifiedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEmailVerifiedAt, opts...).ToFunc()
+}
+
+// ByPhoneE164 orders the results by the phone_e164 field.
+func ByPhoneE164(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPhoneE164, opts...).ToFunc()
+}
+
+// ByPhoneVerifiedAt orders the results by the phone_verified_at field.
+func ByPhoneVerifiedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPhoneVerifiedAt, opts...).ToFunc()
 }
 
 // ByExperiencePoints orders the results by the experience_points field.

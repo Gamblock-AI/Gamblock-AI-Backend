@@ -79,6 +79,11 @@ func PromptKey(v string) predicate.Reflection {
 	return predicate.Reflection(sql.FieldEQ(FieldPromptKey, v))
 }
 
+// IsFocus applies equality check predicate on the "is_focus" field. It's identical to IsFocusEQ.
+func IsFocus(v bool) predicate.Reflection {
+	return predicate.Reflection(sql.FieldEQ(FieldIsFocus, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Reflection {
 	return predicate.Reflection(sql.FieldEQ(FieldCreatedAt, v))
@@ -292,6 +297,36 @@ func PromptKeyEqualFold(v string) predicate.Reflection {
 // PromptKeyContainsFold applies the ContainsFold predicate on the "prompt_key" field.
 func PromptKeyContainsFold(v string) predicate.Reflection {
 	return predicate.Reflection(sql.FieldContainsFold(FieldPromptKey, v))
+}
+
+// StatusEQ applies the EQ predicate on the "status" field.
+func StatusEQ(v Status) predicate.Reflection {
+	return predicate.Reflection(sql.FieldEQ(FieldStatus, v))
+}
+
+// StatusNEQ applies the NEQ predicate on the "status" field.
+func StatusNEQ(v Status) predicate.Reflection {
+	return predicate.Reflection(sql.FieldNEQ(FieldStatus, v))
+}
+
+// StatusIn applies the In predicate on the "status" field.
+func StatusIn(vs ...Status) predicate.Reflection {
+	return predicate.Reflection(sql.FieldIn(FieldStatus, vs...))
+}
+
+// StatusNotIn applies the NotIn predicate on the "status" field.
+func StatusNotIn(vs ...Status) predicate.Reflection {
+	return predicate.Reflection(sql.FieldNotIn(FieldStatus, vs...))
+}
+
+// IsFocusEQ applies the EQ predicate on the "is_focus" field.
+func IsFocusEQ(v bool) predicate.Reflection {
+	return predicate.Reflection(sql.FieldEQ(FieldIsFocus, v))
+}
+
+// IsFocusNEQ applies the NEQ predicate on the "is_focus" field.
+func IsFocusNEQ(v bool) predicate.Reflection {
+	return predicate.Reflection(sql.FieldNEQ(FieldIsFocus, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

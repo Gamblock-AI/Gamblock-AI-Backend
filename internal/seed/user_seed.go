@@ -2,6 +2,7 @@ package seed
 
 import (
 	"context"
+	"time"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/user"
@@ -23,7 +24,11 @@ func SeedUsers(ctx context.Context, client *ent.Client) error {
 		{"usr_nasywa", "nasywa@gmail.com", "Nasywa", user.RolePlatformAdmin},
 	}
 	for _, item := range users {
-		if _, err := client.User.Create().SetID(item.id).SetEmail(item.email).SetDisplayName(item.name).SetRole(item.role).SetPasswordHash(passwordHash).Save(ctx); err != nil {
+		create := client.User.Create().SetID(item.id).SetEmail(item.email).SetDisplayName(item.name).SetRole(item.role).SetPasswordHash(passwordHash).SetEmailVerifiedAt(time.Now().UTC())
+		if item.role == user.RolePartner {
+			create.SetPhoneE164("+6281200000000").SetPhoneVerifiedAt(time.Now().UTC())
+		}
+		if _, err := create.Save(ctx); err != nil {
 			return err
 		}
 	}

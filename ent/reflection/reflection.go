@@ -3,6 +3,7 @@
 package reflection
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -19,6 +20,10 @@ const (
 	FieldContentEncrypted = "content_encrypted"
 	// FieldPromptKey holds the string denoting the prompt_key field in the database.
 	FieldPromptKey = "prompt_key"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
+	// FieldIsFocus holds the string denoting the is_focus field in the database.
+	FieldIsFocus = "is_focus"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -33,6 +38,8 @@ var Columns = []string{
 	FieldUserID,
 	FieldContentEncrypted,
 	FieldPromptKey,
+	FieldStatus,
+	FieldIsFocus,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -48,6 +55,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultIsFocus holds the default value on creation for the "is_focus" field.
+	DefaultIsFocus bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -57,6 +66,32 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() string
 )
+
+// Status defines the type for the "status" enum field.
+type Status string
+
+// StatusActive is the default value of the Status enum.
+const DefaultStatus = StatusActive
+
+// Status values.
+const (
+	StatusActive   Status = "active"
+	StatusArchived Status = "archived"
+)
+
+func (s Status) String() string {
+	return string(s)
+}
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s Status) error {
+	switch s {
+	case StatusActive, StatusArchived:
+		return nil
+	default:
+		return fmt.Errorf("reflection: invalid enum value for status field: %q", s)
+	}
+}
 
 // OrderOption defines the ordering options for the Reflection queries.
 type OrderOption func(*sql.Selector)
@@ -79,6 +114,16 @@ func ByContentEncrypted(opts ...sql.OrderTermOption) OrderOption {
 // ByPromptKey orders the results by the prompt_key field.
 func ByPromptKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPromptKey, opts...).ToFunc()
+}
+
+// ByStatus orders the results by the status field.
+func ByStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByIsFocus orders the results by the is_focus field.
+func ByIsFocus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsFocus, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

@@ -79,6 +79,11 @@ func PartnerLinkID(v string) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldEQ(FieldPartnerLinkID, v))
 }
 
+// MembershipID applies equality check predicate on the "membership_id" field. It's identical to MembershipIDEQ.
+func MembershipID(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEQ(FieldMembershipID, v))
+}
+
 // QuickTokenHash applies equality check predicate on the "quick_token_hash" field. It's identical to QuickTokenHashEQ.
 func QuickTokenHash(v string) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldEQ(FieldQuickTokenHash, v))
@@ -87,6 +92,11 @@ func QuickTokenHash(v string) predicate.ApprovalRequest {
 // Reason applies equality check predicate on the "reason" field. It's identical to ReasonEQ.
 func Reason(v string) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldEQ(FieldReason, v))
+}
+
+// SupportiveResponse applies equality check predicate on the "supportive_response" field. It's identical to SupportiveResponseEQ.
+func SupportiveResponse(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEQ(FieldSupportiveResponse, v))
 }
 
 // RequestedDurationMinutes applies equality check predicate on the "requested_duration_minutes" field. It's identical to RequestedDurationMinutesEQ.
@@ -324,6 +334,16 @@ func PartnerLinkIDHasSuffix(v string) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldHasSuffix(FieldPartnerLinkID, v))
 }
 
+// PartnerLinkIDIsNil applies the IsNil predicate on the "partner_link_id" field.
+func PartnerLinkIDIsNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldIsNull(FieldPartnerLinkID))
+}
+
+// PartnerLinkIDNotNil applies the NotNil predicate on the "partner_link_id" field.
+func PartnerLinkIDNotNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNotNull(FieldPartnerLinkID))
+}
+
 // PartnerLinkIDEqualFold applies the EqualFold predicate on the "partner_link_id" field.
 func PartnerLinkIDEqualFold(v string) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldEqualFold(FieldPartnerLinkID, v))
@@ -332,6 +352,81 @@ func PartnerLinkIDEqualFold(v string) predicate.ApprovalRequest {
 // PartnerLinkIDContainsFold applies the ContainsFold predicate on the "partner_link_id" field.
 func PartnerLinkIDContainsFold(v string) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldContainsFold(FieldPartnerLinkID, v))
+}
+
+// MembershipIDEQ applies the EQ predicate on the "membership_id" field.
+func MembershipIDEQ(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEQ(FieldMembershipID, v))
+}
+
+// MembershipIDNEQ applies the NEQ predicate on the "membership_id" field.
+func MembershipIDNEQ(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNEQ(FieldMembershipID, v))
+}
+
+// MembershipIDIn applies the In predicate on the "membership_id" field.
+func MembershipIDIn(vs ...string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldIn(FieldMembershipID, vs...))
+}
+
+// MembershipIDNotIn applies the NotIn predicate on the "membership_id" field.
+func MembershipIDNotIn(vs ...string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNotIn(FieldMembershipID, vs...))
+}
+
+// MembershipIDGT applies the GT predicate on the "membership_id" field.
+func MembershipIDGT(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldGT(FieldMembershipID, v))
+}
+
+// MembershipIDGTE applies the GTE predicate on the "membership_id" field.
+func MembershipIDGTE(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldGTE(FieldMembershipID, v))
+}
+
+// MembershipIDLT applies the LT predicate on the "membership_id" field.
+func MembershipIDLT(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldLT(FieldMembershipID, v))
+}
+
+// MembershipIDLTE applies the LTE predicate on the "membership_id" field.
+func MembershipIDLTE(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldLTE(FieldMembershipID, v))
+}
+
+// MembershipIDContains applies the Contains predicate on the "membership_id" field.
+func MembershipIDContains(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldContains(FieldMembershipID, v))
+}
+
+// MembershipIDHasPrefix applies the HasPrefix predicate on the "membership_id" field.
+func MembershipIDHasPrefix(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldHasPrefix(FieldMembershipID, v))
+}
+
+// MembershipIDHasSuffix applies the HasSuffix predicate on the "membership_id" field.
+func MembershipIDHasSuffix(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldHasSuffix(FieldMembershipID, v))
+}
+
+// MembershipIDIsNil applies the IsNil predicate on the "membership_id" field.
+func MembershipIDIsNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldIsNull(FieldMembershipID))
+}
+
+// MembershipIDNotNil applies the NotNil predicate on the "membership_id" field.
+func MembershipIDNotNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNotNull(FieldMembershipID))
+}
+
+// MembershipIDEqualFold applies the EqualFold predicate on the "membership_id" field.
+func MembershipIDEqualFold(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEqualFold(FieldMembershipID, v))
+}
+
+// MembershipIDContainsFold applies the ContainsFold predicate on the "membership_id" field.
+func MembershipIDContainsFold(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldContainsFold(FieldMembershipID, v))
 }
 
 // QuickTokenHashEQ applies the EQ predicate on the "quick_token_hash" field.
@@ -522,6 +617,81 @@ func ReasonEqualFold(v string) predicate.ApprovalRequest {
 // ReasonContainsFold applies the ContainsFold predicate on the "reason" field.
 func ReasonContainsFold(v string) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldContainsFold(FieldReason, v))
+}
+
+// SupportiveResponseEQ applies the EQ predicate on the "supportive_response" field.
+func SupportiveResponseEQ(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEQ(FieldSupportiveResponse, v))
+}
+
+// SupportiveResponseNEQ applies the NEQ predicate on the "supportive_response" field.
+func SupportiveResponseNEQ(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNEQ(FieldSupportiveResponse, v))
+}
+
+// SupportiveResponseIn applies the In predicate on the "supportive_response" field.
+func SupportiveResponseIn(vs ...string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldIn(FieldSupportiveResponse, vs...))
+}
+
+// SupportiveResponseNotIn applies the NotIn predicate on the "supportive_response" field.
+func SupportiveResponseNotIn(vs ...string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNotIn(FieldSupportiveResponse, vs...))
+}
+
+// SupportiveResponseGT applies the GT predicate on the "supportive_response" field.
+func SupportiveResponseGT(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldGT(FieldSupportiveResponse, v))
+}
+
+// SupportiveResponseGTE applies the GTE predicate on the "supportive_response" field.
+func SupportiveResponseGTE(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldGTE(FieldSupportiveResponse, v))
+}
+
+// SupportiveResponseLT applies the LT predicate on the "supportive_response" field.
+func SupportiveResponseLT(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldLT(FieldSupportiveResponse, v))
+}
+
+// SupportiveResponseLTE applies the LTE predicate on the "supportive_response" field.
+func SupportiveResponseLTE(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldLTE(FieldSupportiveResponse, v))
+}
+
+// SupportiveResponseContains applies the Contains predicate on the "supportive_response" field.
+func SupportiveResponseContains(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldContains(FieldSupportiveResponse, v))
+}
+
+// SupportiveResponseHasPrefix applies the HasPrefix predicate on the "supportive_response" field.
+func SupportiveResponseHasPrefix(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldHasPrefix(FieldSupportiveResponse, v))
+}
+
+// SupportiveResponseHasSuffix applies the HasSuffix predicate on the "supportive_response" field.
+func SupportiveResponseHasSuffix(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldHasSuffix(FieldSupportiveResponse, v))
+}
+
+// SupportiveResponseIsNil applies the IsNil predicate on the "supportive_response" field.
+func SupportiveResponseIsNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldIsNull(FieldSupportiveResponse))
+}
+
+// SupportiveResponseNotNil applies the NotNil predicate on the "supportive_response" field.
+func SupportiveResponseNotNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNotNull(FieldSupportiveResponse))
+}
+
+// SupportiveResponseEqualFold applies the EqualFold predicate on the "supportive_response" field.
+func SupportiveResponseEqualFold(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEqualFold(FieldSupportiveResponse, v))
+}
+
+// SupportiveResponseContainsFold applies the ContainsFold predicate on the "supportive_response" field.
+func SupportiveResponseContainsFold(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldContainsFold(FieldSupportiveResponse, v))
 }
 
 // RequestedDurationMinutesEQ applies the EQ predicate on the "requested_duration_minutes" field.

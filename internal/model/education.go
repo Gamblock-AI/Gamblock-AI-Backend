@@ -60,6 +60,8 @@ type EducationThumbnail struct {
 // check identifiers are shared across locales so progress survives language
 // changes.
 type EducationDocument struct {
+	Audience         string                          `json:"audience"`
+	ExperienceType   string                          `json:"experience_type"`
 	Category         string                          `json:"category"`
 	EstimatedMinutes int                             `json:"estimated_minutes"`
 	ReviewerName     string                          `json:"reviewer_name"`
@@ -144,6 +146,8 @@ type LocalizedEducationModule struct {
 	LearningObjective string                      `json:"learning_objective"`
 	Disclaimer        string                      `json:"disclaimer"`
 	Category          string                      `json:"category"`
+	Audience          string                      `json:"audience"`
+	ExperienceType    string                      `json:"experience_type"`
 	EstimatedMinutes  int                         `json:"estimated_minutes"`
 	ReviewerName      string                      `json:"reviewer_name"`
 	ReviewerRole      string                      `json:"reviewer_role"`

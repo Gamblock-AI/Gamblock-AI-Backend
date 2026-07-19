@@ -10,7 +10,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 )
 
-func (s *AuthService) GoogleLogin(ctx context.Context, rawIDToken, deviceID string) (model.AuthResponse, error) {
+func (s *AuthService) GoogleLogin(ctx context.Context, rawIDToken, deviceID, requestedRole string) (model.AuthResponse, error) {
 	if s.cfg.GoogleClientID == "" {
 		return model.AuthResponse{}, fmt.Errorf("GOOGLE_CLIENT_ID is not configured")
 	}
@@ -34,6 +34,9 @@ func (s *AuthService) GoogleLogin(ctx context.Context, rawIDToken, deviceID stri
 
 	user, err := s.repo.GetUserByGoogleSubject(ctx, payload.Subject)
 	if err != nil {
+		if requestedRole != "user" && requestedRole != "partner" {
+			requestedRole = "user"
+		}
 		if _, exists := s.repo.UserByEmail(ctx, email); exists {
 			return model.AuthResponse{}, fmt.Errorf("an existing account must link Google after password authentication")
 		}
@@ -41,7 +44,7 @@ func (s *AuthService) GoogleLogin(ctx context.Context, rawIDToken, deviceID stri
 		if picture != "" {
 			avatarURL = &picture
 		}
-		user, err = s.repo.CreateUserGoogle(ctx, "usr_"+uuid.NewString(), email, name, avatarURL, payload.Subject)
+		user, err = s.repo.CreateUserGoogle(ctx, "usr_"+uuid.NewString(), email, name, avatarURL, payload.Subject, requestedRole)
 	}
 	if err != nil {
 		return model.AuthResponse{}, err

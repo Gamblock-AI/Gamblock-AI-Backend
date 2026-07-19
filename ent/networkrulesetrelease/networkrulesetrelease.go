@@ -72,10 +72,13 @@ const DefaultStatus = StatusDraft
 
 // Status values.
 const (
-	StatusDraft     Status = "draft"
-	StatusValidated Status = "validated"
-	StatusPublished Status = "published"
-	StatusRetired   Status = "retired"
+	StatusDraft      Status = "draft"
+	StatusValidated  Status = "validated"
+	StatusStaged     Status = "staged"
+	StatusPublished  Status = "published"
+	StatusPaused     Status = "paused"
+	StatusRolledBack Status = "rolled_back"
+	StatusRetired    Status = "retired"
 )
 
 func (s Status) String() string {
@@ -85,7 +88,7 @@ func (s Status) String() string {
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s Status) error {
 	switch s {
-	case StatusDraft, StatusValidated, StatusPublished, StatusRetired:
+	case StatusDraft, StatusValidated, StatusStaged, StatusPublished, StatusPaused, StatusRolledBack, StatusRetired:
 		return nil
 	default:
 		return fmt.Errorf("networkrulesetrelease: invalid enum value for status field: %q", s)

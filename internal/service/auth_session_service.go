@@ -11,7 +11,7 @@ import (
 )
 
 func (s *AuthService) Refresh(ctx context.Context, rawRefresh string) (model.AuthResponse, error) {
-	refreshTokenID, userID, deviceID, err := s.repo.GetActiveRefreshToken(ctx, HashRefreshToken(rawRefresh))
+	refreshTokenID, userID, deviceID, authTime, err := s.repo.GetActiveRefreshTokenSession(ctx, HashRefreshToken(rawRefresh))
 	if err != nil {
 		return model.AuthResponse{}, fmt.Errorf("invalid refresh token")
 	}
@@ -22,7 +22,7 @@ func (s *AuthService) Refresh(ctx context.Context, rawRefresh string) (model.Aut
 	if err := s.repo.RevokeRefreshTokenByID(ctx, refreshTokenID); err != nil {
 		return model.AuthResponse{}, err
 	}
-	return s.authPair(ctx, user, deviceID)
+	return s.authPairAt(ctx, user, deviceID, authTime)
 }
 
 func (s *AuthService) Logout(ctx context.Context, rawRefresh string) error {
@@ -30,7 +30,11 @@ func (s *AuthService) Logout(ctx context.Context, rawRefresh string) error {
 }
 
 func (s *AuthService) authPair(ctx context.Context, user model.User, deviceID *string) (model.AuthResponse, error) {
-	accessToken, err := s.issueToken(user)
+	return s.authPairAt(ctx, user, deviceID, time.Now().UTC())
+}
+
+func (s *AuthService) authPairAt(ctx context.Context, user model.User, deviceID *string, authTime time.Time) (model.AuthResponse, error) {
+	accessToken, err := s.issueTokenAt(user, authTime)
 	if err != nil {
 		return model.AuthResponse{}, err
 	}
@@ -39,7 +43,7 @@ func (s *AuthService) authPair(ctx context.Context, user model.User, deviceID *s
 		return model.AuthResponse{}, err
 	}
 	expiresAt := time.Now().UTC().Add(s.cfg.JWTRefreshTTL)
-	if err := s.repo.CreateRefreshToken(ctx, "rt_"+uuid.NewString(), user.ID, HashRefreshToken(rawRefresh), deviceID, expiresAt); err != nil {
+	if err := s.repo.CreateRefreshTokenWithAuthTime(ctx, "rt_"+uuid.NewString(), user.ID, HashRefreshToken(rawRefresh), deviceID, authTime, expiresAt); err != nil {
 		return model.AuthResponse{}, err
 	}
 	return model.AuthResponse{

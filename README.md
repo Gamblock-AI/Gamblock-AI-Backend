@@ -42,6 +42,8 @@ database schema and must never be run against shared or production data.
 - `POST /v1/client/aggregate-events`
 - `GET/POST /v1/check-ins`
 - `GET/PATCH /v1/me`
+- `POST/DELETE /v1/me/avatar`
+- `GET  /v1/users/:id/avatar`
 - `GET  /v1/psychoeducation/modules`
 - `GET  /v1/psychoeducation/modules/:slug`
 - `PUT  /v1/psychoeducation/modules/:id/revisions/:revision/progress`
@@ -49,7 +51,9 @@ database schema and must never be run against shared or production data.
 - `GET  /v1/education/media/:id`
 - `GET/POST/PUT /v1/admin/content/modules[...]`
 - `POST /v1/admin/content/media`
-- `GET  /v1/partners`
+- `GET  /v1/accountability/workspace`
+- `POST /v1/accountability/groups[...]`
+- `PATCH /v1/accountability/memberships/:membership_id/sharing`
 - `GET  /v1/approval-requests`
 - `POST /v1/approval-requests/:id/apply`
 - `GET/POST /v1/emergency-key-requests`
@@ -61,6 +65,13 @@ database schema and must never be run against shared or production data.
 - `GET  /v1/missions/today`
 - `PATCH /v1/missions`
 - `POST /v1/missions/claim`
+- `GET  /v1/client/progress?days=7|30|90`
+- `GET/POST/PATCH /v1/reflections[...]`
+- `GET/POST /v1/recovery-practices`
+- `GET/PATCH /v1/recovery-space`
+- `GET/PUT /v1/weekly-reviews/current`
+- `GET/PUT /v1/recovery-records`
+- `GET/POST /v1/support-cases[...]`
 
 All responses use the envelope `{ "data", "error", "request_id" }` produced in
 `internal/handler/handler.go` / `internal/middleware/middleware.go`.
@@ -71,11 +82,23 @@ All responses use the envelope `{ "data", "error", "request_id" }` produced in
   user's installation; a new device starts `inactive`.
 - `PATCH /v1/me/password` requires `current_password` and `new_password`, then
   revokes every refresh token so clients must reauthenticate.
+- `POST /v1/me/avatar` accepts an authenticated user's cropped WebP avatar up
+  to 2 MiB. `GET /v1/users/:id/avatar` is authenticated, returns only the
+  managed image with a private cache directive, and never exposes a storage
+  path. `DELETE /v1/me/avatar` restores the initials fallback.
 - `GET /v1/client/protection-analytics?device_id=<id>&days=7|30` returns daily
   and total counters only.
 - Approval responses keep stable `action`/`status` codes separate from
   localized labels. `POST /v1/approval-requests/:id/apply` is device-bound,
   idempotent after first use, and available for 30 minutes after resolution.
+- Accountability roles are backend-authoritative. Verified students preview
+  and confirm one live group membership; verified email+WhatsApp partners own
+  multiple groups with hashed, rate-limited, rotatable codes. Partner decisions,
+  member removal, archive, and code rotation require a session authenticated
+  within 15 minutes.
+- Category-specific partner projections expose only protection health/activity,
+  recovery engagement counts, and education progress bands. Unsafe student
+  exit and partner removal stop sharing immediately.
 - Emergency recovery is device-bound: the user creates a request, one platform
   admin reviews it, a different platform admin approves/issues it, and
   `/v1/devices/unlock` consumes the 24-hour single-use key for a ten-minute
@@ -83,6 +106,20 @@ All responses use the envelope `{ "data", "error", "request_id" }` produced in
 - `POST /v1/check-ins` persists the authenticated user's structured mood score
   and optional urge score (`0` means not disclosed); it accepts no browsing
   context. Partner visibility is not exposed by this endpoint.
+- `GET/PUT /v1/recovery-records` stores only explicitly submitted student
+  records; sensitive text is AES-256-GCM encrypted, reminders default off, and
+  records older than 12 months are removed. `GET /v1/client/progress` supports
+  7/30/90 days and withholds trend claims until three check-ins exist.
+- Reflection payload v2 encrypts journal content, optional mood/next-step, and
+  current-focus state with AES-256-GCM. Completed recovery practices and typed
+  weekly reviews retain for 12 months. Recovery-space unlock/placement state is
+  deterministic, retained for the account lifetime, and included with practice
+  history in account export and deletion. Active timers and task labels are not
+  accepted by these endpoints.
+- Support cases use encrypted message threads and explicit
+  waiting-support/waiting-user/resolved/closed transitions. Requesters are
+  owner-scoped; only `support_operator` can claim an unassigned case, read its
+  thread, reply, transition it, or release ownership with an audited reason.
 - `GET /v1/missions/today` returns a deterministic `Asia/Jakarta` daily set of
   one primary and two optional bonus tasks, plus the authenticated user's level
   and EXP progress. It derives claim eligibility from existing account records:
@@ -92,9 +129,24 @@ All responses use the envelope `{ "data", "error", "request_id" }` produced in
   reward once. Legacy `PATCH /v1/missions` is claim-only and rejects undo.
   Mission/EXP data is not projected to partners.
 - Psychoeducation publication stores immutable bilingual document snapshots.
-  Student progress is revision-scoped and counts required sections, media, and
-  knowledge checks. Uploaded media is MIME-sniffed and size-bounded; external
-  media is restricted to configured HTTPS hosts.
+  Audience (`student`, `partner`, `all`) and experience type (`article`,
+  `response_simulator`) are server-validated and enforced for both list and
+  direct-slug reads. Progress is revision-scoped and counts required sections,
+  media, and knowledge checks. Uploaded media is MIME-sniffed and size-bounded;
+  external media is restricted to configured HTTPS hosts.
+- Operational roles are non-cumulative. Platform administrators manage
+  specialist invitations/accounts, safe public social links, audit history,
+  and dual-control emergency access; they do not inherit content, support, or
+  release actions. Refresh rotation preserves the original authentication time
+  used by recent-auth gates, and disabled/changed operator identity is checked
+  on every bearer request.
+- Release operators upload allowlisted artifacts to randomized managed storage;
+  the backend computes SHA-256 before model/ruleset/network registration and
+  supports manual staged cohort activate/pause/complete/rollback transitions.
+- Account export is encrypted at rest and expires after seven days. Student or
+  partner deletion requires a 30-minute email confirmation plus recent auth;
+  account-scoped records are removed while retained audit/request rows are
+  anonymized.
 
 These endpoints reject ownership mismatches and never accept URL, domain, DOM,
 page title, browsing history, screenshot, feature-vector, or per-page score

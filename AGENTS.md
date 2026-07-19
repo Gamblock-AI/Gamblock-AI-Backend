@@ -1,6 +1,6 @@
 # Gamblock-AI Backend Agent Rules
 
-Context version: `2026-07-18.3`
+Context version: `2026-07-19.1`
 
 This repository is the Go/Gin API for Gamblock-AI. It must remain safe and
 understandable as a standalone clone; no parent workspace files are required.
@@ -75,6 +75,12 @@ ent user enum also contains `organization_owner` and `organization_admin`.
 Treat that difference as existing implementation state, not permission to
 expand access; route authorization must remain explicit.
 
+Operational roles are non-cumulative. `platform_admin` manages specialist
+accounts, social settings, audit, and emergency approval but does not inherit
+content, support, or release authority. Preserve primary `auth_time` through
+refresh rotation, revalidate mutable role/disabled state per bearer request,
+and use recent-auth gates for sensitive operator/social/release decisions.
+
 Quick approval verify/resolve routes are intentionally unauthenticated and use
 single-use tokens. Do not put them behind session auth or expose their tokens.
 
@@ -93,13 +99,19 @@ and release management are supporting/operational, not substitutes for core.
 - Encrypt journal/reflection text with AES-256-GCM before persistence via
   `internal/crypto/aes.go`; never log/store plaintext. `ReflectionService`
   fails closed when the key, encryption, or decryption operation is invalid.
+- Recovery practice and weekly-review records retain for 12 months; recovery
+  room unlock/placement state retains for the account lifetime. Keep both in
+  export/deletion. Do not accept active timer state or focus-task draft text.
+- Education audience is backend authorization, not presentation metadata:
+  enforce it for list and direct-slug reads as well as in the website UI.
 - `.env` and credentials are local only. Update `.env.example` for config
   shape changes.
 - Production validates JWT/AES configuration and fails closed if PostgreSQL
   cannot open, migrate, or load. Non-production memory starts empty; contextual
   demo records require `ENABLE_DEMO_DATA=true` and are forbidden in production.
-- Partner invitation/quick-approval/emergency tokens are secrets. Persist only
-  hashes, never log raw links, and preserve relationship/email/expiry checks.
+- Partner/operator invitation, deletion-confirmation, quick-approval, and
+  emergency tokens are secrets. Persist only hashes, never log raw links, and
+  preserve relationship/email/expiry checks.
 - WhatsApp is an optional delivery adapter; the persisted partner inbox and
   backend transition are authoritative.
 

@@ -26,10 +26,25 @@ type MoodPoint struct {
 	Urge int    `json:"urge"`
 }
 
+type ProgressActivityDay struct {
+	Date      string `json:"date"`
+	CheckIns  int    `json:"check_ins"`
+	Practices int    `json:"practices"`
+	Journals  int    `json:"journals"`
+	Missions  int    `json:"missions"`
+	Education int    `json:"education"`
+	Reviews   int    `json:"reviews"`
+}
+
 type ProgressSnapshot struct {
-	WeeklyBlocks []int       `json:"weekly_blocks"`
-	MoodPoints   []MoodPoint `json:"mood_points"`
-	ActiveDays   int         `json:"active_days"`
-	Reflections  int         `json:"reflections"`
-	DataState    string      `json:"data_state"`
+	WeeklyBlocks   []int                 `json:"weekly_blocks"`
+	RangeDays      int                   `json:"range_days"`
+	DailyBlocks    []int                 `json:"daily_blocks"`
+	MoodPoints     []MoodPoint           `json:"mood_points"`
+	CheckInCount   int                   `json:"check_in_count"`
+	TrendAvailable bool                  `json:"trend_available"`
+	ActiveDays     int                   `json:"active_days"`
+	Reflections    int                   `json:"reflections"`
+	DataState      string                `json:"data_state"`
+	ActivityDays   []ProgressActivityDay `json:"activity_days"`
 }

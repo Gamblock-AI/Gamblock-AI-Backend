@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitygroup"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitymembership"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/approvalrequest"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 )
 
 func (r *Repository) CreateApprovalRequest(ctx context.Context, reqID, userID, deviceID, partnerLinkID, action, reason string, duration int, expiresAt time.Time) error {
@@ -96,23 +97,61 @@ func (r *Repository) CancelApprovalRequest(ctx context.Context, id, userID strin
 	return err
 }
 
-func (r *Repository) ResolveApprovalAsPartner(ctx context.Context, id, partnerUserID, status string) error {
+func (r *Repository) CancelPendingApprovalsForMembership(ctx context.Context, membershipID, resolvedBy string) error {
+	now := time.Now().UTC()
+	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+		for i := range r.store.Approvals {
+			item := &r.store.Approvals[i]
+			if item.MembershipID == membershipID && item.Status == "pending" {
+				item.Status = "cancelled"
+				item.StatusLabel = approvalStatusLabel("cancelled")
+				item.ResolvedAt = &now
+				item.UpdatedAt = now
+			}
+		}
+		return nil
+	}
+	_, err := r.db.ApprovalRequest.Update().Where(
+		approvalrequest.MembershipIDEQ(membershipID),
+		approvalrequest.StatusEQ(approvalrequest.StatusPending),
+	).SetStatus(approvalrequest.StatusCancelled).SetResolvedBy(resolvedBy).SetResolvedAt(now).Save(ctx)
+	if err == nil {
+		r.RefreshStore(ctx)
+	}
+	return err
+}
+
+func (r *Repository) ResolveApprovalAsPartner(ctx context.Context, id, partnerUserID, status, supportiveResponse string) error {
 	if status != "approved" && status != "denied" {
 		return fmt.Errorf("invalid approval status")
 	}
 	if r.db == nil {
 		r.store.Lock()
 		defer r.store.Unlock()
-		links := activePartnerLinkIDs(r.store.Partners, partnerUserID)
+		groupIDs := map[string]bool{}
+		for _, group := range r.store.AccountabilityGroups {
+			if group.OwnerPartnerID == partnerUserID {
+				groupIDs[group.ID] = true
+			}
+		}
+		membershipIDs := map[string]bool{}
+		for _, membership := range r.store.AccountabilityMemberships {
+			if groupIDs[membership.GroupID] {
+				membershipIDs[membership.ID] = true
+			}
+		}
 		for index := range r.store.Approvals {
 			item := &r.store.Approvals[index]
-			_, allowed := links[item.PartnerLinkID]
+			allowed := membershipIDs[item.MembershipID]
 			if item.ID != id || !allowed || item.Status != "pending" || !time.Now().UTC().Before(item.ExpiresAt) {
 				continue
 			}
 			now := time.Now().UTC()
 			item.Status = status
 			item.StatusLabel = approvalStatusLabel(status)
+			item.SupportiveResponse = supportiveResponse
 			item.ResolvedAt = &now
 			item.UpdatedAt = now
 			return nil
@@ -127,16 +166,22 @@ func (r *Repository) ResolveApprovalAsPartner(ctx context.Context, id, partnerUs
 	if err != nil {
 		return err
 	}
-	allowed, err := r.db.PartnerLink.Query().Where(
-		partnerlink.IDEQ(item.PartnerLinkID),
-		partnerlink.PartnerUserID(partnerUserID),
-		partnerlink.StatusEQ(partnerlink.StatusActive),
+	membership, err := r.db.AccountabilityMembership.Query().Where(
+		accountabilitymembership.IDEQ(value(item.MembershipID)),
+	).Only(ctx)
+	if err != nil {
+		return fmt.Errorf("membership for request was not found")
+	}
+	allowed, err := r.db.AccountabilityGroup.Query().Where(
+		accountabilitygroup.IDEQ(membership.GroupID),
+		accountabilitygroup.OwnerPartnerIDEQ(partnerUserID),
 	).Exist(ctx)
 	if err != nil || !allowed {
 		return fmt.Errorf("partner is not authorized for this request")
 	}
 	_, err = item.Update().
 		SetStatus(approvalrequest.Status(status)).
+		SetNillableSupportiveResponse(optional(supportiveResponse)).
 		SetResolvedBy(partnerUserID).
 		SetResolvedAt(time.Now().UTC()).
 		Save(ctx)

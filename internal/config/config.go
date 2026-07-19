@@ -23,11 +23,17 @@ type Config struct {
 	ArtifactStoragePath  string
 	ExportStoragePath    string
 	MediaStoragePath     string
+	AvatarStoragePath    string
 	MediaEmbedHosts      []string
 	JournalEncryptionKey string
 	WhatsAppAPIKey       string
 	WhatsAppPhoneID      string
 	WhatsAppBaseURL      string
+	SMTPHost             string
+	SMTPPort             string
+	SMTPUsername         string
+	SMTPPassword         string
+	SMTPFrom             string
 	EnableDevLogin       bool
 	EnableDemoData       bool
 }
@@ -52,6 +58,9 @@ func (c Config) Validate() error {
 	if c.NotificationMode == "demo" {
 		return fmt.Errorf("NOTIFICATION_MODE=demo is not allowed in production")
 	}
+	if c.SMTPHost == "" || c.SMTPPort == "" || c.SMTPFrom == "" {
+		return fmt.Errorf("SMTP_HOST, SMTP_PORT, and SMTP_FROM are required in production")
+	}
 	return nil
 }
 
@@ -69,11 +78,17 @@ func Load() Config {
 	viper.SetDefault("ARTIFACT_STORAGE_PATH", "./var/artifacts")
 	viper.SetDefault("EXPORT_STORAGE_PATH", "./var/exports")
 	viper.SetDefault("MEDIA_STORAGE_PATH", "./var/media")
+	viper.SetDefault("AVATAR_STORAGE_PATH", "./var/media/avatars")
 	viper.SetDefault("MEDIA_EMBED_ALLOWED_HOSTS", "www.youtube-nocookie.com,player.vimeo.com,who.int,www.who.int,ppatk.go.id,www.ppatk.go.id,ojk.go.id,www.ojk.go.id,komdigi.go.id,www.komdigi.go.id,kemkes.go.id,www.kemkes.go.id")
 	viper.SetDefault("JOURNAL_ENCRYPTION_KEY", "")
 	viper.SetDefault("WHATSAPP_API_KEY", "")
 	viper.SetDefault("WHATSAPP_PHONE_ID", "")
 	viper.SetDefault("WHATSAPP_BASE_URL", "https://graph.facebook.com/v18.0")
+	viper.SetDefault("SMTP_HOST", "")
+	viper.SetDefault("SMTP_PORT", "587")
+	viper.SetDefault("SMTP_USERNAME", "")
+	viper.SetDefault("SMTP_PASSWORD", "")
+	viper.SetDefault("SMTP_FROM", "")
 	viper.SetDefault("ENABLE_DEV_LOGIN", false)
 	viper.SetDefault("ENABLE_DEMO_DATA", false)
 	viper.AutomaticEnv()
@@ -101,11 +116,17 @@ func Load() Config {
 		ArtifactStoragePath:  viper.GetString("ARTIFACT_STORAGE_PATH"),
 		ExportStoragePath:    viper.GetString("EXPORT_STORAGE_PATH"),
 		MediaStoragePath:     viper.GetString("MEDIA_STORAGE_PATH"),
+		AvatarStoragePath:    viper.GetString("AVATAR_STORAGE_PATH"),
 		MediaEmbedHosts:      splitCSV(viper.GetString("MEDIA_EMBED_ALLOWED_HOSTS")),
 		JournalEncryptionKey: viper.GetString("JOURNAL_ENCRYPTION_KEY"),
 		WhatsAppAPIKey:       viper.GetString("WHATSAPP_API_KEY"),
 		WhatsAppPhoneID:      viper.GetString("WHATSAPP_PHONE_ID"),
 		WhatsAppBaseURL:      viper.GetString("WHATSAPP_BASE_URL"),
+		SMTPHost:             viper.GetString("SMTP_HOST"),
+		SMTPPort:             viper.GetString("SMTP_PORT"),
+		SMTPUsername:         viper.GetString("SMTP_USERNAME"),
+		SMTPPassword:         viper.GetString("SMTP_PASSWORD"),
+		SMTPFrom:             viper.GetString("SMTP_FROM"),
 		EnableDevLogin:       viper.GetBool("ENABLE_DEV_LOGIN"),
 		EnableDemoData:       viper.GetBool("ENABLE_DEMO_DATA"),
 	}

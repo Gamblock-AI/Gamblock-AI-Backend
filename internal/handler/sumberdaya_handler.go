@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,8 +19,11 @@ func (h *Handler) GetReflections(c *gin.Context) {
 
 func (h *Handler) CreateReflection(c *gin.Context) {
 	var input struct {
-		Text string `json:"text"`
-		Mood string `json:"mood"`
+		Text      string `json:"text"`
+		Mood      string `json:"mood"`
+		MoodScore *int   `json:"mood_score"`
+		NextStep  string `json:"next_step"`
+		IsFocus   bool   `json:"is_focus"`
 	}
 	_ = c.ShouldBindJSON(&input)
 	if input.Text == "" {
@@ -26,12 +31,26 @@ func (h *Handler) CreateReflection(c *gin.Context) {
 		return
 	}
 
-	entry, err := h.services.Reflection.CreateReflection(c.Request.Context(), h.currentUserID(c), input.Text, input.Mood)
+	entry, err := h.services.Reflection.CreateReflectionEntry(c.Request.Context(), h.currentUserID(c), input.Text, input.MoodScore, input.NextStep, input.IsFocus)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "reflection_create_failed", err)
 		return
 	}
 	h.respond(c, http.StatusCreated, entry)
+}
+
+func (h *Handler) UpdateReflection(c *gin.Context) {
+	var input model.ReflectionUpdate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		h.respondCode(c, http.StatusBadRequest, "err_validation")
+		return
+	}
+	entry, err := h.services.Reflection.UpdateReflection(c.Request.Context(), h.currentUserID(c), c.Param("id"), input)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "reflection_update_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, entry)
 }
 
 func (h *Handler) GetModules(c *gin.Context) {
@@ -67,6 +86,8 @@ func (h *Handler) CreateSupportCase(c *gin.Context) {
 		Type     string `json:"type"`
 		Summary  string `json:"summary"`
 		Priority string `json:"priority"`
+		Detail   string `json:"detail"`
+		Impact   string `json:"impact"`
 	}
 	_ = c.ShouldBindJSON(&input)
 	if input.Summary == "" {
@@ -74,12 +95,57 @@ func (h *Handler) CreateSupportCase(c *gin.Context) {
 		return
 	}
 
-	err := h.services.Support.CreateSupportCase(c.Request.Context(), h.currentUserID(c), input.Summary, input.Type, input.Priority)
+	item, err := h.services.Support.CreateThreadedSupportCase(c.Request.Context(), h.currentUserID(c), input.Summary, input.Detail, input.Type, input.Priority, input.Impact)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "support_case_failed", err)
 		return
 	}
-	h.respond(c, http.StatusCreated, gin.H{"created": true})
+	h.respond(c, http.StatusCreated, item)
+}
+
+func (h *Handler) GetSupportCaseDetail(c *gin.Context) {
+	item, err := h.services.Support.GetSupportCaseDetail(c.Request.Context(), h.currentUserID(c), currentRole(c), c.Param("id"))
+	if err != nil {
+		h.respondErrorErr(c, http.StatusNotFound, "support_case_not_found", err)
+		return
+	}
+	h.respond(c, http.StatusOK, item)
+}
+
+func (h *Handler) ReplySupportCase(c *gin.Context) {
+	var input struct {
+		Content string `json:"content"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		h.respondCode(c, http.StatusBadRequest, "err_validation")
+		return
+	}
+	message, err := h.services.Support.Reply(c.Request.Context(), h.currentUserID(c), currentRole(c), c.Param("id"), input.Content)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "support_reply_failed", err)
+		return
+	}
+	h.respond(c, http.StatusCreated, message)
+}
+
+func (h *Handler) TransitionSupportCase(c *gin.Context) {
+	var input struct {
+		Status string `json:"status"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		h.respondCode(c, http.StatusBadRequest, "err_validation")
+		return
+	}
+	if err := h.services.Support.Transition(c.Request.Context(), h.currentUserID(c), currentRole(c), c.Param("id"), input.Status); err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "support_transition_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, gin.H{"updated": true})
+}
+
+func currentRole(c *gin.Context) string {
+	role, _ := c.Get("role")
+	return fmt.Sprint(role)
 }
 
 func (h *Handler) GetDataRequests(c *gin.Context) {
@@ -101,10 +167,10 @@ func (h *Handler) CreateDataRequest(c *gin.Context) {
 		return
 	}
 
-	err := h.services.Support.CreateDataRequest(c.Request.Context(), h.currentUserID(c), input.Type)
+	item, previewURL, err := h.services.Support.CreateDataRequestWithResult(c.Request.Context(), h.currentUserID(c), input.Type)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "data_request_failed", err)
 		return
 	}
-	h.respond(c, http.StatusCreated, gin.H{"requested": true})
+	h.respond(c, http.StatusCreated, gin.H{"request": item, "confirmation_preview_url": previewURL})
 }

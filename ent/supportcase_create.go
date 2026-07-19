@@ -80,6 +80,62 @@ func (_c *SupportCaseCreate) SetSummary(v string) *SupportCaseCreate {
 	return _c
 }
 
+// SetImpact sets the "impact" field.
+func (_c *SupportCaseCreate) SetImpact(v string) *SupportCaseCreate {
+	_c.mutation.SetImpact(v)
+	return _c
+}
+
+// SetNillableImpact sets the "impact" field if the given value is not nil.
+func (_c *SupportCaseCreate) SetNillableImpact(v *string) *SupportCaseCreate {
+	if v != nil {
+		_c.SetImpact(*v)
+	}
+	return _c
+}
+
+// SetAssignedOperatorID sets the "assigned_operator_id" field.
+func (_c *SupportCaseCreate) SetAssignedOperatorID(v string) *SupportCaseCreate {
+	_c.mutation.SetAssignedOperatorID(v)
+	return _c
+}
+
+// SetNillableAssignedOperatorID sets the "assigned_operator_id" field if the given value is not nil.
+func (_c *SupportCaseCreate) SetNillableAssignedOperatorID(v *string) *SupportCaseCreate {
+	if v != nil {
+		_c.SetAssignedOperatorID(*v)
+	}
+	return _c
+}
+
+// SetResolvedAt sets the "resolved_at" field.
+func (_c *SupportCaseCreate) SetResolvedAt(v time.Time) *SupportCaseCreate {
+	_c.mutation.SetResolvedAt(v)
+	return _c
+}
+
+// SetNillableResolvedAt sets the "resolved_at" field if the given value is not nil.
+func (_c *SupportCaseCreate) SetNillableResolvedAt(v *time.Time) *SupportCaseCreate {
+	if v != nil {
+		_c.SetResolvedAt(*v)
+	}
+	return _c
+}
+
+// SetClosedAt sets the "closed_at" field.
+func (_c *SupportCaseCreate) SetClosedAt(v time.Time) *SupportCaseCreate {
+	_c.mutation.SetClosedAt(v)
+	return _c
+}
+
+// SetNillableClosedAt sets the "closed_at" field if the given value is not nil.
+func (_c *SupportCaseCreate) SetNillableClosedAt(v *time.Time) *SupportCaseCreate {
+	if v != nil {
+		_c.SetClosedAt(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *SupportCaseCreate) SetCreatedAt(v time.Time) *SupportCaseCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -165,6 +221,10 @@ func (_c *SupportCaseCreate) defaults() {
 		v := supportcase.DefaultPriority
 		_c.mutation.SetPriority(v)
 	}
+	if _, ok := _c.mutation.Impact(); !ok {
+		v := supportcase.DefaultImpact
+		_c.mutation.SetImpact(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := supportcase.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -210,6 +270,9 @@ func (_c *SupportCaseCreate) check() error {
 	}
 	if _, ok := _c.mutation.Summary(); !ok {
 		return &ValidationError{Name: "summary", err: errors.New(`ent: missing required field "SupportCase.summary"`)}
+	}
+	if _, ok := _c.mutation.Impact(); !ok {
+		return &ValidationError{Name: "impact", err: errors.New(`ent: missing required field "SupportCase.impact"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SupportCase.created_at"`)}
@@ -275,6 +338,22 @@ func (_c *SupportCaseCreate) createSpec() (*SupportCase, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Summary(); ok {
 		_spec.SetField(supportcase.FieldSummary, field.TypeString, value)
 		_node.Summary = value
+	}
+	if value, ok := _c.mutation.Impact(); ok {
+		_spec.SetField(supportcase.FieldImpact, field.TypeString, value)
+		_node.Impact = value
+	}
+	if value, ok := _c.mutation.AssignedOperatorID(); ok {
+		_spec.SetField(supportcase.FieldAssignedOperatorID, field.TypeString, value)
+		_node.AssignedOperatorID = &value
+	}
+	if value, ok := _c.mutation.ResolvedAt(); ok {
+		_spec.SetField(supportcase.FieldResolvedAt, field.TypeTime, value)
+		_node.ResolvedAt = &value
+	}
+	if value, ok := _c.mutation.ClosedAt(); ok {
+		_spec.SetField(supportcase.FieldClosedAt, field.TypeTime, value)
+		_node.ClosedAt = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(supportcase.FieldCreatedAt, field.TypeTime, value)

@@ -10,9 +10,13 @@ import (
 )
 
 func (r *Repository) CreateRefreshToken(ctx context.Context, rtID, userID, tokenHash string, deviceID *string, expiresAt time.Time) error {
+	return r.CreateRefreshTokenWithAuthTime(ctx, rtID, userID, tokenHash, deviceID, time.Now().UTC(), expiresAt)
+}
+
+func (r *Repository) CreateRefreshTokenWithAuthTime(ctx context.Context, rtID, userID, tokenHash string, deviceID *string, authTime, expiresAt time.Time) error {
 	if r.db == nil {
 		r.store.SaveRefreshToken(store.RefreshTokenRecord{
-			ID: rtID, UserID: userID, TokenHash: tokenHash, DeviceID: deviceID, ExpiresAt: expiresAt,
+			ID: rtID, UserID: userID, TokenHash: tokenHash, DeviceID: deviceID, AuthTime: authTime, ExpiresAt: expiresAt,
 		})
 		return nil
 	}
@@ -21,9 +25,32 @@ func (r *Repository) CreateRefreshToken(ctx context.Context, rtID, userID, token
 		SetUserID(userID).
 		SetTokenHash(tokenHash).
 		SetNillableDeviceID(deviceID).
+		SetAuthTime(authTime).
 		SetExpiresAt(expiresAt).
 		Save(ctx)
 	return err
+}
+
+func (r *Repository) GetActiveRefreshTokenSession(ctx context.Context, tokenHash string) (rtID, userID string, deviceID *string, authTime time.Time, err error) {
+	if r.db == nil {
+		rec, ok := r.store.GetRefreshToken(tokenHash)
+		if !ok || rec.RevokedAt != nil || rec.ExpiresAt.Before(time.Now().UTC()) {
+			return "", "", nil, time.Time{}, fmt.Errorf("refresh token not found")
+		}
+		return rec.ID, rec.UserID, rec.DeviceID, rec.AuthTime, nil
+	}
+	now := time.Now().UTC()
+	existing, err := r.db.RefreshToken.Query().
+		Where(
+			refreshtoken.TokenHashEQ(tokenHash),
+			refreshtoken.RevokedAtIsNil(),
+			refreshtoken.ExpiresAtGT(now),
+		).
+		Only(ctx)
+	if err != nil {
+		return "", "", nil, time.Time{}, err
+	}
+	return existing.ID, existing.UserID, existing.DeviceID, existing.AuthTime, nil
 }
 
 func (r *Repository) GetActiveRefreshToken(ctx context.Context, tokenHash string) (rtID, userID string, deviceID *string, err error) {

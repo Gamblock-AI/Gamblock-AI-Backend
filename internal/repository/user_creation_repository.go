@@ -11,10 +11,10 @@ import (
 )
 
 func (r *Repository) CreateUser(ctx context.Context, id, email, name string) (model.User, error) {
-	return r.CreateUserWithPassword(ctx, id, email, name, "")
+	return r.CreateUserWithPassword(ctx, id, email, name, "", "user")
 }
 
-func (r *Repository) CreateUserWithPassword(ctx context.Context, id, email, name, passwordHash string) (model.User, error) {
+func (r *Repository) CreateUserWithPassword(ctx context.Context, id, email, name, passwordHash, role string) (model.User, error) {
 	if r.db == nil {
 		if _, exists := r.store.UserByEmail(email); exists {
 			return model.User{}, fmt.Errorf("email already exists")
@@ -23,7 +23,7 @@ func (r *Repository) CreateUserWithPassword(ctx context.Context, id, email, name
 			ID:           id,
 			Email:        email,
 			DisplayName:  name,
-			Role:         "user",
+			Role:         role,
 			PasswordHash: passwordHash,
 			CreatedAt:    time.Now().UTC(),
 			UpdatedAt:    time.Now().UTC(),
@@ -31,13 +31,13 @@ func (r *Repository) CreateUserWithPassword(ctx context.Context, id, email, name
 		r.store.Lock()
 		r.store.Users = append(r.store.Users, newUser)
 		r.store.Unlock()
-		return newUser, nil
+		return userForResponse(newUser), nil
 	}
 	creator := r.db.User.Create().
 		SetID(id).
 		SetEmail(email).
 		SetDisplayName(name).
-		SetRole(entuser.RoleUser)
+		SetRole(entuser.Role(role))
 	if passwordHash != "" {
 		creator.SetPasswordHash(passwordHash)
 	}
@@ -49,27 +49,25 @@ func (r *Repository) CreateUserWithPassword(ctx context.Context, id, email, name
 	return userFromEnt(row), nil
 }
 
-func (r *Repository) CreateUserGoogle(ctx context.Context, id, email, name string, avatarURL *string, subject string) (model.User, error) {
+func (r *Repository) CreateUserGoogle(ctx context.Context, id, email, name string, _ *string, subject, role string) (model.User, error) {
 	if r.db == nil {
 		if _, exists := r.store.UserByEmail(email); exists {
 			return model.User{}, fmt.Errorf("email already exists")
 		}
 		now := time.Now().UTC()
-		user := model.User{ID: id, Email: email, DisplayName: name, Role: "user", GoogleSubject: subject, CreatedAt: now, UpdatedAt: now}
+		user := model.User{ID: id, Email: email, DisplayName: name, Role: role, GoogleSubject: subject, EmailVerifiedAt: &now, CreatedAt: now, UpdatedAt: now}
 		r.store.Lock()
 		r.store.Users = append(r.store.Users, user)
 		r.store.Unlock()
-		return user, nil
+		return userForResponse(user), nil
 	}
 	creator := r.db.User.Create().
 		SetID(id).
 		SetEmail(email).
 		SetDisplayName(name).
 		SetGoogleSubject(subject).
-		SetRole(entuser.RoleUser)
-	if avatarURL != nil {
-		creator.SetAvatarURL(*avatarURL)
-	}
+		SetRole(entuser.Role(role)).
+		SetEmailVerifiedAt(time.Now().UTC())
 	row, err := creator.Save(ctx)
 	if err != nil {
 		return model.User{}, err

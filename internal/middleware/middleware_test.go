@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-
 )
 
 func newTestMiddleware(t *testing.T) *Middleware {

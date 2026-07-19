@@ -12,6 +12,7 @@ type RefreshTokenRecord struct {
 	UserID    string
 	TokenHash string
 	DeviceID  *string
+	AuthTime  time.Time
 	ExpiresAt time.Time
 	RevokedAt *time.Time
 }

@@ -76,6 +76,32 @@ func (_u *ApprovalRequestUpdate) SetNillablePartnerLinkID(v *string) *ApprovalRe
 	return _u
 }
 
+// ClearPartnerLinkID clears the value of the "partner_link_id" field.
+func (_u *ApprovalRequestUpdate) ClearPartnerLinkID() *ApprovalRequestUpdate {
+	_u.mutation.ClearPartnerLinkID()
+	return _u
+}
+
+// SetMembershipID sets the "membership_id" field.
+func (_u *ApprovalRequestUpdate) SetMembershipID(v string) *ApprovalRequestUpdate {
+	_u.mutation.SetMembershipID(v)
+	return _u
+}
+
+// SetNillableMembershipID sets the "membership_id" field if the given value is not nil.
+func (_u *ApprovalRequestUpdate) SetNillableMembershipID(v *string) *ApprovalRequestUpdate {
+	if v != nil {
+		_u.SetMembershipID(*v)
+	}
+	return _u
+}
+
+// ClearMembershipID clears the value of the "membership_id" field.
+func (_u *ApprovalRequestUpdate) ClearMembershipID() *ApprovalRequestUpdate {
+	_u.mutation.ClearMembershipID()
+	return _u
+}
+
 // SetQuickTokenHash sets the "quick_token_hash" field.
 func (_u *ApprovalRequestUpdate) SetQuickTokenHash(v string) *ApprovalRequestUpdate {
 	_u.mutation.SetQuickTokenHash(v)
@@ -141,6 +167,26 @@ func (_u *ApprovalRequestUpdate) SetNillableReason(v *string) *ApprovalRequestUp
 // ClearReason clears the value of the "reason" field.
 func (_u *ApprovalRequestUpdate) ClearReason() *ApprovalRequestUpdate {
 	_u.mutation.ClearReason()
+	return _u
+}
+
+// SetSupportiveResponse sets the "supportive_response" field.
+func (_u *ApprovalRequestUpdate) SetSupportiveResponse(v string) *ApprovalRequestUpdate {
+	_u.mutation.SetSupportiveResponse(v)
+	return _u
+}
+
+// SetNillableSupportiveResponse sets the "supportive_response" field if the given value is not nil.
+func (_u *ApprovalRequestUpdate) SetNillableSupportiveResponse(v *string) *ApprovalRequestUpdate {
+	if v != nil {
+		_u.SetSupportiveResponse(*v)
+	}
+	return _u
+}
+
+// ClearSupportiveResponse clears the value of the "supportive_response" field.
+func (_u *ApprovalRequestUpdate) ClearSupportiveResponse() *ApprovalRequestUpdate {
+	_u.mutation.ClearSupportiveResponse()
 	return _u
 }
 
@@ -351,6 +397,15 @@ func (_u *ApprovalRequestUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.PartnerLinkID(); ok {
 		_spec.SetField(approvalrequest.FieldPartnerLinkID, field.TypeString, value)
 	}
+	if _u.mutation.PartnerLinkIDCleared() {
+		_spec.ClearField(approvalrequest.FieldPartnerLinkID, field.TypeString)
+	}
+	if value, ok := _u.mutation.MembershipID(); ok {
+		_spec.SetField(approvalrequest.FieldMembershipID, field.TypeString, value)
+	}
+	if _u.mutation.MembershipIDCleared() {
+		_spec.ClearField(approvalrequest.FieldMembershipID, field.TypeString)
+	}
 	if value, ok := _u.mutation.QuickTokenHash(); ok {
 		_spec.SetField(approvalrequest.FieldQuickTokenHash, field.TypeString, value)
 	}
@@ -368,6 +423,12 @@ func (_u *ApprovalRequestUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if _u.mutation.ReasonCleared() {
 		_spec.ClearField(approvalrequest.FieldReason, field.TypeString)
+	}
+	if value, ok := _u.mutation.SupportiveResponse(); ok {
+		_spec.SetField(approvalrequest.FieldSupportiveResponse, field.TypeString, value)
+	}
+	if _u.mutation.SupportiveResponseCleared() {
+		_spec.ClearField(approvalrequest.FieldSupportiveResponse, field.TypeString)
 	}
 	if value, ok := _u.mutation.RequestedDurationMinutes(); ok {
 		_spec.SetField(approvalrequest.FieldRequestedDurationMinutes, field.TypeInt, value)
@@ -476,6 +537,32 @@ func (_u *ApprovalRequestUpdateOne) SetNillablePartnerLinkID(v *string) *Approva
 	return _u
 }
 
+// ClearPartnerLinkID clears the value of the "partner_link_id" field.
+func (_u *ApprovalRequestUpdateOne) ClearPartnerLinkID() *ApprovalRequestUpdateOne {
+	_u.mutation.ClearPartnerLinkID()
+	return _u
+}
+
+// SetMembershipID sets the "membership_id" field.
+func (_u *ApprovalRequestUpdateOne) SetMembershipID(v string) *ApprovalRequestUpdateOne {
+	_u.mutation.SetMembershipID(v)
+	return _u
+}
+
+// SetNillableMembershipID sets the "membership_id" field if the given value is not nil.
+func (_u *ApprovalRequestUpdateOne) SetNillableMembershipID(v *string) *ApprovalRequestUpdateOne {
+	if v != nil {
+		_u.SetMembershipID(*v)
+	}
+	return _u
+}
+
+// ClearMembershipID clears the value of the "membership_id" field.
+func (_u *ApprovalRequestUpdateOne) ClearMembershipID() *ApprovalRequestUpdateOne {
+	_u.mutation.ClearMembershipID()
+	return _u
+}
+
 // SetQuickTokenHash sets the "quick_token_hash" field.
 func (_u *ApprovalRequestUpdateOne) SetQuickTokenHash(v string) *ApprovalRequestUpdateOne {
 	_u.mutation.SetQuickTokenHash(v)
@@ -541,6 +628,26 @@ func (_u *ApprovalRequestUpdateOne) SetNillableReason(v *string) *ApprovalReques
 // ClearReason clears the value of the "reason" field.
 func (_u *ApprovalRequestUpdateOne) ClearReason() *ApprovalRequestUpdateOne {
 	_u.mutation.ClearReason()
+	return _u
+}
+
+// SetSupportiveResponse sets the "supportive_response" field.
+func (_u *ApprovalRequestUpdateOne) SetSupportiveResponse(v string) *ApprovalRequestUpdateOne {
+	_u.mutation.SetSupportiveResponse(v)
+	return _u
+}
+
+// SetNillableSupportiveResponse sets the "supportive_response" field if the given value is not nil.
+func (_u *ApprovalRequestUpdateOne) SetNillableSupportiveResponse(v *string) *ApprovalRequestUpdateOne {
+	if v != nil {
+		_u.SetSupportiveResponse(*v)
+	}
+	return _u
+}
+
+// ClearSupportiveResponse clears the value of the "supportive_response" field.
+func (_u *ApprovalRequestUpdateOne) ClearSupportiveResponse() *ApprovalRequestUpdateOne {
+	_u.mutation.ClearSupportiveResponse()
 	return _u
 }
 
@@ -781,6 +888,15 @@ func (_u *ApprovalRequestUpdateOne) sqlSave(ctx context.Context) (_node *Approva
 	if value, ok := _u.mutation.PartnerLinkID(); ok {
 		_spec.SetField(approvalrequest.FieldPartnerLinkID, field.TypeString, value)
 	}
+	if _u.mutation.PartnerLinkIDCleared() {
+		_spec.ClearField(approvalrequest.FieldPartnerLinkID, field.TypeString)
+	}
+	if value, ok := _u.mutation.MembershipID(); ok {
+		_spec.SetField(approvalrequest.FieldMembershipID, field.TypeString, value)
+	}
+	if _u.mutation.MembershipIDCleared() {
+		_spec.ClearField(approvalrequest.FieldMembershipID, field.TypeString)
+	}
 	if value, ok := _u.mutation.QuickTokenHash(); ok {
 		_spec.SetField(approvalrequest.FieldQuickTokenHash, field.TypeString, value)
 	}
@@ -798,6 +914,12 @@ func (_u *ApprovalRequestUpdateOne) sqlSave(ctx context.Context) (_node *Approva
 	}
 	if _u.mutation.ReasonCleared() {
 		_spec.ClearField(approvalrequest.FieldReason, field.TypeString)
+	}
+	if value, ok := _u.mutation.SupportiveResponse(); ok {
+		_spec.SetField(approvalrequest.FieldSupportiveResponse, field.TypeString, value)
+	}
+	if _u.mutation.SupportiveResponseCleared() {
+		_spec.ClearField(approvalrequest.FieldSupportiveResponse, field.TypeString)
 	}
 	if value, ok := _u.mutation.RequestedDurationMinutes(); ok {
 		_spec.SetField(approvalrequest.FieldRequestedDurationMinutes, field.TypeInt, value)

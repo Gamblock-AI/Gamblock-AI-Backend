@@ -106,6 +106,41 @@ func (s *WhatsAppService) SendSingleApproval(ctx context.Context, phone string, 
 	return s.SendApprovalBatch(ctx, phone, []ApprovalSummary{summary})
 }
 
+func (s *WhatsAppService) SendPhoneVerification(ctx context.Context, phone, code string) error {
+	if s.cfg.NotificationMode == "demo" {
+		return nil
+	}
+	if phone == "" || s.cfg.WhatsAppAPIKey == "" || s.cfg.WhatsAppPhoneID == "" {
+		return fmt.Errorf("whatsapp verification delivery is not configured")
+	}
+	payload := map[string]any{
+		"messaging_product": "whatsapp",
+		"to":                phone,
+		"type":              "text",
+		"text":              map[string]any{"body": "Kode verifikasi Gamblock-AI: " + code + ". Berlaku 10 menit. Jangan bagikan kode ini."},
+	}
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("failed to prepare verification message: %w", err)
+	}
+	url := fmt.Sprintf("%s/%s/messages", s.cfg.WhatsAppBaseURL, s.cfg.WhatsAppPhoneID)
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(jsonData))
+	if err != nil {
+		return fmt.Errorf("failed to create verification request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+s.cfg.WhatsAppAPIKey)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send verification message: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= http.StatusBadRequest {
+		return fmt.Errorf("whatsapp verification delivery was rejected")
+	}
+	return nil
+}
+
 func buildBatchMessage(summaries []ApprovalSummary) string {
 	msg := "*Gamblock AI - Permohonan Izin Pencopotan*\n\n"
 	msg += fmt.Sprintf("Anda memiliki *%d* permohonan yang menunggu persetujuan:\n\n", len(summaries))

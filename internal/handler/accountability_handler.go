@@ -76,7 +76,7 @@ func (h *Handler) CreateApprovalRequest(c *gin.Context) {
 		Reason                   string `json:"reason"`
 		RequestedDurationMinutes int    `json:"requested_duration_minutes"`
 		DeviceID                 string `json:"device_id"`
-		PartnerLinkID            string `json:"partner_link_id"`
+		MembershipID             string `json:"membership_id"`
 	}
 	_ = c.ShouldBindJSON(&input)
 	if input.Action == "" {
@@ -88,7 +88,7 @@ func (h *Handler) CreateApprovalRequest(c *gin.Context) {
 		c.Request.Context(),
 		h.currentUserID(c),
 		input.DeviceID,
-		input.PartnerLinkID,
+		input.MembershipID,
 		input.Action,
 		input.Reason,
 		input.RequestedDurationMinutes,
@@ -110,7 +110,11 @@ func (h *Handler) CancelApprovalRequest(c *gin.Context) {
 }
 
 func (h *Handler) ApproveApprovalRequest(c *gin.Context) {
-	err := h.services.Accountability.ResolveApprovalAsPartner(c.Request.Context(), c.Param("id"), "approved", h.currentUserID(c))
+	var input struct {
+		SupportiveResponse string `json:"supportive_response"`
+	}
+	_ = c.ShouldBindJSON(&input)
+	err := h.services.Accountability.ResolveApprovalAsPartner(c.Request.Context(), c.Param("id"), "approved", h.currentUserID(c), input.SupportiveResponse)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "approval_approve_failed", err)
 		return
@@ -119,7 +123,11 @@ func (h *Handler) ApproveApprovalRequest(c *gin.Context) {
 }
 
 func (h *Handler) DenyApprovalRequest(c *gin.Context) {
-	err := h.services.Accountability.ResolveApprovalAsPartner(c.Request.Context(), c.Param("id"), "denied", h.currentUserID(c))
+	var input struct {
+		SupportiveResponse string `json:"supportive_response"`
+	}
+	_ = c.ShouldBindJSON(&input)
+	err := h.services.Accountability.ResolveApprovalAsPartner(c.Request.Context(), c.Param("id"), "denied", h.currentUserID(c), input.SupportiveResponse)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "approval_deny_failed", err)
 		return

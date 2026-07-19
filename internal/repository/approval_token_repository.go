@@ -10,7 +10,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
 )
 
-func (r *Repository) CreateApprovalRequestWithToken(ctx context.Context, reqID, userID, deviceID, partnerLinkID, action, reason string, duration int, expiresAt time.Time, quickTokenHash string) (model.ApprovalRequest, error) {
+func (r *Repository) CreateApprovalRequestWithToken(ctx context.Context, reqID, userID, deviceID, membershipID, action, reason string, duration int, expiresAt time.Time, quickTokenHash string) (model.ApprovalRequest, error) {
 	now := time.Now().UTC()
 	if r.db == nil {
 		r.store.Lock()
@@ -19,7 +19,7 @@ func (r *Repository) CreateApprovalRequestWithToken(ctx context.Context, reqID, 
 			ID:                       reqID,
 			UserID:                   userID,
 			DeviceID:                 deviceID,
-			PartnerLinkID:            partnerLinkID,
+			MembershipID:             membershipID,
 			Action:                   action,
 			ActionLabel:              approvalActionLabel(action, duration),
 			ExpiresIn:                humanExpiry(expiresAt),
@@ -39,7 +39,7 @@ func (r *Repository) CreateApprovalRequestWithToken(ctx context.Context, reqID, 
 		SetID(reqID).
 		SetUserID(userID).
 		SetDeviceID(deviceID).
-		SetPartnerLinkID(partnerLinkID).
+		SetMembershipID(membershipID).
 		SetQuickTokenHash(quickTokenHash).
 		SetAction(approvalrequest.Action(action)).
 		SetStatus(approvalrequest.StatusPending).
@@ -51,13 +51,13 @@ func (r *Repository) CreateApprovalRequestWithToken(ctx context.Context, reqID, 
 		return model.ApprovalRequest{}, err
 	}
 	r.store.SetTokenMapping(quickTokenHash, store.ApprovalRequest{
-		ID: reqID, UserID: userID, DeviceID: deviceID, PartnerLinkID: partnerLinkID,
+		ID: reqID, UserID: userID, DeviceID: deviceID, MembershipID: membershipID,
 		Action: action, Status: "pending", RequestedDurationMinutes: duration,
 		CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt, ExpiresAt: expiresAt,
 	})
 	r.RefreshStore(ctx)
 	return model.ApprovalRequest{
-		ID: reqID, UserID: userID, DeviceID: deviceID, PartnerLinkID: partnerLinkID,
+		ID: reqID, UserID: userID, DeviceID: deviceID, MembershipID: membershipID,
 		Action: action, ActionLabel: approvalActionLabel(action, duration),
 		ExpiresIn: humanExpiry(expiresAt), Status: "pending", StatusLabel: approvalStatusLabel("pending"),
 		Reason: reason, RequestedDurationMinutes: duration,
@@ -75,11 +75,13 @@ func (r *Repository) GetApprovalByQuickToken(ctx context.Context, tokenHash stri
 			ID:                       item.ID,
 			UserID:                   item.UserID,
 			DeviceID:                 value(item.DeviceID),
-			PartnerLinkID:            item.PartnerLinkID,
+			PartnerLinkID:            value(item.PartnerLinkID),
+			MembershipID:             value(item.MembershipID),
 			QuickTokenHash:           value(item.QuickTokenHash),
 			Action:                   item.Action.String(),
 			Status:                   item.Status.String(),
 			Reason:                   value(item.Reason),
+			SupportiveResponse:       value(item.SupportiveResponse),
 			RequestedDurationMinutes: valueInt(item.RequestedDurationMinutes),
 			ResolvedAt:               item.ResolvedAt,
 			AppliedAt:                item.AppliedAt,

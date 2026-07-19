@@ -29,6 +29,14 @@ type SupportCase struct {
 	Priority supportcase.Priority `json:"priority,omitempty"`
 	// Summary holds the value of the "summary" field.
 	Summary string `json:"summary,omitempty"`
+	// Impact holds the value of the "impact" field.
+	Impact string `json:"impact,omitempty"`
+	// AssignedOperatorID holds the value of the "assigned_operator_id" field.
+	AssignedOperatorID *string `json:"assigned_operator_id,omitempty"`
+	// ResolvedAt holds the value of the "resolved_at" field.
+	ResolvedAt *time.Time `json:"resolved_at,omitempty"`
+	// ClosedAt holds the value of the "closed_at" field.
+	ClosedAt *time.Time `json:"closed_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -41,9 +49,9 @@ func (*SupportCase) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case supportcase.FieldID, supportcase.FieldUserID, supportcase.FieldOrganizationID, supportcase.FieldType, supportcase.FieldStatus, supportcase.FieldPriority, supportcase.FieldSummary:
+		case supportcase.FieldID, supportcase.FieldUserID, supportcase.FieldOrganizationID, supportcase.FieldType, supportcase.FieldStatus, supportcase.FieldPriority, supportcase.FieldSummary, supportcase.FieldImpact, supportcase.FieldAssignedOperatorID:
 			values[i] = new(sql.NullString)
-		case supportcase.FieldCreatedAt, supportcase.FieldUpdatedAt:
+		case supportcase.FieldResolvedAt, supportcase.FieldClosedAt, supportcase.FieldCreatedAt, supportcase.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -102,6 +110,33 @@ func (_m *SupportCase) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field summary", values[i])
 			} else if value.Valid {
 				_m.Summary = value.String
+			}
+		case supportcase.FieldImpact:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field impact", values[i])
+			} else if value.Valid {
+				_m.Impact = value.String
+			}
+		case supportcase.FieldAssignedOperatorID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field assigned_operator_id", values[i])
+			} else if value.Valid {
+				_m.AssignedOperatorID = new(string)
+				*_m.AssignedOperatorID = value.String
+			}
+		case supportcase.FieldResolvedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field resolved_at", values[i])
+			} else if value.Valid {
+				_m.ResolvedAt = new(time.Time)
+				*_m.ResolvedAt = value.Time
+			}
+		case supportcase.FieldClosedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field closed_at", values[i])
+			} else if value.Valid {
+				_m.ClosedAt = new(time.Time)
+				*_m.ClosedAt = value.Time
 			}
 		case supportcase.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -170,6 +205,24 @@ func (_m *SupportCase) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("summary=")
 	builder.WriteString(_m.Summary)
+	builder.WriteString(", ")
+	builder.WriteString("impact=")
+	builder.WriteString(_m.Impact)
+	builder.WriteString(", ")
+	if v := _m.AssignedOperatorID; v != nil {
+		builder.WriteString("assigned_operator_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.ResolvedAt; v != nil {
+		builder.WriteString("resolved_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.ClosedAt; v != nil {
+		builder.WriteString("closed_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

@@ -23,6 +23,8 @@ type RefreshToken struct {
 	TokenHash string `json:"token_hash,omitempty"`
 	// DeviceID holds the value of the "device_id" field.
 	DeviceID *string `json:"device_id,omitempty"`
+	// AuthTime holds the value of the "auth_time" field.
+	AuthTime time.Time `json:"auth_time,omitempty"`
 	// ExpiresAt holds the value of the "expires_at" field.
 	ExpiresAt time.Time `json:"expires_at,omitempty"`
 	// RevokedAt holds the value of the "revoked_at" field.
@@ -39,7 +41,7 @@ func (*RefreshToken) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case refreshtoken.FieldID, refreshtoken.FieldUserID, refreshtoken.FieldTokenHash, refreshtoken.FieldDeviceID:
 			values[i] = new(sql.NullString)
-		case refreshtoken.FieldExpiresAt, refreshtoken.FieldRevokedAt, refreshtoken.FieldCreatedAt:
+		case refreshtoken.FieldAuthTime, refreshtoken.FieldExpiresAt, refreshtoken.FieldRevokedAt, refreshtoken.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -80,6 +82,12 @@ func (_m *RefreshToken) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.DeviceID = new(string)
 				*_m.DeviceID = value.String
+			}
+		case refreshtoken.FieldAuthTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field auth_time", values[i])
+			} else if value.Valid {
+				_m.AuthTime = value.Time
 			}
 		case refreshtoken.FieldExpiresAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -146,6 +154,9 @@ func (_m *RefreshToken) String() string {
 		builder.WriteString("device_id=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("auth_time=")
+	builder.WriteString(_m.AuthTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("expires_at=")
 	builder.WriteString(_m.ExpiresAt.Format(time.ANSIC))

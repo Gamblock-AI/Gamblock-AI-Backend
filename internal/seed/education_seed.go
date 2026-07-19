@@ -27,6 +27,7 @@ type seedSection struct {
 type seedModule struct {
 	id, slug, category, idTitle, enTitle, idSummary, enSummary string
 	idObjective, enObjective                                   string
+	audience, experienceType                                   string
 	minutes                                                    int
 	mediaIDs                                                   []string
 	sections                                                   []seedSection
@@ -48,6 +49,13 @@ func choices(prefix string, values []string) []model.EducationChoice {
 }
 
 func buildDocument(item seedModule) model.EducationDocument {
+	audience, experienceType := item.audience, item.experienceType
+	if audience == "" {
+		audience = "student"
+	}
+	if experienceType == "" {
+		experienceType = "article"
+	}
 	sections := make([]model.EducationSection, 0, len(item.sections))
 	for index, section := range item.sections {
 		checkID := section.id + "-check"
@@ -65,7 +73,7 @@ func buildDocument(item seedModule) model.EducationDocument {
 			AltText: map[string]string{"id": "Ilustrasi pendukung modul " + item.idTitle, "en": "Supporting illustration for " + item.enTitle}})
 	}
 	return model.EducationDocument{
-		Category: item.category, EstimatedMinutes: item.minutes,
+		Audience: audience, ExperienceType: experienceType, Category: item.category, EstimatedMinutes: item.minutes,
 		ReviewerName: "Tim Konten Gamblock-AI", ReviewerRole: "Tinjauan editorial berbasis sumber resmi",
 		ReviewedAt: "2026-07-18",
 		Translations: map[string]model.EducationTranslation{
@@ -87,6 +95,12 @@ func educationFixtures() []seedModule {
 	ojk := officialSource("OJK, Komdigi, dan Perbankan Perkuat Pemberantasan Scam dan Judol", "Otoritas Jasa Keuangan", "https://www.ojk.go.id/id/berita-dan-kegiatan/siaran-pers/Pages/OJK-Komdigi-dan-Perbankan-Sepakat-Perkuat-Upaya-Pemberantasan-Scam-dan-Judol.aspx", "2026-07-14")
 	healing := officialSource("Kenali Layanan Healing119.id", "Kementerian Kesehatan RI", "https://kesprimkom.kemkes.go.id/konten/145/151/0/cegah-bunuh-diri-dukung-kesehatan-jiwa-kenali-layanan-healing119-id", "2025-08-07")
 	return []seedModule{
+		{id: "mod_partner_response", slug: "latihan-respons-pendamping", audience: "partner", experienceType: "partner_response_simulator", category: "help-seeking", idTitle: "Latihan Merespons dengan Tenang", enTitle: "Practising a Calm Response", idSummary: "Latih respons yang mendengar, mengakui perasaan, dan menawarkan satu langkah aman tanpa mengambil alih keputusan siswa.", enSummary: "Practise responses that listen, acknowledge feelings, and offer one safe step without taking over a student's decisions.", idObjective: "Memilih respons suportif pada empat situasi pendampingan umum.", enObjective: "Choose a supportive response in four common support situations.", minutes: 9, mediaIDs: []string{"med_seed_support"}, sources: []model.EducationSource{who, healing}, sections: []seedSection{
+			{id: "partner-listen", idTitle: "Kak, dorongannya kuat dan aku takut mengulang lagi.", enTitle: "The urge feels strong and I am afraid I will repeat it.", idBody: "Mulai dengan hadir dan mendengar. Validasi bukan berarti menyetujui tindakan berisiko.", enBody: "Begin by being present and listening. Validation does not mean approving a risky action.", idQuestion: "Respons mana yang paling membuka ruang cerita?", enQuestion: "Which response best opens room to talk?", idChoices: []string{"Aku di sini. Mau cerita apa yang paling terasa berat sekarang?", "Kamu harus kuat dan jangan gagal lagi.", "Sudah, jangan dipikirkan."}, enChoices: []string{"I am here. Would you like to share what feels hardest right now?", "You must be strong and not fail again.", "Just stop thinking about it."}, correct: 0},
+			{id: "partner-ask", idTitle: "Aku tidak tahu harus melakukan apa sekarang.", enTitle: "I do not know what to do right now.", idBody: "Tanyakan bentuk bantuan yang diinginkan sebelum memberi banyak saran.", enBody: "Ask what kind of support is wanted before giving a list of advice.", idQuestion: "Pertanyaan mana yang menjaga kendali tetap pada siswa?", enQuestion: "Which question keeps agency with the student?", idChoices: []string{"Mau ditemani, didengarkan, atau memilih satu langkah kecil bersama?", "Berikan ponselmu sekarang.", "Ikuti semua saranku."}, enChoices: []string{"Would you like company, a listener, or help choosing one small step?", "Give me your phone now.", "Follow all of my advice."}, correct: 0},
+			{id: "partner-step", idTitle: "Aku mau mencoba berhenti sebentar, tapi sulit mulai.", enTitle: "I want to pause, but starting feels difficult.", idBody: "Tawarkan satu langkah konkret dan rendah tekanan.", enBody: "Offer one concrete, low-pressure step.", idQuestion: "Tawaran mana yang paling praktis?", enQuestion: "Which offer is most practical?", idChoices: []string{"Kita atur timer tiga menit dan aku tetap di sini.", "Selesaikan semuanya malam ini.", "Ceritakan seluruh riwayatmu dulu."}, enChoices: []string{"Let us set a three-minute timer and I will stay here.", "Solve everything tonight.", "Tell me your entire history first."}, correct: 0},
+			{id: "partner-safety", idTitle: "Aku merasa tidak aman dengan diriku sendiri.", enTitle: "I do not feel safe with myself.", idBody: "Keselamatan membutuhkan respons langsung dan bantuan yang tepat, bukan kerahasiaan mutlak.", enBody: "Safety needs a direct response and appropriate help, not absolute secrecy.", idQuestion: "Respons mana yang paling aman?", enQuestion: "Which response is safest?", idChoices: []string{"Aku akan tetap bersamamu sambil kita hubungi bantuan darurat atau profesional yang sesuai.", "Jangan beri tahu siapa pun.", "Kita bahas besok saja."}, enChoices: []string{"I will stay with you while we contact appropriate emergency or professional support.", "Do not tell anyone.", "We can discuss it tomorrow."}, correct: 0},
+		}},
 		{id: "mod_impulse_cycle", slug: "memahami-siklus-dorongan", category: "impulse-awareness", idTitle: "Memahami Siklus Dorongan", enTitle: "Understanding the Urge Cycle", idSummary: "Kenali urutan pemicu, pikiran, dorongan, tindakan, dan konsekuensi agar kamu punya ruang untuk memilih.", enSummary: "Recognize triggers, thoughts, urges, actions, and consequences so you have room to choose.", idObjective: "Mengidentifikasi satu titik dalam siklus yang dapat dijeda.", enObjective: "Identify one point in the cycle where you can pause.", minutes: 7, mediaIDs: []string{"med_seed_impulse", "med_seed_pause"}, sources: []model.EducationSource{who, kemkes}, sections: []seedSection{
 			{id: "cycle-map", idTitle: "Petakan siklus tanpa menghakimi", enTitle: "Map the cycle without judgment", idBody: "Dorongan tidak muncul dari kelemahan pribadi. Catat pemicu yang kamu sadari sendiri, pikiran yang mengikuti, perubahan tubuh, tindakan, lalu konsekuensinya. Pemetaan ini tidak boleh memakai riwayat browsing otomatis.", enBody: "An urge is not a personal weakness. Note a trigger you recognize yourself, the thought that follows, body changes, action, and consequence. This map must never use automatically captured browsing history.", idQuestion: "Manakah langkah awal yang paling membantu?", enQuestion: "Which first step is most helpful?", idChoices: []string{"Menghakimi diri", "Menamai pemicu dan dorongan", "Mengejar hasil sebelumnya"}, enChoices: []string{"Judge yourself", "Name the trigger and urge", "Chase the previous outcome"}, correct: 1},
 			{id: "choice-point", idTitle: "Temukan titik pilihan", enTitle: "Find a choice point", idBody: "Titik pilihan bisa muncul sebelum membuka aplikasi, sebelum melakukan pembayaran, atau ketika tubuh mulai tegang. Pilih satu tindakan kecil seperti berdiri, bernapas, atau berpindah ruangan.", enBody: "A choice point can appear before opening an app, before making a payment, or when your body becomes tense. Choose one small action such as standing up, breathing, or changing rooms.", idQuestion: "Respons mana yang menciptakan ruang untuk memilih?", enQuestion: "Which response creates room to choose?", idChoices: []string{"Jeda dan berpindah tempat", "Menaikkan nominal", "Menyembunyikan masalah"}, enChoices: []string{"Pause and change location", "Increase the amount", "Hide the problem"}, correct: 0},

@@ -32,13 +32,20 @@ func (r *Repository) RefreshStore(ctx context.Context) {
 	r.store.Lock()
 	defer r.store.Unlock()
 	r.store.Users = loaded.Users
+	r.store.ContactVerifications = loaded.ContactVerifications
 	r.store.Devices = loaded.Devices
 	r.store.Partners = loaded.Partners
+	r.store.AccountabilityGroups = loaded.AccountabilityGroups
+	r.store.AccountabilityMemberships = loaded.AccountabilityMemberships
+	r.store.MembershipExitRequests = loaded.MembershipExitRequests
+	r.store.PartnerContactRequests = loaded.PartnerContactRequests
 	r.store.Approvals = loaded.Approvals
 	r.store.Modules = loaded.Modules
 	r.store.EducationMedia = loaded.EducationMedia
 	r.store.EducationProgress = loaded.EducationProgress
+	r.store.EducationRevisions = loaded.EducationRevisions
 	r.store.SupportCases = loaded.SupportCases
+	r.store.SupportMessages = loaded.SupportMessages
 	r.store.DataRequests = loaded.DataRequests
 	r.store.Organizations = loaded.Organizations
 	r.store.ModelReleases = loaded.ModelReleases
@@ -50,8 +57,14 @@ func (r *Repository) RefreshStore(ctx context.Context) {
 	r.store.Missions = loaded.Missions
 	r.store.Intentions = loaded.Intentions
 	r.store.CheckIns = loaded.CheckIns
+	r.store.RecoveryRecords = loaded.RecoveryRecords
+	r.store.RecoveryPracticeSessions = loaded.RecoveryPracticeSessions
+	r.store.RecoverySpaces = loaded.RecoverySpaces
 	r.store.AggregateEvents = loaded.AggregateEvents
 	r.store.EmergencyKeyRequests = loaded.EmergencyKeyRequests
+	r.store.SiteSocialLinks = loaded.SiteSocialLinks
+	r.store.OperatorInvitations = loaded.OperatorInvitations
+	r.store.ReleaseRollouts = loaded.ReleaseRollouts
 }
 
 func value(v *string) string {

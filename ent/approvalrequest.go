@@ -22,7 +22,9 @@ type ApprovalRequest struct {
 	// DeviceID holds the value of the "device_id" field.
 	DeviceID *string `json:"device_id,omitempty"`
 	// PartnerLinkID holds the value of the "partner_link_id" field.
-	PartnerLinkID string `json:"partner_link_id,omitempty"`
+	PartnerLinkID *string `json:"partner_link_id,omitempty"`
+	// MembershipID holds the value of the "membership_id" field.
+	MembershipID *string `json:"membership_id,omitempty"`
 	// QuickTokenHash holds the value of the "quick_token_hash" field.
 	QuickTokenHash *string `json:"-"`
 	// Action holds the value of the "action" field.
@@ -31,6 +33,8 @@ type ApprovalRequest struct {
 	Status approvalrequest.Status `json:"status,omitempty"`
 	// Reason holds the value of the "reason" field.
 	Reason *string `json:"reason,omitempty"`
+	// SupportiveResponse holds the value of the "supportive_response" field.
+	SupportiveResponse *string `json:"supportive_response,omitempty"`
 	// RequestedDurationMinutes holds the value of the "requested_duration_minutes" field.
 	RequestedDurationMinutes *int `json:"requested_duration_minutes,omitempty"`
 	// ExpiresAt holds the value of the "expires_at" field.
@@ -57,7 +61,7 @@ func (*ApprovalRequest) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case approvalrequest.FieldRequestedDurationMinutes:
 			values[i] = new(sql.NullInt64)
-		case approvalrequest.FieldID, approvalrequest.FieldUserID, approvalrequest.FieldDeviceID, approvalrequest.FieldPartnerLinkID, approvalrequest.FieldQuickTokenHash, approvalrequest.FieldAction, approvalrequest.FieldStatus, approvalrequest.FieldReason, approvalrequest.FieldResolvedBy:
+		case approvalrequest.FieldID, approvalrequest.FieldUserID, approvalrequest.FieldDeviceID, approvalrequest.FieldPartnerLinkID, approvalrequest.FieldMembershipID, approvalrequest.FieldQuickTokenHash, approvalrequest.FieldAction, approvalrequest.FieldStatus, approvalrequest.FieldReason, approvalrequest.FieldSupportiveResponse, approvalrequest.FieldResolvedBy:
 			values[i] = new(sql.NullString)
 		case approvalrequest.FieldExpiresAt, approvalrequest.FieldResolvedAt, approvalrequest.FieldAppliedAt, approvalrequest.FieldGrantExpiresAt, approvalrequest.FieldCreatedAt, approvalrequest.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -99,7 +103,15 @@ func (_m *ApprovalRequest) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field partner_link_id", values[i])
 			} else if value.Valid {
-				_m.PartnerLinkID = value.String
+				_m.PartnerLinkID = new(string)
+				*_m.PartnerLinkID = value.String
+			}
+		case approvalrequest.FieldMembershipID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field membership_id", values[i])
+			} else if value.Valid {
+				_m.MembershipID = new(string)
+				*_m.MembershipID = value.String
 			}
 		case approvalrequest.FieldQuickTokenHash:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -126,6 +138,13 @@ func (_m *ApprovalRequest) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Reason = new(string)
 				*_m.Reason = value.String
+			}
+		case approvalrequest.FieldSupportiveResponse:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field supportive_response", values[i])
+			} else if value.Valid {
+				_m.SupportiveResponse = new(string)
+				*_m.SupportiveResponse = value.String
 			}
 		case approvalrequest.FieldRequestedDurationMinutes:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -224,8 +243,15 @@ func (_m *ApprovalRequest) String() string {
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	builder.WriteString("partner_link_id=")
-	builder.WriteString(_m.PartnerLinkID)
+	if v := _m.PartnerLinkID; v != nil {
+		builder.WriteString("partner_link_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.MembershipID; v != nil {
+		builder.WriteString("membership_id=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("quick_token_hash=<sensitive>")
 	builder.WriteString(", ")
@@ -237,6 +263,11 @@ func (_m *ApprovalRequest) String() string {
 	builder.WriteString(", ")
 	if v := _m.Reason; v != nil {
 		builder.WriteString("reason=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.SupportiveResponse; v != nil {
+		builder.WriteString("supportive_response=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

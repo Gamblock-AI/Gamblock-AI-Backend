@@ -79,12 +79,12 @@ func (s *AccountabilityService) GetApprovalRequests(ctx context.Context, userID 
 	return s.repo.GetApprovalRequests(ctx, userID)
 }
 
-func (s *AccountabilityService) CreateApprovalRequest(ctx context.Context, userID, deviceID, partnerLinkID, action, reason string, duration int) (model.ApprovalRequest, error) {
+func (s *AccountabilityService) CreateApprovalRequest(ctx context.Context, userID, deviceID, membershipID, action, reason string, duration int) (model.ApprovalRequest, error) {
 	allowedActions := map[string]bool{
-		"disable_protection": true, "remove_partner": true, "uninstall_detected": true,
-		"reset_settings": true, "pause_protection": true, "emergency_access": true,
+		"uninstall_detected": true, "pause_protection": true,
 	}
-	if !allowedActions[action] || !s.repo.IsActivePartnerLinkOwnedBy(ctx, partnerLinkID, userID) {
+	membership, membershipErr := s.repo.MembershipByID(ctx, membershipID)
+	if !allowedActions[action] || membershipErr != nil || membership.StudentID != userID || membership.Status != "active" {
 		return model.ApprovalRequest{}, fmt.Errorf("invalid approval request relationship or action")
 	}
 	if !s.repo.IsDeviceOwnedBy(ctx, deviceID, userID) {
@@ -103,7 +103,7 @@ func (s *AccountabilityService) CreateApprovalRequest(ctx context.Context, userI
 	quickTokenHash := HashRefreshToken(quickToken)
 	expiresAt := time.Now().UTC().Add(24 * time.Hour)
 
-	request, err := s.repo.CreateApprovalRequestWithToken(ctx, reqID, userID, deviceID, partnerLinkID, action, reason, duration, expiresAt, quickTokenHash)
+	request, err := s.repo.CreateApprovalRequestWithToken(ctx, reqID, userID, deviceID, membershipID, action, reason, duration, expiresAt, quickTokenHash)
 	if err != nil {
 		return model.ApprovalRequest{}, err
 	}
@@ -117,7 +117,13 @@ func (s *AccountabilityService) CreateApprovalRequest(ctx context.Context, userI
 		Action:     action,
 		QuickLink:  quickLink,
 	}
-	phone := s.repo.GetActivePartnerPhone(ctx, partnerLinkID, userID)
+	group, groupErr := s.repo.AccountabilityGroupByID(ctx, membership.GroupID)
+	phone := ""
+	if groupErr == nil {
+		if partner, ok := s.repo.UserByID(ctx, group.OwnerPartnerID); ok && partner.PhoneVerifiedAt != nil {
+			phone = partner.PhoneE164
+		}
+	}
 	if phone != "" {
 		if err := s.whatsapp.SendSingleApproval(ctx, phone, summary); err != nil {
 			s.logger.Warn("approval notification was not delivered", zap.String("request_id", reqID), zap.Error(err))
@@ -131,8 +137,15 @@ func (s *AccountabilityService) CancelApprovalRequest(ctx context.Context, id, u
 	return s.repo.CancelApprovalRequest(ctx, id, userID)
 }
 
-func (s *AccountabilityService) ResolveApprovalAsPartner(ctx context.Context, id, status, partnerUserID string) error {
-	return s.repo.ResolveApprovalAsPartner(ctx, id, partnerUserID, status)
+func (s *AccountabilityService) ResolveApprovalAsPartner(ctx context.Context, id, status, partnerUserID string, response ...string) error {
+	supportiveResponse := ""
+	if len(response) > 0 {
+		supportiveResponse = response[0]
+	}
+	if len(strings.TrimSpace(supportiveResponse)) > 500 {
+		return fmt.Errorf("supportive response is too long")
+	}
+	return s.repo.ResolveApprovalAsPartner(ctx, id, partnerUserID, status, strings.TrimSpace(supportiveResponse))
 }
 
 func (s *AccountabilityService) ApplyApprovedRequest(ctx context.Context, id, userID, deviceID string) (model.ApprovalGrant, error) {
