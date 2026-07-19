@@ -217,3 +217,9 @@ hashed 12-character code within 30 minutes and revokes all refresh sessions.
 Production requires working SMTP configuration. Development
 login and contextual demo records are separately opt-in and forbidden in
 production.
+
+Production CI builds the private GHCR image on `main`. Its deploy step is
+disabled until `ENABLE_VPS_DEPLOY=true`, then connects to the pinned VPS as
+root with password authentication on port 22 and runs the Ansible-installed
+`update.sh`. Infrastructure rejects application deployment until the private
+GHCR pull PAT and required SMTP settings exist.

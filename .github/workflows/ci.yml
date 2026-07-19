@@ -73,13 +73,14 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Deploy to VPS via SSH
-        if: github.ref == 'refs/heads/main'
-        uses: appleboy/ssh-action@v1
+        if: github.ref == 'refs/heads/main' && vars.ENABLE_VPS_DEPLOY == 'true'
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
+          host: ${{ vars.VPS_HOST }}
+          username: root
+          password: ${{ secrets.VPS_PASSWORD }}
           port: 22
+          fingerprint: ${{ vars.VPS_SSH_FINGERPRINT }}
           script: |
             cd /opt/docker-stack/applications/gamblock-ai-backend
             ./update.sh

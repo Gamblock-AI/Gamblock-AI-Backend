@@ -1,6 +1,6 @@
 # Backend AI Context
 
-Context version: `2026-07-20.3`
+Context version: `2026-07-20.4`
 
 ## Product capsule
 
@@ -36,7 +36,7 @@ are supporting/operational features.
 
 | Area | State | Evidence/limit |
 |---|---|---|
-| Auth, contact verification, token rotation, RBAC | Implemented code-complete prototype | Argon2id password verification; allowlisted Google ID-token audiences and nonce validation; explicit same-email Google linking behind current-password authentication; authoritative roles; 30-minute email links and single-use hashed 12-character password-reset codes with latest-code/attempt limits; 10-minute WhatsApp codes; refresh rotation; per-request disabled/role checks; and password/reset session revocation are wired. Production still requires real OAuth IDs and SMTP operations evidence. |
+| Auth, contact verification, token rotation, RBAC | Implemented code-complete prototype | Argon2id password verification; allowlisted Google ID-token audiences and nonce validation; explicit same-email Google linking behind current-password authentication; authoritative roles; 30-minute email links and single-use hashed 12-character password-reset codes with latest-code/attempt limits; 10-minute WhatsApp codes; refresh rotation; per-request disabled/role checks; and password/reset session revocation are wired. Infrastructure supplies the public web/Windows audience IDs, but Google Console registration and SMTP operations evidence remain external gates. |
 | Device and aggregate client APIs | Implemented | stable client-instance upsert, owned-device enforcement, heartbeat/status, completed-day idempotent aggregate ingest, and 7/30-day aggregate analytics are wired; no browsing schema exists |
 | Accountability groups and approvals | Implemented supporting workflow | verified partners own multiple groups with hashed/rotatable codes; a verified student has one live membership with category-specific aggregate sharing; pending normal exits can be cancelled by the requesting student, while unsafe exit remains immediate and support-reviewed; removal, archive, scoped pause/uninstall requests, recent-auth partner decisions, bounded one-time native grants, and hashed quick tokens are wired; native device proof remains |
 | PrivacyGuard | Implemented | forbidden-key regression tests; values are not censored; narrow credential routes are exempt and CORS wraps guard rejections so localhost browser clients receive readable envelopes |
@@ -57,6 +57,13 @@ are supporting/operational features.
 
 Do not infer production readiness from a handler or schema existing. Verify the
 route wiring, persistence path, tests, and external integration separately.
+
+Operational deployment status: the Docker image creates persistent
+artifact/export/media/avatar paths, and CI can deploy the private GHCR image to
+the pinned VPS as root over password SSH. The deploy step remains disabled by
+repository variable until Ansible bootstrap succeeds; Ansible rejects an
+application deploy while the private-GHCR PAT or required SMTP values are
+missing.
 
 ## Default AI validation
 

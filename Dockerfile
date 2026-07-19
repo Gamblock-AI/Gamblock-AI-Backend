@@ -24,8 +24,10 @@ RUN apk add --no-cache ca-certificates wget && \
 WORKDIR /app
 COPY --from=build /out/api /app/api
 
-# Artifact storage dir (mapped to a volume in production).
-RUN mkdir -p /app/var/artifacts /app/var/exports && chown -R app:app /app
+# Persistent server-owned storage directories (mapped to volumes in production).
+RUN mkdir -p /app/var/artifacts /app/var/exports \
+    /app/var/media/education /app/var/media/avatars \
+    && chown -R app:app /app
 USER app
 
 EXPOSE 8080
