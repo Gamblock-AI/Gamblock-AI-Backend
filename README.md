@@ -26,10 +26,7 @@ PostgreSQL is unavailable. The default local URL is
 PostgreSQL seed data and the optional in-memory demo store use the shared dummy
 password `password` for `gading@gmail.com`, `dery@gmail.com`,
 `suci@gmail.com`, `nasywa@gmail.com`, `student@gmail.com`,
-`partner@gmail.com`, `organization-owner@gmail.com`,
-`organization-admin@gmail.com`, `content-admin@gmail.com`,
-`model-release-operator@gmail.com`, `support-operator@gmail.com`,
-`research-evaluator@gmail.com`, and `platform-admin@gmail.com`. These
+and `partner@gmail.com`. These
 credentials are development fixtures only and demo data is forbidden in
 production.
 
@@ -45,8 +42,12 @@ export data needs to be retained.
 - `GET  /healthz`
 - `GET  /readyz`
 - `POST /v1/auth/dev-login`
+- `POST /v1/auth/google`
+- `POST /v1/auth/password-reset/request`
+- `POST /v1/auth/password-reset/confirm`
 - `POST /v1/devices`
 - `PATCH /v1/me/password`
+- `POST /v1/me/google/link`
 - `GET  /v1/client/dashboard-summary`
 - `GET  /v1/client/protection-status`
 - `GET  /v1/client/protection-analytics`
@@ -145,9 +146,11 @@ the standard envelope.
   history in account export and deletion. Active timers and task labels are not
   accepted by these endpoints.
 - Support cases use encrypted message threads and explicit
-  waiting-support/waiting-user/resolved/closed transitions. Requesters are
-  owner-scoped; only `support_operator` can claim an unassigned case, read its
-  thread, reply, transition it, or release ownership with an audited reason.
+  waiting-support/waiting-user/resolved/closed transitions. Only `user` and
+  `partner` accounts can use owner-scoped requester endpoints; a verified
+  `admin` handles reports through the admin queue and must claim an unassigned
+  case before reading, replying, transitioning, or releasing it with an audited
+  reason.
 - `GET /v1/missions/today` returns a deterministic `Asia/Jakarta` daily set of
   one primary and two optional bonus tasks, plus the authenticated user's level
   and EXP progress. It derives claim eligibility from existing account records:
@@ -165,13 +168,13 @@ the standard envelope.
   direct-slug reads. Progress is revision-scoped and counts required sections,
   media, and knowledge checks. Uploaded media is MIME-sniffed and size-bounded;
   external media is restricted to configured HTTPS hosts.
-- Operational roles are non-cumulative. Platform administrators manage
-  specialist invitations/accounts, safe public social links, audit history,
-  and dual-control emergency access; they do not inherit content, support, or
-  release actions. Refresh rotation preserves the original authentication time
+- Account roles are exactly `user`, `partner`, and `admin`. Admins directly
+  provision immutable-role accounts with one-time temporary passwords, and
+  manage content, releases, support queue, research, safe public social links,
+  audit history, and dual-control emergency access. Refresh rotation preserves the original authentication time
   used by recent-auth gates, and disabled/changed operator identity is checked
   on every bearer request.
-- Release operators upload allowlisted artifacts to randomized managed storage;
+- Admins upload allowlisted artifacts to randomized managed storage;
   the backend computes SHA-256 before model/ruleset/network registration and
   supports manual staged cohort activate/pause/complete/rollback transitions.
 - Account export is encrypted at rest and expires after seven days. Student or
@@ -205,6 +208,12 @@ See `AGENTS.md` for conventions and the privacy/AES/RBAC invariants.
 Reflection/journal writes fail closed unless a valid AES-256-GCM key is
 configured; decryption failures never expose ciphertext as user content.
 Password login uses Argon2id. Google sign-in is enabled only when
-`GOOGLE_CLIENT_ID` matches the website's public OAuth client ID. Development
+an ID-token audience is listed in `GOOGLE_CLIENT_IDS` (with
+`GOOGLE_CLIENT_ID` as a single-ID fallback). Existing password accounts must
+link the same verified Google email through `POST /v1/me/google/link` after
+current-password authentication. `POST /v1/auth/password-reset/request` is
+non-enumerating; `POST /v1/auth/password-reset/confirm` consumes the latest
+hashed 12-character code within 30 minutes and revokes all refresh sessions.
+Production requires working SMTP configuration. Development
 login and contextual demo records are separately opt-in and forbidden in
 production.

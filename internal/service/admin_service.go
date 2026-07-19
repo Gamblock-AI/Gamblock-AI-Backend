@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -11,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -48,10 +50,6 @@ var socialHosts = map[string][]string{
 	"github":    {"github.com"},
 }
 
-var specialistOperatorRoles = map[string]bool{
-	"content_admin": true, "model_release_operator": true, "support_operator": true,
-}
-
 func (s *AdminService) PublicSocialLinks(ctx context.Context) ([]model.SiteSocialLink, error) {
 	return s.repo.ListSiteSocialLinks(ctx, true)
 }
@@ -81,7 +79,7 @@ func (s *AdminService) ReplaceSiteSocialLinks(ctx context.Context, actorID, reas
 		}
 		value := strings.TrimSpace(*item.URL)
 		parsed, err := url.Parse(value)
-		if err != nil || parsed.Scheme != "https" || parsed.User != nil || (parsed.Port() != "" && parsed.Port() != "443") || parsed.RawQuery != "" || parsed.Fragment != "" || !allowedSocialHost(item.Platform, parsed.Hostname()) {
+		if err != nil || parsed.Scheme != "https" || parsed.User != nil || (parsed.Port() != "" && parsed.Port() != "443") || !allowedSocialQuery(item.Platform, parsed) || parsed.Fragment != "" || !allowedSocialHost(item.Platform, parsed.Hostname()) {
 			return nil, fmt.Errorf("social link URL is not allowed")
 		}
 		item.URL = &value
@@ -101,6 +99,23 @@ func allowedSocialHost(platform, host string) bool {
 		}
 	}
 	return false
+}
+
+// Facebook profile IDs are represented as https://facebook.com/profile.php?id=<numeric-id>.
+// This is the sole query-bearing social URL accepted by the public-link contract.
+func allowedSocialQuery(platform string, parsed *url.URL) bool {
+	if parsed.RawQuery == "" {
+		return true
+	}
+	if platform != "facebook" || parsed.Path != "/profile.php" {
+		return false
+	}
+	values, err := url.ParseQuery(parsed.RawQuery)
+	if err != nil || len(values) != 1 || len(values["id"]) != 1 || values.Get("id") == "" {
+		return false
+	}
+	_, err = strconv.ParseUint(values.Get("id"), 10, 64)
+	return err == nil
 }
 
 func (s *AdminService) AuditEvents(ctx context.Context) ([]model.AuditEvent, error) {
@@ -124,180 +139,142 @@ func (s *AdminService) RecordAudit(ctx context.Context, actorID, action, targetT
 	return s.audit(ctx, actorID, action, targetType, targetID, reason, metadata)
 }
 
-func (s *AdminService) Operators(ctx context.Context) ([]model.OperatorAccount, []model.OperatorInvitation, error) {
-	accounts, err := s.repo.ListOperatorAccounts(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-	invitations, err := s.repo.ListOperatorInvitations(ctx)
-	return accounts, invitations, err
+func (s *AdminService) Accounts(ctx context.Context) ([]model.AdminAccount, error) {
+	return s.repo.ListAdminAccounts(ctx)
 }
 
-func (s *AdminService) InviteOperator(ctx context.Context, actorID, email, role, reason string) (model.OperatorInvitation, string, error) {
+func (s *AdminService) CreateAccount(ctx context.Context, actorID, email, displayName, role, reason string) (model.User, string, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
-	if !specialistOperatorRoles[role] || email == "" || !strings.Contains(email, "@") {
-		return model.OperatorInvitation{}, "", fmt.Errorf("invalid operator invitation")
+	displayName = strings.TrimSpace(displayName)
+	if !model.IsAccountRole(role) || email == "" || !strings.Contains(email, "@") || displayName == "" || strings.TrimSpace(reason) == "" {
+		return model.User{}, "", fmt.Errorf("invalid account")
 	}
 	if _, exists := s.repo.UserByEmail(ctx, email); exists {
-		return model.OperatorInvitation{}, "", fmt.Errorf("operator email is already registered")
+		return model.User{}, "", fmt.Errorf("email already exists")
 	}
-	rawToken := "operator_" + uuid.NewString() + uuid.NewString()
-	now := time.Now().UTC()
-	item := model.OperatorInvitation{ID: "opi_" + uuid.NewString()[:12], Email: email, Role: role,
-		TokenHash: HashRefreshToken(rawToken), Status: "pending", InvitedBy: actorID,
-		ExpiresAt: now.Add(24 * time.Hour), CreatedAt: now, UpdatedAt: now}
-	if err := s.repo.SaveOperatorInvitation(ctx, item); err != nil {
-		return model.OperatorInvitation{}, "", err
+	random := make([]byte, 18)
+	if _, err := rand.Read(random); err != nil {
+		return model.User{}, "", err
 	}
-	invitationURL := s.cfg.PublicWebBaseURL + "/operator/invitations/" + rawToken
-	if err := NewEmailService(s.cfg).SendOperatorInvitation(ctx, email, invitationURL); err != nil {
-		return model.OperatorInvitation{}, "", err
-	}
-	_ = s.audit(ctx, actorID, "operator_invited", "operator_invitation", item.ID, reason, map[string]any{"role": role})
-	if s.cfg.NotificationMode == "demo" {
-		return item, invitationURL, nil
-	}
-	return item, "", nil
-}
-
-func (s *AdminService) OperatorInvitation(ctx context.Context, rawToken string) (model.OperatorInvitation, error) {
-	item, err := s.repo.OperatorInvitationByToken(ctx, HashRefreshToken(strings.TrimSpace(rawToken)))
-	if err != nil || item.Status != "pending" || !time.Now().UTC().Before(item.ExpiresAt) {
-		return model.OperatorInvitation{}, fmt.Errorf("operator invitation is invalid or expired")
-	}
-	item.TokenHash = ""
-	return item, nil
-}
-
-func (s *AdminService) AcceptOperatorInvitation(ctx context.Context, rawToken, displayName, password string) (model.User, error) {
-	displayName = strings.TrimSpace(displayName)
-	if displayName == "" || len(password) < 8 {
-		return model.User{}, fmt.Errorf("name and password are required")
-	}
-	passwordHash, err := authn.HashPassword(password)
+	temporaryPassword := "Gm!" + base64.RawURLEncoding.EncodeToString(random)
+	passwordHash, err := authn.HashPassword(temporaryPassword)
 	if err != nil {
-		return model.User{}, err
+		return model.User{}, "", err
 	}
-	return s.repo.AcceptOperatorInvitation(ctx, HashRefreshToken(strings.TrimSpace(rawToken)), displayName, passwordHash, time.Now().UTC())
+	user, err := s.repo.CreateProvisionedUser(ctx, "usr_"+uuid.NewString()[:12], email, displayName, passwordHash, role, true)
+	if err != nil {
+		return model.User{}, "", err
+	}
+	if err := s.audit(ctx, actorID, "account_created", "account", user.ID, reason, map[string]any{"role": role}); err != nil {
+		s.logger.Error("failed to audit account creation", zap.String("account_id", user.ID), zap.Error(err))
+	}
+	return user, temporaryPassword, nil
 }
 
-func (s *AdminService) RevokeOperatorInvitation(ctx context.Context, actorID, invitationID, reason string) error {
-	if err := s.repo.RevokeOperatorInvitation(ctx, invitationID); err != nil {
+func (s *AdminService) UpdateAccount(ctx context.Context, actorID, accountID string, disabled bool, reason string) error {
+	if actorID == accountID || strings.TrimSpace(reason) == "" {
+		return fmt.Errorf("account update is not allowed")
+	}
+	account, ok := s.repo.UserByID(ctx, accountID)
+	if !ok || !model.IsAccountRole(account.Role) {
+		return fmt.Errorf("account not found")
+	}
+	if err := s.repo.SetAccountDisabled(ctx, accountID, disabled, time.Now().UTC()); err != nil {
 		return err
 	}
-	return s.audit(ctx, actorID, "operator_invitation_revoked", "operator_invitation", invitationID, reason, nil)
-}
-
-func (s *AdminService) UpdateOperator(ctx context.Context, actorID, operatorID, role string, disabled bool, reason string) error {
-	if actorID == operatorID || !specialistOperatorRoles[role] {
-		return fmt.Errorf("operator update is not allowed")
+	if disabled {
+		if err := s.repo.RevokeRefreshTokensForUser(ctx, accountID); err != nil {
+			return err
+		}
 	}
-	operator, ok := s.repo.UserByID(ctx, operatorID)
-	if !ok || operator.Role == "platform_admin" || !specialistOperatorRoles[operator.Role] {
-		return fmt.Errorf("operator update is not allowed")
-	}
-	if err := s.repo.UpdateOperatorAccount(ctx, operatorID, role, disabled, time.Now().UTC()); err != nil {
-		return err
-	}
-	if err := s.repo.RevokeRefreshTokensForUser(ctx, operatorID); err != nil {
-		return err
-	}
-	return s.audit(ctx, actorID, "operator_updated", "operator", operatorID, reason, map[string]any{"role": role, "disabled": disabled})
+	return s.audit(ctx, actorID, "account_status_updated", "account", accountID, reason, map[string]any{"disabled": disabled})
 }
 
 func (s *AdminService) Overview(ctx context.Context, role string) (model.AdminOverview, error) {
 	overview := model.AdminOverview{Role: role}
-	switch role {
-	case "content_admin":
-		modules, err := s.repo.GetEducationModules(ctx)
-		if err != nil {
-			return overview, err
-		}
-		for _, item := range modules {
-			if item.Status == "in_review" {
-				overview.ReviewContent++
-			} else if item.Status == "draft" {
-				overview.DraftContent++
-			}
-		}
-	case "support_operator":
-		cases, err := s.repo.GetSupportCases(ctx)
-		if err != nil {
-			return overview, err
-		}
-		for _, item := range cases {
-			if item.Status != "resolved" && item.Status != "closed" {
-				overview.OpenSupport++
-				if item.Owner == "" {
-					overview.UnassignedSupport++
-				}
-			}
-		}
-		requests, err := s.repo.GetAllDataRequests(ctx)
-		if err != nil {
-			return overview, err
-		}
-		for _, item := range requests {
-			if item.Status == "failed" {
-				overview.FailedDataRequests++
-			}
-		}
-	case "model_release_operator":
-		groups := [][]model.Release{}
-		models, err := s.repo.GetModelReleases(ctx)
-		if err != nil {
-			return overview, err
-		}
-		groups = append(groups, models)
-		rules, err := s.repo.GetRulesetReleases(ctx)
-		if err != nil {
-			return overview, err
-		}
-		groups = append(groups, rules)
-		network, err := s.repo.GetNetworkRulesets(ctx)
-		if err != nil {
-			return overview, err
-		}
-		groups = append(groups, network)
-		for _, group := range groups {
-			for _, item := range group {
-				if item.Status == "validated" {
-					overview.ValidatedReleases++
-				}
-			}
-		}
-		rollouts, err := s.repo.ListReleaseRollouts(ctx)
-		if err != nil {
-			return overview, err
-		}
-		for _, item := range rollouts {
-			if item.Status == "active" || item.Status == "staged" {
-				overview.ActiveRollouts++
-			}
-		}
-	case "platform_admin":
-		requests, err := s.repo.GetPendingEmergencyKeyRequests(ctx, time.Now().UTC())
-		if err != nil {
-			return overview, err
-		}
-		overview.PendingEmergency = len(requests)
-		operators, err := s.repo.ListOperatorAccounts(ctx)
-		if err != nil {
-			return overview, err
-		}
-		for _, item := range operators {
-			if item.DisabledAt == nil {
-				overview.ActiveOperators++
-			}
-		}
-		links, err := s.repo.ListSiteSocialLinks(ctx, true)
-		if err != nil {
-			return overview, err
-		}
-		overview.VisibleSocialLinks = len(links)
-	default:
-		return overview, fmt.Errorf("operator role is not allowed")
+	if role != model.RoleAdmin {
+		return overview, fmt.Errorf("admin role is required")
 	}
+	modules, err := s.repo.GetEducationModules(ctx)
+	if err != nil {
+		return overview, err
+	}
+	for _, item := range modules {
+		if item.Status == "in_review" {
+			overview.ReviewContent++
+		}
+		if item.Status == "draft" {
+			overview.DraftContent++
+		}
+	}
+	cases, err := s.repo.GetSupportCases(ctx)
+	if err != nil {
+		return overview, err
+	}
+	for _, item := range cases {
+		if item.Status != "resolved" && item.Status != "closed" {
+			overview.OpenSupport++
+			if item.Owner == "" {
+				overview.UnassignedSupport++
+			}
+		}
+	}
+	dataRequests, err := s.repo.GetAllDataRequests(ctx)
+	if err != nil {
+		return overview, err
+	}
+	for _, item := range dataRequests {
+		if item.Status == "failed" {
+			overview.FailedDataRequests++
+		}
+	}
+	models, err := s.repo.GetModelReleases(ctx)
+	if err != nil {
+		return overview, err
+	}
+	rules, err := s.repo.GetRulesetReleases(ctx)
+	if err != nil {
+		return overview, err
+	}
+	network, err := s.repo.GetNetworkRulesets(ctx)
+	if err != nil {
+		return overview, err
+	}
+	for _, group := range [][]model.Release{models, rules, network} {
+		for _, item := range group {
+			if item.Status == "validated" {
+				overview.ValidatedReleases++
+			}
+		}
+	}
+	rollouts, err := s.repo.ListReleaseRollouts(ctx)
+	if err != nil {
+		return overview, err
+	}
+	for _, item := range rollouts {
+		if item.Status == "active" || item.Status == "staged" {
+			overview.ActiveRollouts++
+		}
+	}
+	emergency, err := s.repo.GetPendingEmergencyKeyRequests(ctx, time.Now().UTC())
+	if err != nil {
+		return overview, err
+	}
+	overview.PendingEmergency = len(emergency)
+	accounts, err := s.repo.ListAdminAccounts(ctx)
+	if err != nil {
+		return overview, err
+	}
+	for _, item := range accounts {
+		if item.Role == model.RoleAdmin && item.DisabledAt == nil {
+			overview.ActiveOperators++
+		}
+	}
+	links, err := s.repo.ListSiteSocialLinks(ctx, true)
+	if err != nil {
+		return overview, err
+	}
+	overview.VisibleSocialLinks = len(links)
 	return overview, nil
 }
 

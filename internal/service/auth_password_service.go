@@ -14,8 +14,9 @@ import (
 )
 
 var (
-	ErrCurrentPasswordInvalid = errors.New("current password is invalid")
-	ErrPasswordReuse          = errors.New("new password must be different")
+	ErrCurrentPasswordInvalid       = errors.New("current password is invalid")
+	ErrPasswordReuse                = errors.New("new password must be different")
+	ErrInitialPasswordChangeInvalid = errors.New("initial password token is invalid or expired")
 )
 
 func (s *AuthService) Login(ctx context.Context, email, password string) (model.AuthResponse, error) {
@@ -23,17 +24,55 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (model.
 	if !ok || user.DisabledAt != nil || !authn.VerifyPassword(password, user.PasswordHash) {
 		return model.AuthResponse{}, fmt.Errorf("user not found or invalid credentials")
 	}
+	if user.MustChangePassword {
+		token, err := s.issueInitialPasswordToken(user)
+		if err != nil {
+			return model.AuthResponse{}, err
+		}
+		return model.AuthResponse{PasswordChangeRequired: true, PasswordChangeToken: token}, nil
+	}
 	response, err := s.authPair(ctx, user, nil)
 	response.VerificationRequired = user.EmailVerifiedAt == nil
 	return response, err
 }
 
 // ActiveIdentity revalidates mutable account state for bearer-token requests.
-// This makes operator disablement and role changes effective immediately,
-// rather than waiting for an already-issued access token to expire.
+// This makes account disablement and legacy-role migration effective
+// immediately rather than waiting for an issued access token to expire.
 func (s *AuthService) ActiveIdentity(ctx context.Context, userID string) (string, bool) {
 	user, ok := s.repo.UserByID(ctx, userID)
-	return user.Role, ok && user.DisabledAt == nil
+	return user.Role, ok && user.DisabledAt == nil && !user.MustChangePassword
+}
+
+func (s *AuthService) HasVerifiedEmail(ctx context.Context, userID string) bool {
+	user, ok := s.repo.UserByID(ctx, userID)
+	return ok && user.DisabledAt == nil && user.EmailVerifiedAt != nil
+}
+
+func (s *AuthService) CompleteInitialPasswordChange(ctx context.Context, token, newPassword string) (model.AuthResponse, error) {
+	if len(newPassword) < 8 {
+		return model.AuthResponse{}, ErrInitialPasswordChangeInvalid
+	}
+	userID, err := s.parseInitialPasswordToken(token)
+	if err != nil {
+		return model.AuthResponse{}, ErrInitialPasswordChangeInvalid
+	}
+	user, ok := s.repo.UserByID(ctx, userID)
+	if !ok || user.DisabledAt != nil || !user.MustChangePassword || authn.VerifyPassword(newPassword, user.PasswordHash) {
+		return model.AuthResponse{}, ErrInitialPasswordChangeInvalid
+	}
+	passwordHash, err := authn.HashPassword(newPassword)
+	if err != nil {
+		return model.AuthResponse{}, err
+	}
+	if err := s.repo.UpdateUserPasswordHash(ctx, user.ID, passwordHash); err != nil {
+		return model.AuthResponse{}, err
+	}
+	if err := s.repo.RevokeRefreshTokensForUser(ctx, user.ID); err != nil {
+		return model.AuthResponse{}, err
+	}
+	user.MustChangePassword = false
+	return s.authPair(ctx, user, nil)
 }
 
 func (s *AuthService) Register(ctx context.Context, email, password, name string, requestedRole ...string) (model.AuthResponse, error) {

@@ -30,6 +30,8 @@ type User struct {
 	GoogleSubject *string `json:"google_subject,omitempty"`
 	// Role holds the value of the "role" field.
 	Role user.Role `json:"role,omitempty"`
+	// MustChangePassword holds the value of the "must_change_password" field.
+	MustChangePassword bool `json:"must_change_password,omitempty"`
 	// EmailVerifiedAt holds the value of the "email_verified_at" field.
 	EmailVerifiedAt *time.Time `json:"email_verified_at,omitempty"`
 	// PhoneE164 holds the value of the "phone_e164" field.
@@ -56,6 +58,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldNotificationPreferencesJSON:
 			values[i] = new([]byte)
+		case user.FieldMustChangePassword:
+			values[i] = new(sql.NullBool)
 		case user.FieldExperiencePoints:
 			values[i] = new(sql.NullInt64)
 		case user.FieldID, user.FieldEmail, user.FieldDisplayName, user.FieldPasswordHash, user.FieldAvatarURL, user.FieldGoogleSubject, user.FieldRole, user.FieldPhoneE164:
@@ -121,6 +125,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
 			} else if value.Valid {
 				_m.Role = user.Role(value.String)
+			}
+		case user.FieldMustChangePassword:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field must_change_password", values[i])
+			} else if value.Valid {
+				_m.MustChangePassword = value.Bool
 			}
 		case user.FieldEmailVerifiedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -232,6 +242,9 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Role))
+	builder.WriteString(", ")
+	builder.WriteString("must_change_password=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MustChangePassword))
 	builder.WriteString(", ")
 	if v := _m.EmailVerifiedAt; v != nil {
 		builder.WriteString("email_verified_at=")

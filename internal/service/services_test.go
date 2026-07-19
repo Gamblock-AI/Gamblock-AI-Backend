@@ -30,6 +30,18 @@ func testCfg() config.Config {
 	}
 }
 
+func TestAdminService_CreateAccountAndImmutableStatusUpdate(t *testing.T) {
+	repo, _ := newRepo(t)
+	svc := NewAdminServiceWithConfig(repo, testCfg(), zap.NewNop())
+	created, temporaryPassword, err := svc.CreateAccount(context.Background(), "usr_nasywa", "new-admin@example.com", "New Admin", "admin", "approved staffing")
+	require.NoError(t, err)
+	assert.Equal(t, "admin", created.Role)
+	assert.NotEmpty(t, temporaryPassword)
+	assert.True(t, created.MustChangePassword)
+	require.Error(t, svc.UpdateAccount(context.Background(), created.ID, created.ID, true, "self disable"))
+	require.NoError(t, svc.UpdateAccount(context.Background(), "usr_nasywa", created.ID, true, "offboarding"))
+}
+
 // --- AccountabilityService ---
 
 func TestAccountability_CreateApprovalRequestAndResolve(t *testing.T) {
@@ -37,7 +49,7 @@ func TestAccountability_CreateApprovalRequestAndResolve(t *testing.T) {
 	svc := NewAccountabilityService(repo, testCfg(), NewWhatsAppService(testCfg(), zap.NewNop()), zap.NewNop())
 	ctx := context.Background()
 
-	request, err := svc.CreateApprovalRequest(ctx, "usr_gading", "dev_android", "pl_active", "pause_protection", "alasan", 30)
+	request, err := svc.CreateApprovalRequest(ctx, "usr_gading", "dev_android", "mbr_active", "pause_protection", "alasan", 30)
 	require.NoError(t, err)
 	assert.Equal(t, "pause_protection", request.Action)
 
@@ -258,6 +270,9 @@ func TestSupport_CreateSupportCaseAndDataRequest(t *testing.T) {
 
 	err := svc.CreateSupportCase(ctx, "usr_gading", "tidak bisa login", "device_recovery", "normal")
 	assert.NoError(t, err)
+
+	err = svc.CreateSupportCase(ctx, "usr_nasywa", "admin requester", "device_recovery", "normal")
+	assert.Error(t, err)
 
 	err = svc.CreateDataRequest(ctx, "usr_gading", "retention_review")
 	assert.NoError(t, err)

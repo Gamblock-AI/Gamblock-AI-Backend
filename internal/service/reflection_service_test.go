@@ -35,8 +35,10 @@ func TestReflectionService_EncryptionRoundTrip(t *testing.T) {
 	plain := "saya hampir tergoda hari ini"
 	created, err := svc.CreateReflection(context.Background(), "usr_gading", plain, "cemas")
 	require.NoError(t, err)
-	assert.NotEqual(t, plain, created.Text, "stored text must be encrypted")
-	assert.Contains(t, created.Text, "") // non-empty
+	stored := st.Snapshot().JournalEntries
+	require.Len(t, stored, 1)
+	assert.NotEqual(t, plain, stored[0].Text, "stored text must be encrypted")
+	assert.NotEmpty(t, stored[0].Text)
 
 	got, err := svc.GetReflections(context.Background(), "usr_gading")
 	require.NoError(t, err)

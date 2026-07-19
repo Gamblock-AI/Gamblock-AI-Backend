@@ -33945,6 +33945,7 @@ type UserMutation struct {
 	avatar_url                    *string
 	google_subject                *string
 	role                          *user.Role
+	must_change_password          *bool
 	email_verified_at             *time.Time
 	phone_e164                    *string
 	phone_verified_at             *time.Time
@@ -34317,6 +34318,42 @@ func (m *UserMutation) OldRole(ctx context.Context) (v user.Role, err error) {
 // ResetRole resets all changes to the "role" field.
 func (m *UserMutation) ResetRole() {
 	m.role = nil
+}
+
+// SetMustChangePassword sets the "must_change_password" field.
+func (m *UserMutation) SetMustChangePassword(b bool) {
+	m.must_change_password = &b
+}
+
+// MustChangePassword returns the value of the "must_change_password" field in the mutation.
+func (m *UserMutation) MustChangePassword() (r bool, exists bool) {
+	v := m.must_change_password
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMustChangePassword returns the old "must_change_password" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldMustChangePassword(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMustChangePassword is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMustChangePassword requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMustChangePassword: %w", err)
+	}
+	return oldValue.MustChangePassword, nil
+}
+
+// ResetMustChangePassword resets all changes to the "must_change_password" field.
+func (m *UserMutation) ResetMustChangePassword() {
+	m.must_change_password = nil
 }
 
 // SetEmailVerifiedAt sets the "email_verified_at" field.
@@ -34726,7 +34763,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 14)
+	fields := make([]string, 0, 15)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -34744,6 +34781,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.role != nil {
 		fields = append(fields, user.FieldRole)
+	}
+	if m.must_change_password != nil {
+		fields = append(fields, user.FieldMustChangePassword)
 	}
 	if m.email_verified_at != nil {
 		fields = append(fields, user.FieldEmailVerifiedAt)
@@ -34789,6 +34829,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.GoogleSubject()
 	case user.FieldRole:
 		return m.Role()
+	case user.FieldMustChangePassword:
+		return m.MustChangePassword()
 	case user.FieldEmailVerifiedAt:
 		return m.EmailVerifiedAt()
 	case user.FieldPhoneE164:
@@ -34826,6 +34868,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldGoogleSubject(ctx)
 	case user.FieldRole:
 		return m.OldRole(ctx)
+	case user.FieldMustChangePassword:
+		return m.OldMustChangePassword(ctx)
 	case user.FieldEmailVerifiedAt:
 		return m.OldEmailVerifiedAt(ctx)
 	case user.FieldPhoneE164:
@@ -34892,6 +34936,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRole(v)
+		return nil
+	case user.FieldMustChangePassword:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMustChangePassword(v)
 		return nil
 	case user.FieldEmailVerifiedAt:
 		v, ok := value.(time.Time)
@@ -35081,6 +35132,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldRole:
 		m.ResetRole()
+		return nil
+	case user.FieldMustChangePassword:
+		m.ResetMustChangePassword()
 		return nil
 	case user.FieldEmailVerifiedAt:
 		m.ResetEmailVerifiedAt()

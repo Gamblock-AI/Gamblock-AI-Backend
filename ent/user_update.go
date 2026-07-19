@@ -130,6 +130,20 @@ func (_u *UserUpdate) SetNillableRole(v *user.Role) *UserUpdate {
 	return _u
 }
 
+// SetMustChangePassword sets the "must_change_password" field.
+func (_u *UserUpdate) SetMustChangePassword(v bool) *UserUpdate {
+	_u.mutation.SetMustChangePassword(v)
+	return _u
+}
+
+// SetNillableMustChangePassword sets the "must_change_password" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableMustChangePassword(v *bool) *UserUpdate {
+	if v != nil {
+		_u.SetMustChangePassword(*v)
+	}
+	return _u
+}
+
 // SetEmailVerifiedAt sets the "email_verified_at" field.
 func (_u *UserUpdate) SetEmailVerifiedAt(v time.Time) *UserUpdate {
 	_u.mutation.SetEmailVerifiedAt(v)
@@ -344,6 +358,9 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 	}
+	if value, ok := _u.mutation.MustChangePassword(); ok {
+		_spec.SetField(user.FieldMustChangePassword, field.TypeBool, value)
+	}
 	if value, ok := _u.mutation.EmailVerifiedAt(); ok {
 		_spec.SetField(user.FieldEmailVerifiedAt, field.TypeTime, value)
 	}
@@ -501,6 +518,20 @@ func (_u *UserUpdateOne) SetRole(v user.Role) *UserUpdateOne {
 func (_u *UserUpdateOne) SetNillableRole(v *user.Role) *UserUpdateOne {
 	if v != nil {
 		_u.SetRole(*v)
+	}
+	return _u
+}
+
+// SetMustChangePassword sets the "must_change_password" field.
+func (_u *UserUpdateOne) SetMustChangePassword(v bool) *UserUpdateOne {
+	_u.mutation.SetMustChangePassword(v)
+	return _u
+}
+
+// SetNillableMustChangePassword sets the "must_change_password" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableMustChangePassword(v *bool) *UserUpdateOne {
+	if v != nil {
+		_u.SetMustChangePassword(*v)
 	}
 	return _u
 }
@@ -748,6 +779,9 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.MustChangePassword(); ok {
+		_spec.SetField(user.FieldMustChangePassword, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.EmailVerifiedAt(); ok {
 		_spec.SetField(user.FieldEmailVerifiedAt, field.TypeTime, value)

@@ -770,18 +770,22 @@ func init() {
 	supportmessage.DefaultID = supportmessageDescID.Default.(func() string)
 	userFields := schema.User{}.Fields()
 	_ = userFields
+	// userDescMustChangePassword is the schema descriptor for must_change_password field.
+	userDescMustChangePassword := userFields[7].Descriptor()
+	// user.DefaultMustChangePassword holds the default value on creation for the must_change_password field.
+	user.DefaultMustChangePassword = userDescMustChangePassword.Default.(bool)
 	// userDescExperiencePoints is the schema descriptor for experience_points field.
-	userDescExperiencePoints := userFields[11].Descriptor()
+	userDescExperiencePoints := userFields[12].Descriptor()
 	// user.DefaultExperiencePoints holds the default value on creation for the experience_points field.
 	user.DefaultExperiencePoints = userDescExperiencePoints.Default.(int)
 	// user.ExperiencePointsValidator is a validator for the "experience_points" field. It is called by the builders before save.
 	user.ExperiencePointsValidator = userDescExperiencePoints.Validators[0].(func(int) error)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[13].Descriptor()
+	userDescCreatedAt := userFields[14].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[14].Descriptor()
+	userDescUpdatedAt := userFields[15].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

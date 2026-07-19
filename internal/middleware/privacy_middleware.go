@@ -56,8 +56,13 @@ func privacyExemptPath(path string) bool {
 	// These purpose-specific account security routes legitimately accept a
 	// password. Their handlers use explicit request schemas and never persist or
 	// log the plaintext credential.
-	if path == "/v1/me/password" ||
-		(strings.HasPrefix(path, "/v1/operator/invitations/") && strings.HasSuffix(path, "/accept")) {
+	if path == "/v1/me/password" {
+		return true
+	}
+	// Public social-profile URLs and admin education content/media are D5
+	// operational data, not browsing data. These admin-only routes still require
+	// authentication and role authorization.
+	if path == "/v1/admin/site-social-links" || strings.HasPrefix(path, "/v1/admin/content/") {
 		return true
 	}
 	// Quick approvals use a single-use token in their body. The token is an

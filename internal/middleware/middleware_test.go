@@ -112,12 +112,27 @@ func TestPrivacyGuard_PasswordChangePathExempt(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestPrivacyGuard_OperatorInvitationPasswordPathExempt(t *testing.T) {
+// Social profile URLs are public operational data. The route is authenticated
+// and the admin service applies its platform-specific HTTPS host allowlist.
+func TestPrivacyGuard_AdminSocialLinksURLAccepted(t *testing.T) {
 	m := newTestMiddleware(t)
-	r := setupRouter(m, "/v1/operator/invitations/:token/accept")
+	r := setupRouter(m, "/v1/admin/site-social-links")
 
-	body := []byte(`{"display_name":"Operator","password":"new-secret"}`)
-	req := httptest.NewRequest(http.MethodPost, "/v1/operator/invitations/token-1/accept", bytes.NewReader(body))
+	body := []byte(`{"items":[{"platform":"instagram","url":"https://instagram.com/gamblockai"}],"reason":"update official profile"}`)
+	req := httptest.NewRequest(http.MethodPut, "/v1/admin/site-social-links", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code, "admin social-link updates must reach the host allowlist validation")
+}
+
+func TestPrivacyGuard_InitialPasswordPathExempt(t *testing.T) {
+	m := newTestMiddleware(t)
+	r := setupRouter(m, "/v1/auth/first-login/password")
+
+	body := []byte(`{"token":"initial-token","new_password":"new-secret"}`)
+	req := httptest.NewRequest(http.MethodPost, "/v1/auth/first-login/password", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
@@ -155,7 +170,7 @@ func TestRequireRoles_Denies(t *testing.T) {
 	m := newTestMiddleware(t)
 	r := gin.New()
 	r.Use(func(c *gin.Context) { c.Set("role", "user"); c.Next() })
-	r.GET("/admin", m.RequireRoles("platform_admin"), func(c *gin.Context) { c.Status(200) })
+	r.GET("/admin", m.RequireRoles("admin"), func(c *gin.Context) { c.Status(200) })
 
 	req := httptest.NewRequest("GET", "/admin", nil)
 	w := httptest.NewRecorder()
@@ -169,7 +184,7 @@ func TestRequireRoles_Allows(t *testing.T) {
 	m := newTestMiddleware(t)
 	r := gin.New()
 	r.Use(func(c *gin.Context) { c.Set("role", "partner"); c.Next() })
-	r.GET("/approve", m.RequireRoles("partner", "platform_admin"), func(c *gin.Context) { c.Status(200) })
+	r.GET("/approve", m.RequireRoles("partner", "admin"), func(c *gin.Context) { c.Status(200) })
 
 	req := httptest.NewRequest("GET", "/approve", nil)
 	w := httptest.NewRecorder()

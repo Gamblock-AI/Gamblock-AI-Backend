@@ -63,8 +63,8 @@ type AuthorRole string
 
 // AuthorRole values.
 const (
-	AuthorRoleRequester       AuthorRole = "requester"
-	AuthorRoleSupportOperator AuthorRole = "support_operator"
+	AuthorRoleRequester AuthorRole = "requester"
+	AuthorRoleAdmin     AuthorRole = "admin"
 )
 
 func (ar AuthorRole) String() string {
@@ -74,7 +74,7 @@ func (ar AuthorRole) String() string {
 // AuthorRoleValidator is a validator for the "author_role" field enum values. It is called by the builders before save.
 func AuthorRoleValidator(ar AuthorRole) error {
 	switch ar {
-	case AuthorRoleRequester, AuthorRoleSupportOperator:
+	case AuthorRoleRequester, AuthorRoleAdmin:
 		return nil
 	default:
 		return fmt.Errorf("supportmessage: invalid enum value for author_role field: %q", ar)

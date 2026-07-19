@@ -15,18 +15,23 @@ func (r *Repository) CreateUser(ctx context.Context, id, email, name string) (mo
 }
 
 func (r *Repository) CreateUserWithPassword(ctx context.Context, id, email, name, passwordHash, role string) (model.User, error) {
+	return r.CreateProvisionedUser(ctx, id, email, name, passwordHash, role, false)
+}
+
+func (r *Repository) CreateProvisionedUser(ctx context.Context, id, email, name, passwordHash, role string, mustChangePassword bool) (model.User, error) {
 	if r.db == nil {
 		if _, exists := r.store.UserByEmail(email); exists {
 			return model.User{}, fmt.Errorf("email already exists")
 		}
 		newUser := store.User{
-			ID:           id,
-			Email:        email,
-			DisplayName:  name,
-			Role:         role,
-			PasswordHash: passwordHash,
-			CreatedAt:    time.Now().UTC(),
-			UpdatedAt:    time.Now().UTC(),
+			ID:                 id,
+			Email:              email,
+			DisplayName:        name,
+			Role:               role,
+			PasswordHash:       passwordHash,
+			MustChangePassword: mustChangePassword,
+			CreatedAt:          time.Now().UTC(),
+			UpdatedAt:          time.Now().UTC(),
 		}
 		r.store.Lock()
 		r.store.Users = append(r.store.Users, newUser)
@@ -37,7 +42,8 @@ func (r *Repository) CreateUserWithPassword(ctx context.Context, id, email, name
 		SetID(id).
 		SetEmail(email).
 		SetDisplayName(name).
-		SetRole(entuser.Role(role))
+		SetRole(entuser.Role(role)).
+		SetMustChangePassword(mustChangePassword)
 	if passwordHash != "" {
 		creator.SetPasswordHash(passwordHash)
 	}

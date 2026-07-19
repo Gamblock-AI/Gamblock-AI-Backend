@@ -85,7 +85,7 @@ func TestHandler_CreatePartnerInvitation_EmailRequired(t *testing.T) {
 
 func TestHandler_CreateSupportCase(t *testing.T) {
 	r, token := newPartnerRouter(t)
-	body := []byte(`{"summary":"tidak bisa login","type":"device_recovery","priority":"normal"}`)
+	body := []byte(`{"summary":"tidak bisa login","detail":"Saya memerlukan bantuan untuk memulihkan akses perangkat.","type":"device_recovery","priority":"normal","impact":"blocked"}`)
 	req := httptest.NewRequest(http.MethodPost, "/v1/support-cases", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)

@@ -26,6 +26,8 @@ const (
 	FieldGoogleSubject = "google_subject"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
+	// FieldMustChangePassword holds the string denoting the must_change_password field in the database.
+	FieldMustChangePassword = "must_change_password"
 	// FieldEmailVerifiedAt holds the string denoting the email_verified_at field in the database.
 	FieldEmailVerifiedAt = "email_verified_at"
 	// FieldPhoneE164 holds the string denoting the phone_e164 field in the database.
@@ -55,6 +57,7 @@ var Columns = []string{
 	FieldAvatarURL,
 	FieldGoogleSubject,
 	FieldRole,
+	FieldMustChangePassword,
 	FieldEmailVerifiedAt,
 	FieldPhoneE164,
 	FieldPhoneVerifiedAt,
@@ -76,6 +79,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultMustChangePassword holds the default value on creation for the "must_change_password" field.
+	DefaultMustChangePassword bool
 	// DefaultExperiencePoints holds the default value on creation for the "experience_points" field.
 	DefaultExperiencePoints int
 	// ExperiencePointsValidator is a validator for the "experience_points" field. It is called by the builders before save.
@@ -98,15 +103,9 @@ const DefaultRole = RoleUser
 
 // Role values.
 const (
-	RoleUser                 Role = "user"
-	RolePartner              Role = "partner"
-	RoleOrganizationOwner    Role = "organization_owner"
-	RoleOrganizationAdmin    Role = "organization_admin"
-	RoleContentAdmin         Role = "content_admin"
-	RoleModelReleaseOperator Role = "model_release_operator"
-	RoleSupportOperator      Role = "support_operator"
-	RoleResearchEvaluator    Role = "research_evaluator"
-	RolePlatformAdmin        Role = "platform_admin"
+	RoleUser    Role = "user"
+	RolePartner Role = "partner"
+	RoleAdmin   Role = "admin"
 )
 
 func (r Role) String() string {
@@ -116,7 +115,7 @@ func (r Role) String() string {
 // RoleValidator is a validator for the "role" field enum values. It is called by the builders before save.
 func RoleValidator(r Role) error {
 	switch r {
-	case RoleUser, RolePartner, RoleOrganizationOwner, RoleOrganizationAdmin, RoleContentAdmin, RoleModelReleaseOperator, RoleSupportOperator, RoleResearchEvaluator, RolePlatformAdmin:
+	case RoleUser, RolePartner, RoleAdmin:
 		return nil
 	default:
 		return fmt.Errorf("user: invalid enum value for role field: %q", r)
@@ -159,6 +158,11 @@ func ByGoogleSubject(opts ...sql.OrderTermOption) OrderOption {
 // ByRole orders the results by the role field.
 func ByRole(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
+// ByMustChangePassword orders the results by the must_change_password field.
+func ByMustChangePassword(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMustChangePassword, opts...).ToFunc()
 }
 
 // ByEmailVerifiedAt orders the results by the email_verified_at field.

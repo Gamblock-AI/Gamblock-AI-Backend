@@ -63,3 +63,40 @@ func HashRefreshToken(raw string) string {
 	sum := sha256.Sum256([]byte(raw))
 	return hex.EncodeToString(sum[:])
 }
+
+const initialPasswordTokenTTL = 10 * time.Minute
+
+type initialPasswordClaims struct {
+	Purpose string `json:"purpose"`
+	jwt.RegisteredClaims
+}
+
+func (s *AuthService) issueInitialPasswordToken(user model.User) (string, error) {
+	now := time.Now().UTC()
+	claims := initialPasswordClaims{
+		Purpose: "initial_password_change",
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject: user.ID, IssuedAt: jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(initialPasswordTokenTTL)),
+			Issuer:    "gamblock-ai-backend", Audience: jwt.ClaimStrings{"initial-password"},
+		},
+	}
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(s.cfg.JWTAccessSecret))
+}
+
+func (s *AuthService) parseInitialPasswordToken(raw string) (string, error) {
+	parsed, err := jwt.ParseWithClaims(raw, &initialPasswordClaims{}, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method")
+		}
+		return []byte(s.cfg.JWTAccessSecret), nil
+	}, jwt.WithIssuer("gamblock-ai-backend"), jwt.WithAudience("initial-password"))
+	if err != nil || !parsed.Valid {
+		return "", ErrInitialPasswordChangeInvalid
+	}
+	claims, ok := parsed.Claims.(*initialPasswordClaims)
+	if !ok || claims.Purpose != "initial_password_change" || claims.Subject == "" {
+		return "", ErrInitialPasswordChangeInvalid
+	}
+	return claims.Subject, nil
+}

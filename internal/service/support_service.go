@@ -41,7 +41,18 @@ func NewSupportServiceWithConfig(repo *repository.Repository, cfg config.Config,
 	return &SupportService{repo: repo, cfg: cfg, logger: logger}
 }
 
+func (s *SupportService) ensureRequesterRole(ctx context.Context, userID string) error {
+	actor, ok := s.repo.UserByID(ctx, userID)
+	if !ok || (actor.Role != model.RoleUser && actor.Role != model.RolePartner) {
+		return fmt.Errorf("support requester role is not allowed")
+	}
+	return nil
+}
+
 func (s *SupportService) CreateThreadedSupportCase(ctx context.Context, userID, title, detail, cType, priority, impact string) (model.SupportCase, error) {
+	if err := s.ensureRequesterRole(ctx, userID); err != nil {
+		return model.SupportCase{}, err
+	}
 	title = strings.TrimSpace(title)
 	detail = strings.TrimSpace(detail)
 	allowedTypes := map[string]bool{
@@ -71,15 +82,24 @@ func (s *SupportService) CreateThreadedSupportCase(ctx context.Context, userID, 
 	return s.repo.CreateSupportCaseWithMessage(ctx, item, encrypted)
 }
 
-func (s *SupportService) GetSupportCaseDetail(ctx context.Context, actorID, actorRole, caseID string) (model.SupportCase, error) {
+func (s *SupportService) GetSupportCaseDetail(ctx context.Context, actorID, actorMode, caseID string) (model.SupportCase, error) {
+	if actorMode != "admin" {
+		if err := s.ensureRequesterRole(ctx, actorID); err != nil {
+			return model.SupportCase{}, err
+		}
+	}
 	item, err := s.repo.GetSupportCaseDetail(ctx, caseID)
 	if err != nil {
 		return model.SupportCase{}, err
 	}
-	if item.UserID != actorID && actorRole != "support_operator" {
+	isOperator := actorMode == "admin"
+	if isOperator && item.UserID == actorID {
+		return model.SupportCase{}, fmt.Errorf("administrators cannot handle their own support cases")
+	}
+	if item.UserID != actorID && !isOperator {
 		return model.SupportCase{}, fmt.Errorf("support case does not belong to actor")
 	}
-	if actorRole == "support_operator" && item.Owner != actorID {
+	if isOperator && item.Owner != actorID {
 		return model.SupportCase{}, fmt.Errorf("support case must be claimed before opening the thread")
 	}
 	if err := s.decryptSupportMessages(item.Messages); err != nil {
@@ -88,12 +108,20 @@ func (s *SupportService) GetSupportCaseDetail(ctx context.Context, actorID, acto
 	return item, nil
 }
 
-func (s *SupportService) Reply(ctx context.Context, actorID, actorRole, caseID, content string) (model.SupportMessage, error) {
+func (s *SupportService) Reply(ctx context.Context, actorID, actorMode, caseID, content string) (model.SupportMessage, error) {
+	if actorMode != "admin" {
+		if err := s.ensureRequesterRole(ctx, actorID); err != nil {
+			return model.SupportMessage{}, err
+		}
+	}
 	item, err := s.repo.GetSupportCaseDetail(ctx, caseID)
 	if err != nil {
 		return model.SupportMessage{}, err
 	}
-	isOperator := actorRole == "support_operator"
+	isOperator := actorMode == "admin"
+	if isOperator && item.UserID == actorID {
+		return model.SupportMessage{}, fmt.Errorf("administrators cannot handle their own support cases")
+	}
 	if item.UserID != actorID && !isOperator {
 		return model.SupportMessage{}, fmt.Errorf("support case does not belong to actor")
 	}
@@ -117,7 +145,7 @@ func (s *SupportService) Reply(ctx context.Context, actorID, actorRole, caseID, 
 	role := "requester"
 	nextStatus := "waiting_support"
 	if isOperator {
-		role = "support_operator"
+		role = "admin"
 		nextStatus = "waiting_user"
 	}
 	message, err := s.repo.AddSupportMessage(ctx, model.SupportMessage{
@@ -131,12 +159,20 @@ func (s *SupportService) Reply(ctx context.Context, actorID, actorRole, caseID, 
 	return message, nil
 }
 
-func (s *SupportService) Transition(ctx context.Context, actorID, actorRole, caseID, status string) error {
+func (s *SupportService) Transition(ctx context.Context, actorID, actorMode, caseID, status string) error {
+	if actorMode != "admin" {
+		if err := s.ensureRequesterRole(ctx, actorID); err != nil {
+			return err
+		}
+	}
 	item, err := s.repo.GetSupportCaseDetail(ctx, caseID)
 	if err != nil {
 		return err
 	}
-	isOperator := actorRole == "support_operator"
+	isOperator := actorMode == "admin"
+	if isOperator && item.UserID == actorID {
+		return fmt.Errorf("administrators cannot handle their own support cases")
+	}
 	if item.UserID != actorID && !isOperator {
 		return fmt.Errorf("support case does not belong to actor")
 	}
@@ -180,10 +216,31 @@ func (s *SupportService) GetSupportCases(ctx context.Context) ([]model.SupportCa
 	return s.repo.GetSupportCases(ctx)
 }
 
+func (s *SupportService) GetSupportCasesForAdmin(ctx context.Context, adminID string) ([]model.SupportCase, error) {
+	items, err := s.repo.GetSupportCases(ctx)
+	if err != nil {
+		return nil, err
+	}
+	filtered := make([]model.SupportCase, 0, len(items))
+	for _, item := range items {
+		if item.UserID != adminID {
+			filtered = append(filtered, item)
+		}
+	}
+	return filtered, nil
+}
+
 func (s *SupportService) Claim(ctx context.Context, operatorID, caseID, reason string) (model.SupportCase, error) {
 	reason = strings.TrimSpace(reason)
 	if reason == "" || len(reason) > 240 {
 		return model.SupportCase{}, fmt.Errorf("claim reason is required")
+	}
+	item, err := s.repo.GetSupportCaseDetail(ctx, caseID)
+	if err != nil {
+		return model.SupportCase{}, err
+	}
+	if item.UserID == operatorID {
+		return model.SupportCase{}, fmt.Errorf("administrators cannot claim their own support cases")
 	}
 	return s.repo.ClaimSupportCase(ctx, caseID, operatorID, reason, time.Now().UTC())
 }
@@ -197,10 +254,16 @@ func (s *SupportService) ReleaseClaim(ctx context.Context, operatorID, caseID, r
 }
 
 func (s *SupportService) GetSupportCasesForUser(ctx context.Context, userID string) ([]model.SupportCase, error) {
+	if err := s.ensureRequesterRole(ctx, userID); err != nil {
+		return nil, err
+	}
 	return s.repo.GetSupportCasesForUser(ctx, userID)
 }
 
 func (s *SupportService) CreateSupportCase(ctx context.Context, userID, title, cType, priority string) error {
+	if err := s.ensureRequesterRole(ctx, userID); err != nil {
+		return err
+	}
 	title = strings.TrimSpace(title)
 	allowedTypes := map[string]bool{
 		"technical_support": true, "account_recovery": true, "partner_abuse": true,

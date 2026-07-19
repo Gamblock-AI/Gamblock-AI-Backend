@@ -38,6 +38,31 @@ func (r *Repository) UpdateUserGoogle(ctx context.Context, id, name string, avat
 	return userFromEnt(row), nil
 }
 
+func (r *Repository) LinkUserGoogleSubject(ctx context.Context, id, subject string) error {
+	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+		for index := range r.store.Users {
+			if r.store.Users[index].GoogleSubject == subject && r.store.Users[index].ID != id {
+				return fmt.Errorf("google identity is already linked")
+			}
+		}
+		for index := range r.store.Users {
+			if r.store.Users[index].ID == id {
+				r.store.Users[index].GoogleSubject = subject
+				r.store.Users[index].UpdatedAt = time.Now().UTC()
+				return nil
+			}
+		}
+		return fmt.Errorf("user not found")
+	}
+	if _, err := r.db.User.UpdateOneID(id).SetGoogleSubject(subject).Save(ctx); err != nil {
+		return err
+	}
+	r.RefreshStore(ctx)
+	return nil
+}
+
 func (r *Repository) UpdateUserDisplayName(ctx context.Context, id, displayName string) (model.User, error) {
 	if r.db == nil {
 		r.store.Lock()
@@ -109,13 +134,14 @@ func (r *Repository) UpdateUserPasswordHash(ctx context.Context, id, passwordHas
 		for index := range r.store.Users {
 			if r.store.Users[index].ID == id {
 				r.store.Users[index].PasswordHash = passwordHash
+				r.store.Users[index].MustChangePassword = false
 				r.store.Users[index].UpdatedAt = time.Now().UTC()
 				return nil
 			}
 		}
 		return fmt.Errorf("user not found")
 	}
-	if _, err := r.db.User.UpdateOneID(id).SetPasswordHash(passwordHash).Save(ctx); err != nil {
+	if _, err := r.db.User.UpdateOneID(id).SetPasswordHash(passwordHash).SetMustChangePassword(false).Save(ctx); err != nil {
 		return err
 	}
 	r.RefreshStore(ctx)

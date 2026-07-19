@@ -184,7 +184,7 @@ func TestHandler_GetApprovalRequests(t *testing.T) {
 
 func TestHandler_CreateApprovalRequest(t *testing.T) {
 	r, token := newFullRouter(t, "development")
-	body := []byte(`{"action":"pause_protection","reason":"testing","requested_duration_minutes":15,"device_id":"dev_android","partner_link_id":"pl_active"}`)
+	body := []byte(`{"action":"pause_protection","reason":"testing","requested_duration_minutes":15,"device_id":"dev_android","membership_id":"mbr_active"}`)
 	req := httptest.NewRequest(http.MethodPost, "/v1/approval-requests", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)

@@ -89,6 +89,11 @@ func GoogleSubject(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldGoogleSubject, v))
 }
 
+// MustChangePassword applies equality check predicate on the "must_change_password" field. It's identical to MustChangePasswordEQ.
+func MustChangePassword(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldMustChangePassword, v))
+}
+
 // EmailVerifiedAt applies equality check predicate on the "email_verified_at" field. It's identical to EmailVerifiedAtEQ.
 func EmailVerifiedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldEmailVerifiedAt, v))
@@ -497,6 +502,16 @@ func RoleIn(vs ...Role) predicate.User {
 // RoleNotIn applies the NotIn predicate on the "role" field.
 func RoleNotIn(vs ...Role) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldRole, vs...))
+}
+
+// MustChangePasswordEQ applies the EQ predicate on the "must_change_password" field.
+func MustChangePasswordEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldMustChangePassword, v))
+}
+
+// MustChangePasswordNEQ applies the NEQ predicate on the "must_change_password" field.
+func MustChangePasswordNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldMustChangePassword, v))
 }
 
 // EmailVerifiedAtEQ applies the EQ predicate on the "email_verified_at" field.

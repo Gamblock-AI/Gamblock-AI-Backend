@@ -11,19 +11,20 @@ import (
 func loadIdentityStore(ctx context.Context, client *ent.Client, out *store.Store, users []*ent.User) error {
 	for _, item := range users {
 		out.Users = append(out.Users, store.User{
-			ID:               item.ID,
-			Email:            item.Email,
-			DisplayName:      item.DisplayName,
-			Role:             item.Role.String(),
-			EmailVerifiedAt:  item.EmailVerifiedAt,
-			PhoneE164:        value(item.PhoneE164),
-			PhoneVerifiedAt:  item.PhoneVerifiedAt,
-			ExperiencePoints: item.ExperiencePoints,
-			PasswordHash:     value(item.PasswordHash),
-			GoogleSubject:    value(item.GoogleSubject),
-			DisabledAt:       item.DisabledAt,
-			CreatedAt:        item.CreatedAt,
-			UpdatedAt:        item.UpdatedAt,
+			ID:                 item.ID,
+			Email:              item.Email,
+			DisplayName:        item.DisplayName,
+			Role:               item.Role.String(),
+			MustChangePassword: item.MustChangePassword,
+			EmailVerifiedAt:    item.EmailVerifiedAt,
+			PhoneE164:          value(item.PhoneE164),
+			PhoneVerifiedAt:    item.PhoneVerifiedAt,
+			ExperiencePoints:   item.ExperiencePoints,
+			PasswordHash:       value(item.PasswordHash),
+			GoogleSubject:      value(item.GoogleSubject),
+			DisabledAt:         item.DisabledAt,
+			CreatedAt:          item.CreatedAt,
+			UpdatedAt:          item.UpdatedAt,
 		})
 	}
 

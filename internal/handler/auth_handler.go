@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,6 +21,13 @@ func (h *Handler) Login(c *gin.Context) {
 	response, err := h.services.Auth.Login(c.Request.Context(), input.Email, input.Password)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusUnauthorized, "invalid_credentials", err)
+		return
+	}
+	if response.PasswordChangeRequired {
+		h.respond(c, http.StatusOK, gin.H{
+			"password_change_required": true,
+			"password_change_token":    response.PasswordChangeToken,
+		})
 		return
 	}
 	h.respond(c, http.StatusOK, response)
@@ -44,6 +53,23 @@ func (h *Handler) Register(c *gin.Context) {
 	h.respond(c, http.StatusCreated, response)
 }
 
+func (h *Handler) CompleteInitialPasswordChange(c *gin.Context) {
+	var input struct {
+		Token       string `json:"token"`
+		NewPassword string `json:"new_password"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil || input.Token == "" || len(input.NewPassword) < 8 {
+		h.respondCode(c, http.StatusBadRequest, "initial_password_change_invalid")
+		return
+	}
+	response, err := h.services.Auth.CompleteInitialPasswordChange(c.Request.Context(), input.Token, input.NewPassword)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "initial_password_change_invalid", err)
+		return
+	}
+	h.respond(c, http.StatusOK, response)
+}
+
 func (h *Handler) DevLogin(c *gin.Context) {
 	var input struct {
 		Email    string `json:"email"`
@@ -64,18 +90,87 @@ func (h *Handler) GoogleLogin(c *gin.Context) {
 		IDToken  string `json:"id_token"`
 		DeviceID string `json:"device_id"`
 		Role     string `json:"role"`
+		Nonce    string `json:"nonce"`
 	}
 	_ = c.ShouldBindJSON(&input)
 	if input.IDToken == "" {
 		h.respondCode(c, http.StatusBadRequest, "google_token_required")
 		return
 	}
-	response, err := h.services.Auth.GoogleLogin(c.Request.Context(), input.IDToken, input.DeviceID, input.Role)
+	response, err := h.services.Auth.GoogleLogin(c.Request.Context(), input.IDToken, input.DeviceID, input.Role, input.Nonce)
 	if err != nil {
-		h.respondErrorErr(c, http.StatusUnauthorized, "google_verification_failed", err)
+		code := "google_verification_failed"
+		status := http.StatusUnauthorized
+		if errors.Is(err, service.ErrGoogleLinkRequired) {
+			code = "google_link_required"
+			status = http.StatusConflict
+		}
+		h.respondErrorErr(c, status, code, err)
 		return
 	}
 	h.respond(c, http.StatusOK, response)
+}
+
+func (h *Handler) RequestPasswordReset(c *gin.Context) {
+	var input struct {
+		Email string `json:"email"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil || input.Email == "" {
+		h.respondCode(c, http.StatusBadRequest, "email_required")
+		return
+	}
+	previewCode, err := h.services.Auth.RequestPasswordReset(c.Request.Context(), input.Email)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusInternalServerError, "password_reset_failed", err)
+		return
+	}
+	data := gin.H{"accepted": true, "expires_in_seconds": 1800}
+	if previewCode != "" {
+		data["preview_code"] = previewCode
+	}
+	h.respond(c, http.StatusAccepted, data)
+}
+
+func (h *Handler) ConfirmPasswordReset(c *gin.Context) {
+	var input struct {
+		Email       string `json:"email"`
+		Code        string `json:"code"`
+		NewPassword string `json:"new_password"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil || input.Email == "" || input.Code == "" || len(input.NewPassword) < 8 {
+		h.respondCode(c, http.StatusBadRequest, "password_reset_invalid")
+		return
+	}
+	if err := h.services.Auth.ConfirmPasswordReset(c.Request.Context(), input.Email, input.Code, input.NewPassword); err != nil {
+		code := "password_reset_failed"
+		if errors.Is(err, service.ErrPasswordResetInvalid) || errors.Is(err, service.ErrPasswordReuse) {
+			code = "password_reset_invalid"
+		}
+		h.respondErrorErr(c, http.StatusBadRequest, code, err)
+		return
+	}
+	h.respond(c, http.StatusOK, gin.H{"reset": true})
+}
+
+func (h *Handler) LinkGoogle(c *gin.Context) {
+	var input struct {
+		CurrentPassword string `json:"current_password"`
+		IDToken         string `json:"id_token"`
+		Nonce           string `json:"nonce"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil || input.CurrentPassword == "" || input.IDToken == "" {
+		h.respondCode(c, http.StatusBadRequest, "google_link_failed")
+		return
+	}
+	if err := h.services.Auth.LinkGoogle(c.Request.Context(), h.currentUserID(c), input.CurrentPassword, input.IDToken, input.Nonce); err != nil {
+		code := "google_link_failed"
+		if errors.Is(err, service.ErrCurrentPasswordInvalid) {
+			code = "current_password_invalid"
+		}
+		h.respondErrorErr(c, http.StatusBadRequest, code, err)
+		return
+	}
+	h.respond(c, http.StatusOK, gin.H{"google_linked": true})
 }
 
 func (h *Handler) Refresh(c *gin.Context) {

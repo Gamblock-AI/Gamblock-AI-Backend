@@ -27,14 +27,15 @@ type OperatorInvitation struct {
 	TokenHash  string     `json:"-"`
 }
 
-type OperatorAccount struct {
-	ID              string     `json:"id"`
-	Email           string     `json:"email"`
-	DisplayName     string     `json:"display_name"`
-	Role            string     `json:"role"`
-	EmailVerifiedAt *time.Time `json:"email_verified_at,omitempty"`
-	DisabledAt      *time.Time `json:"disabled_at,omitempty"`
-	CreatedAt       time.Time  `json:"created_at"`
+type AdminAccount struct {
+	ID                 string     `json:"id"`
+	Email              string     `json:"email"`
+	DisplayName        string     `json:"display_name"`
+	Role               string     `json:"role"`
+	EmailVerifiedAt    *time.Time `json:"email_verified_at,omitempty"`
+	DisabledAt         *time.Time `json:"disabled_at,omitempty"`
+	MustChangePassword bool       `json:"must_change_password"`
+	CreatedAt          time.Time  `json:"created_at"`
 }
 
 type EducationRevision struct {

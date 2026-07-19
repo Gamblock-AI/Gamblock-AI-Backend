@@ -106,7 +106,7 @@ func (h *Handler) CreateSupportCase(c *gin.Context) {
 }
 
 func (h *Handler) GetSupportCaseDetail(c *gin.Context) {
-	item, err := h.services.Support.GetSupportCaseDetail(c.Request.Context(), h.currentUserID(c), currentRole(c), c.Param("id"))
+	item, err := h.services.Support.GetSupportCaseDetail(c.Request.Context(), h.currentUserID(c), "requester", c.Param("id"))
 	if err != nil {
 		h.respondErrorErr(c, http.StatusNotFound, "support_case_not_found", err)
 		return
@@ -122,7 +122,7 @@ func (h *Handler) ReplySupportCase(c *gin.Context) {
 		h.respondCode(c, http.StatusBadRequest, "err_validation")
 		return
 	}
-	message, err := h.services.Support.Reply(c.Request.Context(), h.currentUserID(c), currentRole(c), c.Param("id"), input.Content)
+	message, err := h.services.Support.Reply(c.Request.Context(), h.currentUserID(c), "requester", c.Param("id"), input.Content)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "support_reply_failed", err)
 		return
@@ -138,7 +138,47 @@ func (h *Handler) TransitionSupportCase(c *gin.Context) {
 		h.respondCode(c, http.StatusBadRequest, "err_validation")
 		return
 	}
-	if err := h.services.Support.Transition(c.Request.Context(), h.currentUserID(c), currentRole(c), c.Param("id"), input.Status); err != nil {
+	if err := h.services.Support.Transition(c.Request.Context(), h.currentUserID(c), "requester", c.Param("id"), input.Status); err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "support_transition_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, gin.H{"updated": true})
+}
+
+func (h *Handler) GetAdminSupportCaseDetail(c *gin.Context) {
+	item, err := h.services.Support.GetSupportCaseDetail(c.Request.Context(), h.currentUserID(c), "admin", c.Param("id"))
+	if err != nil {
+		h.respondErrorErr(c, http.StatusNotFound, "support_case_not_found", err)
+		return
+	}
+	h.respond(c, http.StatusOK, item)
+}
+
+func (h *Handler) ReplyAdminSupportCase(c *gin.Context) {
+	var input struct {
+		Content string `json:"content"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		h.respondCode(c, http.StatusBadRequest, "err_validation")
+		return
+	}
+	message, err := h.services.Support.Reply(c.Request.Context(), h.currentUserID(c), "admin", c.Param("id"), input.Content)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "support_reply_failed", err)
+		return
+	}
+	h.respond(c, http.StatusCreated, message)
+}
+
+func (h *Handler) TransitionAdminSupportCase(c *gin.Context) {
+	var input struct {
+		Status string `json:"status"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		h.respondCode(c, http.StatusBadRequest, "err_validation")
+		return
+	}
+	if err := h.services.Support.Transition(c.Request.Context(), h.currentUserID(c), "admin", c.Param("id"), input.Status); err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "support_transition_failed", err)
 		return
 	}

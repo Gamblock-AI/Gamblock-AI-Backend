@@ -71,8 +71,9 @@ type Kind string
 
 // Kind values.
 const (
-	KindEmail Kind = "email"
-	KindPhone Kind = "phone"
+	KindEmail         Kind = "email"
+	KindPhone         Kind = "phone"
+	KindPasswordReset Kind = "password_reset"
 )
 
 func (k Kind) String() string {
@@ -82,7 +83,7 @@ func (k Kind) String() string {
 // KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
 func KindValidator(k Kind) error {
 	switch k {
-	case KindEmail, KindPhone:
+	case KindEmail, KindPhone, KindPasswordReset:
 		return nil
 	default:
 		return fmt.Errorf("contactverification: invalid enum value for kind field: %q", k)

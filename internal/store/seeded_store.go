@@ -18,7 +18,7 @@ func NewSeeded() *Store {
 			{ID: "usr_gading", Email: "gading@gmail.com", DisplayName: "Gading", Role: "user", EmailVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, ExperiencePoints: 20, CreatedAt: now, UpdatedAt: now},
 			{ID: "usr_dery", Email: "dery@gmail.com", DisplayName: "Dery", Role: "user", EmailVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
 			{ID: "usr_suci", Email: "suci@gmail.com", DisplayName: "Suci", Role: "partner", EmailVerifiedAt: &verifiedAt, PhoneE164: "+6281200000000", PhoneVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
-			{ID: "usr_nasywa", Email: "nasywa@gmail.com", DisplayName: "Nasywa", Role: "platform_admin", PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
+			{ID: "usr_nasywa", Email: "nasywa@gmail.com", DisplayName: "Nasywa", Role: "admin", EmailVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
 		},
 		Devices: []Device{
 			{ID: "dev_android", UserID: "usr_gading", Platform: "android", Label: "Gading Android", AppVersion: "1.0.0", OSVersion: "Android 15", ModelVersion: "artifact-v0.3.1", RulesetVersion: "ruleset-2026.05.1", ProtectionStatus: "active", LastSeenAt: now.Add(-2 * time.Minute), CreatedAt: now, UpdatedAt: now},

@@ -62,89 +62,64 @@ func (h *Handler) AdminAuditEvents(c *gin.Context) {
 	h.respond(c, http.StatusOK, items)
 }
 
-func (h *Handler) AdminOperators(c *gin.Context) {
-	accounts, invitations, err := h.services.Admin.Operators(c.Request.Context())
+func (h *Handler) AdminAccounts(c *gin.Context) {
+	accounts, err := h.services.Admin.Accounts(c.Request.Context())
 	if err != nil {
-		h.respondErrorErr(c, http.StatusInternalServerError, "operators_fetch_failed", err)
+		h.respondErrorErr(c, http.StatusInternalServerError, "admin_accounts_fetch_failed", err)
 		return
 	}
-	h.respond(c, http.StatusOK, gin.H{"accounts": accounts, "invitations": invitations})
+	h.respond(c, http.StatusOK, accounts)
 }
 
-func (h *Handler) InviteAdminOperator(c *gin.Context) {
+func (h *Handler) CreateAdminAccount(c *gin.Context) {
 	var input struct {
-		Email  string `json:"email"`
-		Role   string `json:"role"`
-		Reason string `json:"reason"`
+		Email       string `json:"email"`
+		DisplayName string `json:"display_name"`
+		Role        string `json:"role"`
+		Reason      string `json:"reason"`
 	}
-	if err := c.ShouldBindJSON(&input); err != nil || strings.TrimSpace(input.Reason) == "" {
-		h.respondCode(c, http.StatusBadRequest, "err_validation")
+	if err := c.ShouldBindJSON(&input); err != nil {
+		h.respondCode(c, http.StatusBadRequest, "validation_failed")
 		return
 	}
-	item, previewURL, err := h.services.Admin.InviteOperator(c.Request.Context(), h.currentUserID(c), input.Email, input.Role, input.Reason)
+	user, temporaryPassword, err := h.services.Admin.CreateAccount(c.Request.Context(), h.currentUserID(c), input.Email, input.DisplayName, input.Role, input.Reason)
 	if err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "operator_invite_failed", err)
+		h.respondErrorErr(c, http.StatusBadRequest, "admin_account_create_failed", err)
 		return
 	}
-	h.respond(c, http.StatusCreated, gin.H{"invitation": item, "invitation_preview_url": previewURL})
+	previewURL, deliveryErr := h.services.Auth.BeginEmailVerification(c.Request.Context(), user)
+	if deliveryErr != nil {
+		previewURL = ""
+	}
+	h.respond(c, http.StatusCreated, gin.H{
+		"account": gin.H{
+			"id": user.ID, "email": user.Email, "display_name": user.DisplayName,
+			"role": user.Role, "must_change_password": true, "created_at": user.CreatedAt,
+		},
+		"temporary_password":       temporaryPassword,
+		"verification_preview_url": previewURL,
+	})
 }
 
-func (h *Handler) UpdateAdminOperator(c *gin.Context) {
+func (h *Handler) UpdateAdminAccount(c *gin.Context) {
 	var input struct {
-		Role     string `json:"role"`
-		Disabled bool   `json:"disabled"`
-		Reason   string `json:"reason"`
+		Disabled bool    `json:"disabled"`
+		Reason   string  `json:"reason"`
+		Role     *string `json:"role"`
 	}
-	if err := c.ShouldBindJSON(&input); err != nil || strings.TrimSpace(input.Reason) == "" {
-		h.respondCode(c, http.StatusBadRequest, "err_validation")
+	if err := c.ShouldBindJSON(&input); err != nil || input.Role != nil {
+		h.respondCode(c, http.StatusBadRequest, "validation_failed")
 		return
 	}
-	if err := h.services.Admin.UpdateOperator(c.Request.Context(), h.currentUserID(c), c.Param("id"), input.Role, input.Disabled, input.Reason); err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "operator_update_failed", err)
+	if err := h.services.Admin.UpdateAccount(c.Request.Context(), h.currentUserID(c), c.Param("id"), input.Disabled, input.Reason); err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "admin_account_update_failed", err)
 		return
 	}
 	h.respond(c, http.StatusOK, gin.H{"updated": true})
 }
 
-func (h *Handler) RevokeAdminOperatorInvitation(c *gin.Context) {
-	var input struct {
-		Reason string `json:"reason"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil || strings.TrimSpace(input.Reason) == "" {
-		h.respondCode(c, http.StatusBadRequest, "err_validation")
-		return
-	}
-	if err := h.services.Admin.RevokeOperatorInvitation(c.Request.Context(), h.currentUserID(c), c.Param("id"), input.Reason); err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "operator_invitation_revoke_failed", err)
-		return
-	}
-	h.respond(c, http.StatusOK, gin.H{"revoked": true})
-}
-
-func (h *Handler) VerifyOperatorInvitation(c *gin.Context) {
-	item, err := h.services.Admin.OperatorInvitation(c.Request.Context(), c.Param("token"))
-	if err != nil {
-		h.respondErrorErr(c, http.StatusNotFound, "operator_invitation_invalid", err)
-		return
-	}
-	h.respond(c, http.StatusOK, item)
-}
-
-func (h *Handler) AcceptOperatorInvitation(c *gin.Context) {
-	var input struct {
-		DisplayName string `json:"display_name"`
-		Password    string `json:"password"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		h.respondCode(c, http.StatusBadRequest, "err_validation")
-		return
-	}
-	user, err := h.services.Admin.AcceptOperatorInvitation(c.Request.Context(), c.Param("token"), input.DisplayName, input.Password)
-	if err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "operator_invitation_accept_failed", err)
-		return
-	}
-	h.respond(c, http.StatusCreated, user)
+func (h *Handler) RetiredOperatorInvitation(c *gin.Context) {
+	h.respondCode(c, http.StatusGone, "operator_invitation_retired")
 }
 
 func (h *Handler) ClaimAdminSupportCase(c *gin.Context) {

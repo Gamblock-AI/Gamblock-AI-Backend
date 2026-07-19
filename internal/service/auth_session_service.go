@@ -16,7 +16,7 @@ func (s *AuthService) Refresh(ctx context.Context, rawRefresh string) (model.Aut
 		return model.AuthResponse{}, fmt.Errorf("invalid refresh token")
 	}
 	user, ok := s.repo.UserByID(ctx, userID)
-	if !ok || user.DisabledAt != nil {
+	if !ok || user.DisabledAt != nil || user.MustChangePassword {
 		return model.AuthResponse{}, fmt.Errorf("refresh token user not found")
 	}
 	if err := s.repo.RevokeRefreshTokenByID(ctx, refreshTokenID); err != nil {
@@ -47,11 +47,13 @@ func (s *AuthService) authPairAt(ctx context.Context, user model.User, deviceID 
 		return model.AuthResponse{}, err
 	}
 	return model.AuthResponse{
-		AccessToken:  accessToken,
-		RefreshToken: rawRefresh,
-		TokenType:    "Bearer",
-		ExpiresIn:    int(s.cfg.JWTAccessTTL.Seconds()),
-		User:         user,
+		AccessToken:     accessToken,
+		RefreshToken:    rawRefresh,
+		TokenType:       "Bearer",
+		ExpiresIn:       int(s.cfg.JWTAccessTTL.Seconds()),
+		User:            user,
+		PasswordEnabled: user.PasswordHash != "",
+		GoogleLinked:    user.GoogleSubject != "",
 	}, nil
 }
 

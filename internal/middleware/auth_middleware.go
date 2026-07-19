@@ -87,6 +87,18 @@ func (m *Middleware) RequireRoles(roles ...string) gin.HandlerFunc {
 	}
 }
 
+func (m *Middleware) RequireVerifiedEmail() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID, _ := c.Get("user_id")
+		if m.auth.HasVerifiedEmail(c.Request.Context(), fmt.Sprint(userID)) {
+			c.Next()
+			return
+		}
+		m.respondError(c, http.StatusForbidden, "email_verification_required")
+		c.Abort()
+	}
+}
+
 func setAuthenticatedContext(c *gin.Context, claims *model.Claims) {
 	c.Set("user_id", claims.UserID)
 	c.Set("email", claims.Email)

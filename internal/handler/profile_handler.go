@@ -18,7 +18,8 @@ func (h *Handler) GetProfile(c *gin.Context) {
 	h.respond(c, http.StatusOK, struct {
 		model.User
 		PasswordEnabled bool `json:"password_enabled"`
-	}{User: user, PasswordEnabled: user.PasswordHash != ""})
+		GoogleLinked    bool `json:"google_linked"`
+	}{User: user, PasswordEnabled: user.PasswordHash != "", GoogleLinked: user.GoogleSubject != ""})
 }
 
 func (h *Handler) UploadAvatar(c *gin.Context) {

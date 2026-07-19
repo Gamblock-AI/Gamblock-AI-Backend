@@ -1,6 +1,6 @@
 # Gamblock-AI Backend Agent Rules
 
-Context version: `2026-07-19.1`
+Context version: `2026-07-20.3`
 
 This repository is the Go/Gin API for Gamblock-AI. It must remain safe and
 understandable as a standalone clone; no parent workspace files are required.
@@ -65,7 +65,7 @@ protection events are permitted.
 `PrivacyGuard` currently enforces this by rejecting forbidden JSON/query field
 names on non-GET, non-OPTIONS, non-auth requests. It intentionally does not
 censor string values: journal text may legitimately mention a URL. Quick
-approval token routes and the purpose-specific password-change/operator-accept
+approval token routes and the purpose-specific password-change
 routes are explicitly exempt because their handlers own narrow credential
 schemas. CORS wraps the guard so browser clients can read safe rejection
 envelopes. Keep these regression behaviors covered in
@@ -75,17 +75,15 @@ value censorship.
 ## Auth and role model
 
 `AuthRequired` validates access tokens and `RequireRoles(...)` gates actions.
-The product-facing roles include `user`, `partner`, `platform_admin`,
-`support_operator`, `model_release_operator`, and `content_admin`. The current
-ent user enum also contains `organization_owner` and `organization_admin`.
-Treat that difference as existing implementation state, not permission to
-expand access; route authorization must remain explicit.
-
-Operational roles are non-cumulative. `platform_admin` manages specialist
-accounts, social settings, audit, and emergency approval but does not inherit
-content, support, or release authority. Preserve primary `auth_time` through
-refresh rotation, revalidate mutable role/disabled state per bearer request,
-and use recent-auth gates for sensitive operator/social/release decisions.
+Account roles are exactly `user`, `partner`, and `admin`. Organization
+owner/admin/member/viewer values are membership-relation roles, never account
+roles. `admin` owns all operational capabilities, but verified-email,
+recent-auth, audit, resource-ownership, and two-admin emergency checks remain
+mandatory. Requester support endpoints accept only `user` and `partner`; admins
+handle their queue through `/v1/admin/support-cases[...]`. Roles are immutable
+after account creation.
+Preserve primary `auth_time` through refresh rotation and revalidate mutable
+role/disabled state per bearer request.
 
 Quick approval verify/resolve routes are intentionally unauthenticated and use
 single-use tokens. Do not put them behind session auth or expose their tokens.

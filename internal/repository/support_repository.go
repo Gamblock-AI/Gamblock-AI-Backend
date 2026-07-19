@@ -231,7 +231,7 @@ func (r *Repository) GetSupportCaseDetail(ctx context.Context, caseID string) (m
 	}
 	result.Messages = messages
 	for _, message := range messages {
-		if message.AuthorRole == "support_operator" && message.ReadAt == nil {
+		if message.AuthorRole == "admin" && message.ReadAt == nil {
 			result.UnreadCount++
 		}
 	}

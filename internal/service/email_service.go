@@ -37,10 +37,10 @@ func (s *EmailService) SendVerification(_ context.Context, recipient, verificati
 	return smtp.SendMail(addr, auth, s.cfg.SMTPFrom, []string{recipient}, []byte(body))
 }
 
-func (s *EmailService) SendOperatorInvitation(_ context.Context, recipient, invitationURL string) error {
-	return s.sendLink(recipient, "Your Gamblock-AI operator invitation",
-		"You were invited to a restricted Gamblock-AI operations role. Create a separate operator account using this link:",
-		invitationURL, "This link expires in 24 hours. If you did not expect it, ignore this email.")
+func (s *EmailService) SendPasswordReset(_ context.Context, recipient, code string) error {
+	return s.sendLink(recipient, "Kode pemulihan akun Gamblock-AI",
+		"Masukkan kode berikut di aplikasi atau website Gamblock-AI untuk membuat kata sandi baru:",
+		code, "Kode berlaku selama 30 menit. Abaikan email ini bila Anda tidak meminta pemulihan akun.")
 }
 
 func (s *EmailService) SendDataRequestConfirmation(_ context.Context, recipient, confirmationURL string) error {

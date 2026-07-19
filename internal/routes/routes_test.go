@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -43,6 +44,30 @@ func TestRegister_HealthAndReady(t *testing.T) {
 		r.ServeHTTP(w, req)
 		require.Equalf(t, http.StatusOK, w.Code, "%s should be 200", tc.path)
 		assert.Contains(t, w.Body.String(), "status", "%s body should contain status", tc.path)
+	}
+}
+
+func TestRegister_PasswordResetRequestDoesNotEnumerateEmail(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	cfg := config.Config{
+		AppEnv: "test", NotificationMode: "demo",
+		JWTAccessSecret: "test-secret-very-long-please", AllowedOrigins: []string{"*"},
+	}
+	repo := repository.New(nil, store.NewSeeded())
+	services := service.NewContainer(repo, cfg, zap.NewNop())
+	mid := middleware.New(services.Auth, zap.NewNop())
+	h := handler.New(services, mid, cfg, zap.NewNop())
+	r := gin.New()
+	r.Use(mid.RequestID())
+	Register(r, h, mid)
+
+	for _, email := range []string{"unknown@example.com", "gading@gmail.com"} {
+		req := httptest.NewRequest(http.MethodPost, "/v1/auth/password-reset/request", bytes.NewBufferString(`{"email":"`+email+`"}`))
+		req.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+		r.ServeHTTP(response, req)
+		assert.Equal(t, http.StatusAccepted, response.Code)
+		assert.Contains(t, response.Body.String(), `"accepted":true`)
 	}
 }
 

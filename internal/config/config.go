@@ -14,6 +14,7 @@ type Config struct {
 	AppEnv               string
 	DatabaseURL          string
 	GoogleClientID       string
+	GoogleClientIDs      []string
 	PublicWebBaseURL     string
 	NotificationMode     string
 	JWTAccessSecret      string
@@ -69,6 +70,7 @@ func Load() Config {
 	viper.SetDefault("HTTP_ADDR", ":8080")
 	viper.SetDefault("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable")
 	viper.SetDefault("GOOGLE_CLIENT_ID", "")
+	viper.SetDefault("GOOGLE_CLIENT_IDS", "")
 	viper.SetDefault("PUBLIC_WEB_BASE_URL", "http://localhost:3000")
 	viper.SetDefault("NOTIFICATION_MODE", "demo")
 	viper.SetDefault("JWT_ACCESS_SECRET", "dev-only-change-me")
@@ -107,6 +109,7 @@ func Load() Config {
 		AppEnv:               viper.GetString("APP_ENV"),
 		DatabaseURL:          viper.GetString("DATABASE_URL"),
 		GoogleClientID:       viper.GetString("GOOGLE_CLIENT_ID"),
+		GoogleClientIDs:      googleClientIDs(viper.GetString("GOOGLE_CLIENT_IDS"), viper.GetString("GOOGLE_CLIENT_ID")),
 		PublicWebBaseURL:     strings.TrimRight(viper.GetString("PUBLIC_WEB_BASE_URL"), "/"),
 		NotificationMode:     viper.GetString("NOTIFICATION_MODE"),
 		JWTAccessSecret:      viper.GetString("JWT_ACCESS_SECRET"),
@@ -130,6 +133,14 @@ func Load() Config {
 		EnableDevLogin:       viper.GetBool("ENABLE_DEV_LOGIN"),
 		EnableDemoData:       viper.GetBool("ENABLE_DEMO_DATA"),
 	}
+}
+
+func googleClientIDs(values, fallback string) []string {
+	ids := splitCSV(values)
+	if len(ids) == 0 && strings.TrimSpace(fallback) != "" {
+		return []string{strings.TrimSpace(fallback)}
+	}
+	return ids
 }
 
 func splitCSV(value string) []string {

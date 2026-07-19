@@ -9,10 +9,33 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/authn"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/repository"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
 )
+
+func TestAuthService_ProvisionedUserMustChangePasswordBeforeSession(t *testing.T) {
+	svc, st := newAuthSvc(t)
+	repo := repository.New(nil, st)
+	hash, err := authn.HashPassword("temporary-password")
+	require.NoError(t, err)
+	_, err = repo.CreateProvisionedUser(context.Background(), "usr_provisioned", "provisioned@example.com", "Provisioned", hash, "user", true)
+	require.NoError(t, err)
+
+	login, err := svc.Login(context.Background(), "provisioned@example.com", "temporary-password")
+	require.NoError(t, err)
+	assert.True(t, login.PasswordChangeRequired)
+	assert.Empty(t, login.AccessToken)
+	assert.NotEmpty(t, login.PasswordChangeToken)
+
+	session, err := svc.CompleteInitialPasswordChange(context.Background(), login.PasswordChangeToken, "permanent-password")
+	require.NoError(t, err)
+	assert.NotEmpty(t, session.AccessToken)
+	assert.Equal(t, "user", session.User.Role)
+	_, err = svc.CompleteInitialPasswordChange(context.Background(), login.PasswordChangeToken, "another-password")
+	require.Error(t, err)
+}
 
 func newAuthSvc(t *testing.T) (*AuthService, *store.Store) {
 	t.Helper()
@@ -29,6 +52,8 @@ func TestAuthService_LoginSeededUser(t *testing.T) {
 	assert.NotEmpty(t, resp.AccessToken)
 	assert.NotEmpty(t, resp.RefreshToken)
 	assert.Equal(t, "gading@gmail.com", resp.User.Email)
+	assert.True(t, resp.PasswordEnabled)
+	assert.False(t, resp.GoogleLinked)
 }
 
 func TestAuthService_LoginUnknownFails(t *testing.T) {

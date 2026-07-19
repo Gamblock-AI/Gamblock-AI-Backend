@@ -30,7 +30,7 @@ func (s *AuthService) BeginEmailVerification(ctx context.Context, user model.Use
 		return "", err
 	}
 	verificationURL := s.cfg.PublicWebBaseURL + "/verify-email?token=" + rawToken
-	if err := NewEmailService(s.cfg).SendVerification(ctx, user.Email, verificationURL); err != nil {
+	if err := s.email.SendVerification(ctx, user.Email, verificationURL); err != nil {
 		return "", err
 	}
 	if s.cfg.NotificationMode == "demo" {
