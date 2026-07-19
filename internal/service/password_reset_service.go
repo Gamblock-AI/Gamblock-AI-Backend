@@ -47,8 +47,8 @@ func (s *AuthService) RequestPasswordReset(ctx context.Context, email string) (s
 		return "", err
 	}
 	if err := s.email.SendPasswordReset(ctx, email, code); err != nil {
-		// Production configuration already fails closed at startup when SMTP is
-		// absent. Keep the public response indistinguishable from unknown email.
+		// SMTP is optional at startup. Keep the public response indistinguishable
+		// from an unknown email when delivery is unavailable.
 		s.logger.Warn("password reset delivery failed", zap.String("user_id", user.ID))
 		return "", nil
 	}

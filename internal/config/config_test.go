@@ -39,3 +39,16 @@ func TestValidateRequiresEncryptionKeyInDevelopment(t *testing.T) {
 		t.Fatalf("Validate rejected a valid development encryption key: %v", err)
 	}
 }
+
+func TestValidateAllowsMissingOptionalDeliveryIntegrationsInProduction(t *testing.T) {
+	cfg := Config{
+		AppEnv:               "production",
+		DatabaseURL:          "postgres://gamblock@example/gamblock",
+		JWTAccessSecret:      "0123456789abcdef0123456789abcdef",
+		JournalEncryptionKey: validTestEncryptionKey,
+		NotificationMode:     "production",
+	}
+	if err := cfg.Validate(); err != nil {
+		t.Fatalf("Validate rejected production without optional delivery providers: %v", err)
+	}
+}

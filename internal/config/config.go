@@ -59,9 +59,6 @@ func (c Config) Validate() error {
 	if c.NotificationMode == "demo" {
 		return fmt.Errorf("NOTIFICATION_MODE=demo is not allowed in production")
 	}
-	if c.SMTPHost == "" || c.SMTPPort == "" || c.SMTPFrom == "" {
-		return fmt.Errorf("SMTP_HOST, SMTP_PORT, and SMTP_FROM are required in production")
-	}
 	return nil
 }
 

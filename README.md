@@ -214,12 +214,15 @@ link the same verified Google email through `POST /v1/me/google/link` after
 current-password authentication. `POST /v1/auth/password-reset/request` is
 non-enumerating; `POST /v1/auth/password-reset/confirm` consumes the latest
 hashed 12-character code within 30 minutes and revokes all refresh sessions.
-Production requires working SMTP configuration. Development
-login and contextual demo records are separately opt-in and forbidden in
-production.
+SMTP and WhatsApp are optional delivery adapters. Production can start without
+either provider while keeping `NOTIFICATION_MODE=production`; email
+verification/reset/export notifications and WhatsApp verification/delivery are
+then unavailable rather than exposing demo codes. Development login and
+contextual demo records remain separately opt-in and forbidden in production.
 
 Production CI builds the private GHCR image on `main`. Its deploy step is
 disabled until `ENABLE_VPS_DEPLOY=true`, then connects to the pinned VPS as
 root with password authentication on port 22 and runs the Ansible-installed
 `update.sh`. Infrastructure rejects application deployment until the private
-GHCR pull PAT and required SMTP settings exist.
+GHCR pull PAT and core database/JWT/AES secrets exist; delivery-provider
+credentials are optional.

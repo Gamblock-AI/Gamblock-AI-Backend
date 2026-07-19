@@ -120,6 +120,9 @@ and release management are supporting/operational, not substitutes for core.
   preserve relationship/email/expiry checks.
 - WhatsApp is an optional delivery adapter; the persisted partner inbox and
   backend transition are authoritative.
+- SMTP is also an optional delivery adapter at startup. Missing SMTP must not
+  enable demo previews in production; email verification, reset, deletion, and
+  export notifications remain unavailable until a provider is configured.
 - Production CI may deploy only from `main`, only when `ENABLE_VPS_DEPLOY` is
   explicitly true, and only through the pinned root/password/port-22 SSH
   contract. Do not reintroduce deploy-user keys or store a GHCR pull PAT in the
