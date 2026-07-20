@@ -26,6 +26,12 @@ func SeedUsers(ctx context.Context, client *ent.Client) error {
 		{"usr_demo_partner", "partner@gmail.com", "Demo Partner", user.RolePartner},
 	}
 	for _, item := range users {
+		// Skip users that already exist so the seeder is re-runnable.
+		if _, err := client.User.Get(ctx, item.id); err == nil {
+			continue
+		} else if !ent.IsNotFound(err) {
+			return err
+		}
 		create := client.User.Create().SetID(item.id).SetEmail(item.email).SetDisplayName(item.name).SetRole(item.role).SetPasswordHash(passwordHash).SetEmailVerifiedAt(time.Now().UTC())
 		if item.role == user.RolePartner {
 			create.SetPhoneE164("+6281200000000").SetPhoneVerifiedAt(time.Now().UTC())
