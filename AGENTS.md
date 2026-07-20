@@ -1,6 +1,6 @@
 # Gamblock-AI Backend Agent Rules
 
-Context version: `2026-07-20.4`
+Context version: `2026-07-20.5`
 
 This repository is the Go/Gin API for Gamblock-AI. It must remain safe and
 understandable as a standalone clone; no parent workspace files are required.
@@ -127,6 +127,11 @@ and release management are supporting/operational, not substitutes for core.
   explicitly true, and only through the pinned root/password/port-22 SSH
   contract. Do not reintroduce deploy-user keys or store a GHCR pull PAT in the
   application repository.
+- The production image contains `/app/api`, `/app/migrate-up`,
+  `/app/migrate-down`, and `/app/seeder`. The production seeder installs only
+  missing public baseline content; it must never create demo accounts or
+  overwrite administrator-managed content. `migrate-down` is destructive,
+  requires `CONFIRM_MIGRATE_DOWN=DROP_ALL_DATA`, and is never part of deploy.
 
 ## Validation policy
 

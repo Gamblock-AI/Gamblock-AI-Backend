@@ -28,6 +28,32 @@ func Open(databaseURL string) (*ent.Client, func() error, error) {
 	return ent.NewClient(ent.Driver(driver)), sqlDB.Close, nil
 }
 
+// DropPublicSchema is the destructive down migration used only by the guarded
+// migrate-down CLI. Normal deploys never call it.
+func DropPublicSchema(ctx context.Context, databaseURL string) error {
+	if databaseURL == "" {
+		return fmt.Errorf("DATABASE_URL is empty")
+	}
+	sqlDB, err := sql.Open("pgx", databaseURL)
+	if err != nil {
+		return err
+	}
+	defer sqlDB.Close()
+	tx, err := sqlDB.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, "DROP SCHEMA public CASCADE"); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, "CREATE SCHEMA public"); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+	return tx.Commit()
+}
+
 func Migrate(ctx context.Context, client *ent.Client) error {
 	if err := client.Schema.Create(ctx); err != nil {
 		return err

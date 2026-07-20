@@ -8,7 +8,8 @@ dashboard. Uses [ent](https://entgo.io/) over PostgreSQL.
 ```sh
 cp .env.example .env
 make key-generate  # creates and saves a valid JOURNAL_ENCRYPTION_KEY in .env
-make migrate        # apply schema migrations with values loaded from .env
+make migrate-up     # apply schema migrations with values loaded from .env
+make seeder         # install missing production-safe public baseline content
 make seed           # (optional) seed demo data
 make seed-education # upsert the six bilingual education modules/media
 make run            # start the API (default 127.0.0.1:8080)
@@ -30,9 +31,13 @@ and `partner@gmail.com`. These
 credentials are development fixtures only and demo data is forbidden in
 production.
 
-Useful Makefile targets: `make dev` (air live-reload), `make key-generate`, `make lint`,
-`make migrate`, `make seed`, `make seed-education`, and opt-in `make verify`. `make migrate-fresh` drops the
-database schema and must never be run against shared or production data.
+Useful Makefile targets: `make dev` (air live-reload), `make key-generate`,
+`make lint`, `make migrate-up`, `make seeder`, `make seed`,
+`make seed-education`, and opt-in `make verify`. The Docker image exposes the
+same operational commands as `/app/migrate-up`, `/app/migrate-down`, and
+`/app/seeder`. `migrate-down` and `make migrate-fresh` drop the database schema
+and must never be run against shared or production data; `migrate-down`
+additionally refuses to run without `CONFIRM_MIGRATE_DOWN=DROP_ALL_DATA`.
 `make key-generate` refuses to replace a valid existing key; use
 `make key-generate FORCE=1` only when no encrypted local journal, support, or
 export data needs to be retained.
@@ -220,9 +225,11 @@ verification/reset/export notifications and WhatsApp verification/delivery are
 then unavailable rather than exposing demo codes. Development login and
 contextual demo records remain separately opt-in and forbidden in production.
 
-Production CI builds the private GHCR image on `main`. Its deploy step is
-disabled until `ENABLE_VPS_DEPLOY=true`, then connects to the pinned VPS as
-root with password authentication on port 22 and runs the Ansible-installed
-`update.sh`. Infrastructure rejects application deployment until the private
-GHCR pull PAT and core database/JWT/AES secrets exist; delivery-provider
-credentials are optional.
+Production CI builds the private GHCR image on `main`, including the API,
+migrate-up, guarded migrate-down, and production-safe seeder binaries. Its
+deploy step is disabled until `ENABLE_VPS_DEPLOY=true`, then connects to the
+pinned VPS as root with password authentication on port 22 and runs the
+Ansible-installed `update.sh`, which backs up PostgreSQL, runs migrate-up and
+the safe seeder, then replaces the API container. Infrastructure rejects
+application deployment until the private GHCR pull PAT and core
+database/JWT/AES secrets exist; delivery-provider credentials are optional.

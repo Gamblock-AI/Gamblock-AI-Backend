@@ -12,9 +12,13 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Build. CGO disabled for a static binary compatible with alpine.
+# Build the API and operational database tools. CGO is disabled for static
+# binaries compatible with the Alpine runtime.
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/api ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/api ./cmd/api && \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/migrate-up ./cmd/migrate && \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/migrate-down ./cmd/migrate-down && \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/seeder ./cmd/seeder
 
 # ---- Runtime stage ----
 FROM alpine:3.20
@@ -22,7 +26,7 @@ RUN apk add --no-cache ca-certificates wget && \
     addgroup -S app && adduser -S app -G app
 
 WORKDIR /app
-COPY --from=build /out/api /app/api
+COPY --from=build /out/ /app/
 
 # Persistent server-owned storage directories (mapped to volumes in production).
 RUN mkdir -p /app/var/artifacts /app/var/exports \

@@ -1,6 +1,6 @@
 # Backend AI Context
 
-Context version: `2026-07-20.4`
+Context version: `2026-07-20.5`
 
 ## Product capsule
 
@@ -59,11 +59,16 @@ Do not infer production readiness from a handler or schema existing. Verify the
 route wiring, persistence path, tests, and external integration separately.
 
 Operational deployment status: the Docker image creates persistent
-artifact/export/media/avatar paths, and CI can deploy the private GHCR image to
-the pinned VPS as root over password SSH. The deploy step remains disabled by
-repository variable until Ansible bootstrap succeeds; Ansible rejects an
-application deploy while the private-GHCR PAT or core database/JWT/AES secrets
-are missing. SMTP and WhatsApp are optional delivery integrations.
+artifact/export/media/avatar paths and contains the API plus migrate-up,
+guarded migrate-down, and production-safe seeder binaries. The safe seeder
+installs public education/social defaults only when their collections are
+empty; it creates no demo users or activity. CI can deploy the private GHCR
+image to the pinned VPS as root over password SSH, where `update.sh` takes a
+pre-migration PostgreSQL backup and runs migrate-up plus the safe seeder before
+replacing the API container. The deploy step remains disabled by repository
+variable until intentionally enabled; Ansible rejects an application deploy
+while the private-GHCR PAT or core database/JWT/AES secrets are missing. SMTP
+and WhatsApp are optional delivery integrations.
 
 ## Default AI validation
 

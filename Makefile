@@ -3,7 +3,7 @@ ifneq (,$(wildcard .env))
     export
 endif
 
-.PHONY: dev run build start generate key-generate migrate migrate-fresh seed seed-education lint test test-cover verify
+.PHONY: dev run build start generate key-generate migrate migrate-up migrate-down migrate-fresh seed seeder seed-education lint test test-cover verify
 
 APP_NAME := api
 BUILD_DIR := ./bin
@@ -15,7 +15,11 @@ run:
 	go run ./cmd/api
 
 build:
+	@mkdir -p $(BUILD_DIR)
 	go build -o $(BUILD_DIR)/$(APP_NAME) ./cmd/api
+	go build -o $(BUILD_DIR)/migrate-up ./cmd/migrate
+	go build -o $(BUILD_DIR)/migrate-down ./cmd/migrate-down
+	go build -o $(BUILD_DIR)/seeder ./cmd/seeder
 
 generate:
 	go run entgo.io/ent/cmd/ent generate ./ent/schema
@@ -49,6 +53,15 @@ start: build
 migrate:
 	go run ./cmd/migrate
 
+migrate-up: migrate
+
+migrate-down:
+	@test "$(CONFIRM_MIGRATE_DOWN)" = "DROP_ALL_DATA" || { \
+		echo "Refusing destructive migration. Re-run with CONFIRM_MIGRATE_DOWN=DROP_ALL_DATA." >&2; \
+		exit 1; \
+	}
+	go run ./cmd/migrate-down
+
 migrate-fresh:
 	@echo "Dropping and recreating database..."
 	psql "$(DATABASE_URL)" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" || true
@@ -57,6 +70,9 @@ migrate-fresh:
 
 seed:
 	go run ./cmd/seed
+
+seeder:
+	go run ./cmd/seeder
 
 seed-education:
 	go run ./cmd/seed-education
