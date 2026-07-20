@@ -20,7 +20,7 @@ func setupRouter(m *Middleware, path string) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
 	r.Use(m.PrivacyGuard())
-	r.POST(path, func(c *gin.Context) { c.Status(http.StatusOK) })
+	r.Any(path, func(c *gin.Context) { c.Status(http.StatusOK) })
 	return r
 }
 
