@@ -35,7 +35,6 @@ RUN mkdir -p /app/var/artifacts /app/var/exports \
 USER app
 
 EXPOSE 8080
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
-  CMD wget -qO- --tries=1 --spider http://localhost:8080/healthz || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s CMD wget -q -O /dev/null --tries=1 http://localhost:8080/healthz || exit 1
 
 ENTRYPOINT ["/app/api"]
