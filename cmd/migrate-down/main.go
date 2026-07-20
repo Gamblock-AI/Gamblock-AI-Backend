@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"os"
 	"time"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
