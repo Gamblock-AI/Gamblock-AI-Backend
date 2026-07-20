@@ -19,5 +19,8 @@ func SeedProductionDefaults(ctx context.Context, client *ent.Client, mediaPath s
 			return err
 		}
 	}
+	if err := SeedUsers(ctx, client); err != nil {
+		return err
+	}
 	return SeedSiteSocialLinks(ctx, client)
 }

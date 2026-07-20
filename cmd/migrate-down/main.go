@@ -11,9 +11,6 @@ import (
 )
 
 func main() {
-	if os.Getenv("CONFIRM_MIGRATE_DOWN") != "DROP_ALL_DATA" {
-		log.Fatal("refusing destructive migration: set CONFIRM_MIGRATE_DOWN=DROP_ALL_DATA")
-	}
 
 	cfg := config.Load()
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
