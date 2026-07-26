@@ -1,6 +1,6 @@
 # Backend AI Context
 
-Context version: `2026-07-20.5`
+Context version: `2026-07-27.1`
 
 ## Product capsule
 
