@@ -6,7 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"strings"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -23,7 +26,7 @@ func NewWhatsAppService(cfg config.Config, logger *zap.Logger) *WhatsAppService 
 	return &WhatsAppService{
 		cfg:    cfg,
 		logger: logger,
-		client: &http.Client{},
+		client: &http.Client{Timeout: 15 * time.Second},
 	}
 }
 
@@ -50,56 +53,8 @@ func (s *WhatsAppService) SendApprovalBatch(ctx context.Context, phone string, s
 		return fmt.Errorf("partner phone is not configured")
 	}
 
-	if s.cfg.WhatsAppAPIKey == "" || s.cfg.WhatsAppPhoneID == "" {
-		return fmt.Errorf("whatsapp API credentials are not configured")
-	}
-
 	messageBody := buildBatchMessage(summaries)
-
-	payload := map[string]interface{}{
-		"messaging_product": "whatsapp",
-		"to":                phone,
-		"type":              "text",
-		"text": map[string]interface{}{
-			"body": messageBody,
-		},
-	}
-
-	jsonData, err := json.Marshal(payload)
-	if err != nil {
-		return fmt.Errorf("failed to marshal whatsapp payload: %w", err)
-	}
-
-	url := fmt.Sprintf("%s/%s/messages", s.cfg.WhatsAppBaseURL, s.cfg.WhatsAppPhoneID)
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Authorization", "Bearer "+s.cfg.WhatsAppAPIKey)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := s.client.Do(req)
-	if err != nil {
-		s.logger.Error("whatsapp: request failed", zap.Error(err))
-		return fmt.Errorf("failed to send whatsapp request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		body, _ := io.ReadAll(resp.Body)
-		s.logger.Error("whatsapp: API rejected message",
-			zap.Int("status", resp.StatusCode),
-			zap.String("response", string(body)),
-		)
-		return fmt.Errorf("whatsapp API returned status %d: %s", resp.StatusCode, string(body))
-	}
-
-	s.logger.Info("whatsapp: message sent successfully",
-		zap.String("recipient", phone),
-	)
-
-	return nil
+	return s.sendText(ctx, phone, messageBody)
 }
 
 func (s *WhatsAppService) SendSingleApproval(ctx context.Context, phone string, summary ApprovalSummary) error {
@@ -110,35 +65,90 @@ func (s *WhatsAppService) SendPhoneVerification(ctx context.Context, phone, code
 	if s.cfg.NotificationMode == "demo" {
 		return nil
 	}
-	if phone == "" || s.cfg.WhatsAppAPIKey == "" || s.cfg.WhatsAppPhoneID == "" {
+	if phone == "" {
 		return fmt.Errorf("whatsapp verification delivery is not configured")
 	}
-	payload := map[string]any{
-		"messaging_product": "whatsapp",
-		"to":                phone,
-		"type":              "text",
-		"text":              map[string]any{"body": "Kode verifikasi Gamblock-AI: " + code + ". Berlaku 10 menit. Jangan bagikan kode ini."},
+	return s.sendText(ctx, phone, "Kode verifikasi Gamblock-AI: "+code+". Berlaku 10 menit. Jangan bagikan kode ini.")
+}
+
+func (s *WhatsAppService) SendPasswordReset(ctx context.Context, phone, code string) error {
+	return s.sendText(ctx, phone, "Kode pemulihan kata sandi Gamblock-AI: "+code+". Berlaku 30 menit. Jangan bagikan kode ini.")
+}
+
+func (s *WhatsAppService) SendDataRequestConfirmation(ctx context.Context, phone, confirmationURL string) error {
+	return s.sendText(ctx, phone, "Konfirmasi permintaan penghapusan data Gamblock-AI melalui tautan berikut. Tautan berlaku 30 menit:\n"+confirmationURL)
+}
+
+func (s *WhatsAppService) SendDataExportReady(ctx context.Context, phone, accountURL string) error {
+	return s.sendText(ctx, phone, "Ekspor data Gamblock-AI Anda sudah siap. Masuk ke akun untuk mengunduhnya:\n"+accountURL)
+}
+
+func (s *WhatsAppService) sendText(ctx context.Context, phone, message string) error {
+	if s.cfg.NotificationMode == "demo" {
+		return nil
 	}
-	jsonData, err := json.Marshal(payload)
+	if strings.TrimSpace(s.cfg.FonnteToken) == "" {
+		return fmt.Errorf("Fonnte token is not configured")
+	}
+	target, err := normalizeFonnteTarget(phone, s.cfg.FonnteCountryCode)
 	if err != nil {
-		return fmt.Errorf("failed to prepare verification message: %w", err)
+		return err
 	}
-	url := fmt.Sprintf("%s/%s/messages", s.cfg.WhatsAppBaseURL, s.cfg.WhatsAppPhoneID)
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(jsonData))
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+	_ = writer.WriteField("target", target)
+	_ = writer.WriteField("message", message)
+	_ = writer.WriteField("countryCode", "0")
+	_ = writer.WriteField("preview", "false")
+	if err := writer.Close(); err != nil {
+		return fmt.Errorf("failed to prepare Fonnte request")
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(s.cfg.FonnteBaseURL, "/")+"/send", &body)
 	if err != nil {
-		return fmt.Errorf("failed to create verification request: %w", err)
+		return fmt.Errorf("failed to create Fonnte request")
 	}
-	req.Header.Set("Authorization", "Bearer "+s.cfg.WhatsAppAPIKey)
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", s.cfg.FonnteToken)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to send verification message: %w", err)
+		s.logger.Warn("fonnte notification request failed", zap.Error(err))
+		return fmt.Errorf("Fonnte notification delivery failed")
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode >= http.StatusBadRequest {
-		return fmt.Errorf("whatsapp verification delivery was rejected")
+	responseBody, err := io.ReadAll(io.LimitReader(resp.Body, 64*1024))
+	if err != nil {
+		return fmt.Errorf("Fonnte notification response unreadable")
+	}
+	var result struct {
+		Status bool   `json:"status"`
+		Detail string `json:"detail"`
+	}
+	if err := json.Unmarshal(responseBody, &result); err != nil || resp.StatusCode >= http.StatusBadRequest || !result.Status {
+		s.logger.Warn("fonnte notification rejected", zap.Int("status", resp.StatusCode))
+		return fmt.Errorf("Fonnte notification delivery rejected")
 	}
 	return nil
+}
+
+func normalizeFonnteTarget(phone, countryCode string) (string, error) {
+	value := strings.TrimSpace(phone)
+	value = strings.NewReplacer(" ", "", "-", "", "(", "", ")", "").Replace(value)
+	if strings.HasPrefix(value, "+") {
+		value = value[1:]
+	}
+	if strings.HasPrefix(value, "0") && countryCode != "" {
+		value = strings.TrimPrefix(value, "0")
+		value = countryCode + value
+	}
+	if len(value) < 8 || len(value) > 15 {
+		return "", fmt.Errorf("phone must use a valid international format")
+	}
+	for _, char := range value {
+		if char < '0' || char > '9' {
+			return "", fmt.Errorf("phone must use a valid international format")
+		}
+	}
+	return value, nil
 }
 
 func buildBatchMessage(summaries []ApprovalSummary) string {

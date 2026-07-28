@@ -22,9 +22,10 @@ import (
 )
 
 type SupportService struct {
-	repo   *repository.Repository
-	cfg    config.Config
-	logger *zap.Logger
+	repo         *repository.Repository
+	cfg          config.Config
+	logger       *zap.Logger
+	notification *WhatsAppService
 }
 
 var (
@@ -34,11 +35,11 @@ var (
 )
 
 func NewSupportService(repo *repository.Repository, logger *zap.Logger) *SupportService {
-	return &SupportService{repo: repo, logger: logger}
+	return &SupportService{repo: repo, logger: logger, notification: NewWhatsAppService(config.Config{NotificationMode: "demo"}, logger)}
 }
 
 func NewSupportServiceWithConfig(repo *repository.Repository, cfg config.Config, logger *zap.Logger) *SupportService {
-	return &SupportService{repo: repo, cfg: cfg, logger: logger}
+	return &SupportService{repo: repo, cfg: cfg, logger: logger, notification: NewWhatsAppService(cfg, logger)}
 }
 
 func (s *SupportService) ensureRequesterRole(ctx context.Context, userID string) error {
@@ -333,6 +334,9 @@ func (s *SupportService) CreateDataRequestWithResult(ctx context.Context, userID
 	if requestType == "delete" && user.Role != "user" && user.Role != "partner" {
 		return model.DataRequest{}, "", fmt.Errorf("%w: operator account deletion requires an out-of-band administrator workflow", ErrDataRequestForbidden)
 	}
+	if requestType == "delete" && (user.PhoneE164 == "" || user.PhoneVerifiedAt == nil) {
+		return model.DataRequest{}, "", fmt.Errorf("verified WhatsApp number is required")
+	}
 	existingRequests, err := s.repo.GetDataRequests(ctx, userID)
 	if err != nil {
 		return model.DataRequest{}, "", err
@@ -356,7 +360,7 @@ func (s *SupportService) CreateDataRequestWithResult(ctx context.Context, userID
 		return model.DataRequest{}, "", err
 	}
 	if requestType == "delete" {
-		if err := NewEmailService(s.cfg).SendDataRequestConfirmation(ctx, user.Email, previewURL); err != nil {
+		if err := s.notification.SendDataRequestConfirmation(ctx, user.PhoneE164, previewURL); err != nil {
 			return model.DataRequest{}, "", err
 		}
 		if s.cfg.NotificationMode != "demo" {
@@ -438,8 +442,8 @@ func (s *SupportService) ProcessDataExport(ctx context.Context, requestID string
 	if err = s.repo.UpdateDataRequest(ctx, item); err != nil {
 		return fail("persistence_failed", err)
 	}
-	if user, ok := s.repo.UserByID(ctx, item.UserID); ok {
-		_ = NewEmailService(s.cfg).SendDataExportReady(ctx, user.Email, s.cfg.PublicWebBaseURL+"/data-requests")
+	if user, ok := s.repo.UserByID(ctx, item.UserID); ok && user.PhoneE164 != "" && user.PhoneVerifiedAt != nil && s.notification != nil {
+		_ = s.notification.SendDataExportReady(ctx, user.PhoneE164, s.cfg.PublicWebBaseURL+"/data-requests")
 	}
 	return item, nil
 }

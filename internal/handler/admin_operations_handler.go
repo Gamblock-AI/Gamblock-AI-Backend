@@ -74,6 +74,7 @@ func (h *Handler) AdminAccounts(c *gin.Context) {
 func (h *Handler) CreateAdminAccount(c *gin.Context) {
 	var input struct {
 		Email       string `json:"email"`
+		Phone       string `json:"phone"`
 		DisplayName string `json:"display_name"`
 		Role        string `json:"role"`
 		Reason      string `json:"reason"`
@@ -82,22 +83,22 @@ func (h *Handler) CreateAdminAccount(c *gin.Context) {
 		h.respondCode(c, http.StatusBadRequest, "validation_failed")
 		return
 	}
-	user, temporaryPassword, err := h.services.Admin.CreateAccount(c.Request.Context(), h.currentUserID(c), input.Email, input.DisplayName, input.Role, input.Reason)
+	user, temporaryPassword, err := h.services.Admin.CreateAccount(c.Request.Context(), h.currentUserID(c), input.Email, input.Phone, input.DisplayName, input.Role, input.Reason)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "admin_account_create_failed", err)
 		return
 	}
-	previewURL, deliveryErr := h.services.Auth.BeginEmailVerification(c.Request.Context(), user)
+	previewCode, deliveryErr := h.services.Auth.BeginPhoneVerification(c.Request.Context(), user.ID, user.PhoneE164)
 	if deliveryErr != nil {
-		previewURL = ""
+		previewCode = ""
 	}
 	h.respond(c, http.StatusCreated, gin.H{
 		"account": gin.H{
 			"id": user.ID, "email": user.Email, "display_name": user.DisplayName,
 			"role": user.Role, "must_change_password": true, "created_at": user.CreatedAt,
 		},
-		"temporary_password":       temporaryPassword,
-		"verification_preview_url": previewURL,
+		"temporary_password":              temporaryPassword,
+		"phone_verification_preview_code": previewCode,
 	})
 }
 

@@ -40,7 +40,7 @@ func TestValidateRequiresEncryptionKeyInDevelopment(t *testing.T) {
 	}
 }
 
-func TestValidateAllowsMissingOptionalDeliveryIntegrationsInProduction(t *testing.T) {
+func TestValidateRequiresFonnteInProduction(t *testing.T) {
 	cfg := Config{
 		AppEnv:               "production",
 		DatabaseURL:          "postgres://gamblock@example/gamblock",
@@ -48,7 +48,11 @@ func TestValidateAllowsMissingOptionalDeliveryIntegrationsInProduction(t *testin
 		JournalEncryptionKey: validTestEncryptionKey,
 		NotificationMode:     "production",
 	}
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("Validate should require FONNTE_TOKEN in production")
+	}
+	cfg.FonnteToken = "test-token"
 	if err := cfg.Validate(); err != nil {
-		t.Fatalf("Validate rejected production without optional delivery providers: %v", err)
+		t.Fatalf("Validate rejected production with Fonnte: %v", err)
 	}
 }

@@ -15,10 +15,10 @@ func NewSeeded() *Store {
 	demoPasswordHash, _ := authn.HashPassword("password")
 	return &Store{
 		Users: []User{
-			{ID: "usr_gading", Email: "gading@gmail.com", DisplayName: "Gading", Role: "user", EmailVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, ExperiencePoints: 20, CreatedAt: now, UpdatedAt: now},
-			{ID: "usr_dery", Email: "dery@gmail.com", DisplayName: "Dery", Role: "user", EmailVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
+			{ID: "usr_gading", Email: "gading@gmail.com", DisplayName: "Gading", Role: "user", EmailVerifiedAt: &verifiedAt, PhoneE164: "+6281200000001", PhoneVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, ExperiencePoints: 20, CreatedAt: now, UpdatedAt: now},
+			{ID: "usr_dery", Email: "dery@gmail.com", DisplayName: "Dery", Role: "user", EmailVerifiedAt: &verifiedAt, PhoneE164: "+6281200000002", PhoneVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
 			{ID: "usr_suci", Email: "suci@gmail.com", DisplayName: "Suci", Role: "partner", EmailVerifiedAt: &verifiedAt, PhoneE164: "+6281200000000", PhoneVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
-			{ID: "usr_nasywa", Email: "nasywa@gmail.com", DisplayName: "Nasywa", Role: "admin", EmailVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
+			{ID: "usr_nasywa", Email: "nasywa@gmail.com", DisplayName: "Nasywa", Role: "admin", EmailVerifiedAt: &verifiedAt, PhoneE164: "+6281200000003", PhoneVerifiedAt: &verifiedAt, PasswordHash: demoPasswordHash, CreatedAt: now, UpdatedAt: now},
 		},
 		Devices: []Device{
 			{ID: "dev_android", UserID: "usr_gading", Platform: "android", Label: "Gading Android", AppVersion: "1.0.0", OSVersion: "Android 15", ModelVersion: "artifact-v0.3.1", RulesetVersion: "ruleset-2026.05.1", ProtectionStatus: "active", LastSeenAt: now.Add(-2 * time.Minute), CreatedAt: now, UpdatedAt: now},
@@ -57,7 +57,7 @@ func NewSeeded() *Store {
 			{ID: "audit_1", Actor: "nasywa@gmail.com", Action: "Published content module", Target: "pause-before-impulse", CreatedAt: now, UpdatedAt: now},
 			{ID: "audit_2", Actor: "nasywa@gmail.com", Action: "Staged model artifact", Target: "artifact-v0.4.0-rc1", CreatedAt: now, UpdatedAt: now},
 		},
-		NotificationEvents: []NotificationItem{{ID: "ntf_1", Channel: "email", Recipient: "suci@gmail.com", Status: "sent", Reason: "approval_request", CreatedAt: now, UpdatedAt: now}},
+		NotificationEvents: []NotificationItem{{ID: "ntf_1", Channel: "whatsapp", Recipient: "+6281200000000", Status: "sent", Reason: "approval_request", CreatedAt: now, UpdatedAt: now}},
 		JournalEntries: []JournalEntry{
 			{ID: "ref_1", UserID: "usr_gading", Text: "Hari ini saya berhasil menahan diri dari godaan untuk membuka aplikasi berkat Pattern Interrupt.", Mood: "😊 Baik", CreatedAt: now.Add(-24 * time.Hour), UpdatedAt: now.Add(-24 * time.Hour)},
 			{ID: "ref_2", UserID: "usr_gading", Text: "Merasa cemas di sore hari karena bosan, tapi berhasil mengalihkan perhatian dengan jalan kaki dan membaca modul kesadaran.", Mood: "😟 Cemas", CreatedAt: now.Add(-48 * time.Hour), UpdatedAt: now.Add(-48 * time.Hour)},

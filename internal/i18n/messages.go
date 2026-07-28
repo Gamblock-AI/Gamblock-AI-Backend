@@ -38,13 +38,14 @@ var messages = map[string]string{
 	"password_reset_invalid":             "Kode pemulihan tidak valid, sudah digunakan, atau telah kedaluwarsa.",
 	"password_reset_failed":              "Pemulihan kata sandi belum dapat diproses. Silakan coba lagi.",
 	"initial_password_change_invalid":    "Tautan penggantian kata sandi awal tidak valid atau telah kedaluwarsa.",
-	"email_verification_required":        "Verifikasi email diperlukan untuk menjalankan operasi admin.",
+	"phone_verification_required":        "Verifikasi WhatsApp diperlukan untuk melanjutkan.",
 	"refresh_token_required":             "Sesi telah berakhir. Silakan masuk kembali.",
 	"invalid_refresh_token":              "Sesi tidak valid. Silakan masuk kembali.",
 	"logout_failed":                      "Gagal keluar. Silakan coba lagi.",
-	"email_verification_failed":          "Tautan verifikasi email tidak valid atau telah kedaluwarsa.",
-	"email_verification_delivery_failed": "Email verifikasi belum dapat dikirim. Silakan coba lagi.",
 	"phone_verification_failed":          "Nomor atau kode verifikasi WhatsApp tidak valid.",
+	"email_verification_failed":          "Verifikasi kontak telah dipindahkan ke WhatsApp.",
+	"email_verification_delivery_failed": "Pengiriman verifikasi telah dipindahkan ke WhatsApp.",
+	"phone_required":                     "Nomor WhatsApp wajib diisi.",
 	"recent_auth_required":               "Silakan masuk kembali sebelum menyelesaikan keputusan sensitif ini.",
 
 	// devices

@@ -18,7 +18,15 @@ func (r *Repository) CreateUserWithPassword(ctx context.Context, id, email, name
 	return r.CreateProvisionedUser(ctx, id, email, name, passwordHash, role, false)
 }
 
+func (r *Repository) CreateUserWithPasswordAndPhone(ctx context.Context, id, email, name, phone, passwordHash, role string) (model.User, error) {
+	return r.CreateProvisionedUserWithPhone(ctx, id, email, name, phone, passwordHash, role, false)
+}
+
 func (r *Repository) CreateProvisionedUser(ctx context.Context, id, email, name, passwordHash, role string, mustChangePassword bool) (model.User, error) {
+	return r.CreateProvisionedUserWithPhone(ctx, id, email, name, "", passwordHash, role, mustChangePassword)
+}
+
+func (r *Repository) CreateProvisionedUserWithPhone(ctx context.Context, id, email, name, phone, passwordHash, role string, mustChangePassword bool) (model.User, error) {
 	if r.db == nil {
 		if _, exists := r.store.UserByEmail(email); exists {
 			return model.User{}, fmt.Errorf("email already exists")
@@ -28,6 +36,7 @@ func (r *Repository) CreateProvisionedUser(ctx context.Context, id, email, name,
 			Email:              email,
 			DisplayName:        name,
 			Role:               role,
+			PhoneE164:          phone,
 			PasswordHash:       passwordHash,
 			MustChangePassword: mustChangePassword,
 			CreatedAt:          time.Now().UTC(),
@@ -46,6 +55,9 @@ func (r *Repository) CreateProvisionedUser(ctx context.Context, id, email, name,
 		SetMustChangePassword(mustChangePassword)
 	if passwordHash != "" {
 		creator.SetPasswordHash(passwordHash)
+	}
+	if phone != "" {
+		creator.SetPhoneE164(phone)
 	}
 	row, err := creator.Save(ctx)
 	if err != nil {

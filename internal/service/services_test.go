@@ -33,7 +33,7 @@ func testCfg() config.Config {
 func TestAdminService_CreateAccountAndImmutableStatusUpdate(t *testing.T) {
 	repo, _ := newRepo(t)
 	svc := NewAdminServiceWithConfig(repo, testCfg(), zap.NewNop())
-	created, temporaryPassword, err := svc.CreateAccount(context.Background(), "usr_nasywa", "new-admin@example.com", "New Admin", "admin", "approved staffing")
+	created, temporaryPassword, err := svc.CreateAccount(context.Background(), "usr_nasywa", "new-admin@example.com", "+6281200000012", "New Admin", "admin", "approved staffing")
 	require.NoError(t, err)
 	assert.Equal(t, "admin", created.Role)
 	assert.NotEmpty(t, temporaryPassword)

@@ -16,55 +16,30 @@ import (
 
 var e164Pattern = regexp.MustCompile(`^\+[1-9][0-9]{7,14}$`)
 
-func (s *AuthService) BeginEmailVerification(ctx context.Context, user model.User) (string, error) {
-	if user.EmailVerifiedAt != nil {
-		return "", nil
+func normalizePhone(phone string) string {
+	phone = strings.TrimSpace(phone)
+	phone = strings.NewReplacer(" ", "", "-", "", "(", "", ")").Replace(phone)
+	if strings.HasPrefix(phone, "00") {
+		phone = "+" + strings.TrimPrefix(phone, "00")
 	}
-	rawToken := "email_" + uuid.NewString() + uuid.NewString()
-	now := time.Now().UTC()
-	if err := s.repo.SaveContactVerification(ctx, model.ContactVerification{
-		ID: "verify_" + uuid.NewString()[:12], UserID: user.ID, Kind: "email",
-		Destination: user.Email, TokenHash: HashRefreshToken(rawToken),
-		ExpiresAt: now.Add(30 * time.Minute), CreatedAt: now,
-	}); err != nil {
-		return "", err
+	if strings.HasPrefix(phone, "0") {
+		phone = "+62" + strings.TrimPrefix(phone, "0")
 	}
-	verificationURL := s.cfg.PublicWebBaseURL + "/verify-email?token=" + rawToken
-	if err := s.email.SendVerification(ctx, user.Email, verificationURL); err != nil {
-		return "", err
+	if !strings.HasPrefix(phone, "+") {
+		phone = "+" + phone
 	}
-	if s.cfg.NotificationMode == "demo" {
-		return verificationURL, nil
-	}
-	return "", nil
-}
-
-func (s *AuthService) ResendEmailVerification(ctx context.Context, userID string) (string, error) {
-	user, ok := s.repo.UserByID(ctx, userID)
-	if !ok {
-		return "", fmt.Errorf("user not found")
-	}
-	return s.BeginEmailVerification(ctx, user)
-}
-
-func (s *AuthService) ConfirmEmailVerification(ctx context.Context, rawToken string) error {
-	rawToken = strings.TrimSpace(rawToken)
-	if rawToken == "" {
-		return fmt.Errorf("verification token is required")
-	}
-	verification, err := s.repo.ConsumeContactVerification(ctx, HashRefreshToken(rawToken), "email", time.Now().UTC())
-	if err != nil {
-		return err
-	}
-	return s.repo.MarkEmailVerified(ctx, verification.UserID, time.Now().UTC())
+	return phone
 }
 
 func (s *AuthService) BeginPhoneVerification(ctx context.Context, userID, phone string) (string, error) {
 	user, ok := s.repo.UserByID(ctx, userID)
-	if !ok || user.Role != "partner" {
-		return "", fmt.Errorf("phone verification is only available for partner accounts")
+	if !ok || user.DisabledAt != nil {
+		return "", fmt.Errorf("user not found")
 	}
-	phone = strings.ReplaceAll(strings.TrimSpace(phone), " ", "")
+	if strings.TrimSpace(phone) == "" {
+		phone = user.PhoneE164
+	}
+	phone = normalizePhone(phone)
 	if !e164Pattern.MatchString(phone) {
 		return "", fmt.Errorf("phone must use E.164 format")
 	}
@@ -83,7 +58,7 @@ func (s *AuthService) BeginPhoneVerification(ctx context.Context, userID, phone 
 	}); err != nil {
 		return "", err
 	}
-	if err := NewWhatsAppService(s.cfg, s.logger).SendPhoneVerification(ctx, phone, code); err != nil {
+	if err := s.notification.SendPhoneVerification(ctx, phone, code); err != nil {
 		return "", err
 	}
 	if s.cfg.NotificationMode == "demo" {

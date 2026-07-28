@@ -87,14 +87,14 @@ func (m *Middleware) RequireRoles(roles ...string) gin.HandlerFunc {
 	}
 }
 
-func (m *Middleware) RequireVerifiedEmail() gin.HandlerFunc {
+func (m *Middleware) RequireVerifiedPhone() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID, _ := c.Get("user_id")
-		if m.auth.HasVerifiedEmail(c.Request.Context(), fmt.Sprint(userID)) {
+		if m.auth.HasVerifiedPhone(c.Request.Context(), fmt.Sprint(userID)) {
 			c.Next()
 			return
 		}
-		m.respondError(c, http.StatusForbidden, "email_verification_required")
+		m.respondError(c, http.StatusForbidden, "phone_verification_required")
 		c.Abort()
 	}
 }

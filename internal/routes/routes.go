@@ -25,10 +25,8 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	v1.POST("/auth/first-login/password", mid.RateLimitMiddleware("8-M"), h.CompleteInitialPasswordChange)
 	v1.POST("/auth/refresh", h.Refresh)
 	v1.POST("/auth/logout", h.Logout)
-	v1.POST("/auth/email-verification/confirm", mid.RateLimitMiddleware("10-M"), h.ConfirmEmailVerification)
-	v1.POST("/auth/email-verification/resend", mid.AuthRequired(), mid.RateLimitMiddleware("3-M"), h.ResendEmailVerification)
-	v1.POST("/auth/phone-verification/start", mid.AuthRequired(), mid.RequireRoles("partner"), mid.RateLimitMiddleware("3-M"), h.BeginPhoneVerification)
-	v1.POST("/auth/phone-verification/confirm", mid.AuthRequired(), mid.RequireRoles("partner"), mid.RateLimitMiddleware("8-M"), h.ConfirmPhoneVerification)
+	v1.POST("/auth/phone-verification/start", mid.AuthRequired(), mid.RequireRoles("user", "partner", "admin"), mid.RateLimitMiddleware("3-M"), h.BeginPhoneVerification)
+	v1.POST("/auth/phone-verification/confirm", mid.AuthRequired(), mid.RequireRoles("user", "partner", "admin"), mid.RateLimitMiddleware("8-M"), h.ConfirmPhoneVerification)
 	v1.GET("/operator/invitations/:token", h.RetiredOperatorInvitation)
 	v1.GET("/public/site-social-links", h.PublicSiteSocialLinks)
 
@@ -132,11 +130,11 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	v1.GET("/client/protection-analytics", mid.AuthRequired(), h.ProtectionAnalytics)
 
 	// Portal Overview
-	v1.GET("/portal/overview", mid.AuthRequired(), mid.RequireRoles("admin"), mid.RequireVerifiedEmail(), h.PortalOverview)
+	v1.GET("/portal/overview", mid.AuthRequired(), mid.RequireRoles("admin"), mid.RequireVerifiedPhone(), h.PortalOverview)
 
 	// Admin Control Portal
 	admin := v1.Group("/admin")
-	admin.Use(mid.AuthRequired(), mid.RequireRoles("admin"), mid.RequireVerifiedEmail())
+	admin.Use(mid.AuthRequired(), mid.RequireRoles("admin"), mid.RequireVerifiedPhone())
 	{
 		admin.GET("/overview", h.AdminOverview)
 		admin.GET("/content/modules", h.AdminModules)
@@ -178,7 +176,7 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 
 	// Releases Creation
 	releasesGroup := v1.Group("/releases")
-	releasesGroup.Use(mid.AuthRequired(), mid.RequireRoles("admin"), mid.RequireVerifiedEmail())
+	releasesGroup.Use(mid.AuthRequired(), mid.RequireRoles("admin"), mid.RequireVerifiedPhone())
 	{
 		releasesGroup.POST("/model", h.CreateModelRelease)
 		releasesGroup.POST("/ruleset", h.CreateRulesetRelease)

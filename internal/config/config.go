@@ -27,14 +27,9 @@ type Config struct {
 	AvatarStoragePath    string
 	MediaEmbedHosts      []string
 	JournalEncryptionKey string
-	WhatsAppAPIKey       string
-	WhatsAppPhoneID      string
-	WhatsAppBaseURL      string
-	SMTPHost             string
-	SMTPPort             string
-	SMTPUsername         string
-	SMTPPassword         string
-	SMTPFrom             string
+	FonnteToken          string
+	FonnteBaseURL        string
+	FonnteCountryCode    string
 	EnableDevLogin       bool
 	EnableDemoData       bool
 }
@@ -59,6 +54,9 @@ func (c Config) Validate() error {
 	if c.NotificationMode == "demo" {
 		return fmt.Errorf("NOTIFICATION_MODE=demo is not allowed in production")
 	}
+	if strings.TrimSpace(c.FonnteToken) == "" {
+		return fmt.Errorf("FONNTE_TOKEN is required in production")
+	}
 	return nil
 }
 
@@ -80,14 +78,9 @@ func Load() Config {
 	viper.SetDefault("AVATAR_STORAGE_PATH", "./var/media/avatars")
 	viper.SetDefault("MEDIA_EMBED_ALLOWED_HOSTS", "www.youtube-nocookie.com,player.vimeo.com,who.int,www.who.int,ppatk.go.id,www.ppatk.go.id,ojk.go.id,www.ojk.go.id,komdigi.go.id,www.komdigi.go.id,kemkes.go.id,www.kemkes.go.id")
 	viper.SetDefault("JOURNAL_ENCRYPTION_KEY", "")
-	viper.SetDefault("WHATSAPP_API_KEY", "")
-	viper.SetDefault("WHATSAPP_PHONE_ID", "")
-	viper.SetDefault("WHATSAPP_BASE_URL", "https://graph.facebook.com/v18.0")
-	viper.SetDefault("SMTP_HOST", "")
-	viper.SetDefault("SMTP_PORT", "587")
-	viper.SetDefault("SMTP_USERNAME", "")
-	viper.SetDefault("SMTP_PASSWORD", "")
-	viper.SetDefault("SMTP_FROM", "")
+	viper.SetDefault("FONNTE_TOKEN", "")
+	viper.SetDefault("FONNTE_BASE_URL", "https://api.fonnte.com")
+	viper.SetDefault("FONNTE_COUNTRY_CODE", "62")
 	viper.SetDefault("ENABLE_DEV_LOGIN", false)
 	viper.SetDefault("ENABLE_DEMO_DATA", false)
 	viper.AutomaticEnv()
@@ -119,14 +112,9 @@ func Load() Config {
 		AvatarStoragePath:    viper.GetString("AVATAR_STORAGE_PATH"),
 		MediaEmbedHosts:      splitCSV(viper.GetString("MEDIA_EMBED_ALLOWED_HOSTS")),
 		JournalEncryptionKey: viper.GetString("JOURNAL_ENCRYPTION_KEY"),
-		WhatsAppAPIKey:       viper.GetString("WHATSAPP_API_KEY"),
-		WhatsAppPhoneID:      viper.GetString("WHATSAPP_PHONE_ID"),
-		WhatsAppBaseURL:      viper.GetString("WHATSAPP_BASE_URL"),
-		SMTPHost:             viper.GetString("SMTP_HOST"),
-		SMTPPort:             viper.GetString("SMTP_PORT"),
-		SMTPUsername:         viper.GetString("SMTP_USERNAME"),
-		SMTPPassword:         viper.GetString("SMTP_PASSWORD"),
-		SMTPFrom:             viper.GetString("SMTP_FROM"),
+		FonnteToken:          viper.GetString("FONNTE_TOKEN"),
+		FonnteBaseURL:        strings.TrimRight(viper.GetString("FONNTE_BASE_URL"), "/"),
+		FonnteCountryCode:    viper.GetString("FONNTE_COUNTRY_CODE"),
 		EnableDevLogin:       viper.GetBool("ENABLE_DEV_LOGIN"),
 		EnableDemoData:       viper.GetBool("ENABLE_DEMO_DATA"),
 	}

@@ -38,14 +38,15 @@ func (h *Handler) Register(c *gin.Context) {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 		Name     string `json:"name"`
+		Phone    string `json:"phone"`
 		Role     string `json:"role"`
 	}
 	_ = c.ShouldBindJSON(&input)
-	if input.Email == "" || input.Name == "" || len(input.Password) < 8 {
+	if input.Email == "" || input.Name == "" || input.Phone == "" || len(input.Password) < 8 {
 		h.respondCode(c, http.StatusBadRequest, "validation_failed")
 		return
 	}
-	response, err := h.services.Auth.Register(c.Request.Context(), input.Email, input.Password, input.Name, input.Role)
+	response, err := h.services.Auth.Register(c.Request.Context(), input.Email, input.Password, input.Name, input.Phone, input.Role)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "registration_failed", err)
 		return
@@ -200,30 +201,6 @@ func (h *Handler) Logout(c *gin.Context) {
 		return
 	}
 	h.respond(c, http.StatusOK, gin.H{"revoked": true})
-}
-
-func (h *Handler) ConfirmEmailVerification(c *gin.Context) {
-	var input struct {
-		Token string `json:"token"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil || input.Token == "" {
-		h.respondCode(c, http.StatusBadRequest, "err_validation")
-		return
-	}
-	if err := h.services.Auth.ConfirmEmailVerification(c.Request.Context(), input.Token); err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "email_verification_failed", err)
-		return
-	}
-	h.respond(c, http.StatusOK, gin.H{"verified": true})
-}
-
-func (h *Handler) ResendEmailVerification(c *gin.Context) {
-	previewURL, err := h.services.Auth.ResendEmailVerification(c.Request.Context(), h.currentUserID(c))
-	if err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "email_verification_delivery_failed", err)
-		return
-	}
-	h.respond(c, http.StatusOK, gin.H{"sent": true, "preview_url": previewURL})
 }
 
 func (h *Handler) BeginPhoneVerification(c *gin.Context) {

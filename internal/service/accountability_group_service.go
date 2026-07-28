@@ -106,8 +106,8 @@ func (s *AccountabilityGroupService) CreateGroup(ctx context.Context, partnerID,
 	if !ok || partner.Role != "partner" {
 		return model.AccountabilityGroup{}, fmt.Errorf("only a partner can create an accountability group")
 	}
-	if partner.EmailVerifiedAt == nil || partner.PhoneVerifiedAt == nil {
-		return model.AccountabilityGroup{}, fmt.Errorf("verified email and phone are required before creating a group")
+	if partner.PhoneVerifiedAt == nil {
+		return model.AccountabilityGroup{}, fmt.Errorf("verified WhatsApp number is required before creating a group")
 	}
 	name = strings.TrimSpace(name)
 	description = strings.TrimSpace(description)
@@ -156,8 +156,8 @@ func (s *AccountabilityGroupService) Join(ctx context.Context, studentID, rawCod
 		return model.AccountabilityMembership{}, fmt.Errorf("group confirmation is required")
 	}
 	student, ok := s.repo.UserByID(ctx, studentID)
-	if !ok || student.Role != "user" || student.EmailVerifiedAt == nil {
-		return model.AccountabilityMembership{}, fmt.Errorf("a verified student account is required")
+	if !ok || student.Role != "user" || student.PhoneVerifiedAt == nil {
+		return model.AccountabilityMembership{}, fmt.Errorf("a verified student WhatsApp number is required")
 	}
 	if existing, err := s.repo.ActiveMembershipForStudent(ctx, studentID); err != nil {
 		return model.AccountabilityMembership{}, err

@@ -64,14 +64,14 @@ func TestAuthService_LoginUnknownFails(t *testing.T) {
 
 func TestAuthService_RegisterDuplicateEmailFails(t *testing.T) {
 	svc, _ := newAuthSvc(t)
-	_, err := svc.Register(context.Background(), "gading@gmail.com", "password2", "Gading")
+	_, err := svc.Register(context.Background(), "gading@gmail.com", "password2", "Gading", "+6281200000010")
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "email already exists")
 }
 
 func TestAuthService_RegisterNewUser(t *testing.T) {
 	svc, _ := newAuthSvc(t)
-	resp, err := svc.Register(context.Background(), "newbie@example.com", "password2", "Newbie")
+	resp, err := svc.Register(context.Background(), "newbie@example.com", "password2", "Newbie", "+6281200000011")
 	require.NoError(t, err)
 	assert.NotEmpty(t, resp.AccessToken)
 	assert.Equal(t, "newbie@example.com", resp.User.Email)

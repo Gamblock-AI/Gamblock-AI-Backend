@@ -32,7 +32,7 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (model.
 		return model.AuthResponse{PasswordChangeRequired: true, PasswordChangeToken: token}, nil
 	}
 	response, err := s.authPair(ctx, user, nil)
-	response.VerificationRequired = user.EmailVerifiedAt == nil
+	response.VerificationRequired = user.PhoneVerifiedAt == nil
 	return response, err
 }
 
@@ -44,9 +44,9 @@ func (s *AuthService) ActiveIdentity(ctx context.Context, userID string) (string
 	return user.Role, ok && user.DisabledAt == nil && !user.MustChangePassword
 }
 
-func (s *AuthService) HasVerifiedEmail(ctx context.Context, userID string) bool {
+func (s *AuthService) HasVerifiedPhone(ctx context.Context, userID string) bool {
 	user, ok := s.repo.UserByID(ctx, userID)
-	return ok && user.DisabledAt == nil && user.EmailVerifiedAt != nil
+	return ok && user.DisabledAt == nil && user.PhoneVerifiedAt != nil
 }
 
 func (s *AuthService) CompleteInitialPasswordChange(ctx context.Context, token, newPassword string) (model.AuthResponse, error) {
@@ -75,15 +75,19 @@ func (s *AuthService) CompleteInitialPasswordChange(ctx context.Context, token, 
 	return s.authPair(ctx, user, nil)
 }
 
-func (s *AuthService) Register(ctx context.Context, email, password, name string, requestedRole ...string) (model.AuthResponse, error) {
+func (s *AuthService) Register(ctx context.Context, email, password, name, phone string, requestedRole ...string) (model.AuthResponse, error) {
 	email = strings.TrimSpace(strings.ToLower(email))
 	name = strings.TrimSpace(name)
+	phone = normalizePhone(phone)
 	role := "user"
 	if len(requestedRole) > 0 && requestedRole[0] != "" {
 		role = requestedRole[0]
 	}
 	if len(password) < 8 {
 		return model.AuthResponse{}, fmt.Errorf("password must contain at least 8 characters")
+	}
+	if !e164Pattern.MatchString(phone) {
+		return model.AuthResponse{}, fmt.Errorf("phone must use E.164 format")
 	}
 	if _, ok := s.repo.UserByEmail(ctx, email); ok {
 		return model.AuthResponse{}, fmt.Errorf("email already exists")
@@ -95,7 +99,7 @@ func (s *AuthService) Register(ctx context.Context, email, password, name string
 	if err != nil {
 		return model.AuthResponse{}, err
 	}
-	user, err := s.repo.CreateUserWithPassword(ctx, "usr_"+uuid.NewString()[:8], email, name, passwordHash, role)
+	user, err := s.repo.CreateUserWithPasswordAndPhone(ctx, "usr_"+uuid.NewString()[:8], email, name, phone, passwordHash, role)
 	if err != nil {
 		return model.AuthResponse{}, err
 	}
@@ -103,12 +107,12 @@ func (s *AuthService) Register(ctx context.Context, email, password, name string
 	if err != nil {
 		return model.AuthResponse{}, err
 	}
-	previewURL, deliveryErr := s.BeginEmailVerification(ctx, user)
+	previewCode, deliveryErr := s.BeginPhoneVerification(ctx, user.ID, phone)
 	if deliveryErr != nil {
-		s.logger.Warn("email verification delivery failed", zap.String("user_id", user.ID))
+		s.logger.Warn("phone verification delivery failed", zap.String("user_id", user.ID))
 	}
 	response.VerificationRequired = true
-	response.VerificationPreviewURL = previewURL
+	response.VerificationPreviewCode = previewCode
 	return response, nil
 }
 

@@ -15,7 +15,7 @@ import (
 	"google.golang.org/api/idtoken"
 )
 
-type captureAuthEmail struct {
+type captureAuthNotification struct {
 	resetCode string
 }
 
@@ -28,8 +28,10 @@ func (verifier fakeGoogleVerifier) Validate(context.Context, string, string) (*i
 	return verifier.payload, verifier.err
 }
 
-func (sender *captureAuthEmail) SendVerification(context.Context, string, string) error { return nil }
-func (sender *captureAuthEmail) SendPasswordReset(_ context.Context, _ string, code string) error {
+func (sender *captureAuthNotification) SendPhoneVerification(context.Context, string, string) error {
+	return nil
+}
+func (sender *captureAuthNotification) SendPasswordReset(_ context.Context, _ string, code string) error {
 	sender.resetCode = code
 	return nil
 }
@@ -45,7 +47,7 @@ func TestGoogleLoginRequiresExplicitLinkForExistingEmail(t *testing.T) {
 		},
 	}}
 	repo := repository.New(nil, store.NewSeeded())
-	svc := NewAuthServiceWithDependencies(repo, cfg, zap.NewNop(), verifier, &captureAuthEmail{})
+	svc := NewAuthServiceWithDependencies(repo, cfg, zap.NewNop(), verifier, &captureAuthNotification{})
 
 	_, err := svc.GoogleLogin(context.Background(), "token", "", "user", "expected")
 	assert.ErrorIs(t, err, ErrGoogleLinkRequired)
@@ -54,14 +56,14 @@ func TestGoogleLoginRequiresExplicitLinkForExistingEmail(t *testing.T) {
 	assert.NotErrorIs(t, err, ErrGoogleLinkRequired)
 }
 
-func newRecoveryAuthService(t *testing.T) (*AuthService, *captureAuthEmail) {
+func newRecoveryAuthService(t *testing.T) (*AuthService, *captureAuthNotification) {
 	t.Helper()
 	cfg := config.Config{
 		AppEnv: "test", NotificationMode: "demo",
 		JWTAccessSecret: "test-secret-very-long-please-32bytes!",
 		JWTAccessTTL:    time.Hour, JWTRefreshTTL: 720 * time.Hour,
 	}
-	email := &captureAuthEmail{}
+	email := &captureAuthNotification{}
 	repo := repository.New(nil, store.NewSeeded())
 	return NewAuthServiceWithDependencies(repo, cfg, zap.NewNop(), nil, email), email
 }

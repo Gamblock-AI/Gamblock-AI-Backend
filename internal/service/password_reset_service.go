@@ -28,7 +28,7 @@ var ErrPasswordResetInvalid = errors.New("password reset code is invalid or expi
 func (s *AuthService) RequestPasswordReset(ctx context.Context, email string) (string, error) {
 	email = strings.TrimSpace(strings.ToLower(email))
 	user, exists := s.repo.UserByEmail(ctx, email)
-	if !exists || user.DisabledAt != nil {
+	if !exists || user.DisabledAt != nil || user.PhoneVerifiedAt == nil || user.PhoneE164 == "" {
 		return "", nil
 	}
 	code, err := randomReadableCode(12)
@@ -46,10 +46,10 @@ func (s *AuthService) RequestPasswordReset(ctx context.Context, email string) (s
 	}); err != nil {
 		return "", err
 	}
-	if err := s.email.SendPasswordReset(ctx, email, code); err != nil {
-		// SMTP is optional at startup. Keep the public response indistinguishable
+	if err := s.notification.SendPasswordReset(ctx, user.PhoneE164, code); err != nil {
+		// Keep the public response indistinguishable
 		// from an unknown email when delivery is unavailable.
-		s.logger.Warn("password reset delivery failed", zap.String("user_id", user.ID))
+		s.logger.Warn("password reset WhatsApp delivery failed", zap.String("user_id", user.ID))
 		return "", nil
 	}
 	if s.cfg.NotificationMode == "demo" {

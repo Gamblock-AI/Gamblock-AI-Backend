@@ -219,10 +219,10 @@ link the same verified Google email through `POST /v1/me/google/link` after
 current-password authentication. `POST /v1/auth/password-reset/request` is
 non-enumerating; `POST /v1/auth/password-reset/confirm` consumes the latest
 hashed 12-character code within 30 minutes and revokes all refresh sessions.
-SMTP and WhatsApp are optional delivery adapters. Production can start without
-either provider while keeping `NOTIFICATION_MODE=production`; email
-verification/reset/export notifications and WhatsApp verification/delivery are
-then unavailable rather than exposing demo codes. Development login and
+Fonnte is the production transactional delivery adapter. Production requires
+`FONNTE_TOKEN`; WhatsApp verification/reset/export notifications are unavailable
+without it rather than exposing demo codes. Email remains the login identity.
+Development login and
 contextual demo records remain separately opt-in and forbidden in production.
 
 Production CI builds the private GHCR image on `main`, including the API,

@@ -143,10 +143,11 @@ func (s *AdminService) Accounts(ctx context.Context) ([]model.AdminAccount, erro
 	return s.repo.ListAdminAccounts(ctx)
 }
 
-func (s *AdminService) CreateAccount(ctx context.Context, actorID, email, displayName, role, reason string) (model.User, string, error) {
+func (s *AdminService) CreateAccount(ctx context.Context, actorID, email, phone, displayName, role, reason string) (model.User, string, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
+	phone = normalizePhone(phone)
 	displayName = strings.TrimSpace(displayName)
-	if !model.IsAccountRole(role) || email == "" || !strings.Contains(email, "@") || displayName == "" || strings.TrimSpace(reason) == "" {
+	if !model.IsAccountRole(role) || email == "" || !strings.Contains(email, "@") || !e164Pattern.MatchString(phone) || displayName == "" || strings.TrimSpace(reason) == "" {
 		return model.User{}, "", fmt.Errorf("invalid account")
 	}
 	if _, exists := s.repo.UserByEmail(ctx, email); exists {
@@ -161,7 +162,7 @@ func (s *AdminService) CreateAccount(ctx context.Context, actorID, email, displa
 	if err != nil {
 		return model.User{}, "", err
 	}
-	user, err := s.repo.CreateProvisionedUser(ctx, "usr_"+uuid.NewString()[:12], email, displayName, passwordHash, role, true)
+	user, err := s.repo.CreateProvisionedUserWithPhone(ctx, "usr_"+uuid.NewString()[:12], email, displayName, phone, passwordHash, role, true)
 	if err != nil {
 		return model.User{}, "", err
 	}

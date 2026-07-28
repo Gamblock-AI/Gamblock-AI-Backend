@@ -47,13 +47,14 @@ func (s *AuthService) authPairAt(ctx context.Context, user model.User, deviceID 
 		return model.AuthResponse{}, err
 	}
 	return model.AuthResponse{
-		AccessToken:     accessToken,
-		RefreshToken:    rawRefresh,
-		TokenType:       "Bearer",
-		ExpiresIn:       int(s.cfg.JWTAccessTTL.Seconds()),
-		User:            user,
-		PasswordEnabled: user.PasswordHash != "",
-		GoogleLinked:    user.GoogleSubject != "",
+		AccessToken:          accessToken,
+		RefreshToken:         rawRefresh,
+		TokenType:            "Bearer",
+		ExpiresIn:            int(s.cfg.JWTAccessTTL.Seconds()),
+		User:                 user,
+		PasswordEnabled:      user.PasswordHash != "",
+		GoogleLinked:         user.GoogleSubject != "",
+		VerificationRequired: user.PhoneVerifiedAt == nil,
 	}, nil
 }
 
