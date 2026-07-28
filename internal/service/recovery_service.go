@@ -17,6 +17,11 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/repository"
 )
 
+// ErrRecoverySpaceItemLocked marks placement/theme rejections whose criteria
+// the user can still meet; handlers map it to the stable code
+// recovery_space_item_locked.
+var ErrRecoverySpaceItemLocked = fmt.Errorf("recovery space item is not unlocked")
+
 type RecoveryRepository interface {
 	GetIntention(ctx context.Context, userID string) (model.Intention, bool)
 	SaveIntention(ctx context.Context, userID, text, status string) (model.Intention, error)
@@ -176,7 +181,40 @@ func (s *RecoveryService) SaveRecoveryPractice(ctx context.Context, userID, kind
 		ID: "practice_" + uuid.NewString()[:12], UserID: userID, PracticeKind: kind,
 		DurationSeconds: durationSeconds, Feedback: feedback, CompletedAt: now, CreatedAt: now,
 	}
-	return s.recordRepo.SaveRecoveryPracticeSession(ctx, item)
+	firstToday, err := s.isFirstPracticeToday(ctx, userID)
+	if err != nil {
+		return model.RecoveryPracticeSession{}, err
+	}
+	saved, err := s.recordRepo.SaveRecoveryPracticeSession(ctx, item)
+	if err != nil {
+		return model.RecoveryPracticeSession{}, err
+	}
+	if firstToday {
+		total, expErr := s.recordRepo.AddUserExperiencePoints(ctx, userID, practiceExpReward)
+		if expErr == nil {
+			saved.ExpAwarded = practiceExpReward
+			progress := experienceProgress(total)
+			saved.Experience = &progress
+		}
+	}
+	return saved, nil
+}
+
+// isFirstPracticeToday caps practice EXP at one deterministic award per
+// Asia/Jakarta day so practices cannot be farmed for experience.
+func (s *RecoveryService) isFirstPracticeToday(ctx context.Context, userID string) (bool, error) {
+	_, dayStartUTC, dayEndUTC := jakartaDay(time.Now().In(jakartaLocation))
+	cutoff := time.Now().UTC().AddDate(-1, 0, 0)
+	sessions, err := s.recordRepo.ListRecoveryPracticeSessions(ctx, userID, cutoff)
+	if err != nil {
+		return false, err
+	}
+	for _, session := range sessions {
+		if !session.CompletedAt.Before(dayStartUTC) && session.CompletedAt.Before(dayEndUTC) {
+			return false, nil
+		}
+	}
+	return true, nil
 }
 
 func (s *RecoveryService) GetRecoverySpace(ctx context.Context, userID string) (model.RecoverySpace, error) {
@@ -197,34 +235,22 @@ func (s *RecoveryService) GetRecoverySpace(ctx context.Context, userID string) (
 	for _, key := range item.UnlockedItems {
 		unlocked[key] = true
 	}
-	if evidence.PracticeKinds["grounding_54321"] {
-		unlocked["plant"] = true
-	}
-	if evidence.PracticeKinds["urge_surfing"] {
-		unlocked["curtain"] = true
-	}
-	if evidence.PracticeKinds["focus_sprint"] {
-		unlocked["desk_lamp"] = true
-	}
-	if evidence.HasFocusJournal {
-		unlocked["note_board"] = true
-	}
-	if evidence.HasWeeklyReview {
-		unlocked["wall_art"] = true
-	}
-	if evidence.ActiveDays >= 5 {
-		unlocked["gami_figure"] = true
+	for _, rule := range decorUnlockRules {
+		if rule.Unlocked(evidence) {
+			unlocked[rule.Item] = true
+		}
 	}
 	item.UnlockedItems = item.UnlockedItems[:0]
 	for key := range unlocked {
 		item.UnlockedItems = append(item.UnlockedItems, key)
 	}
 	sort.Strings(item.UnlockedItems)
+	item.UnlockRuleVersion = recoveryUnlockRuleVersion
 	item.UpdatedAt = now
 	return s.recordRepo.SaveRecoverySpace(ctx, item)
 }
 
-func (s *RecoveryService) UpdateRecoverySpace(ctx context.Context, userID string, placedItems map[string]any) (model.RecoverySpace, error) {
+func (s *RecoveryService) UpdateRecoverySpace(ctx context.Context, userID, theme string, placedItems map[string]any) (model.RecoverySpace, error) {
 	item, err := s.GetRecoverySpace(ctx, userID)
 	if err != nil {
 		return model.RecoverySpace{}, err
@@ -236,10 +262,54 @@ func (s *RecoveryService) UpdateRecoverySpace(ctx context.Context, userID string
 	for _, key := range item.UnlockedItems {
 		allowed[key] = true
 	}
-	for key := range placedItems {
+	usedSlots := map[string]string{}
+	for key, value := range placedItems {
 		if !allowed[key] {
-			return model.RecoverySpace{}, fmt.Errorf("recovery space item is not unlocked")
+			return model.RecoverySpace{}, fmt.Errorf("%w: item %s", ErrRecoverySpaceItemLocked, key)
 		}
+		slots := decorSlots[key]
+		if len(slots) == 0 {
+			return model.RecoverySpace{}, fmt.Errorf("%w: item %s has no slots", ErrRecoverySpaceItemLocked, key)
+		}
+		slot := slots[0]
+		switch typed := value.(type) {
+		case bool:
+			if !typed {
+				return model.RecoverySpace{}, fmt.Errorf("%w: invalid placement for %s", ErrRecoverySpaceItemLocked, key)
+			}
+		case string:
+			valid := false
+			for _, candidate := range slots {
+				if candidate == typed {
+					valid = true
+					break
+				}
+			}
+			if !valid {
+				return model.RecoverySpace{}, fmt.Errorf("%w: invalid slot for %s", ErrRecoverySpaceItemLocked, key)
+			}
+			slot = typed
+		default:
+			return model.RecoverySpace{}, fmt.Errorf("%w: invalid placement value for %s", ErrRecoverySpaceItemLocked, key)
+		}
+		if other, taken := usedSlots[slot]; taken {
+			return model.RecoverySpace{}, fmt.Errorf("%w: slot %s already holds %s", ErrRecoverySpaceItemLocked, slot, other)
+		}
+		usedSlots[slot] = key
+	}
+	if theme != "" {
+		evidence := s.recordRepo.RecoveryUnlockEvidence(ctx, userID)
+		valid := false
+		for _, candidate := range unlockedThemes(evidence) {
+			if candidate == theme {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			return model.RecoverySpace{}, fmt.Errorf("%w: theme %s", ErrRecoverySpaceItemLocked, theme)
+		}
+		item.Theme = theme
 	}
 	item.PlacedItems = placedItems
 	item.UpdatedAt = time.Now().UTC()

@@ -93,6 +93,10 @@ func TestMission_GetTodayEmptyThenUpdate(t *testing.T) {
 	st.Partners = append(st.Partners, model.Partner{
 		ID: "pl_dery", UserID: "usr_dery", Status: "active", CreatedAt: now, UpdatedAt: now,
 	})
+	st.RecoveryPracticeSessions = append(st.RecoveryPracticeSessions, model.RecoveryPracticeSession{
+		ID: "practice_dery", UserID: "usr_dery", PracticeKind: "grounding_54321",
+		DurationSeconds: 120, CompletedAt: now, CreatedAt: now,
+	})
 	st.Unlock()
 
 	m, err := svc.GetToday(ctx, "usr_dery")
@@ -124,7 +128,7 @@ func TestMission_AdjustPrimaryOnceThenSkipReplacement(t *testing.T) {
 	today, err := svc.GetToday(ctx, "usr_dery")
 	require.NoError(t, err)
 	require.Len(t, today.Tasks, 3)
-	require.Len(t, today.ReplacementOptions, 2)
+	require.Len(t, today.ReplacementOptions, 3)
 	primary := today.Tasks[0].Number
 	replacement := today.ReplacementOptions[0]
 

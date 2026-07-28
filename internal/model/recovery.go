@@ -40,6 +40,9 @@ type RecoveryPracticeSession struct {
 	Feedback        string    `json:"feedback,omitempty"`
 	CompletedAt     time.Time `json:"completed_at"`
 	CreatedAt       time.Time `json:"created_at"`
+	// Response-only reward fields; never persisted.
+	ExpAwarded int                 `json:"exp_awarded,omitempty"`
+	Experience *ExperienceProgress `json:"experience,omitempty"`
 }
 
 type RecoverySpace struct {
@@ -65,8 +68,13 @@ type WeeklyReview struct {
 }
 
 type RecoveryUnlockEvidence struct {
-	PracticeKinds   map[string]bool
-	HasFocusJournal bool
-	HasWeeklyReview bool
-	ActiveDays      int
+	PracticeKinds    map[string]bool
+	HasFocusJournal  bool
+	HasWeeklyReview  bool
+	ActiveDays       int
+	TotalPractices   int
+	FocusJournals    int
+	WeeklyReviews    int
+	MissionsClaimed  int
+	ExperiencePoints int
 }

@@ -508,7 +508,7 @@ func (RecoverySpace) Fields() []ent.Field {
 	return []ent.Field{
 		idField(),
 		field.String("user_id").Unique(),
-		field.Enum("theme").Values("dorm_room").Default("dorm_room"),
+		field.Enum("theme").Values("dorm_room", "sunrise_study").Default("dorm_room"),
 		field.JSON("unlocked_items_json", []string{}).Default([]string{}),
 		field.JSON("placed_items_json", map[string]any{}).Default(map[string]any{}),
 		field.Int("unlock_rule_version").Default(1).Positive(),

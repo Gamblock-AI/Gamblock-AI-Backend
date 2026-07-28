@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -133,14 +135,21 @@ func (h *Handler) GetRecoverySpace(c *gin.Context) {
 
 func (h *Handler) UpdateRecoverySpace(c *gin.Context) {
 	var input struct {
+		Theme       string         `json:"theme"`
 		PlacedItems map[string]any `json:"placed_items"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		h.respondCode(c, http.StatusBadRequest, "err_validation")
 		return
 	}
-	item, err := h.services.Recovery.UpdateRecoverySpace(c.Request.Context(), h.currentUserID(c), input.PlacedItems)
+	item, err := h.services.Recovery.UpdateRecoverySpace(
+		c.Request.Context(), h.currentUserID(c), input.Theme, input.PlacedItems,
+	)
 	if err != nil {
+		if errors.Is(err, service.ErrRecoverySpaceItemLocked) {
+			h.respondErrorErr(c, http.StatusBadRequest, "recovery_space_item_locked", err)
+			return
+		}
 		h.respondErrorErr(c, http.StatusBadRequest, "recovery_space_update_failed", err)
 		return
 	}

@@ -22,7 +22,7 @@ type updateMissionInput struct {
 
 func (h *Handler) UpdateMission(c *gin.Context) {
 	var input updateMissionInput
-	if err := c.ShouldBindJSON(&input); err != nil || input.MissionNumber < 1 || input.MissionNumber > 5 {
+	if err := c.ShouldBindJSON(&input); err != nil || input.MissionNumber < 1 || input.MissionNumber > 6 {
 		h.respondCode(c, http.StatusBadRequest, "invalid_mission")
 		return
 	}
@@ -41,7 +41,7 @@ type claimMissionInput struct {
 
 func (h *Handler) ClaimMission(c *gin.Context) {
 	var input claimMissionInput
-	if err := c.ShouldBindJSON(&input); err != nil || input.MissionNumber < 1 || input.MissionNumber > 5 {
+	if err := c.ShouldBindJSON(&input); err != nil || input.MissionNumber < 1 || input.MissionNumber > 6 {
 		h.respondCode(c, http.StatusBadRequest, "invalid_mission")
 		return
 	}
@@ -67,7 +67,7 @@ type adjustMissionInput struct {
 
 func (h *Handler) AdjustMission(c *gin.Context) {
 	var input adjustMissionInput
-	if err := c.ShouldBindJSON(&input); err != nil || input.MissionNumber < 1 || input.MissionNumber > 5 {
+	if err := c.ShouldBindJSON(&input); err != nil || input.MissionNumber < 1 || input.MissionNumber > 6 {
 		h.respondCode(c, http.StatusBadRequest, "invalid_mission")
 		return
 	}

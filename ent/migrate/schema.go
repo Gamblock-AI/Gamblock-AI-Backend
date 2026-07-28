@@ -659,7 +659,7 @@ var (
 	RecoverySpacesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
 		{Name: "user_id", Type: field.TypeString, Unique: true},
-		{Name: "theme", Type: field.TypeEnum, Enums: []string{"dorm_room"}, Default: "dorm_room"},
+		{Name: "theme", Type: field.TypeEnum, Enums: []string{"dorm_room", "sunrise_study"}, Default: "dorm_room"},
 		{Name: "unlocked_items_json", Type: field.TypeJSON},
 		{Name: "placed_items_json", Type: field.TypeJSON},
 		{Name: "unlock_rule_version", Type: field.TypeInt, Default: 1},

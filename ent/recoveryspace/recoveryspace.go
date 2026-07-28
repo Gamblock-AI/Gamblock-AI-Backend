@@ -81,7 +81,8 @@ const DefaultTheme = ThemeDormRoom
 
 // Theme values.
 const (
-	ThemeDormRoom Theme = "dorm_room"
+	ThemeDormRoom     Theme = "dorm_room"
+	ThemeSunriseStudy Theme = "sunrise_study"
 )
 
 func (t Theme) String() string {
@@ -91,7 +92,7 @@ func (t Theme) String() string {
 // ThemeValidator is a validator for the "theme" field enum values. It is called by the builders before save.
 func ThemeValidator(t Theme) error {
 	switch t {
-	case ThemeDormRoom:
+	case ThemeDormRoom, ThemeSunriseStudy:
 		return nil
 	default:
 		return fmt.Errorf("recoveryspace: invalid enum value for theme field: %q", t)

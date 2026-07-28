@@ -13,6 +13,7 @@ import (
 )
 
 const experiencePerLevel = 100
+const practiceExpReward = 5
 
 var jakartaLocation = time.FixedZone("Asia/Jakarta", 7*60*60)
 var ErrMissionNotClaimable = errors.New("mission requirements are not verified")
@@ -87,6 +88,7 @@ func (s *MissionService) ClaimMission(
 	if !eligibility[missionNum] {
 		return model.DailyMission{}, ErrMissionNotClaimable
 	}
+	levelBefore := experienceProgress(points).Level
 	mission, points, err := s.repo.UpsertMission(
 		ctx,
 		userID,
@@ -100,7 +102,9 @@ func (s *MissionService) ClaimMission(
 	if err != nil {
 		return model.DailyMission{}, err
 	}
-	return decorateDailyMission(mission, points, now, eligibility), nil
+	decorated := decorateDailyMission(mission, points, now, eligibility)
+	decorated.Experience.NewlyUnlocked = newlyUnlockedDecor(levelBefore, decorated.Experience.Level)
+	return decorated, nil
 }
 
 func (s *MissionService) AdjustMission(
@@ -180,14 +184,14 @@ func jakartaDay(now time.Time) (string, time.Time, time.Time) {
 func assignedMissions(now time.Time) [3]int {
 	local := now.In(jakartaLocation)
 	calendarDay := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, time.UTC)
-	rotationStart := int(calendarDay.Unix()/int64(24*time.Hour/time.Second)) % 5
+	rotationStart := int(calendarDay.Unix()/int64(24*time.Hour/time.Second)) % 6
 	if rotationStart < 0 {
-		rotationStart += 5
+		rotationStart += 6
 	}
 	return [3]int{
 		rotationStart + 1,
-		(rotationStart+1)%5 + 1,
-		(rotationStart+2)%5 + 1,
+		(rotationStart+1)%6 + 1,
+		(rotationStart+2)%6 + 1,
 	}
 }
 
@@ -210,8 +214,8 @@ func containsMission(missions []int, number int) bool {
 }
 
 func replacementOptions(assigned [3]int) []int {
-	options := make([]int, 0, 2)
-	for number := 1; number <= 5; number++ {
+	options := make([]int, 0, 3)
+	for number := 1; number <= 6; number++ {
 		if !isAssignedMission(number, assigned) {
 			options = append(options, number)
 		}
@@ -321,6 +325,8 @@ func missionVerificationKey(number int) string {
 		return "active_partner"
 	case 5:
 		return "education_module_today"
+	case 6:
+		return "recovery_practice_today"
 	default:
 		return "unknown"
 	}
@@ -348,6 +354,8 @@ func missionFlag(mission model.DailyMission, number int) bool {
 		return mission.Mission4
 	case 5:
 		return mission.Mission5
+	case 6:
+		return mission.Mission6
 	default:
 		return false
 	}

@@ -13,6 +13,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationprogress"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoverypracticesession"
 	entuser "github.com/gamblock-ai/gamblock-ai-backend/ent/user"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
@@ -61,6 +62,13 @@ func (r *Repository) IsMissionClaimable(
 					return true, nil
 				}
 			}
+		case 6:
+			for _, item := range snapshot.RecoveryPracticeSessions {
+				if item.UserID == userID &&
+					!item.CompletedAt.Before(dayStartUTC) && item.CompletedAt.Before(dayEndUTC) {
+					return true, nil
+				}
+			}
 		}
 		return false, nil
 	}
@@ -104,6 +112,12 @@ func (r *Repository) IsMissionClaimable(
 			psychoeducationprogress.UserIDEQ(userID),
 			psychoeducationprogress.CompletedAtGTE(dayStartUTC),
 			psychoeducationprogress.CompletedAtLT(dayEndUTC),
+		).Exist(ctx)
+	case 6:
+		return r.db.RecoveryPracticeSession.Query().Where(
+			recoverypracticesession.UserIDEQ(userID),
+			recoverypracticesession.CompletedAtGTE(dayStartUTC),
+			recoverypracticesession.CompletedAtLT(dayEndUTC),
 		).Exist(ctx)
 	default:
 		return false, fmt.Errorf("unsupported mission %d", missionNum)
@@ -525,6 +539,35 @@ func (r *Repository) upsertMissionInMemory(
 	return toDailyMission(entry), userExperienceFromStore(r.store, userIndex), nil
 }
 
+func (r *Repository) AddUserExperiencePoints(
+	ctx context.Context,
+	userID string,
+	delta int,
+) (int, error) {
+	if r.db != nil {
+		if _, err := r.db.User.Update().
+			Where(entuser.IDEQ(userID)).
+			AddExperiencePoints(delta).
+			Save(ctx); err != nil {
+			return 0, err
+		}
+		return r.userExperience(ctx, userID)
+	}
+
+	r.store.Lock()
+	defer r.store.Unlock()
+	for index := range r.store.Users {
+		if r.store.Users[index].ID == userID {
+			r.store.Users[index].ExperiencePoints = max(
+				0,
+				r.store.Users[index].ExperiencePoints+delta,
+			)
+			return r.store.Users[index].ExperiencePoints, nil
+		}
+	}
+	return 0, fmt.Errorf("user %s not found", userID)
+}
+
 func (r *Repository) userExperience(ctx context.Context, userID string) (int, error) {
 	user, err := r.db.User.Query().Where(entuser.IDEQ(userID)).Only(ctx)
 	if err != nil {
@@ -587,6 +630,8 @@ func missionCompleted(mission model.DailyMission, number int) bool {
 		return mission.Mission4
 	case 5:
 		return mission.Mission5
+	case 6:
+		return mission.Mission6
 	default:
 		return false
 	}
@@ -604,6 +649,8 @@ func setMissionFlag(mission *model.DailyMission, number int, completed bool) {
 		mission.Mission4 = completed
 	case 5:
 		mission.Mission5 = completed
+	case 6:
+		mission.Mission6 = completed
 	}
 }
 
@@ -611,7 +658,7 @@ func toDailyMission(mission store.DailyMission) model.DailyMission {
 	result := model.DailyMission{
 		ID: mission.ID, UserID: mission.UserID, Date: mission.Date,
 		Mission1: mission.Mission1, Mission2: mission.Mission2, Mission3: mission.Mission3,
-		Mission4: mission.Mission4, Mission5: mission.Mission5,
+		Mission4: mission.Mission4, Mission5: mission.Mission5, Mission6: mission.Mission6,
 		AdjustmentHistory: append([]model.MissionAdjustment(nil), mission.AdjustmentHistory...),
 		CreatedAt:         mission.CreatedAt, UpdatedAt: mission.UpdatedAt,
 	}

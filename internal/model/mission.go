@@ -11,6 +11,7 @@ type DailyMission struct {
 	Mission3           bool                `json:"mission_3"`
 	Mission4           bool                `json:"mission_4"`
 	Mission5           bool                `json:"mission_5"`
+	Mission6           bool                `json:"mission_6"`
 	Tasks              []DailyMissionTask  `json:"tasks"`
 	Experience         ExperienceProgress  `json:"experience"`
 	CompletedCount     int                 `json:"completed_count"`
@@ -44,8 +45,9 @@ type MissionAdjustment struct {
 }
 
 type ExperienceProgress struct {
-	TotalEXP      int `json:"total_exp"`
-	Level         int `json:"level"`
-	LevelProgress int `json:"level_progress"`
-	LevelTarget   int `json:"level_target"`
+	TotalEXP      int      `json:"total_exp"`
+	Level         int      `json:"level"`
+	LevelProgress int      `json:"level_progress"`
+	LevelTarget   int      `json:"level_target"`
+	NewlyUnlocked []string `json:"newly_unlocked,omitempty"`
 }

@@ -62,7 +62,10 @@ func NewSeeded() *Store {
 			{ID: "ref_1", UserID: "usr_gading", Text: "Hari ini saya berhasil menahan diri dari godaan untuk membuka aplikasi berkat Pattern Interrupt.", Mood: "😊 Baik", CreatedAt: now.Add(-24 * time.Hour), UpdatedAt: now.Add(-24 * time.Hour)},
 			{ID: "ref_2", UserID: "usr_gading", Text: "Merasa cemas di sore hari karena bosan, tapi berhasil mengalihkan perhatian dengan jalan kaki dan membaca modul kesadaran.", Mood: "😟 Cemas", CreatedAt: now.Add(-48 * time.Hour), UpdatedAt: now.Add(-48 * time.Hour)},
 		},
-		Missions:   []DailyMission{{ID: "mis_001", UserID: "usr_gading", Date: jakartaDate, Mission1: true, Mission2: true, Mission3: false, Mission4: false, Mission5: false, CreatedAt: now, UpdatedAt: now}},
+		Missions: []DailyMission{{ID: "mis_001", UserID: "usr_gading", Date: jakartaDate, Mission1: true, Mission2: true, Mission3: false, Mission4: false, Mission5: false, CreatedAt: now, UpdatedAt: now}},
+		RecoveryPracticeSessions: []RecoveryPracticeSession{
+			{ID: "practice_demo_001", UserID: "usr_gading", PracticeKind: "grounding_54321", DurationSeconds: 120, Feedback: "lighter", CompletedAt: now.Add(-30 * time.Minute), CreatedAt: now.Add(-30 * time.Minute)},
+		},
 		Intentions: []Intention{{ID: "int_1", UserID: "usr_gading", Text: "Saya ingin menyelesaikan kuliah dengan pikiran yang lebih tenang.", Status: "active", CreatedAt: now, UpdatedAt: now}},
 		CheckIns:   []CheckIn{{ID: "chk_1", UserID: "usr_gading", Mood: 4, Urge: 2, Context: "Merasa cukup tenang pagi ini.", CreatedAt: now}},
 	}

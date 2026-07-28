@@ -172,18 +172,23 @@ func (r *Repository) RecoveryUnlockEvidence(ctx context.Context, userID string) 
 	for _, item := range snapshot.RecoveryPracticeSessions {
 		if item.UserID == userID {
 			evidence.PracticeKinds[item.PracticeKind] = true
+			evidence.TotalPractices++
 			days[item.CompletedAt.UTC().Format("2006-01-02")] = true
 		}
 	}
 	for _, item := range snapshot.JournalEntries {
 		if item.UserID == userID {
-			evidence.HasFocusJournal = evidence.HasFocusJournal || item.IsFocus
+			if item.IsFocus {
+				evidence.HasFocusJournal = true
+				evidence.FocusJournals++
+			}
 			days[item.CreatedAt.UTC().Format("2006-01-02")] = true
 		}
 	}
 	for _, item := range snapshot.RecoveryRecords {
 		if item.UserID == userID && item.Kind == "weekly_review" {
 			evidence.HasWeeklyReview = true
+			evidence.WeeklyReviews++
 			days[item.RecordDate] = true
 		}
 	}
@@ -193,8 +198,27 @@ func (r *Repository) RecoveryUnlockEvidence(ctx context.Context, userID string) 
 		}
 	}
 	for _, item := range snapshot.Missions {
-		if item.UserID == userID && (item.Mission1 || item.Mission2 || item.Mission3 || item.Mission4 || item.Mission5) {
+		if item.UserID != userID {
+			continue
+		}
+		claimed := 0
+		for _, done := range []bool{
+			item.Mission1, item.Mission2, item.Mission3,
+			item.Mission4, item.Mission5, item.Mission6,
+		} {
+			if done {
+				claimed++
+			}
+		}
+		if claimed > 0 {
 			days[item.Date] = true
+		}
+		evidence.MissionsClaimed += claimed
+	}
+	for _, user := range snapshot.Users {
+		if user.ID == userID {
+			evidence.ExperiencePoints = user.ExperiencePoints
+			break
 		}
 	}
 	evidence.ActiveDays = len(days)
