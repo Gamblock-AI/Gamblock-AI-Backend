@@ -830,11 +830,7 @@ func aggregateForMembership(snapshot *store.Store, item model.AccountabilityMemb
 		result.CheckInDays = len(days)
 		for _, mission := range snapshot.Missions {
 			if mission.UserID == item.StudentID {
-				for _, done := range []bool{mission.Mission1, mission.Mission2, mission.Mission3, mission.Mission4, mission.Mission5} {
-					if done {
-						result.MissionCompleted++
-					}
-				}
+				result.MissionCompleted += mission.SystemCompletedTaskCount()
 			}
 		}
 	}

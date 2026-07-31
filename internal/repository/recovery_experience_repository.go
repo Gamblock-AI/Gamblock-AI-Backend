@@ -201,15 +201,7 @@ func (r *Repository) RecoveryUnlockEvidence(ctx context.Context, userID string) 
 		if item.UserID != userID {
 			continue
 		}
-		claimed := 0
-		for _, done := range []bool{
-			item.Mission1, item.Mission2, item.Mission3,
-			item.Mission4, item.Mission5, item.Mission6,
-		} {
-			if done {
-				claimed++
-			}
-		}
+		claimed := item.CompletedTaskCount()
 		if claimed > 0 {
 			days[item.Date] = true
 		}

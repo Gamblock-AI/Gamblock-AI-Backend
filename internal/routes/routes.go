@@ -69,14 +69,18 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 
 	// Daily Missions
 	v1.GET("/missions/today", mid.AuthRequired(), mid.RequireRoles("user"), h.GetTodayMission)
-	v1.PATCH("/missions", mid.AuthRequired(), mid.RequireRoles("user"), h.UpdateMission)
 	v1.POST("/missions/claim", mid.AuthRequired(), mid.RequireRoles("user"), h.ClaimMission)
-	v1.POST("/missions/adjust", mid.AuthRequired(), mid.RequireRoles("user"), h.AdjustMission)
+	v1.POST("/missions/custom", mid.AuthRequired(), mid.RequireRoles("user"), h.CreateCustomMission)
+	v1.PATCH("/missions/custom/:id", mid.AuthRequired(), mid.RequireRoles("user"), h.UpdateCustomMission)
+	v1.DELETE("/missions/custom/:id", mid.AuthRequired(), mid.RequireRoles("user"), h.DeleteCustomMission)
 
 	// Reflections / Psychoeducation
 	v1.GET("/reflections", mid.AuthRequired(), mid.RequireRoles("user"), h.GetReflections)
 	v1.POST("/reflections", mid.AuthRequired(), mid.RequireRoles("user"), h.CreateReflection)
 	v1.PATCH("/reflections/:id", mid.AuthRequired(), mid.RequireRoles("user"), h.UpdateReflection)
+	v1.GET("/journal/today", mid.AuthRequired(), mid.RequireRoles("user"), h.GetDailyJournal)
+	v1.PUT("/journal/today", mid.AuthRequired(), mid.RequireRoles("user"), h.UpsertDailyJournal)
+	v1.GET("/journal", mid.AuthRequired(), mid.RequireRoles("user"), h.GetDailyJournals)
 	v1.GET("/psychoeducation/modules", mid.AuthRequired(), h.GetModules)
 	v1.GET("/psychoeducation/modules/:slug", mid.AuthRequired(), h.GetModuleDetail)
 	v1.PUT("/psychoeducation/modules/:id/revisions/:revision/progress", mid.AuthRequired(), h.UpdateEducationProgress)

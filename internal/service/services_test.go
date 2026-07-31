@@ -102,8 +102,7 @@ func TestMission_GetTodayEmptyThenUpdate(t *testing.T) {
 	m, err := svc.GetToday(ctx, "usr_dery")
 	require.NoError(t, err)
 	assert.Equal(t, "usr_dery", m.UserID)
-	require.Len(t, m.Tasks, 3)
-	assert.Equal(t, "primary", m.Tasks[0].Role)
+	require.Len(t, m.Tasks, 5)
 	assert.Equal(t, 0, m.Experience.TotalEXP)
 
 	primary := m.Tasks[0]
@@ -118,44 +117,6 @@ func TestMission_GetTodayEmptyThenUpdate(t *testing.T) {
 
 	_, err = svc.UpdateMission(ctx, "usr_dery", primary.Number, false)
 	require.ErrorIs(t, err, ErrMissionNotClaimable)
-}
-
-func TestMission_AdjustPrimaryOnceThenSkipReplacement(t *testing.T) {
-	repo, _ := newRepo(t)
-	svc := NewMissionService(repo, zap.NewNop())
-	ctx := context.Background()
-
-	today, err := svc.GetToday(ctx, "usr_dery")
-	require.NoError(t, err)
-	require.Len(t, today.Tasks, 3)
-	require.Len(t, today.ReplacementOptions, 3)
-	primary := today.Tasks[0].Number
-	replacement := today.ReplacementOptions[0]
-
-	replaced, err := svc.AdjustMission(
-		ctx, "usr_dery", primary, "replace", "not_a_good_fit", replacement,
-	)
-	require.NoError(t, err)
-	assert.Equal(t, replacement, replaced.Tasks[0].Number)
-	assert.Equal(t, primary, replaced.Tasks[0].ReplacedFrom)
-	assert.Empty(t, replaced.ReplacementOptions)
-	assert.Equal(t, 0, replaced.Experience.TotalEXP)
-
-	_, err = svc.AdjustMission(
-		ctx, "usr_dery", replacement, "replace", "not_a_good_fit", primary,
-	)
-	require.ErrorIs(t, err, ErrMissionAdjustment)
-
-	skipped, err := svc.AdjustMission(
-		ctx, "usr_dery", replacement, "skip", "not_enough_time", 0,
-	)
-	require.NoError(t, err)
-	assert.Equal(t, "skipped", skipped.Tasks[0].Status)
-	assert.Equal(t, 1, skipped.ResolvedCount)
-	assert.Equal(t, 0, skipped.Experience.TotalEXP)
-
-	_, err = svc.ClaimMission(ctx, "usr_dery", replacement)
-	require.Error(t, err)
 }
 
 // --- OrganizationService ---

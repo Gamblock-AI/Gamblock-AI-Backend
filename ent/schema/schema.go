@@ -445,6 +445,8 @@ func (DailyMission) Fields() []ent.Field {
 		field.String("user_id"),
 		field.String("mission_date").Optional().Nillable(),
 		field.String("mission_key"),
+		field.Enum("source").Values("system", "custom").Default("system"),
+		field.Text("title_encrypted").Optional().Nillable().Sensitive(),
 		field.Enum("status").Values("completed", "skipped", "pending").Default("pending"),
 		field.Enum("adjustment_reason").Values(
 			"not_enough_time",

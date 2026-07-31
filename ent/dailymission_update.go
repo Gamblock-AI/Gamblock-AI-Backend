@@ -76,6 +76,40 @@ func (_u *DailyMissionUpdate) SetNillableMissionKey(v *string) *DailyMissionUpda
 	return _u
 }
 
+// SetSource sets the "source" field.
+func (_u *DailyMissionUpdate) SetSource(v dailymission.Source) *DailyMissionUpdate {
+	_u.mutation.SetSource(v)
+	return _u
+}
+
+// SetNillableSource sets the "source" field if the given value is not nil.
+func (_u *DailyMissionUpdate) SetNillableSource(v *dailymission.Source) *DailyMissionUpdate {
+	if v != nil {
+		_u.SetSource(*v)
+	}
+	return _u
+}
+
+// SetTitleEncrypted sets the "title_encrypted" field.
+func (_u *DailyMissionUpdate) SetTitleEncrypted(v string) *DailyMissionUpdate {
+	_u.mutation.SetTitleEncrypted(v)
+	return _u
+}
+
+// SetNillableTitleEncrypted sets the "title_encrypted" field if the given value is not nil.
+func (_u *DailyMissionUpdate) SetNillableTitleEncrypted(v *string) *DailyMissionUpdate {
+	if v != nil {
+		_u.SetTitleEncrypted(*v)
+	}
+	return _u
+}
+
+// ClearTitleEncrypted clears the value of the "title_encrypted" field.
+func (_u *DailyMissionUpdate) ClearTitleEncrypted() *DailyMissionUpdate {
+	_u.mutation.ClearTitleEncrypted()
+	return _u
+}
+
 // SetStatus sets the "status" field.
 func (_u *DailyMissionUpdate) SetStatus(v dailymission.Status) *DailyMissionUpdate {
 	_u.mutation.SetStatus(v)
@@ -220,6 +254,11 @@ func (_u *DailyMissionUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *DailyMissionUpdate) check() error {
+	if v, ok := _u.mutation.Source(); ok {
+		if err := dailymission.SourceValidator(v); err != nil {
+			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "DailyMission.source": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Status(); ok {
 		if err := dailymission.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "DailyMission.status": %w`, err)}
@@ -261,6 +300,15 @@ func (_u *DailyMissionUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if value, ok := _u.mutation.MissionKey(); ok {
 		_spec.SetField(dailymission.FieldMissionKey, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Source(); ok {
+		_spec.SetField(dailymission.FieldSource, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.TitleEncrypted(); ok {
+		_spec.SetField(dailymission.FieldTitleEncrypted, field.TypeString, value)
+	}
+	if _u.mutation.TitleEncryptedCleared() {
+		_spec.ClearField(dailymission.FieldTitleEncrypted, field.TypeString)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(dailymission.FieldStatus, field.TypeEnum, value)
@@ -357,6 +405,40 @@ func (_u *DailyMissionUpdateOne) SetNillableMissionKey(v *string) *DailyMissionU
 	if v != nil {
 		_u.SetMissionKey(*v)
 	}
+	return _u
+}
+
+// SetSource sets the "source" field.
+func (_u *DailyMissionUpdateOne) SetSource(v dailymission.Source) *DailyMissionUpdateOne {
+	_u.mutation.SetSource(v)
+	return _u
+}
+
+// SetNillableSource sets the "source" field if the given value is not nil.
+func (_u *DailyMissionUpdateOne) SetNillableSource(v *dailymission.Source) *DailyMissionUpdateOne {
+	if v != nil {
+		_u.SetSource(*v)
+	}
+	return _u
+}
+
+// SetTitleEncrypted sets the "title_encrypted" field.
+func (_u *DailyMissionUpdateOne) SetTitleEncrypted(v string) *DailyMissionUpdateOne {
+	_u.mutation.SetTitleEncrypted(v)
+	return _u
+}
+
+// SetNillableTitleEncrypted sets the "title_encrypted" field if the given value is not nil.
+func (_u *DailyMissionUpdateOne) SetNillableTitleEncrypted(v *string) *DailyMissionUpdateOne {
+	if v != nil {
+		_u.SetTitleEncrypted(*v)
+	}
+	return _u
+}
+
+// ClearTitleEncrypted clears the value of the "title_encrypted" field.
+func (_u *DailyMissionUpdateOne) ClearTitleEncrypted() *DailyMissionUpdateOne {
+	_u.mutation.ClearTitleEncrypted()
 	return _u
 }
 
@@ -517,6 +599,11 @@ func (_u *DailyMissionUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *DailyMissionUpdateOne) check() error {
+	if v, ok := _u.mutation.Source(); ok {
+		if err := dailymission.SourceValidator(v); err != nil {
+			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "DailyMission.source": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Status(); ok {
 		if err := dailymission.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "DailyMission.status": %w`, err)}
@@ -575,6 +662,15 @@ func (_u *DailyMissionUpdateOne) sqlSave(ctx context.Context) (_node *DailyMissi
 	}
 	if value, ok := _u.mutation.MissionKey(); ok {
 		_spec.SetField(dailymission.FieldMissionKey, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Source(); ok {
+		_spec.SetField(dailymission.FieldSource, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.TitleEncrypted(); ok {
+		_spec.SetField(dailymission.FieldTitleEncrypted, field.TypeString, value)
+	}
+	if _u.mutation.TitleEncryptedCleared() {
+		_spec.ClearField(dailymission.FieldTitleEncrypted, field.TypeString)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(dailymission.FieldStatus, field.TypeEnum, value)

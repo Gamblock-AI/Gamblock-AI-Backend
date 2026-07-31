@@ -23,6 +23,10 @@ type DailyMission struct {
 	MissionDate *string `json:"mission_date,omitempty"`
 	// MissionKey holds the value of the "mission_key" field.
 	MissionKey string `json:"mission_key,omitempty"`
+	// Source holds the value of the "source" field.
+	Source dailymission.Source `json:"source,omitempty"`
+	// TitleEncrypted holds the value of the "title_encrypted" field.
+	TitleEncrypted *string `json:"-"`
 	// Status holds the value of the "status" field.
 	Status dailymission.Status `json:"status,omitempty"`
 	// AdjustmentReason holds the value of the "adjustment_reason" field.
@@ -47,7 +51,7 @@ func (*DailyMission) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case dailymission.FieldExpReward:
 			values[i] = new(sql.NullInt64)
-		case dailymission.FieldID, dailymission.FieldUserID, dailymission.FieldMissionDate, dailymission.FieldMissionKey, dailymission.FieldStatus, dailymission.FieldAdjustmentReason, dailymission.FieldReplacementKey:
+		case dailymission.FieldID, dailymission.FieldUserID, dailymission.FieldMissionDate, dailymission.FieldMissionKey, dailymission.FieldSource, dailymission.FieldTitleEncrypted, dailymission.FieldStatus, dailymission.FieldAdjustmentReason, dailymission.FieldReplacementKey:
 			values[i] = new(sql.NullString)
 		case dailymission.FieldCompletedAt, dailymission.FieldCreatedAt, dailymission.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -90,6 +94,19 @@ func (_m *DailyMission) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field mission_key", values[i])
 			} else if value.Valid {
 				_m.MissionKey = value.String
+			}
+		case dailymission.FieldSource:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field source", values[i])
+			} else if value.Valid {
+				_m.Source = dailymission.Source(value.String)
+			}
+		case dailymission.FieldTitleEncrypted:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field title_encrypted", values[i])
+			} else if value.Valid {
+				_m.TitleEncrypted = new(string)
+				*_m.TitleEncrypted = value.String
 			}
 		case dailymission.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -182,6 +199,11 @@ func (_m *DailyMission) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("mission_key=")
 	builder.WriteString(_m.MissionKey)
+	builder.WriteString(", ")
+	builder.WriteString("source=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Source))
+	builder.WriteString(", ")
+	builder.WriteString("title_encrypted=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))

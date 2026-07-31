@@ -6,6 +6,7 @@ import (
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoverypracticesession"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
 )
 
@@ -46,6 +47,18 @@ func loadRecoveryStore(ctx context.Context, client *ent.Client, out *store.Store
 				byDay[key] = day
 			}
 			setMissionCompleted(day, missionKeyNumber(item.MissionKey), item.Status.String() == "completed")
+			day.TaskRecords = append(day.TaskRecords, model.MissionRecord{
+				ID:               item.ID,
+				Key:              item.MissionKey,
+				Source:           item.Source.String(),
+				TitleEncrypted:   value(item.TitleEncrypted),
+				Status:           item.Status.String(),
+				Reward:           item.ExpReward,
+				AdjustmentReason: valueEnum(item.AdjustmentReason),
+				CompletedAt:      item.CompletedAt,
+				CreatedAt:        item.CreatedAt,
+				UpdatedAt:        item.UpdatedAt,
+			})
 			if item.UpdatedAt.After(day.UpdatedAt) {
 				day.UpdatedAt = item.UpdatedAt
 			}

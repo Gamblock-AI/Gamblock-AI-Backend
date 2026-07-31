@@ -181,40 +181,11 @@ func (s *RecoveryService) SaveRecoveryPractice(ctx context.Context, userID, kind
 		ID: "practice_" + uuid.NewString()[:12], UserID: userID, PracticeKind: kind,
 		DurationSeconds: durationSeconds, Feedback: feedback, CompletedAt: now, CreatedAt: now,
 	}
-	firstToday, err := s.isFirstPracticeToday(ctx, userID)
-	if err != nil {
-		return model.RecoveryPracticeSession{}, err
-	}
 	saved, err := s.recordRepo.SaveRecoveryPracticeSession(ctx, item)
 	if err != nil {
 		return model.RecoveryPracticeSession{}, err
 	}
-	if firstToday {
-		total, expErr := s.recordRepo.AddUserExperiencePoints(ctx, userID, practiceExpReward)
-		if expErr == nil {
-			saved.ExpAwarded = practiceExpReward
-			progress := experienceProgress(total)
-			saved.Experience = &progress
-		}
-	}
 	return saved, nil
-}
-
-// isFirstPracticeToday caps practice EXP at one deterministic award per
-// Asia/Jakarta day so practices cannot be farmed for experience.
-func (s *RecoveryService) isFirstPracticeToday(ctx context.Context, userID string) (bool, error) {
-	_, dayStartUTC, dayEndUTC := jakartaDay(time.Now().In(jakartaLocation))
-	cutoff := time.Now().UTC().AddDate(-1, 0, 0)
-	sessions, err := s.recordRepo.ListRecoveryPracticeSessions(ctx, userID, cutoff)
-	if err != nil {
-		return false, err
-	}
-	for _, session := range sessions {
-		if !session.CompletedAt.Before(dayStartUTC) && session.CompletedAt.Before(dayEndUTC) {
-			return false, nil
-		}
-	}
-	return true, nil
 }
 
 func (s *RecoveryService) GetRecoverySpace(ctx context.Context, userID string) (model.RecoverySpace, error) {

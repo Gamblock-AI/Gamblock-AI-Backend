@@ -106,10 +106,12 @@ var messages = map[string]string{
 	"remove_member_failed": "Gagal mengeluarkan anggota.",
 
 	// missions
-	"mission_fetch_failed":  "Gagal memuat misi harian.",
-	"invalid_mission":       "Nomor misi harus 1-6.",
-	"mission_update_failed": "Gagal memperbarui misi harian.",
-	"mission_adjust_failed": "Misi utama belum dapat disesuaikan. Coba pilihan lain.",
+	"mission_fetch_failed":        "Gagal memuat misi harian.",
+	"invalid_mission":             "Misi tidak valid.",
+	"mission_update_failed":       "Gagal memperbarui misi harian.",
+	"custom_mission_limit":        "Maksimal lima misi custom per hari.",
+	"custom_mission_invalid":      "Isi misi custom belum valid.",
+	"custom_mission_not_editable": "Misi custom yang sudah selesai tidak dapat diubah.",
 
 	// reflections / psychoeducation
 	"fetch_reflections_failed":    "Gagal memuat jurnal refleksi.",

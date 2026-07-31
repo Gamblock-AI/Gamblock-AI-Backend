@@ -79,6 +79,11 @@ func MissionKey(v string) predicate.DailyMission {
 	return predicate.DailyMission(sql.FieldEQ(FieldMissionKey, v))
 }
 
+// TitleEncrypted applies equality check predicate on the "title_encrypted" field. It's identical to TitleEncryptedEQ.
+func TitleEncrypted(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEQ(FieldTitleEncrypted, v))
+}
+
 // ReplacementKey applies equality check predicate on the "replacement_key" field. It's identical to ReplacementKeyEQ.
 func ReplacementKey(v string) predicate.DailyMission {
 	return predicate.DailyMission(sql.FieldEQ(FieldReplacementKey, v))
@@ -307,6 +312,101 @@ func MissionKeyEqualFold(v string) predicate.DailyMission {
 // MissionKeyContainsFold applies the ContainsFold predicate on the "mission_key" field.
 func MissionKeyContainsFold(v string) predicate.DailyMission {
 	return predicate.DailyMission(sql.FieldContainsFold(FieldMissionKey, v))
+}
+
+// SourceEQ applies the EQ predicate on the "source" field.
+func SourceEQ(v Source) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEQ(FieldSource, v))
+}
+
+// SourceNEQ applies the NEQ predicate on the "source" field.
+func SourceNEQ(v Source) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNEQ(FieldSource, v))
+}
+
+// SourceIn applies the In predicate on the "source" field.
+func SourceIn(vs ...Source) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldIn(FieldSource, vs...))
+}
+
+// SourceNotIn applies the NotIn predicate on the "source" field.
+func SourceNotIn(vs ...Source) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNotIn(FieldSource, vs...))
+}
+
+// TitleEncryptedEQ applies the EQ predicate on the "title_encrypted" field.
+func TitleEncryptedEQ(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEQ(FieldTitleEncrypted, v))
+}
+
+// TitleEncryptedNEQ applies the NEQ predicate on the "title_encrypted" field.
+func TitleEncryptedNEQ(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNEQ(FieldTitleEncrypted, v))
+}
+
+// TitleEncryptedIn applies the In predicate on the "title_encrypted" field.
+func TitleEncryptedIn(vs ...string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldIn(FieldTitleEncrypted, vs...))
+}
+
+// TitleEncryptedNotIn applies the NotIn predicate on the "title_encrypted" field.
+func TitleEncryptedNotIn(vs ...string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNotIn(FieldTitleEncrypted, vs...))
+}
+
+// TitleEncryptedGT applies the GT predicate on the "title_encrypted" field.
+func TitleEncryptedGT(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldGT(FieldTitleEncrypted, v))
+}
+
+// TitleEncryptedGTE applies the GTE predicate on the "title_encrypted" field.
+func TitleEncryptedGTE(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldGTE(FieldTitleEncrypted, v))
+}
+
+// TitleEncryptedLT applies the LT predicate on the "title_encrypted" field.
+func TitleEncryptedLT(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldLT(FieldTitleEncrypted, v))
+}
+
+// TitleEncryptedLTE applies the LTE predicate on the "title_encrypted" field.
+func TitleEncryptedLTE(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldLTE(FieldTitleEncrypted, v))
+}
+
+// TitleEncryptedContains applies the Contains predicate on the "title_encrypted" field.
+func TitleEncryptedContains(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldContains(FieldTitleEncrypted, v))
+}
+
+// TitleEncryptedHasPrefix applies the HasPrefix predicate on the "title_encrypted" field.
+func TitleEncryptedHasPrefix(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldHasPrefix(FieldTitleEncrypted, v))
+}
+
+// TitleEncryptedHasSuffix applies the HasSuffix predicate on the "title_encrypted" field.
+func TitleEncryptedHasSuffix(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldHasSuffix(FieldTitleEncrypted, v))
+}
+
+// TitleEncryptedIsNil applies the IsNil predicate on the "title_encrypted" field.
+func TitleEncryptedIsNil() predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldIsNull(FieldTitleEncrypted))
+}
+
+// TitleEncryptedNotNil applies the NotNil predicate on the "title_encrypted" field.
+func TitleEncryptedNotNil() predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldNotNull(FieldTitleEncrypted))
+}
+
+// TitleEncryptedEqualFold applies the EqualFold predicate on the "title_encrypted" field.
+func TitleEncryptedEqualFold(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldEqualFold(FieldTitleEncrypted, v))
+}
+
+// TitleEncryptedContainsFold applies the ContainsFold predicate on the "title_encrypted" field.
+func TitleEncryptedContainsFold(v string) predicate.DailyMission {
+	return predicate.DailyMission(sql.FieldContainsFold(FieldTitleEncrypted, v))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.

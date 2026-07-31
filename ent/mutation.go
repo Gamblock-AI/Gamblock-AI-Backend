@@ -6773,6 +6773,8 @@ type DailyMissionMutation struct {
 	user_id           *string
 	mission_date      *string
 	mission_key       *string
+	source            *dailymission.Source
+	title_encrypted   *string
 	status            *dailymission.Status
 	adjustment_reason *dailymission.AdjustmentReason
 	replacement_key   *string
@@ -7010,6 +7012,91 @@ func (m *DailyMissionMutation) OldMissionKey(ctx context.Context) (v string, err
 // ResetMissionKey resets all changes to the "mission_key" field.
 func (m *DailyMissionMutation) ResetMissionKey() {
 	m.mission_key = nil
+}
+
+// SetSource sets the "source" field.
+func (m *DailyMissionMutation) SetSource(d dailymission.Source) {
+	m.source = &d
+}
+
+// Source returns the value of the "source" field in the mutation.
+func (m *DailyMissionMutation) Source() (r dailymission.Source, exists bool) {
+	v := m.source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSource returns the old "source" field's value of the DailyMission entity.
+// If the DailyMission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyMissionMutation) OldSource(ctx context.Context) (v dailymission.Source, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSource: %w", err)
+	}
+	return oldValue.Source, nil
+}
+
+// ResetSource resets all changes to the "source" field.
+func (m *DailyMissionMutation) ResetSource() {
+	m.source = nil
+}
+
+// SetTitleEncrypted sets the "title_encrypted" field.
+func (m *DailyMissionMutation) SetTitleEncrypted(s string) {
+	m.title_encrypted = &s
+}
+
+// TitleEncrypted returns the value of the "title_encrypted" field in the mutation.
+func (m *DailyMissionMutation) TitleEncrypted() (r string, exists bool) {
+	v := m.title_encrypted
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitleEncrypted returns the old "title_encrypted" field's value of the DailyMission entity.
+// If the DailyMission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyMissionMutation) OldTitleEncrypted(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitleEncrypted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitleEncrypted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitleEncrypted: %w", err)
+	}
+	return oldValue.TitleEncrypted, nil
+}
+
+// ClearTitleEncrypted clears the value of the "title_encrypted" field.
+func (m *DailyMissionMutation) ClearTitleEncrypted() {
+	m.title_encrypted = nil
+	m.clearedFields[dailymission.FieldTitleEncrypted] = struct{}{}
+}
+
+// TitleEncryptedCleared returns if the "title_encrypted" field was cleared in this mutation.
+func (m *DailyMissionMutation) TitleEncryptedCleared() bool {
+	_, ok := m.clearedFields[dailymission.FieldTitleEncrypted]
+	return ok
+}
+
+// ResetTitleEncrypted resets all changes to the "title_encrypted" field.
+func (m *DailyMissionMutation) ResetTitleEncrypted() {
+	m.title_encrypted = nil
+	delete(m.clearedFields, dailymission.FieldTitleEncrypted)
 }
 
 // SetStatus sets the "status" field.
@@ -7357,7 +7444,7 @@ func (m *DailyMissionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DailyMissionMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 12)
 	if m.user_id != nil {
 		fields = append(fields, dailymission.FieldUserID)
 	}
@@ -7366,6 +7453,12 @@ func (m *DailyMissionMutation) Fields() []string {
 	}
 	if m.mission_key != nil {
 		fields = append(fields, dailymission.FieldMissionKey)
+	}
+	if m.source != nil {
+		fields = append(fields, dailymission.FieldSource)
+	}
+	if m.title_encrypted != nil {
+		fields = append(fields, dailymission.FieldTitleEncrypted)
 	}
 	if m.status != nil {
 		fields = append(fields, dailymission.FieldStatus)
@@ -7402,6 +7495,10 @@ func (m *DailyMissionMutation) Field(name string) (ent.Value, bool) {
 		return m.MissionDate()
 	case dailymission.FieldMissionKey:
 		return m.MissionKey()
+	case dailymission.FieldSource:
+		return m.Source()
+	case dailymission.FieldTitleEncrypted:
+		return m.TitleEncrypted()
 	case dailymission.FieldStatus:
 		return m.Status()
 	case dailymission.FieldAdjustmentReason:
@@ -7431,6 +7528,10 @@ func (m *DailyMissionMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldMissionDate(ctx)
 	case dailymission.FieldMissionKey:
 		return m.OldMissionKey(ctx)
+	case dailymission.FieldSource:
+		return m.OldSource(ctx)
+	case dailymission.FieldTitleEncrypted:
+		return m.OldTitleEncrypted(ctx)
 	case dailymission.FieldStatus:
 		return m.OldStatus(ctx)
 	case dailymission.FieldAdjustmentReason:
@@ -7474,6 +7575,20 @@ func (m *DailyMissionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMissionKey(v)
+		return nil
+	case dailymission.FieldSource:
+		v, ok := value.(dailymission.Source)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSource(v)
+		return nil
+	case dailymission.FieldTitleEncrypted:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitleEncrypted(v)
 		return nil
 	case dailymission.FieldStatus:
 		v, ok := value.(dailymission.Status)
@@ -7572,6 +7687,9 @@ func (m *DailyMissionMutation) ClearedFields() []string {
 	if m.FieldCleared(dailymission.FieldMissionDate) {
 		fields = append(fields, dailymission.FieldMissionDate)
 	}
+	if m.FieldCleared(dailymission.FieldTitleEncrypted) {
+		fields = append(fields, dailymission.FieldTitleEncrypted)
+	}
 	if m.FieldCleared(dailymission.FieldAdjustmentReason) {
 		fields = append(fields, dailymission.FieldAdjustmentReason)
 	}
@@ -7598,6 +7716,9 @@ func (m *DailyMissionMutation) ClearField(name string) error {
 	case dailymission.FieldMissionDate:
 		m.ClearMissionDate()
 		return nil
+	case dailymission.FieldTitleEncrypted:
+		m.ClearTitleEncrypted()
+		return nil
 	case dailymission.FieldAdjustmentReason:
 		m.ClearAdjustmentReason()
 		return nil
@@ -7623,6 +7744,12 @@ func (m *DailyMissionMutation) ResetField(name string) error {
 		return nil
 	case dailymission.FieldMissionKey:
 		m.ResetMissionKey()
+		return nil
+	case dailymission.FieldSource:
+		m.ResetSource()
+		return nil
+	case dailymission.FieldTitleEncrypted:
+		m.ResetTitleEncrypted()
 		return nil
 	case dailymission.FieldStatus:
 		m.ResetStatus()

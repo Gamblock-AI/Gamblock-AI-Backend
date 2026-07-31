@@ -22,7 +22,7 @@ import (
 func newFullRouter(t *testing.T, appEnv string) (*gin.Engine, string) {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
-	cfg := config.Config{AppEnv: appEnv, JWTAccessSecret: "test-secret-very-long-please", JWTAccessTTL: 3600e9, JWTRefreshTTL: 720 * 3600e9}
+	cfg := config.Config{AppEnv: appEnv, JWTAccessSecret: "test-secret-very-long-please", JWTAccessTTL: 3600e9, JWTRefreshTTL: 720 * 3600e9, JournalEncryptionKey: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}
 	st := store.NewSeeded()
 	repo := repository.New(nil, st)
 	services := service.NewContainer(repo, cfg, zap.NewNop())
@@ -38,9 +38,8 @@ func newFullRouter(t *testing.T, appEnv string) (*gin.Engine, string) {
 	v1.GET("/client/progress", mid.AuthRequired(), h.ClientProgressSnapshot)
 	v1.GET("/portal/overview", mid.AuthRequired(), h.PortalOverview)
 	v1.GET("/missions/today", mid.AuthRequired(), h.GetTodayMission)
-	v1.PATCH("/missions", mid.AuthRequired(), h.UpdateMission)
 	v1.POST("/missions/claim", mid.AuthRequired(), h.ClaimMission)
-	v1.POST("/missions/adjust", mid.AuthRequired(), h.AdjustMission)
+	v1.POST("/missions/custom", mid.AuthRequired(), h.CreateCustomMission)
 	v1.GET("/approval-requests", mid.AuthRequired(), h.GetApprovalRequests)
 	v1.POST("/approval-requests", mid.AuthRequired(), h.CreateApprovalRequest)
 	v1.POST("/organizations", mid.AuthRequired(), h.CreateOrganization)
@@ -86,25 +85,18 @@ func TestHandler_GetTodayMission(t *testing.T) {
 	require.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestHandler_UpdateMission(t *testing.T) {
+func TestHandler_CreateCustomMission(t *testing.T) {
 	r, token := newFullRouter(t, "development")
-	today := authedGet(r, "/v1/missions/today", token)
-	require.Equal(t, http.StatusOK, today.Code)
-	var missionEnvelope envelopeShape
-	require.NoError(t, json.Unmarshal(today.Body.Bytes(), &missionEnvelope))
-	tasks := missionEnvelope.Data.(map[string]any)["tasks"].([]any)
-	missionNumber := verifiedMissionNumber(t, tasks)
 	body, err := json.Marshal(map[string]any{
-		"mission_number": missionNumber,
-		"completed":      true,
+		"title": "Walk after class",
 	})
 	require.NoError(t, err)
-	req := httptest.NewRequest(http.MethodPatch, "/v1/missions", bytes.NewReader(body))
+	req := httptest.NewRequest(http.MethodPost, "/v1/missions/custom", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusCreated, w.Code)
 }
 
 func TestHandler_ClaimMission(t *testing.T) {
@@ -114,9 +106,7 @@ func TestHandler_ClaimMission(t *testing.T) {
 	var missionEnvelope envelopeShape
 	require.NoError(t, json.Unmarshal(today.Body.Bytes(), &missionEnvelope))
 	tasks := missionEnvelope.Data.(map[string]any)["tasks"].([]any)
-	body, err := json.Marshal(map[string]any{
-		"mission_number": verifiedMissionNumber(t, tasks),
-	})
+	body, err := json.Marshal(map[string]any{"mission_id": systemMissionID(t, tasks)})
 	require.NoError(t, err)
 	req := httptest.NewRequest(http.MethodPost, "/v1/missions/claim", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -126,49 +116,22 @@ func TestHandler_ClaimMission(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestHandler_AdjustMission(t *testing.T) {
-	r, token := newFullRouter(t, "development")
-	today := authedGet(r, "/v1/missions/today", token)
-	require.Equal(t, http.StatusOK, today.Code)
-	var missionEnvelope envelopeShape
-	require.NoError(t, json.Unmarshal(today.Body.Bytes(), &missionEnvelope))
-	data := missionEnvelope.Data.(map[string]any)
-	tasks := data["tasks"].([]any)
-	replacements := data["replacement_options"].([]any)
-	require.NotEmpty(t, replacements)
-	body, err := json.Marshal(map[string]any{
-		"mission_number":     int(tasks[0].(map[string]any)["number"].(float64)),
-		"action":             "replace",
-		"reason":             "not_a_good_fit",
-		"replacement_number": int(replacements[0].(float64)),
-	})
-	require.NoError(t, err)
-	req := httptest.NewRequest(http.MethodPost, "/v1/missions/adjust", bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusOK, w.Code, w.Body.String())
-}
-
-func verifiedMissionNumber(t *testing.T, tasks []any) int {
+func systemMissionID(t *testing.T, tasks []any) string {
 	t.Helper()
 	for _, rawTask := range tasks {
 		task := rawTask.(map[string]any)
-		claimable, _ := task["claimable"].(bool)
-		completed, _ := task["completed"].(bool)
-		if claimable || completed {
-			return int(task["number"].(float64))
+		if task["source"] == "system" {
+			return task["id"].(string)
 		}
 	}
-	t.Fatal("expected at least one system-verified mission")
-	return 0
+	t.Fatal("expected at least one system mission")
+	return ""
 }
 
-func TestHandler_UpdateMission_InvalidNum(t *testing.T) {
+func TestHandler_CreateCustomMission_InvalidPayload(t *testing.T) {
 	r, token := newFullRouter(t, "development")
-	body := []byte(`{"mission_number":99,"completed":true}`)
-	req := httptest.NewRequest(http.MethodPatch, "/v1/missions", bytes.NewReader(body))
+	body := []byte(`{"title":""}`)
+	req := httptest.NewRequest(http.MethodPost, "/v1/missions/custom", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 	w := httptest.NewRecorder()

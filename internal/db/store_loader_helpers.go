@@ -26,7 +26,16 @@ func setMissionCompleted(day *store.DailyMission, number int, completed bool) {
 		day.Mission4 = completed
 	case 5:
 		day.Mission5 = completed
+	case 6:
+		day.Mission6 = completed
 	}
+}
+
+func valueEnum[T ~string](v *T) string {
+	if v == nil {
+		return ""
+	}
+	return string(*v)
 }
 
 func value(v *string) string {

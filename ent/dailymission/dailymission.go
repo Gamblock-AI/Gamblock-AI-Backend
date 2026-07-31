@@ -20,6 +20,10 @@ const (
 	FieldMissionDate = "mission_date"
 	// FieldMissionKey holds the string denoting the mission_key field in the database.
 	FieldMissionKey = "mission_key"
+	// FieldSource holds the string denoting the source field in the database.
+	FieldSource = "source"
+	// FieldTitleEncrypted holds the string denoting the title_encrypted field in the database.
+	FieldTitleEncrypted = "title_encrypted"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldAdjustmentReason holds the string denoting the adjustment_reason field in the database.
@@ -44,6 +48,8 @@ var Columns = []string{
 	FieldUserID,
 	FieldMissionDate,
 	FieldMissionKey,
+	FieldSource,
+	FieldTitleEncrypted,
 	FieldStatus,
 	FieldAdjustmentReason,
 	FieldReplacementKey,
@@ -77,6 +83,32 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() string
 )
+
+// Source defines the type for the "source" enum field.
+type Source string
+
+// SourceSystem is the default value of the Source enum.
+const DefaultSource = SourceSystem
+
+// Source values.
+const (
+	SourceSystem Source = "system"
+	SourceCustom Source = "custom"
+)
+
+func (s Source) String() string {
+	return string(s)
+}
+
+// SourceValidator is a validator for the "source" field enum values. It is called by the builders before save.
+func SourceValidator(s Source) error {
+	switch s {
+	case SourceSystem, SourceCustom:
+		return nil
+	default:
+		return fmt.Errorf("dailymission: invalid enum value for source field: %q", s)
+	}
+}
 
 // Status defines the type for the "status" enum field.
 type Status string
@@ -152,6 +184,16 @@ func ByMissionDate(opts ...sql.OrderTermOption) OrderOption {
 // ByMissionKey orders the results by the mission_key field.
 func ByMissionKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMissionKey, opts...).ToFunc()
+}
+
+// BySource orders the results by the source field.
+func BySource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSource, opts...).ToFunc()
+}
+
+// ByTitleEncrypted orders the results by the title_encrypted field.
+func ByTitleEncrypted(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTitleEncrypted, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.

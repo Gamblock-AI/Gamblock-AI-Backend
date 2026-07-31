@@ -63,7 +63,7 @@ func (r *Repository) GetDashboardData(ctx context.Context, userID string, now ti
 			}
 		}
 		for _, item := range snapshot.Missions {
-			if item.UserID == userID && item.Date >= start.Format("2006-01-02") && (item.Mission1 || item.Mission2 || item.Mission3 || item.Mission4 || item.Mission5) {
+			if item.UserID == userID && item.Date >= start.Format("2006-01-02") && item.CompletedTaskCount() > 0 {
 				activityDays[item.Date] = struct{}{}
 			}
 		}
@@ -197,12 +197,7 @@ func (r *Repository) GetProgressData(ctx context.Context, userID string, days in
 		if mission.UserID != userID || mission.Date < start.Format("2006-01-02") {
 			continue
 		}
-		count := 0
-		for _, completed := range []bool{mission.Mission1, mission.Mission2, mission.Mission3, mission.Mission4, mission.Mission5} {
-			if completed {
-				count++
-			}
-		}
+		count := mission.CompletedTaskCount()
 		if count > 0 {
 			activityDays[mission.Date] = struct{}{}
 			activityForDate(activityByDate, mission.Date).Missions += count

@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"go.uber.org/zap"
 	"strings"
+	"time"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/crypto"
@@ -19,6 +21,14 @@ type reflectionPayloadV2 struct {
 	MoodScore *int   `json:"mood_score,omitempty"`
 	NextStep  string `json:"next_step,omitempty"`
 }
+
+type reflectionPayloadV3 struct {
+	Version     int            `json:"version"`
+	JournalDate string         `json:"journal_date"`
+	Document    map[string]any `json:"document"`
+}
+
+var journalLocation = time.FixedZone("Asia/Jakarta", 7*60*60)
 
 type ReflectionService struct {
 	repo        *repository.Repository
@@ -50,8 +60,14 @@ func (s *ReflectionService) GetReflections(ctx context.Context, userID string) (
 				s.logger.Error("failed to decrypt journal entry", zap.String("entry_id", entries[i].ID), zap.Error(decErr))
 				return nil, fmt.Errorf("failed to decrypt journal entry")
 			}
+			var payloadV3 reflectionPayloadV3
 			var payload reflectionPayloadV2
-			if json.Unmarshal([]byte(decrypted), &payload) == nil && payload.Version == 2 {
+			if json.Unmarshal([]byte(decrypted), &payloadV3) == nil && payloadV3.Version == 3 {
+				entries[i].Document = payloadV3.Document
+				entries[i].JournalDate = payloadV3.JournalDate
+				entries[i].PayloadVersion = 3
+				entries[i].Text = ""
+			} else if json.Unmarshal([]byte(decrypted), &payload) == nil && payload.Version == 2 {
 				entries[i].Text = payload.Text
 				entries[i].MoodScore = payload.MoodScore
 				entries[i].NextStep = payload.NextStep
@@ -66,6 +82,142 @@ func (s *ReflectionService) GetReflections(ctx context.Context, userID string) (
 		}
 	}
 	return entries, nil
+}
+
+func journalDay(now time.Time) string { return now.In(journalLocation).Format("2006-01-02") }
+
+func (s *ReflectionService) GetDailyJournal(ctx context.Context, userID string) (*model.JournalEntry, error) {
+	entries, err := s.GetReflections(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	today := journalDay(time.Now())
+	for index := range entries {
+		if entries[index].PayloadVersion == 3 && entries[index].JournalDate == today {
+			return &entries[index], nil
+		}
+	}
+	return nil, nil
+}
+
+func (s *ReflectionService) GetDailyJournals(ctx context.Context, userID string) ([]model.JournalEntry, error) {
+	entries, err := s.GetReflections(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	journals := make([]model.JournalEntry, 0, len(entries))
+	for _, entry := range entries {
+		if entry.PayloadVersion == 3 && entry.JournalDate != "" {
+			journals = append(journals, entry)
+		}
+	}
+	return journals, nil
+}
+
+func (s *ReflectionService) UpsertDailyJournal(ctx context.Context, userID string, document map[string]any) (model.JournalEntry, error) {
+	if !s.encryptMode {
+		return model.JournalEntry{}, fmt.Errorf("encryption is required but not configured")
+	}
+	if err := validateJournalDocument(document); err != nil {
+		return model.JournalEntry{}, err
+	}
+	today := journalDay(time.Now())
+	payload, err := json.Marshal(reflectionPayloadV3{Version: 3, JournalDate: today, Document: document})
+	if err != nil {
+		return model.JournalEntry{}, fmt.Errorf("failed to encode journal entry")
+	}
+	encrypted, err := crypto.Encrypt(string(payload), s.cfg.JournalEncryptionKey)
+	if err != nil {
+		return model.JournalEntry{}, fmt.Errorf("failed to encrypt journal entry")
+	}
+	entries, err := s.GetReflections(ctx, userID)
+	if err != nil {
+		return model.JournalEntry{}, err
+	}
+	for _, entry := range entries {
+		if entry.PayloadVersion == 3 && entry.JournalDate == today {
+			persisted, updateErr := s.repo.UpdateReflectionEntry(ctx, model.JournalEntry{ID: entry.ID, UserID: userID, Text: encrypted, Status: entry.Status, IsFocus: false})
+			if updateErr != nil {
+				return model.JournalEntry{}, updateErr
+			}
+			persisted.Document, persisted.JournalDate, persisted.PayloadVersion = document, today, 3
+			return persisted, nil
+		}
+	}
+	created, err := s.repo.CreateReflectionEntry(ctx, model.JournalEntry{UserID: userID, Text: encrypted, Status: "active"})
+	if err != nil {
+		return model.JournalEntry{}, err
+	}
+	created.Document, created.JournalDate, created.PayloadVersion = document, today, 3
+	return created, nil
+}
+
+func validateJournalDocument(document map[string]any) error {
+	if document["type"] != "doc" {
+		return fmt.Errorf("journal document is invalid")
+	}
+	encoded, err := json.Marshal(document)
+	if err != nil || len(encoded) > 7*1024*1024 {
+		return fmt.Errorf("journal document is invalid")
+	}
+	images, text := 0, false
+	var walk func(any) error
+	walk = func(value any) error {
+		node, ok := value.(map[string]any)
+		if !ok {
+			return fmt.Errorf("journal document is invalid")
+		}
+		typeName, _ := node["type"].(string)
+		switch typeName {
+		case "doc", "paragraph", "text", "heading", "bulletList", "orderedList", "listItem", "blockquote", "hardBreak", "image":
+		default:
+			return fmt.Errorf("journal document is invalid")
+		}
+		if typeName == "text" {
+			if content, _ := node["text"].(string); strings.TrimSpace(content) != "" {
+				text = true
+			}
+		}
+		if typeName == "heading" {
+			attrs, _ := node["attrs"].(map[string]any)
+			level, _ := attrs["level"].(float64)
+			if level != 2 && level != 3 {
+				return fmt.Errorf("journal heading is invalid")
+			}
+		}
+		if typeName == "image" {
+			images++
+			if images > 5 {
+				return fmt.Errorf("too many journal images")
+			}
+			attrs, _ := node["attrs"].(map[string]any)
+			src, _ := attrs["src"].(string)
+			validImage := strings.HasPrefix(src, "data:image/jpeg;base64,") || strings.HasPrefix(src, "data:image/png;base64,") || strings.HasPrefix(src, "data:image/webp;base64,")
+			if !validImage {
+				return fmt.Errorf("journal image is invalid")
+			}
+			raw := src[strings.Index(src, ";base64,")+8:]
+			decoded, decodeErr := base64.StdEncoding.DecodeString(raw)
+			if decodeErr != nil || len(decoded) == 0 || len(decoded) > 1024*1024 {
+				return fmt.Errorf("journal image is invalid")
+			}
+		}
+		if children, ok := node["content"].([]any); ok {
+			for _, child := range children {
+				if err := walk(child); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+	if err = walk(document); err != nil {
+		return err
+	}
+	if !text && images == 0 {
+		return fmt.Errorf("journal document is empty")
+	}
+	return nil
 }
 
 func (s *ReflectionService) CreateReflection(ctx context.Context, userID, text, mood string) (model.JournalEntry, error) {

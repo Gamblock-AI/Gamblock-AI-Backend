@@ -34,7 +34,7 @@ func NewContainer(repo *repository.Repository, cfg config.Config, logger *zap.Lo
 		Support:              NewSupportServiceWithConfig(repo, cfg, logger),
 		Reflection:           NewReflectionService(repo, cfg, logger),
 		Organization:         NewOrganizationService(repo, logger),
-		Mission:              NewMissionService(repo, logger),
+		Mission:              NewMissionServiceWithConfig(repo, cfg, logger),
 		Recovery:             NewRecoveryServiceWithConfig(repo, cfg),
 		Client:               NewClientService(repo, cfg),
 		Education:            NewEducationService(repo, cfg),

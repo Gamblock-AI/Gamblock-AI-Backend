@@ -46,6 +46,34 @@ func (_c *DailyMissionCreate) SetMissionKey(v string) *DailyMissionCreate {
 	return _c
 }
 
+// SetSource sets the "source" field.
+func (_c *DailyMissionCreate) SetSource(v dailymission.Source) *DailyMissionCreate {
+	_c.mutation.SetSource(v)
+	return _c
+}
+
+// SetNillableSource sets the "source" field if the given value is not nil.
+func (_c *DailyMissionCreate) SetNillableSource(v *dailymission.Source) *DailyMissionCreate {
+	if v != nil {
+		_c.SetSource(*v)
+	}
+	return _c
+}
+
+// SetTitleEncrypted sets the "title_encrypted" field.
+func (_c *DailyMissionCreate) SetTitleEncrypted(v string) *DailyMissionCreate {
+	_c.mutation.SetTitleEncrypted(v)
+	return _c
+}
+
+// SetNillableTitleEncrypted sets the "title_encrypted" field if the given value is not nil.
+func (_c *DailyMissionCreate) SetNillableTitleEncrypted(v *string) *DailyMissionCreate {
+	if v != nil {
+		_c.SetTitleEncrypted(*v)
+	}
+	return _c
+}
+
 // SetStatus sets the "status" field.
 func (_c *DailyMissionCreate) SetStatus(v dailymission.Status) *DailyMissionCreate {
 	_c.mutation.SetStatus(v)
@@ -193,6 +221,10 @@ func (_c *DailyMissionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *DailyMissionCreate) defaults() {
+	if _, ok := _c.mutation.Source(); !ok {
+		v := dailymission.DefaultSource
+		_c.mutation.SetSource(v)
+	}
 	if _, ok := _c.mutation.Status(); !ok {
 		v := dailymission.DefaultStatus
 		_c.mutation.SetStatus(v)
@@ -222,6 +254,14 @@ func (_c *DailyMissionCreate) check() error {
 	}
 	if _, ok := _c.mutation.MissionKey(); !ok {
 		return &ValidationError{Name: "mission_key", err: errors.New(`ent: missing required field "DailyMission.mission_key"`)}
+	}
+	if _, ok := _c.mutation.Source(); !ok {
+		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "DailyMission.source"`)}
+	}
+	if v, ok := _c.mutation.Source(); ok {
+		if err := dailymission.SourceValidator(v); err != nil {
+			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "DailyMission.source": %w`, err)}
+		}
 	}
 	if _, ok := _c.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "DailyMission.status"`)}
@@ -296,6 +336,14 @@ func (_c *DailyMissionCreate) createSpec() (*DailyMission, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.MissionKey(); ok {
 		_spec.SetField(dailymission.FieldMissionKey, field.TypeString, value)
 		_node.MissionKey = value
+	}
+	if value, ok := _c.mutation.Source(); ok {
+		_spec.SetField(dailymission.FieldSource, field.TypeEnum, value)
+		_node.Source = value
+	}
+	if value, ok := _c.mutation.TitleEncrypted(); ok {
+		_spec.SetField(dailymission.FieldTitleEncrypted, field.TypeString, value)
+		_node.TitleEncrypted = &value
 	}
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(dailymission.FieldStatus, field.TypeEnum, value)

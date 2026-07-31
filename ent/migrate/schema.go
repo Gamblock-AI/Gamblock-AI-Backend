@@ -172,6 +172,8 @@ var (
 		{Name: "user_id", Type: field.TypeString},
 		{Name: "mission_date", Type: field.TypeString, Nullable: true},
 		{Name: "mission_key", Type: field.TypeString},
+		{Name: "source", Type: field.TypeEnum, Enums: []string{"system", "custom"}, Default: "system"},
+		{Name: "title_encrypted", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"completed", "skipped", "pending"}, Default: "pending"},
 		{Name: "adjustment_reason", Type: field.TypeEnum, Nullable: true, Enums: []string{"not_enough_time", "not_a_good_fit", "need_lower_effort", "accessibility_need", "prefer_not_to_say"}},
 		{Name: "replacement_key", Type: field.TypeString, Nullable: true},

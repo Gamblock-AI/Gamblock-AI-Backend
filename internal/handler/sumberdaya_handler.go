@@ -19,6 +19,40 @@ func (h *Handler) GetReflections(c *gin.Context) {
 	h.respond(c, http.StatusOK, entries)
 }
 
+func (h *Handler) GetDailyJournal(c *gin.Context) {
+	entry, err := h.services.Reflection.GetDailyJournal(c.Request.Context(), h.currentUserID(c))
+	if err != nil {
+		h.respondErrorErr(c, http.StatusInternalServerError, "fetch_reflections_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, entry)
+}
+
+func (h *Handler) GetDailyJournals(c *gin.Context) {
+	entries, err := h.services.Reflection.GetDailyJournals(c.Request.Context(), h.currentUserID(c))
+	if err != nil {
+		h.respondErrorErr(c, http.StatusInternalServerError, "fetch_reflections_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, entries)
+}
+
+func (h *Handler) UpsertDailyJournal(c *gin.Context) {
+	var input struct {
+		Document map[string]any `json:"document"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil || input.Document == nil {
+		h.respondCode(c, http.StatusBadRequest, "err_validation")
+		return
+	}
+	entry, err := h.services.Reflection.UpsertDailyJournal(c.Request.Context(), h.currentUserID(c), input.Document)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "reflection_create_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, entry)
+}
+
 func (h *Handler) CreateReflection(c *gin.Context) {
 	var input struct {
 		Text      string `json:"text"`

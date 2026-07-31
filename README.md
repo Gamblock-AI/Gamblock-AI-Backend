@@ -82,9 +82,9 @@ export data needs to be retained.
 - `POST /v1/admin/emergency-key-requests/:id/approve`
 - `GET  /v1/portal/overview`
 - `GET  /v1/missions/today`
-- `PATCH /v1/missions`
 - `POST /v1/missions/claim`
-- `POST /v1/missions/adjust`
+- `POST /v1/missions/custom`
+- `PATCH/DELETE /v1/missions/custom/:id`
 - `GET  /v1/client/progress?days=7|30|90`
 - `GET/POST/PATCH /v1/reflections[...]`
 - `GET/POST /v1/recovery-practices`
@@ -156,17 +156,16 @@ the standard envelope.
   `admin` handles reports through the admin queue and must claim an unassigned
   case before reading, replying, transitioning, or releasing it with an audited
   reason.
-- `GET /v1/missions/today` returns a deterministic `Asia/Jakarta` daily set of
-  one primary and two optional bonus tasks, plus the authenticated user's level
-  and EXP progress. It derives claim eligibility from existing account records:
-  active protection seen today, today's saved check-in, today's education
-  section/module progress, or an active partner link. `POST
-  /v1/missions/claim` rechecks eligibility and atomically grants the disclosed
-  reward once. `POST /v1/missions/adjust` allows one primary replacement from
-  the two non-assigned catalog tasks, followed by an optional skip; both require
-  a bounded reason and never change EXP. Legacy `PATCH /v1/missions` is
-  claim-only and rejects undo.
-  Mission/EXP data is not projected to partners.
+- `GET /v1/missions/today` returns exactly five `Asia/Jakarta` slots and the
+  authenticated student's private level/EXP progress. Each system or custom
+  mission is worth 10 EXP. The system catalog covers active protection, a
+  daily check-in, education section/module progress, and a recovery practice;
+  system claims are rechecked against existing account evidence. The student
+  may create up to five custom missions through `/v1/missions/custom`; a custom
+  mission replaces one system slot, can be edited/deleted while pending, and is
+  completed as a private self-attestation. Both sources use the same claim
+  contract; no skip endpoint exists. Custom titles are AES-256-GCM encrypted;
+  custom self-attestations never appear in partner/admin aggregates.
 - Psychoeducation publication stores immutable bilingual document snapshots.
   Audience (`student`, `partner`, `all`) and experience type (`article`,
   `response_simulator`) are server-validated and enforced for both list and
