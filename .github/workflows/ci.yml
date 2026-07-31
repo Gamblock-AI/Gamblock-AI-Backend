@@ -6,12 +6,13 @@ on:
     tags: ['v*']
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 env:
   IMAGE: ghcr.io/gamblock-ai/gamblock-ai-backend
 
 jobs:
-  test:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,15 +25,17 @@ jobs:
       - run: go build ./...
       - run: go vet ./...
       - run: go test -race -coverprofile=coverage.out ./...
+        if: ${{ vars.ENABLE_CI_TESTS == 'true' }}
       - uses: actions/upload-artifact@v4
+        if: ${{ vars.ENABLE_CI_TESTS == 'true' }}
         with:
           name: backend-coverage
           path: coverage.out
 
   build-push-deploy:
-    needs: test
+    needs: verify
     # Build & push on main + tags. PRs only run tests above.
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read

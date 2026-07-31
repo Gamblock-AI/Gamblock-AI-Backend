@@ -18,7 +18,7 @@ var e164Pattern = regexp.MustCompile(`^\+[1-9][0-9]{7,14}$`)
 
 func normalizePhone(phone string) string {
 	phone = strings.TrimSpace(phone)
-	phone = strings.NewReplacer(" ", "", "-", "", "(", "", ")").Replace(phone)
+	phone = strings.NewReplacer(" ", "", "-", "", "(", "", ")", "").Replace(phone)
 	if strings.HasPrefix(phone, "00") {
 		phone = "+" + strings.TrimPrefix(phone, "00")
 	}
