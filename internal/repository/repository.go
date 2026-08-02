@@ -65,6 +65,16 @@ func (r *Repository) RefreshStore(ctx context.Context) {
 	r.store.SiteSocialLinks = loaded.SiteSocialLinks
 	r.store.OperatorInvitations = loaded.OperatorInvitations
 	r.store.ReleaseRollouts = loaded.ReleaseRollouts
+	r.store.Institutions = loaded.Institutions
+	r.store.AcademicPrograms = loaded.AcademicPrograms
+	r.store.LearningClusters = loaded.LearningClusters
+	r.store.AdminLearningClusters = loaded.AdminLearningClusters
+	r.store.AdminAcademicPrograms = loaded.AdminAcademicPrograms
+	r.store.LearningItems = loaded.LearningItems
+	r.store.AdminLearningItems = loaded.AdminLearningItems
+	r.store.LearningRevisions = loaded.LearningRevisions
+	r.store.LearningProgress = loaded.LearningProgress
+	r.store.ExperienceGrants = loaded.ExperienceGrants
 }
 
 func value(v *string) string {

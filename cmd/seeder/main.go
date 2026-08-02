@@ -28,8 +28,9 @@ func main() {
 	if err = db.Migrate(ctx, client); err != nil {
 		log.Fatalf("migrate database: %v", err)
 	}
-	if err = seed.SeedProductionDefaults(ctx, client, cfg.MediaStoragePath); err != nil {
+	report, err := seed.SeedProductionDefaultsWithReport(ctx, client, cfg.MediaStoragePath)
+	if err != nil {
 		log.Fatalf("seed production defaults: %v", err)
 	}
-	log.Println("production database defaults ready")
+	log.Printf("production database defaults ready: learning_hub_inserted=%d learning_hub_skipped=%d", report.Inserted, report.Skipped)
 }

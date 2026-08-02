@@ -30,5 +30,6 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 		return nil, err
 	}
 	loadRecoveryStore(ctx, client, out)
+	_ = loadLearningHubStore(ctx, client, out)
 	return out, nil
 }

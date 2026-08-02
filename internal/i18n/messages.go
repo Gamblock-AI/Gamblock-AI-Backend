@@ -113,6 +113,19 @@ var messages = map[string]string{
 	"custom_mission_invalid":      "Isi misi custom belum valid.",
 	"custom_mission_not_editable": "Misi custom yang sudah selesai tidak dapat diubah.",
 
+	// learning hub
+	"learning_hub_fetch_failed":            "Gagal memuat Learning Hub.",
+	"learning_hub_progress_failed":         "Gagal memuat progres Learning Hub.",
+	"learning_hub_state_invalid":           "Status belajar belum valid.",
+	"learning_hub_checkpoint_invalid":      "Checkpoint belajar membutuhkan refleksi atau hasil proyek.",
+	"learning_hub_item_not_found":          "Materi belajar tidak ditemukan.",
+	"learning_hub_mutation_failed":         "Progres Learning Hub belum dapat disimpan.",
+	"learning_hub_admin_failed":            "CMS Learning Hub belum dapat diproses.",
+	"learning_hub_admin_not_found":         "Materi atau taxonomy Learning Hub tidak ditemukan.",
+	"learning_hub_admin_validation_failed": "Periksa kembali metadata dan isian Learning Hub.",
+	"learning_hub_admin_conflict":          "Draf Learning Hub berubah di sesi lain. Muat ulang sebelum menyimpan.",
+	"learning_hub_taxonomy_conflict":       "Taxonomy masih digunakan oleh materi atau program lain.",
+
 	// reflections / psychoeducation
 	"fetch_reflections_failed":    "Gagal memuat jurnal refleksi.",
 	"reflection_create_failed":    "Gagal menyimpan jurnal refleksi.",

@@ -12,6 +12,7 @@ make migrate-up     # apply schema migrations with values loaded from .env
 make seeder         # install missing production-safe public baseline content
 make seed           # (optional) seed demo data
 make seed-education # upsert the six bilingual education modules/media
+make seed-learning-hub # install or verify the UTY Learning Hub catalog
 make run            # start the API (default 127.0.0.1:8080)
 ```
 
@@ -33,9 +34,11 @@ production.
 
 Useful Makefile targets: `make dev` (air live-reload), `make key-generate`,
 `make lint`, `make migrate-up`, `make seeder`, `make seed`,
-`make seed-education`, and opt-in `make verify`. The Docker image exposes the
-same operational commands as `/app/migrate-up`, `/app/migrate-down`, and
-`/app/seeder`. `migrate-down` and `make migrate-fresh` drop the database schema
+`make seed-education`, `make seed-learning-hub`, and opt-in `make verify`. The
+Docker image exposes the same operational commands as `/app/migrate-up`,
+`/app/migrate-down`, `/app/seeder`, and `/app/seed-learning-hub`; the seeders
+log only aggregate Learning Hub inserted/skipped counts.
+`migrate-down` and `make migrate-fresh` drop the database schema
 and must never be run against shared or production data; `migrate-down`
 additionally refuses to run without `CONFIRM_MIGRATE_DOWN=DROP_ALL_DATA`.
 `make key-generate` refuses to replace a valid existing key; use
@@ -67,6 +70,8 @@ export data needs to be retained.
 - `POST /v1/psychoeducation/modules/:id/revisions/:revision/checks/:check_id/answer`
 - `GET  /v1/education/media/:id`
 - `GET/POST/PUT /v1/admin/content/modules[...]`
+- `GET/POST/PUT /v1/admin/content/learning-hub/items[...]`
+- `GET/POST/PUT/DELETE /v1/admin/content/learning-hub/taxonomy[...]`
 - `POST /v1/admin/content/media`
 - `GET  /v1/accountability/workspace`
 - `POST /v1/accountability/groups[...]`
@@ -146,7 +151,9 @@ the standard envelope.
   7/30/90 days and withholds trend claims until three check-ins exist.
 - Reflection payload v2 encrypts journal content, optional mood/next-step, and
   current-focus state with AES-256-GCM. Completed recovery practices and typed
-  weekly reviews retain for 12 months. Recovery-space unlock/placement state is
+  weekly reviews retain for 12 months. The current-week review endpoint upserts
+  one encrypted structured review and returns its idempotent EXP/cap result.
+  Recovery-space unlock/placement state is
   deterministic, retained for the account lifetime, and included with practice
   history in account export and deletion. Active timers and task labels are not
   accepted by these endpoints.
@@ -225,7 +232,8 @@ Development login and
 contextual demo records remain separately opt-in and forbidden in production.
 
 Production CI builds the private GHCR image on `main`, including the API,
-migrate-up, guarded migrate-down, and production-safe seeder binaries. Its
+migrate-up, guarded migrate-down, production-safe seeder, and Learning Hub
+seeder binaries. Its
 deploy step is disabled until `ENABLE_VPS_DEPLOY=true`, then connects to the
 pinned VPS as root with password authentication on port 22 and runs the
 Ansible-installed `update.sh`, which backs up PostgreSQL, runs migrate-up and

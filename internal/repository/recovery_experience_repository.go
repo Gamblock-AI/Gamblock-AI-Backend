@@ -216,3 +216,13 @@ func (r *Repository) RecoveryUnlockEvidence(ctx context.Context, userID string) 
 	evidence.ActiveDays = len(days)
 	return evidence
 }
+
+// GrantWeeklyReviewExperience keeps weekly recovery rewards in the same
+// idempotent, Jakarta-capped economy as Learning Hub checkpoints and missions.
+func (r *Repository) GrantWeeklyReviewExperience(ctx context.Context, userID, weekStart string) (bool, bool, error) {
+	if r.db == nil {
+		granted, capReached := r.grantExperienceMemory(userID, "weekly_review", weekStart, 10)
+		return granted, capReached, nil
+	}
+	return r.grantExperience(ctx, userID, "weekly_review", weekStart, 10)
+}

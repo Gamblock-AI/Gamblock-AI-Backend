@@ -12,6 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// AcademicProgram is the client for interacting with the AcademicProgram builders.
+	AcademicProgram *AcademicProgramClient
 	// AccountabilityGroup is the client for interacting with the AccountabilityGroup builders.
 	AccountabilityGroup *AccountabilityGroupClient
 	// AccountabilityMembership is the client for interacting with the AccountabilityMembership builders.
@@ -40,8 +42,20 @@ type Tx struct {
 	EducationRevision *EducationRevisionClient
 	// EmergencyKeyRequest is the client for interacting with the EmergencyKeyRequest builders.
 	EmergencyKeyRequest *EmergencyKeyRequestClient
+	// ExperienceGrant is the client for interacting with the ExperienceGrant builders.
+	ExperienceGrant *ExperienceGrantClient
+	// Institution is the client for interacting with the Institution builders.
+	Institution *InstitutionClient
 	// Intention is the client for interacting with the Intention builders.
 	Intention *IntentionClient
+	// LearningCluster is the client for interacting with the LearningCluster builders.
+	LearningCluster *LearningClusterClient
+	// LearningItem is the client for interacting with the LearningItem builders.
+	LearningItem *LearningItemClient
+	// LearningProgress is the client for interacting with the LearningProgress builders.
+	LearningProgress *LearningProgressClient
+	// LearningRevision is the client for interacting with the LearningRevision builders.
+	LearningRevision *LearningRevisionClient
 	// MembershipExitRequest is the client for interacting with the MembershipExitRequest builders.
 	MembershipExitRequest *MembershipExitRequestClient
 	// ModelRelease is the client for interacting with the ModelRelease builders.
@@ -227,6 +241,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.AcademicProgram = NewAcademicProgramClient(tx.config)
 	tx.AccountabilityGroup = NewAccountabilityGroupClient(tx.config)
 	tx.AccountabilityMembership = NewAccountabilityMembershipClient(tx.config)
 	tx.AggregateEvent = NewAggregateEventClient(tx.config)
@@ -241,7 +256,13 @@ func (tx *Tx) init() {
 	tx.EducationMedia = NewEducationMediaClient(tx.config)
 	tx.EducationRevision = NewEducationRevisionClient(tx.config)
 	tx.EmergencyKeyRequest = NewEmergencyKeyRequestClient(tx.config)
+	tx.ExperienceGrant = NewExperienceGrantClient(tx.config)
+	tx.Institution = NewInstitutionClient(tx.config)
 	tx.Intention = NewIntentionClient(tx.config)
+	tx.LearningCluster = NewLearningClusterClient(tx.config)
+	tx.LearningItem = NewLearningItemClient(tx.config)
+	tx.LearningProgress = NewLearningProgressClient(tx.config)
+	tx.LearningRevision = NewLearningRevisionClient(tx.config)
 	tx.MembershipExitRequest = NewMembershipExitRequestClient(tx.config)
 	tx.ModelRelease = NewModelReleaseClient(tx.config)
 	tx.ModelRollout = NewModelRolloutClient(tx.config)
@@ -278,7 +299,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: AccountabilityGroup.QueryXXX(), the query will be executed
+// applies a query, for example: AcademicProgram.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

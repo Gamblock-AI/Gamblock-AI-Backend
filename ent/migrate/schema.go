@@ -8,6 +8,32 @@ import (
 )
 
 var (
+	// AcademicProgramsColumns holds the columns for the "academic_programs" table.
+	AcademicProgramsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "institution_id", Type: field.TypeString},
+		{Name: "slug", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "degree", Type: field.TypeString, Default: ""},
+		{Name: "primary_cluster_slug", Type: field.TypeString},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
+		{Name: "active", Type: field.TypeBool, Default: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// AcademicProgramsTable holds the schema information for the "academic_programs" table.
+	AcademicProgramsTable = &schema.Table{
+		Name:       "academic_programs",
+		Columns:    AcademicProgramsColumns,
+		PrimaryKey: []*schema.Column{AcademicProgramsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "academicprogram_institution_id_slug",
+				Unique:  true,
+				Columns: []*schema.Column{AcademicProgramsColumns[1], AcademicProgramsColumns[2]},
+			},
+		},
+	}
 	// AccountabilityGroupsColumns holds the columns for the "accountability_groups" table.
 	AccountabilityGroupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -319,6 +345,45 @@ var (
 		Columns:    EmergencyKeyRequestsColumns,
 		PrimaryKey: []*schema.Column{EmergencyKeyRequestsColumns[0]},
 	}
+	// ExperienceGrantsColumns holds the columns for the "experience_grants" table.
+	ExperienceGrantsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "source_kind", Type: field.TypeString},
+		{Name: "source_id", Type: field.TypeString},
+		{Name: "grant_date", Type: field.TypeString},
+		{Name: "amount", Type: field.TypeInt},
+		{Name: "idempotency_key", Type: field.TypeString, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// ExperienceGrantsTable holds the schema information for the "experience_grants" table.
+	ExperienceGrantsTable = &schema.Table{
+		Name:       "experience_grants",
+		Columns:    ExperienceGrantsColumns,
+		PrimaryKey: []*schema.Column{ExperienceGrantsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "experiencegrant_user_id_source_kind_source_id",
+				Unique:  true,
+				Columns: []*schema.Column{ExperienceGrantsColumns[1], ExperienceGrantsColumns[2], ExperienceGrantsColumns[3]},
+			},
+		},
+	}
+	// InstitutionsColumns holds the columns for the "institutions" table.
+	InstitutionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "slug", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "archived"}, Default: "active"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// InstitutionsTable holds the schema information for the "institutions" table.
+	InstitutionsTable = &schema.Table{
+		Name:       "institutions",
+		Columns:    InstitutionsColumns,
+		PrimaryKey: []*schema.Column{InstitutionsColumns[0]},
+	}
 	// IntentionsColumns holds the columns for the "intentions" table.
 	IntentionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -333,6 +398,99 @@ var (
 		Name:       "intentions",
 		Columns:    IntentionsColumns,
 		PrimaryKey: []*schema.Column{IntentionsColumns[0]},
+	}
+	// LearningClustersColumns holds the columns for the "learning_clusters" table.
+	LearningClustersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "slug", Type: field.TypeString, Unique: true},
+		{Name: "title_id", Type: field.TypeString},
+		{Name: "title_en", Type: field.TypeString},
+		{Name: "description_id", Type: field.TypeString, Default: ""},
+		{Name: "description_en", Type: field.TypeString, Default: ""},
+		{Name: "sort_order", Type: field.TypeInt, Default: 0},
+		{Name: "active", Type: field.TypeBool, Default: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// LearningClustersTable holds the schema information for the "learning_clusters" table.
+	LearningClustersTable = &schema.Table{
+		Name:       "learning_clusters",
+		Columns:    LearningClustersColumns,
+		PrimaryKey: []*schema.Column{LearningClustersColumns[0]},
+	}
+	// LearningItemsColumns holds the columns for the "learning_items" table.
+	LearningItemsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "slug", Type: field.TypeString, Unique: true},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"course", "certification", "learning_path", "mini_project", "career_snapshot", "toolkit", "opportunity"}},
+		{Name: "title_id", Type: field.TypeString},
+		{Name: "title_en", Type: field.TypeString},
+		{Name: "summary_id", Type: field.TypeString, Default: ""},
+		{Name: "summary_en", Type: field.TypeString, Default: ""},
+		{Name: "document_json", Type: field.TypeJSON, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "in_review", "published", "archived"}, Default: "draft"},
+		{Name: "draft_revision", Type: field.TypeInt, Default: 1},
+		{Name: "published_revision", Type: field.TypeInt, Default: 0},
+		{Name: "published_at", Type: field.TypeTime, Nullable: true},
+		{Name: "archived_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_by", Type: field.TypeString, Nullable: true},
+		{Name: "updated_by", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// LearningItemsTable holds the schema information for the "learning_items" table.
+	LearningItemsTable = &schema.Table{
+		Name:       "learning_items",
+		Columns:    LearningItemsColumns,
+		PrimaryKey: []*schema.Column{LearningItemsColumns[0]},
+	}
+	// LearningProgressesColumns holds the columns for the "learning_progresses" table.
+	LearningProgressesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "item_id", Type: field.TypeString},
+		{Name: "state", Type: field.TypeEnum, Enums: []string{"saved", "started", "completed"}, Default: "saved"},
+		{Name: "reflection_encrypted", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "outcome_encrypted", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// LearningProgressesTable holds the schema information for the "learning_progresses" table.
+	LearningProgressesTable = &schema.Table{
+		Name:       "learning_progresses",
+		Columns:    LearningProgressesColumns,
+		PrimaryKey: []*schema.Column{LearningProgressesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "learningprogress_user_id_item_id",
+				Unique:  true,
+				Columns: []*schema.Column{LearningProgressesColumns[1], LearningProgressesColumns[2]},
+			},
+		},
+	}
+	// LearningRevisionsColumns holds the columns for the "learning_revisions" table.
+	LearningRevisionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "item_id", Type: field.TypeString},
+		{Name: "revision", Type: field.TypeInt},
+		{Name: "document_json", Type: field.TypeJSON},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"draft", "published", "rollback"}},
+		{Name: "created_by", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// LearningRevisionsTable holds the schema information for the "learning_revisions" table.
+	LearningRevisionsTable = &schema.Table{
+		Name:       "learning_revisions",
+		Columns:    LearningRevisionsColumns,
+		PrimaryKey: []*schema.Column{LearningRevisionsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "learningrevision_item_id_revision_kind",
+				Unique:  true,
+				Columns: []*schema.Column{LearningRevisionsColumns[1], LearningRevisionsColumns[2], LearningRevisionsColumns[4]},
+			},
+		},
 	}
 	// MembershipExitRequestsColumns holds the columns for the "membership_exit_requests" table.
 	MembershipExitRequestsColumns = []*schema.Column{
@@ -872,6 +1030,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AcademicProgramsTable,
 		AccountabilityGroupsTable,
 		AccountabilityMembershipsTable,
 		AggregateEventsTable,
@@ -886,7 +1045,13 @@ var (
 		EducationMediaTable,
 		EducationRevisionsTable,
 		EmergencyKeyRequestsTable,
+		ExperienceGrantsTable,
+		InstitutionsTable,
 		IntentionsTable,
+		LearningClustersTable,
+		LearningItemsTable,
+		LearningProgressesTable,
+		LearningRevisionsTable,
 		MembershipExitRequestsTable,
 		ModelReleasesTable,
 		ModelRolloutsTable,

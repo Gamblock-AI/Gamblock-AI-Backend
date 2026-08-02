@@ -171,10 +171,10 @@ func (h *Handler) SaveCurrentWeeklyReview(c *gin.Context) {
 		h.respondCode(c, http.StatusBadRequest, "err_validation")
 		return
 	}
-	item, err := h.services.Recovery.SaveCurrentWeeklyReview(c.Request.Context(), h.currentUserID(c), input)
+	result, err := h.services.Recovery.SaveCurrentWeeklyReviewWithResult(c.Request.Context(), h.currentUserID(c), input)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "weekly_review_save_failed", err)
 		return
 	}
-	h.respond(c, http.StatusOK, item)
+	h.respond(c, http.StatusOK, result)
 }

@@ -48,6 +48,16 @@ type (
 	SiteSocialLink           = model.SiteSocialLink
 	OperatorInvitation       = model.OperatorInvitation
 	ReleaseRollout           = model.ReleaseRollout
+	Institution              = model.Institution
+	AcademicProgram          = model.AcademicProgram
+	LearningCluster          = model.LearningCluster
+	AdminLearningCluster     = model.AdminLearningCluster
+	LearningItem             = model.LearningItem
+	AdminLearningItem        = model.AdminLearningItem
+	AdminAcademicProgram     = model.AdminAcademicProgram
+	LearningRevision         = model.LearningRevision
+	LearningProgress         = model.LearningProgress
+	ExperienceGrant          = model.ExperienceGrant
 )
 
 // Store is a concurrency-safe in-memory backing store. It is used as a
@@ -90,6 +100,16 @@ type Store struct {
 	SiteSocialLinks           []SiteSocialLink           `json:"site_social_links"`
 	OperatorInvitations       []OperatorInvitation       `json:"operator_invitations"`
 	ReleaseRollouts           []ReleaseRollout           `json:"release_rollouts"`
+	Institutions              []Institution              `json:"institutions"`
+	AcademicPrograms          []AcademicProgram          `json:"academic_programs"`
+	LearningClusters          []LearningCluster          `json:"learning_clusters"`
+	AdminLearningClusters     []AdminLearningCluster     `json:"admin_learning_clusters"`
+	AdminAcademicPrograms     []AdminAcademicProgram     `json:"admin_academic_programs"`
+	LearningItems             []LearningItem             `json:"learning_items"`
+	AdminLearningItems        []AdminLearningItem        `json:"admin_learning_items"`
+	LearningRevisions         []LearningRevision         `json:"learning_revisions"`
+	LearningProgress          []LearningProgress         `json:"learning_progress"`
+	ExperienceGrants          []ExperienceGrant          `json:"experience_grants"`
 }
 
 func New() *Store {

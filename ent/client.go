@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/academicprogram"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitygroup"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitymembership"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/aggregateevent"
@@ -28,7 +29,13 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/experiencegrant"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/institution"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningcluster"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningitem"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningprogress"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/membershipexitrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
@@ -63,6 +70,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// AcademicProgram is the client for interacting with the AcademicProgram builders.
+	AcademicProgram *AcademicProgramClient
 	// AccountabilityGroup is the client for interacting with the AccountabilityGroup builders.
 	AccountabilityGroup *AccountabilityGroupClient
 	// AccountabilityMembership is the client for interacting with the AccountabilityMembership builders.
@@ -91,8 +100,20 @@ type Client struct {
 	EducationRevision *EducationRevisionClient
 	// EmergencyKeyRequest is the client for interacting with the EmergencyKeyRequest builders.
 	EmergencyKeyRequest *EmergencyKeyRequestClient
+	// ExperienceGrant is the client for interacting with the ExperienceGrant builders.
+	ExperienceGrant *ExperienceGrantClient
+	// Institution is the client for interacting with the Institution builders.
+	Institution *InstitutionClient
 	// Intention is the client for interacting with the Intention builders.
 	Intention *IntentionClient
+	// LearningCluster is the client for interacting with the LearningCluster builders.
+	LearningCluster *LearningClusterClient
+	// LearningItem is the client for interacting with the LearningItem builders.
+	LearningItem *LearningItemClient
+	// LearningProgress is the client for interacting with the LearningProgress builders.
+	LearningProgress *LearningProgressClient
+	// LearningRevision is the client for interacting with the LearningRevision builders.
+	LearningRevision *LearningRevisionClient
 	// MembershipExitRequest is the client for interacting with the MembershipExitRequest builders.
 	MembershipExitRequest *MembershipExitRequestClient
 	// ModelRelease is the client for interacting with the ModelRelease builders.
@@ -158,6 +179,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.AcademicProgram = NewAcademicProgramClient(c.config)
 	c.AccountabilityGroup = NewAccountabilityGroupClient(c.config)
 	c.AccountabilityMembership = NewAccountabilityMembershipClient(c.config)
 	c.AggregateEvent = NewAggregateEventClient(c.config)
@@ -172,7 +194,13 @@ func (c *Client) init() {
 	c.EducationMedia = NewEducationMediaClient(c.config)
 	c.EducationRevision = NewEducationRevisionClient(c.config)
 	c.EmergencyKeyRequest = NewEmergencyKeyRequestClient(c.config)
+	c.ExperienceGrant = NewExperienceGrantClient(c.config)
+	c.Institution = NewInstitutionClient(c.config)
 	c.Intention = NewIntentionClient(c.config)
+	c.LearningCluster = NewLearningClusterClient(c.config)
+	c.LearningItem = NewLearningItemClient(c.config)
+	c.LearningProgress = NewLearningProgressClient(c.config)
+	c.LearningRevision = NewLearningRevisionClient(c.config)
 	c.MembershipExitRequest = NewMembershipExitRequestClient(c.config)
 	c.ModelRelease = NewModelReleaseClient(c.config)
 	c.ModelRollout = NewModelRolloutClient(c.config)
@@ -292,6 +320,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:                      ctx,
 		config:                   cfg,
+		AcademicProgram:          NewAcademicProgramClient(cfg),
 		AccountabilityGroup:      NewAccountabilityGroupClient(cfg),
 		AccountabilityMembership: NewAccountabilityMembershipClient(cfg),
 		AggregateEvent:           NewAggregateEventClient(cfg),
@@ -306,7 +335,13 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		EducationMedia:           NewEducationMediaClient(cfg),
 		EducationRevision:        NewEducationRevisionClient(cfg),
 		EmergencyKeyRequest:      NewEmergencyKeyRequestClient(cfg),
+		ExperienceGrant:          NewExperienceGrantClient(cfg),
+		Institution:              NewInstitutionClient(cfg),
 		Intention:                NewIntentionClient(cfg),
+		LearningCluster:          NewLearningClusterClient(cfg),
+		LearningItem:             NewLearningItemClient(cfg),
+		LearningProgress:         NewLearningProgressClient(cfg),
+		LearningRevision:         NewLearningRevisionClient(cfg),
 		MembershipExitRequest:    NewMembershipExitRequestClient(cfg),
 		ModelRelease:             NewModelReleaseClient(cfg),
 		ModelRollout:             NewModelRolloutClient(cfg),
@@ -353,6 +388,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:                      ctx,
 		config:                   cfg,
+		AcademicProgram:          NewAcademicProgramClient(cfg),
 		AccountabilityGroup:      NewAccountabilityGroupClient(cfg),
 		AccountabilityMembership: NewAccountabilityMembershipClient(cfg),
 		AggregateEvent:           NewAggregateEventClient(cfg),
@@ -367,7 +403,13 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		EducationMedia:           NewEducationMediaClient(cfg),
 		EducationRevision:        NewEducationRevisionClient(cfg),
 		EmergencyKeyRequest:      NewEmergencyKeyRequestClient(cfg),
+		ExperienceGrant:          NewExperienceGrantClient(cfg),
+		Institution:              NewInstitutionClient(cfg),
 		Intention:                NewIntentionClient(cfg),
+		LearningCluster:          NewLearningClusterClient(cfg),
+		LearningItem:             NewLearningItemClient(cfg),
+		LearningProgress:         NewLearningProgressClient(cfg),
+		LearningRevision:         NewLearningRevisionClient(cfg),
 		MembershipExitRequest:    NewMembershipExitRequestClient(cfg),
 		ModelRelease:             NewModelReleaseClient(cfg),
 		ModelRollout:             NewModelRolloutClient(cfg),
@@ -401,7 +443,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		AccountabilityGroup.
+//		AcademicProgram.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -424,10 +466,12 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.AccountabilityGroup, c.AccountabilityMembership, c.AggregateEvent,
-		c.ApprovalRequest, c.AuditLog, c.CheckIn, c.ContactVerification,
-		c.ContentProgress, c.DailyMission, c.DataRequest, c.Device, c.EducationMedia,
-		c.EducationRevision, c.EmergencyKeyRequest, c.Intention,
+		c.AcademicProgram, c.AccountabilityGroup, c.AccountabilityMembership,
+		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.CheckIn,
+		c.ContactVerification, c.ContentProgress, c.DailyMission, c.DataRequest,
+		c.Device, c.EducationMedia, c.EducationRevision, c.EmergencyKeyRequest,
+		c.ExperienceGrant, c.Institution, c.Intention, c.LearningCluster,
+		c.LearningItem, c.LearningProgress, c.LearningRevision,
 		c.MembershipExitRequest, c.ModelRelease, c.ModelRollout,
 		c.NetworkRulesetRelease, c.NotificationDelivery, c.OperatorInvitation,
 		c.Organization, c.OrganizationInvite, c.OrganizationMember,
@@ -445,10 +489,12 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.AccountabilityGroup, c.AccountabilityMembership, c.AggregateEvent,
-		c.ApprovalRequest, c.AuditLog, c.CheckIn, c.ContactVerification,
-		c.ContentProgress, c.DailyMission, c.DataRequest, c.Device, c.EducationMedia,
-		c.EducationRevision, c.EmergencyKeyRequest, c.Intention,
+		c.AcademicProgram, c.AccountabilityGroup, c.AccountabilityMembership,
+		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.CheckIn,
+		c.ContactVerification, c.ContentProgress, c.DailyMission, c.DataRequest,
+		c.Device, c.EducationMedia, c.EducationRevision, c.EmergencyKeyRequest,
+		c.ExperienceGrant, c.Institution, c.Intention, c.LearningCluster,
+		c.LearningItem, c.LearningProgress, c.LearningRevision,
 		c.MembershipExitRequest, c.ModelRelease, c.ModelRollout,
 		c.NetworkRulesetRelease, c.NotificationDelivery, c.OperatorInvitation,
 		c.Organization, c.OrganizationInvite, c.OrganizationMember,
@@ -465,6 +511,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *AcademicProgramMutation:
+		return c.AcademicProgram.mutate(ctx, m)
 	case *AccountabilityGroupMutation:
 		return c.AccountabilityGroup.mutate(ctx, m)
 	case *AccountabilityMembershipMutation:
@@ -493,8 +541,20 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.EducationRevision.mutate(ctx, m)
 	case *EmergencyKeyRequestMutation:
 		return c.EmergencyKeyRequest.mutate(ctx, m)
+	case *ExperienceGrantMutation:
+		return c.ExperienceGrant.mutate(ctx, m)
+	case *InstitutionMutation:
+		return c.Institution.mutate(ctx, m)
 	case *IntentionMutation:
 		return c.Intention.mutate(ctx, m)
+	case *LearningClusterMutation:
+		return c.LearningCluster.mutate(ctx, m)
+	case *LearningItemMutation:
+		return c.LearningItem.mutate(ctx, m)
+	case *LearningProgressMutation:
+		return c.LearningProgress.mutate(ctx, m)
+	case *LearningRevisionMutation:
+		return c.LearningRevision.mutate(ctx, m)
 	case *MembershipExitRequestMutation:
 		return c.MembershipExitRequest.mutate(ctx, m)
 	case *ModelReleaseMutation:
@@ -551,6 +611,139 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// AcademicProgramClient is a client for the AcademicProgram schema.
+type AcademicProgramClient struct {
+	config
+}
+
+// NewAcademicProgramClient returns a client for the AcademicProgram from the given config.
+func NewAcademicProgramClient(c config) *AcademicProgramClient {
+	return &AcademicProgramClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `academicprogram.Hooks(f(g(h())))`.
+func (c *AcademicProgramClient) Use(hooks ...Hook) {
+	c.hooks.AcademicProgram = append(c.hooks.AcademicProgram, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `academicprogram.Intercept(f(g(h())))`.
+func (c *AcademicProgramClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AcademicProgram = append(c.inters.AcademicProgram, interceptors...)
+}
+
+// Create returns a builder for creating a AcademicProgram entity.
+func (c *AcademicProgramClient) Create() *AcademicProgramCreate {
+	mutation := newAcademicProgramMutation(c.config, OpCreate)
+	return &AcademicProgramCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AcademicProgram entities.
+func (c *AcademicProgramClient) CreateBulk(builders ...*AcademicProgramCreate) *AcademicProgramCreateBulk {
+	return &AcademicProgramCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AcademicProgramClient) MapCreateBulk(slice any, setFunc func(*AcademicProgramCreate, int)) *AcademicProgramCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AcademicProgramCreateBulk{err: fmt.Errorf("calling to AcademicProgramClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AcademicProgramCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AcademicProgramCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AcademicProgram.
+func (c *AcademicProgramClient) Update() *AcademicProgramUpdate {
+	mutation := newAcademicProgramMutation(c.config, OpUpdate)
+	return &AcademicProgramUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AcademicProgramClient) UpdateOne(_m *AcademicProgram) *AcademicProgramUpdateOne {
+	mutation := newAcademicProgramMutation(c.config, OpUpdateOne, withAcademicProgram(_m))
+	return &AcademicProgramUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AcademicProgramClient) UpdateOneID(id string) *AcademicProgramUpdateOne {
+	mutation := newAcademicProgramMutation(c.config, OpUpdateOne, withAcademicProgramID(id))
+	return &AcademicProgramUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AcademicProgram.
+func (c *AcademicProgramClient) Delete() *AcademicProgramDelete {
+	mutation := newAcademicProgramMutation(c.config, OpDelete)
+	return &AcademicProgramDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AcademicProgramClient) DeleteOne(_m *AcademicProgram) *AcademicProgramDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AcademicProgramClient) DeleteOneID(id string) *AcademicProgramDeleteOne {
+	builder := c.Delete().Where(academicprogram.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AcademicProgramDeleteOne{builder}
+}
+
+// Query returns a query builder for AcademicProgram.
+func (c *AcademicProgramClient) Query() *AcademicProgramQuery {
+	return &AcademicProgramQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAcademicProgram},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AcademicProgram entity by its id.
+func (c *AcademicProgramClient) Get(ctx context.Context, id string) (*AcademicProgram, error) {
+	return c.Query().Where(academicprogram.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AcademicProgramClient) GetX(ctx context.Context, id string) *AcademicProgram {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *AcademicProgramClient) Hooks() []Hook {
+	return c.hooks.AcademicProgram
+}
+
+// Interceptors returns the client interceptors.
+func (c *AcademicProgramClient) Interceptors() []Interceptor {
+	return c.inters.AcademicProgram
+}
+
+func (c *AcademicProgramClient) mutate(ctx context.Context, m *AcademicProgramMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AcademicProgramCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AcademicProgramUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AcademicProgramUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AcademicProgramDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AcademicProgram mutation op: %q", m.Op())
 	}
 }
 
@@ -2416,6 +2609,272 @@ func (c *EmergencyKeyRequestClient) mutate(ctx context.Context, m *EmergencyKeyR
 	}
 }
 
+// ExperienceGrantClient is a client for the ExperienceGrant schema.
+type ExperienceGrantClient struct {
+	config
+}
+
+// NewExperienceGrantClient returns a client for the ExperienceGrant from the given config.
+func NewExperienceGrantClient(c config) *ExperienceGrantClient {
+	return &ExperienceGrantClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `experiencegrant.Hooks(f(g(h())))`.
+func (c *ExperienceGrantClient) Use(hooks ...Hook) {
+	c.hooks.ExperienceGrant = append(c.hooks.ExperienceGrant, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `experiencegrant.Intercept(f(g(h())))`.
+func (c *ExperienceGrantClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ExperienceGrant = append(c.inters.ExperienceGrant, interceptors...)
+}
+
+// Create returns a builder for creating a ExperienceGrant entity.
+func (c *ExperienceGrantClient) Create() *ExperienceGrantCreate {
+	mutation := newExperienceGrantMutation(c.config, OpCreate)
+	return &ExperienceGrantCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ExperienceGrant entities.
+func (c *ExperienceGrantClient) CreateBulk(builders ...*ExperienceGrantCreate) *ExperienceGrantCreateBulk {
+	return &ExperienceGrantCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ExperienceGrantClient) MapCreateBulk(slice any, setFunc func(*ExperienceGrantCreate, int)) *ExperienceGrantCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ExperienceGrantCreateBulk{err: fmt.Errorf("calling to ExperienceGrantClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ExperienceGrantCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ExperienceGrantCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ExperienceGrant.
+func (c *ExperienceGrantClient) Update() *ExperienceGrantUpdate {
+	mutation := newExperienceGrantMutation(c.config, OpUpdate)
+	return &ExperienceGrantUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ExperienceGrantClient) UpdateOne(_m *ExperienceGrant) *ExperienceGrantUpdateOne {
+	mutation := newExperienceGrantMutation(c.config, OpUpdateOne, withExperienceGrant(_m))
+	return &ExperienceGrantUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ExperienceGrantClient) UpdateOneID(id string) *ExperienceGrantUpdateOne {
+	mutation := newExperienceGrantMutation(c.config, OpUpdateOne, withExperienceGrantID(id))
+	return &ExperienceGrantUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ExperienceGrant.
+func (c *ExperienceGrantClient) Delete() *ExperienceGrantDelete {
+	mutation := newExperienceGrantMutation(c.config, OpDelete)
+	return &ExperienceGrantDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ExperienceGrantClient) DeleteOne(_m *ExperienceGrant) *ExperienceGrantDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ExperienceGrantClient) DeleteOneID(id string) *ExperienceGrantDeleteOne {
+	builder := c.Delete().Where(experiencegrant.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ExperienceGrantDeleteOne{builder}
+}
+
+// Query returns a query builder for ExperienceGrant.
+func (c *ExperienceGrantClient) Query() *ExperienceGrantQuery {
+	return &ExperienceGrantQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeExperienceGrant},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ExperienceGrant entity by its id.
+func (c *ExperienceGrantClient) Get(ctx context.Context, id string) (*ExperienceGrant, error) {
+	return c.Query().Where(experiencegrant.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ExperienceGrantClient) GetX(ctx context.Context, id string) *ExperienceGrant {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ExperienceGrantClient) Hooks() []Hook {
+	return c.hooks.ExperienceGrant
+}
+
+// Interceptors returns the client interceptors.
+func (c *ExperienceGrantClient) Interceptors() []Interceptor {
+	return c.inters.ExperienceGrant
+}
+
+func (c *ExperienceGrantClient) mutate(ctx context.Context, m *ExperienceGrantMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ExperienceGrantCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ExperienceGrantUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ExperienceGrantUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ExperienceGrantDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ExperienceGrant mutation op: %q", m.Op())
+	}
+}
+
+// InstitutionClient is a client for the Institution schema.
+type InstitutionClient struct {
+	config
+}
+
+// NewInstitutionClient returns a client for the Institution from the given config.
+func NewInstitutionClient(c config) *InstitutionClient {
+	return &InstitutionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `institution.Hooks(f(g(h())))`.
+func (c *InstitutionClient) Use(hooks ...Hook) {
+	c.hooks.Institution = append(c.hooks.Institution, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `institution.Intercept(f(g(h())))`.
+func (c *InstitutionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Institution = append(c.inters.Institution, interceptors...)
+}
+
+// Create returns a builder for creating a Institution entity.
+func (c *InstitutionClient) Create() *InstitutionCreate {
+	mutation := newInstitutionMutation(c.config, OpCreate)
+	return &InstitutionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Institution entities.
+func (c *InstitutionClient) CreateBulk(builders ...*InstitutionCreate) *InstitutionCreateBulk {
+	return &InstitutionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InstitutionClient) MapCreateBulk(slice any, setFunc func(*InstitutionCreate, int)) *InstitutionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InstitutionCreateBulk{err: fmt.Errorf("calling to InstitutionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InstitutionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InstitutionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Institution.
+func (c *InstitutionClient) Update() *InstitutionUpdate {
+	mutation := newInstitutionMutation(c.config, OpUpdate)
+	return &InstitutionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InstitutionClient) UpdateOne(_m *Institution) *InstitutionUpdateOne {
+	mutation := newInstitutionMutation(c.config, OpUpdateOne, withInstitution(_m))
+	return &InstitutionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InstitutionClient) UpdateOneID(id string) *InstitutionUpdateOne {
+	mutation := newInstitutionMutation(c.config, OpUpdateOne, withInstitutionID(id))
+	return &InstitutionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Institution.
+func (c *InstitutionClient) Delete() *InstitutionDelete {
+	mutation := newInstitutionMutation(c.config, OpDelete)
+	return &InstitutionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InstitutionClient) DeleteOne(_m *Institution) *InstitutionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InstitutionClient) DeleteOneID(id string) *InstitutionDeleteOne {
+	builder := c.Delete().Where(institution.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InstitutionDeleteOne{builder}
+}
+
+// Query returns a query builder for Institution.
+func (c *InstitutionClient) Query() *InstitutionQuery {
+	return &InstitutionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInstitution},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Institution entity by its id.
+func (c *InstitutionClient) Get(ctx context.Context, id string) (*Institution, error) {
+	return c.Query().Where(institution.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InstitutionClient) GetX(ctx context.Context, id string) *Institution {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *InstitutionClient) Hooks() []Hook {
+	return c.hooks.Institution
+}
+
+// Interceptors returns the client interceptors.
+func (c *InstitutionClient) Interceptors() []Interceptor {
+	return c.inters.Institution
+}
+
+func (c *InstitutionClient) mutate(ctx context.Context, m *InstitutionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InstitutionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InstitutionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InstitutionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InstitutionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Institution mutation op: %q", m.Op())
+	}
+}
+
 // IntentionClient is a client for the Intention schema.
 type IntentionClient struct {
 	config
@@ -2546,6 +3005,538 @@ func (c *IntentionClient) mutate(ctx context.Context, m *IntentionMutation) (Val
 		return (&IntentionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Intention mutation op: %q", m.Op())
+	}
+}
+
+// LearningClusterClient is a client for the LearningCluster schema.
+type LearningClusterClient struct {
+	config
+}
+
+// NewLearningClusterClient returns a client for the LearningCluster from the given config.
+func NewLearningClusterClient(c config) *LearningClusterClient {
+	return &LearningClusterClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `learningcluster.Hooks(f(g(h())))`.
+func (c *LearningClusterClient) Use(hooks ...Hook) {
+	c.hooks.LearningCluster = append(c.hooks.LearningCluster, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `learningcluster.Intercept(f(g(h())))`.
+func (c *LearningClusterClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LearningCluster = append(c.inters.LearningCluster, interceptors...)
+}
+
+// Create returns a builder for creating a LearningCluster entity.
+func (c *LearningClusterClient) Create() *LearningClusterCreate {
+	mutation := newLearningClusterMutation(c.config, OpCreate)
+	return &LearningClusterCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LearningCluster entities.
+func (c *LearningClusterClient) CreateBulk(builders ...*LearningClusterCreate) *LearningClusterCreateBulk {
+	return &LearningClusterCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LearningClusterClient) MapCreateBulk(slice any, setFunc func(*LearningClusterCreate, int)) *LearningClusterCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LearningClusterCreateBulk{err: fmt.Errorf("calling to LearningClusterClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LearningClusterCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LearningClusterCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LearningCluster.
+func (c *LearningClusterClient) Update() *LearningClusterUpdate {
+	mutation := newLearningClusterMutation(c.config, OpUpdate)
+	return &LearningClusterUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LearningClusterClient) UpdateOne(_m *LearningCluster) *LearningClusterUpdateOne {
+	mutation := newLearningClusterMutation(c.config, OpUpdateOne, withLearningCluster(_m))
+	return &LearningClusterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LearningClusterClient) UpdateOneID(id string) *LearningClusterUpdateOne {
+	mutation := newLearningClusterMutation(c.config, OpUpdateOne, withLearningClusterID(id))
+	return &LearningClusterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LearningCluster.
+func (c *LearningClusterClient) Delete() *LearningClusterDelete {
+	mutation := newLearningClusterMutation(c.config, OpDelete)
+	return &LearningClusterDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LearningClusterClient) DeleteOne(_m *LearningCluster) *LearningClusterDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LearningClusterClient) DeleteOneID(id string) *LearningClusterDeleteOne {
+	builder := c.Delete().Where(learningcluster.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LearningClusterDeleteOne{builder}
+}
+
+// Query returns a query builder for LearningCluster.
+func (c *LearningClusterClient) Query() *LearningClusterQuery {
+	return &LearningClusterQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLearningCluster},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LearningCluster entity by its id.
+func (c *LearningClusterClient) Get(ctx context.Context, id string) (*LearningCluster, error) {
+	return c.Query().Where(learningcluster.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LearningClusterClient) GetX(ctx context.Context, id string) *LearningCluster {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *LearningClusterClient) Hooks() []Hook {
+	return c.hooks.LearningCluster
+}
+
+// Interceptors returns the client interceptors.
+func (c *LearningClusterClient) Interceptors() []Interceptor {
+	return c.inters.LearningCluster
+}
+
+func (c *LearningClusterClient) mutate(ctx context.Context, m *LearningClusterMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LearningClusterCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LearningClusterUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LearningClusterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LearningClusterDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LearningCluster mutation op: %q", m.Op())
+	}
+}
+
+// LearningItemClient is a client for the LearningItem schema.
+type LearningItemClient struct {
+	config
+}
+
+// NewLearningItemClient returns a client for the LearningItem from the given config.
+func NewLearningItemClient(c config) *LearningItemClient {
+	return &LearningItemClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `learningitem.Hooks(f(g(h())))`.
+func (c *LearningItemClient) Use(hooks ...Hook) {
+	c.hooks.LearningItem = append(c.hooks.LearningItem, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `learningitem.Intercept(f(g(h())))`.
+func (c *LearningItemClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LearningItem = append(c.inters.LearningItem, interceptors...)
+}
+
+// Create returns a builder for creating a LearningItem entity.
+func (c *LearningItemClient) Create() *LearningItemCreate {
+	mutation := newLearningItemMutation(c.config, OpCreate)
+	return &LearningItemCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LearningItem entities.
+func (c *LearningItemClient) CreateBulk(builders ...*LearningItemCreate) *LearningItemCreateBulk {
+	return &LearningItemCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LearningItemClient) MapCreateBulk(slice any, setFunc func(*LearningItemCreate, int)) *LearningItemCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LearningItemCreateBulk{err: fmt.Errorf("calling to LearningItemClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LearningItemCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LearningItemCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LearningItem.
+func (c *LearningItemClient) Update() *LearningItemUpdate {
+	mutation := newLearningItemMutation(c.config, OpUpdate)
+	return &LearningItemUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LearningItemClient) UpdateOne(_m *LearningItem) *LearningItemUpdateOne {
+	mutation := newLearningItemMutation(c.config, OpUpdateOne, withLearningItem(_m))
+	return &LearningItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LearningItemClient) UpdateOneID(id string) *LearningItemUpdateOne {
+	mutation := newLearningItemMutation(c.config, OpUpdateOne, withLearningItemID(id))
+	return &LearningItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LearningItem.
+func (c *LearningItemClient) Delete() *LearningItemDelete {
+	mutation := newLearningItemMutation(c.config, OpDelete)
+	return &LearningItemDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LearningItemClient) DeleteOne(_m *LearningItem) *LearningItemDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LearningItemClient) DeleteOneID(id string) *LearningItemDeleteOne {
+	builder := c.Delete().Where(learningitem.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LearningItemDeleteOne{builder}
+}
+
+// Query returns a query builder for LearningItem.
+func (c *LearningItemClient) Query() *LearningItemQuery {
+	return &LearningItemQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLearningItem},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LearningItem entity by its id.
+func (c *LearningItemClient) Get(ctx context.Context, id string) (*LearningItem, error) {
+	return c.Query().Where(learningitem.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LearningItemClient) GetX(ctx context.Context, id string) *LearningItem {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *LearningItemClient) Hooks() []Hook {
+	return c.hooks.LearningItem
+}
+
+// Interceptors returns the client interceptors.
+func (c *LearningItemClient) Interceptors() []Interceptor {
+	return c.inters.LearningItem
+}
+
+func (c *LearningItemClient) mutate(ctx context.Context, m *LearningItemMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LearningItemCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LearningItemUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LearningItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LearningItemDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LearningItem mutation op: %q", m.Op())
+	}
+}
+
+// LearningProgressClient is a client for the LearningProgress schema.
+type LearningProgressClient struct {
+	config
+}
+
+// NewLearningProgressClient returns a client for the LearningProgress from the given config.
+func NewLearningProgressClient(c config) *LearningProgressClient {
+	return &LearningProgressClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `learningprogress.Hooks(f(g(h())))`.
+func (c *LearningProgressClient) Use(hooks ...Hook) {
+	c.hooks.LearningProgress = append(c.hooks.LearningProgress, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `learningprogress.Intercept(f(g(h())))`.
+func (c *LearningProgressClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LearningProgress = append(c.inters.LearningProgress, interceptors...)
+}
+
+// Create returns a builder for creating a LearningProgress entity.
+func (c *LearningProgressClient) Create() *LearningProgressCreate {
+	mutation := newLearningProgressMutation(c.config, OpCreate)
+	return &LearningProgressCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LearningProgress entities.
+func (c *LearningProgressClient) CreateBulk(builders ...*LearningProgressCreate) *LearningProgressCreateBulk {
+	return &LearningProgressCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LearningProgressClient) MapCreateBulk(slice any, setFunc func(*LearningProgressCreate, int)) *LearningProgressCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LearningProgressCreateBulk{err: fmt.Errorf("calling to LearningProgressClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LearningProgressCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LearningProgressCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LearningProgress.
+func (c *LearningProgressClient) Update() *LearningProgressUpdate {
+	mutation := newLearningProgressMutation(c.config, OpUpdate)
+	return &LearningProgressUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LearningProgressClient) UpdateOne(_m *LearningProgress) *LearningProgressUpdateOne {
+	mutation := newLearningProgressMutation(c.config, OpUpdateOne, withLearningProgress(_m))
+	return &LearningProgressUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LearningProgressClient) UpdateOneID(id string) *LearningProgressUpdateOne {
+	mutation := newLearningProgressMutation(c.config, OpUpdateOne, withLearningProgressID(id))
+	return &LearningProgressUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LearningProgress.
+func (c *LearningProgressClient) Delete() *LearningProgressDelete {
+	mutation := newLearningProgressMutation(c.config, OpDelete)
+	return &LearningProgressDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LearningProgressClient) DeleteOne(_m *LearningProgress) *LearningProgressDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LearningProgressClient) DeleteOneID(id string) *LearningProgressDeleteOne {
+	builder := c.Delete().Where(learningprogress.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LearningProgressDeleteOne{builder}
+}
+
+// Query returns a query builder for LearningProgress.
+func (c *LearningProgressClient) Query() *LearningProgressQuery {
+	return &LearningProgressQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLearningProgress},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LearningProgress entity by its id.
+func (c *LearningProgressClient) Get(ctx context.Context, id string) (*LearningProgress, error) {
+	return c.Query().Where(learningprogress.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LearningProgressClient) GetX(ctx context.Context, id string) *LearningProgress {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *LearningProgressClient) Hooks() []Hook {
+	return c.hooks.LearningProgress
+}
+
+// Interceptors returns the client interceptors.
+func (c *LearningProgressClient) Interceptors() []Interceptor {
+	return c.inters.LearningProgress
+}
+
+func (c *LearningProgressClient) mutate(ctx context.Context, m *LearningProgressMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LearningProgressCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LearningProgressUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LearningProgressUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LearningProgressDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LearningProgress mutation op: %q", m.Op())
+	}
+}
+
+// LearningRevisionClient is a client for the LearningRevision schema.
+type LearningRevisionClient struct {
+	config
+}
+
+// NewLearningRevisionClient returns a client for the LearningRevision from the given config.
+func NewLearningRevisionClient(c config) *LearningRevisionClient {
+	return &LearningRevisionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `learningrevision.Hooks(f(g(h())))`.
+func (c *LearningRevisionClient) Use(hooks ...Hook) {
+	c.hooks.LearningRevision = append(c.hooks.LearningRevision, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `learningrevision.Intercept(f(g(h())))`.
+func (c *LearningRevisionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LearningRevision = append(c.inters.LearningRevision, interceptors...)
+}
+
+// Create returns a builder for creating a LearningRevision entity.
+func (c *LearningRevisionClient) Create() *LearningRevisionCreate {
+	mutation := newLearningRevisionMutation(c.config, OpCreate)
+	return &LearningRevisionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LearningRevision entities.
+func (c *LearningRevisionClient) CreateBulk(builders ...*LearningRevisionCreate) *LearningRevisionCreateBulk {
+	return &LearningRevisionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LearningRevisionClient) MapCreateBulk(slice any, setFunc func(*LearningRevisionCreate, int)) *LearningRevisionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LearningRevisionCreateBulk{err: fmt.Errorf("calling to LearningRevisionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LearningRevisionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LearningRevisionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LearningRevision.
+func (c *LearningRevisionClient) Update() *LearningRevisionUpdate {
+	mutation := newLearningRevisionMutation(c.config, OpUpdate)
+	return &LearningRevisionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LearningRevisionClient) UpdateOne(_m *LearningRevision) *LearningRevisionUpdateOne {
+	mutation := newLearningRevisionMutation(c.config, OpUpdateOne, withLearningRevision(_m))
+	return &LearningRevisionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LearningRevisionClient) UpdateOneID(id string) *LearningRevisionUpdateOne {
+	mutation := newLearningRevisionMutation(c.config, OpUpdateOne, withLearningRevisionID(id))
+	return &LearningRevisionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LearningRevision.
+func (c *LearningRevisionClient) Delete() *LearningRevisionDelete {
+	mutation := newLearningRevisionMutation(c.config, OpDelete)
+	return &LearningRevisionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LearningRevisionClient) DeleteOne(_m *LearningRevision) *LearningRevisionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LearningRevisionClient) DeleteOneID(id string) *LearningRevisionDeleteOne {
+	builder := c.Delete().Where(learningrevision.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LearningRevisionDeleteOne{builder}
+}
+
+// Query returns a query builder for LearningRevision.
+func (c *LearningRevisionClient) Query() *LearningRevisionQuery {
+	return &LearningRevisionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLearningRevision},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LearningRevision entity by its id.
+func (c *LearningRevisionClient) Get(ctx context.Context, id string) (*LearningRevision, error) {
+	return c.Query().Where(learningrevision.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LearningRevisionClient) GetX(ctx context.Context, id string) *LearningRevision {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *LearningRevisionClient) Hooks() []Hook {
+	return c.hooks.LearningRevision
+}
+
+// Interceptors returns the client interceptors.
+func (c *LearningRevisionClient) Interceptors() []Interceptor {
+	return c.inters.LearningRevision
+}
+
+func (c *LearningRevisionClient) mutate(ctx context.Context, m *LearningRevisionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LearningRevisionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LearningRevisionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LearningRevisionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LearningRevisionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LearningRevision mutation op: %q", m.Op())
 	}
 }
 
@@ -6143,26 +7134,28 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		AccountabilityGroup, AccountabilityMembership, AggregateEvent, ApprovalRequest,
-		AuditLog, CheckIn, ContactVerification, ContentProgress, DailyMission,
-		DataRequest, Device, EducationMedia, EducationRevision, EmergencyKeyRequest,
-		Intention, MembershipExitRequest, ModelRelease, ModelRollout,
-		NetworkRulesetRelease, NotificationDelivery, OperatorInvitation, Organization,
-		OrganizationInvite, OrganizationMember, OrganizationPolicy,
-		PartnerContactRequest, PartnerLink, PsychoeducationModule,
+		AcademicProgram, AccountabilityGroup, AccountabilityMembership, AggregateEvent,
+		ApprovalRequest, AuditLog, CheckIn, ContactVerification, ContentProgress,
+		DailyMission, DataRequest, Device, EducationMedia, EducationRevision,
+		EmergencyKeyRequest, ExperienceGrant, Institution, Intention, LearningCluster,
+		LearningItem, LearningProgress, LearningRevision, MembershipExitRequest,
+		ModelRelease, ModelRollout, NetworkRulesetRelease, NotificationDelivery,
+		OperatorInvitation, Organization, OrganizationInvite, OrganizationMember,
+		OrganizationPolicy, PartnerContactRequest, PartnerLink, PsychoeducationModule,
 		PsychoeducationProgress, RecoveryPracticeSession, RecoveryRecord,
 		RecoverySpace, Reflection, RefreshToken, ReleaseCohort, ReportRollup,
 		RulesetRelease, SiteSocialLink, SupportActionAudit, SupportCase,
 		SupportMessage, User []ent.Hook
 	}
 	inters struct {
-		AccountabilityGroup, AccountabilityMembership, AggregateEvent, ApprovalRequest,
-		AuditLog, CheckIn, ContactVerification, ContentProgress, DailyMission,
-		DataRequest, Device, EducationMedia, EducationRevision, EmergencyKeyRequest,
-		Intention, MembershipExitRequest, ModelRelease, ModelRollout,
-		NetworkRulesetRelease, NotificationDelivery, OperatorInvitation, Organization,
-		OrganizationInvite, OrganizationMember, OrganizationPolicy,
-		PartnerContactRequest, PartnerLink, PsychoeducationModule,
+		AcademicProgram, AccountabilityGroup, AccountabilityMembership, AggregateEvent,
+		ApprovalRequest, AuditLog, CheckIn, ContactVerification, ContentProgress,
+		DailyMission, DataRequest, Device, EducationMedia, EducationRevision,
+		EmergencyKeyRequest, ExperienceGrant, Institution, Intention, LearningCluster,
+		LearningItem, LearningProgress, LearningRevision, MembershipExitRequest,
+		ModelRelease, ModelRollout, NetworkRulesetRelease, NotificationDelivery,
+		OperatorInvitation, Organization, OrganizationInvite, OrganizationMember,
+		OrganizationPolicy, PartnerContactRequest, PartnerLink, PsychoeducationModule,
 		PsychoeducationProgress, RecoveryPracticeSession, RecoveryRecord,
 		RecoverySpace, Reflection, RefreshToken, ReleaseCohort, ReportRollup,
 		RulesetRelease, SiteSocialLink, SupportActionAudit, SupportCase,

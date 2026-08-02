@@ -307,20 +307,106 @@ func (s *RecoveryService) GetCurrentWeeklyReview(ctx context.Context, userID str
 }
 
 func (s *RecoveryService) SaveCurrentWeeklyReview(ctx context.Context, userID string, review model.WeeklyReview) (model.WeeklyReview, error) {
+	result, err := s.SaveCurrentWeeklyReviewWithResult(ctx, userID, review)
+	return result.Review, err
+}
+
+func (s *RecoveryService) SaveCurrentWeeklyReviewWithResult(ctx context.Context, userID string, review model.WeeklyReview) (model.WeeklyReviewSaveResult, error) {
 	review.WeekStart = jakartaWeekStart(time.Now().UTC())
-	if len(review.WhatHelped) > 6 || len(review.WhatWasHard) > 6 || len(review.Adjustment) > 500 || len(review.NextMission) > 300 || len(review.RecommendedSkill) > 200 {
-		return model.WeeklyReview{}, fmt.Errorf("weekly review is invalid")
+	review.IntentionID = strings.TrimSpace(review.IntentionID)
+	review.Outcome = strings.TrimSpace(review.Outcome)
+	review.HelpfulAction = strings.TrimSpace(review.HelpfulAction)
+	review.SelectedSkillID = strings.TrimSpace(review.SelectedSkillID)
+	usesNormalizedFields := review.IntentionID != "" ||
+		review.Outcome != "" ||
+		review.HelpfulAction != "" ||
+		review.NextMissionNumber != 0 ||
+		review.SelectedSkillID != ""
+	invalidMissionNumber := review.NextMissionNumber > 6 || review.NextMissionNumber < 0
+	invalidCollections := len(review.WhatHelped) > 6 || len(review.WhatWasHard) > 6
+	invalidLegacyLength := len(review.Adjustment) > 500 ||
+		len(review.NextMission) > 300 ||
+		len(review.RecommendedSkill) > 200
+	invalidNormalizedLength := len(review.Outcome) > 40 ||
+		len(review.HelpfulAction) > 60 ||
+		len(review.SelectedSkillID) > 100
+	if invalidMissionNumber || invalidCollections || invalidLegacyLength || invalidNormalizedLength {
+		return model.WeeklyReviewSaveResult{}, fmt.Errorf("weekly review is invalid")
+	}
+	if review.HelpfulAction != "" && len(review.WhatHelped) == 0 && review.HelpfulAction != "unsure" {
+		review.WhatHelped = []string{review.HelpfulAction}
+	}
+	if review.NextMission == "" && review.NextMissionNumber > 0 {
+		review.NextMission = fmt.Sprintf("mission_%d", review.NextMissionNumber)
+	}
+	if review.RecommendedSkill == "" {
+		review.RecommendedSkill = review.SelectedSkillID
+	}
+	if review.NextMissionNumber == 0 && strings.HasPrefix(review.NextMission, "mission_") {
+		_, _ = fmt.Sscanf(review.NextMission, "mission_%d", &review.NextMissionNumber)
+	}
+	if review.NextMissionNumber > 6 {
+		return model.WeeklyReviewSaveResult{}, fmt.Errorf("weekly review is invalid")
+	}
+	invalidOutcome := review.Outcome != "" &&
+		review.Outcome != "helped" &&
+		review.Outcome != "mixed" &&
+		review.Outcome != "difficult"
+	if invalidOutcome {
+		return model.WeeklyReviewSaveResult{}, fmt.Errorf("weekly review is invalid")
+	}
+	invalidHelpfulAction := review.HelpfulAction != "" &&
+		review.HelpfulAction != "pause" &&
+		review.HelpfulAction != "trusted_person" &&
+		review.HelpfulAction != "walk" &&
+		review.HelpfulAction != "unsure"
+	if invalidHelpfulAction {
+		return model.WeeklyReviewSaveResult{}, fmt.Errorf("weekly review is invalid")
+	}
+	invalidNormalizedAdjustment := review.Adjustment != "continue" &&
+		review.Adjustment != "simplify" &&
+		review.Adjustment != "change_focus" &&
+		review.Adjustment != "pause"
+	if usesNormalizedFields && invalidNormalizedAdjustment {
+		return model.WeeklyReviewSaveResult{}, fmt.Errorf("weekly review is invalid")
+	}
+	hasLegacyContent := (len(review.WhatHelped) > 0 || len(review.WhatWasHard) > 0) &&
+		strings.TrimSpace(review.Adjustment) != "" &&
+		strings.TrimSpace(review.NextMission) != "" &&
+		strings.TrimSpace(review.RecommendedSkill) != ""
+	hasNormalizedContent := usesNormalizedFields &&
+		review.HelpfulAction != "" &&
+		strings.TrimSpace(review.Adjustment) != "" &&
+		review.NextMissionNumber > 0 &&
+		review.SelectedSkillID != ""
+	if !hasLegacyContent && !hasNormalizedContent {
+		return model.WeeklyReviewSaveResult{}, fmt.Errorf("weekly review is incomplete")
+	}
+	existing, err := s.GetCurrentWeeklyReview(ctx, userID)
+	if err != nil {
+		return model.WeeklyReviewSaveResult{}, err
+	}
+	if existing.ID != "" {
+		review.ID = existing.ID
 	}
 	payload, err := json.Marshal(review)
 	if err != nil {
-		return model.WeeklyReview{}, fmt.Errorf("weekly review encoding failed")
+		return model.WeeklyReviewSaveResult{}, fmt.Errorf("weekly review encoding failed")
 	}
-	item, err := s.SaveRecoveryRecord(ctx, userID, review.ID, "weekly_review", review.WeekStart, string(payload), "active", map[string]any{"schema_version": 2})
+	item, err := s.SaveRecoveryRecord(ctx, userID, review.ID, "weekly_review", review.WeekStart, string(payload), "active", map[string]any{"schema_version": 3})
 	if err != nil {
-		return model.WeeklyReview{}, err
+		return model.WeeklyReviewSaveResult{}, err
 	}
 	review.ID, review.UpdatedAt = item.ID, item.UpdatedAt
-	return review, nil
+	granted, capReached, err := s.recordRepo.GrantWeeklyReviewExperience(ctx, userID, review.WeekStart)
+	if err != nil {
+		return model.WeeklyReviewSaveResult{}, err
+	}
+	experience, err := s.recordRepo.GetLearningExperience(ctx, userID)
+	if err != nil {
+		return model.WeeklyReviewSaveResult{}, err
+	}
+	return model.WeeklyReviewSaveResult{Review: review, EXPGranted: granted, CapReached: capReached, Experience: experience}, nil
 }
 
 func jakartaWeekStart(now time.Time) string {

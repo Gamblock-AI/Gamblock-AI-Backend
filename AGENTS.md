@@ -1,6 +1,6 @@
 # Gamblock-AI Backend Agent Rules
 
-Context version: `2026-07-31.15`
+Context version: `2026-08-02.23`
 
 This repository is the Go/Gin API for Gamblock-AI. It must remain safe and
 understandable as a standalone clone; no parent workspace files are required.
@@ -108,6 +108,11 @@ and release management are supporting/operational, not substitutes for core.
   export/deletion. Do not accept active timer state or focus-task draft text.
 - Education audience is backend authorization, not presentation metadata:
   enforce it for list and direct-slug reads as well as in the website UI.
+- Learning Hub editorial routes under `/v1/admin/content/learning-hub` are
+  verified-admin operational content management. They may store reviewed public
+  provider URLs and UTY taxonomy, but must never return student progress,
+  encrypted checkpoint text, or browsing data. Student reads resolve only the
+  immutable published revision, never an editor's draft.
 - `.env` and credentials are local only. Update `.env.example` for config
   shape changes. Use `make key-generate` to create the required local
   `JOURNAL_ENCRYPTION_KEY`; it refuses to replace a valid key unless explicitly
@@ -126,7 +131,7 @@ and release management are supporting/operational, not substitutes for core.
   contract. Do not reintroduce deploy-user keys or store a GHCR pull PAT in the
   application repository.
 - The production image contains `/app/api`, `/app/migrate-up`,
-  `/app/migrate-down`, and `/app/seeder`. The production seeder installs only
+  `/app/migrate-down`, `/app/seeder`, and `/app/seed-learning-hub`. The production seeder installs only
   missing public baseline content; it must never create demo accounts or
   overwrite administrator-managed content. `migrate-down` is destructive,
   requires `CONFIRM_MIGRATE_DOWN=DROP_ALL_DATA`, and is never part of deploy.

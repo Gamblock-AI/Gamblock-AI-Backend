@@ -9,6 +9,18 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 )
 
+// The AcademicProgramFunc type is an adapter to allow the use of ordinary
+// function as AcademicProgram mutator.
+type AcademicProgramFunc func(context.Context, *ent.AcademicProgramMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AcademicProgramFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AcademicProgramMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AcademicProgramMutation", m)
+}
+
 // The AccountabilityGroupFunc type is an adapter to allow the use of ordinary
 // function as AccountabilityGroup mutator.
 type AccountabilityGroupFunc func(context.Context, *ent.AccountabilityGroupMutation) (ent.Value, error)
@@ -177,6 +189,30 @@ func (f EmergencyKeyRequestFunc) Mutate(ctx context.Context, m ent.Mutation) (en
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EmergencyKeyRequestMutation", m)
 }
 
+// The ExperienceGrantFunc type is an adapter to allow the use of ordinary
+// function as ExperienceGrant mutator.
+type ExperienceGrantFunc func(context.Context, *ent.ExperienceGrantMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ExperienceGrantFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ExperienceGrantMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ExperienceGrantMutation", m)
+}
+
+// The InstitutionFunc type is an adapter to allow the use of ordinary
+// function as Institution mutator.
+type InstitutionFunc func(context.Context, *ent.InstitutionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InstitutionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InstitutionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InstitutionMutation", m)
+}
+
 // The IntentionFunc type is an adapter to allow the use of ordinary
 // function as Intention mutator.
 type IntentionFunc func(context.Context, *ent.IntentionMutation) (ent.Value, error)
@@ -187,6 +223,54 @@ func (f IntentionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntentionMutation", m)
+}
+
+// The LearningClusterFunc type is an adapter to allow the use of ordinary
+// function as LearningCluster mutator.
+type LearningClusterFunc func(context.Context, *ent.LearningClusterMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LearningClusterFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LearningClusterMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LearningClusterMutation", m)
+}
+
+// The LearningItemFunc type is an adapter to allow the use of ordinary
+// function as LearningItem mutator.
+type LearningItemFunc func(context.Context, *ent.LearningItemMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LearningItemFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LearningItemMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LearningItemMutation", m)
+}
+
+// The LearningProgressFunc type is an adapter to allow the use of ordinary
+// function as LearningProgress mutator.
+type LearningProgressFunc func(context.Context, *ent.LearningProgressMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LearningProgressFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LearningProgressMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LearningProgressMutation", m)
+}
+
+// The LearningRevisionFunc type is an adapter to allow the use of ordinary
+// function as LearningRevision mutator.
+type LearningRevisionFunc func(context.Context, *ent.LearningRevisionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LearningRevisionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LearningRevisionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LearningRevisionMutation", m)
 }
 
 // The MembershipExitRequestFunc type is an adapter to allow the use of ordinary

@@ -11,7 +11,7 @@ import (
 )
 
 func SeedReleases(ctx context.Context, client *ent.Client, now time.Time) error {
-	if _, err := client.ModelRelease.Create().SetID("rel_model_031").SetVersion("artifact-v0.3.1").SetPlatform(modelrelease.PlatformAll).SetArtifactPath("./var/artifacts/artifact-v0.3.1.onnx").SetSha256("c3a12b939f2923c21d3e729a514610a3989cab321c895c9d2f63ac8eb8a0199c").SetThreshold(0.72).SetContractVersion("v1").SetStatus(modelrelease.StatusPublished).SetMetricsJSON(map[string]any{"false_positive_reviewed": true, "latency_ms_p95": 42}).SetPublishedAt(now.Add(-48 * time.Hour)).Save(ctx); err != nil {
+	if _, err := client.ModelRelease.Create().SetID("rel_model_031").SetVersion("artifact-v0.3.1").SetPlatform(modelrelease.PlatformAll).SetArtifactPath("./var/artifacts/artifact-v0.3.1.onnx").SetSha256("c3a12b939f2923c21d3e729a514610a3989cab321c895c9d2f63ac8eb8a0199c").SetThreshold(0.72).SetContractVersion("v1").SetStatus(modelrelease.StatusPublished).SetMetricsJSON(map[string]any{"evaluated": false, "evidence_status": "demo_fixture_not_evaluated"}).SetPublishedAt(now.Add(-48 * time.Hour)).Save(ctx); err != nil {
 		return err
 	}
 	if _, err := client.RulesetRelease.Create().SetID("rel_rules_202605").SetVersion("ruleset-2026.05.1").SetArtifactPath("./var/artifacts/ruleset-2026.05.1.json").SetSha256("c9a31a473ca232c060d49d431e6a1029670df9c4888f32dbc4d06554a41bf586").SetStatus(rulesetrelease.StatusPublished).SetRulesJSON(map[string]any{"rules": 42}).SetPublishedAt(now.Add(-2 * time.Hour)).Save(ctx); err != nil {

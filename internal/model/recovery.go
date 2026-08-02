@@ -57,14 +57,29 @@ type RecoverySpace struct {
 }
 
 type WeeklyReview struct {
-	ID               string    `json:"id,omitempty"`
-	WeekStart        string    `json:"week_start"`
-	WhatHelped       []string  `json:"what_helped"`
-	WhatWasHard      []string  `json:"what_was_hard"`
-	Adjustment       string    `json:"adjustment"`
-	NextMission      string    `json:"next_mission"`
-	RecommendedSkill string    `json:"recommended_skill,omitempty"`
-	UpdatedAt        time.Time `json:"updated_at,omitempty"`
+	ID               string   `json:"id,omitempty"`
+	WeekStart        string   `json:"week_start"`
+	WhatHelped       []string `json:"what_helped"`
+	WhatWasHard      []string `json:"what_was_hard"`
+	Adjustment       string   `json:"adjustment"`
+	NextMission      string   `json:"next_mission"`
+	RecommendedSkill string   `json:"recommended_skill,omitempty"`
+	// These normalized fields are the website's privacy-safe structured
+	// weekly-review contract. Legacy fields above remain readable for existing
+	// records and older clients.
+	IntentionID       string    `json:"intention_id,omitempty"`
+	Outcome           string    `json:"outcome,omitempty"`
+	HelpfulAction     string    `json:"helpful_action,omitempty"`
+	NextMissionNumber int       `json:"next_mission_number,omitempty"`
+	SelectedSkillID   string    `json:"selected_skill_id,omitempty"`
+	UpdatedAt         time.Time `json:"updated_at,omitempty"`
+}
+
+type WeeklyReviewSaveResult struct {
+	Review     WeeklyReview       `json:"review"`
+	EXPGranted bool               `json:"exp_granted"`
+	CapReached bool               `json:"cap_reached"`
+	Experience ExperienceProgress `json:"experience"`
 }
 
 type RecoveryUnlockEvidence struct {

@@ -257,6 +257,138 @@ func (PsychoeducationProgress) Indexes() []ent.Index {
 	return []ent.Index{index.Fields("user_id", "module_id", "revision").Unique()}
 }
 
+type Institution struct{ ent.Schema }
+
+func (Institution) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("slug").Unique(),
+		field.String("name"),
+		field.Enum("status").Values("active", "archived").Default("active"),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+type AcademicProgram struct{ ent.Schema }
+
+func (AcademicProgram) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("institution_id"),
+		field.String("slug").Unique(),
+		field.String("name"),
+		field.String("degree").Default(""),
+		field.String("primary_cluster_slug"),
+		field.Int("sort_order").Default(0),
+		field.Bool("active").Default(true),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+func (AcademicProgram) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("institution_id", "slug").Unique()}
+}
+
+type LearningCluster struct{ ent.Schema }
+
+func (LearningCluster) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("slug").Unique(),
+		field.String("title_id"),
+		field.String("title_en"),
+		field.String("description_id").Default(""),
+		field.String("description_en").Default(""),
+		field.Int("sort_order").Default(0),
+		field.Bool("active").Default(true),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+type LearningItem struct{ ent.Schema }
+
+func (LearningItem) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("slug").Unique(),
+		field.Enum("kind").Values("course", "certification", "learning_path", "mini_project", "career_snapshot", "toolkit", "opportunity"),
+		field.String("title_id"),
+		field.String("title_en"),
+		field.String("summary_id").Default(""),
+		field.String("summary_en").Default(""),
+		field.JSON("document_json", map[string]any{}).Optional(),
+		field.Enum("status").Values("draft", "in_review", "published", "archived").Default("draft"),
+		field.Int("draft_revision").Default(1),
+		field.Int("published_revision").Default(0),
+		field.Time("published_at").Optional().Nillable(),
+		field.Time("archived_at").Optional().Nillable(),
+		field.String("created_by").Optional(),
+		field.String("updated_by").Optional(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+type LearningRevision struct{ ent.Schema }
+
+func (LearningRevision) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("item_id"),
+		field.Int("revision"),
+		field.JSON("document_json", map[string]any{}),
+		field.Enum("kind").Values("draft", "published", "rollback"),
+		field.String("created_by"),
+		createdAt(),
+	}
+}
+
+func (LearningRevision) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("item_id", "revision", "kind").Unique()}
+}
+
+type LearningProgress struct{ ent.Schema }
+
+func (LearningProgress) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("user_id"),
+		field.String("item_id"),
+		field.Enum("state").Values("saved", "started", "completed").Default("saved"),
+		field.Text("reflection_encrypted").Optional().Nillable().Sensitive(),
+		field.Text("outcome_encrypted").Optional().Nillable().Sensitive(),
+		field.Time("completed_at").Optional().Nillable(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+func (LearningProgress) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("user_id", "item_id").Unique()}
+}
+
+type ExperienceGrant struct{ ent.Schema }
+
+func (ExperienceGrant) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("user_id"),
+		field.String("source_kind"),
+		field.String("source_id"),
+		field.String("grant_date"),
+		field.Int("amount").Positive(),
+		field.String("idempotency_key").Unique(),
+		createdAt(),
+	}
+}
+
+func (ExperienceGrant) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("user_id", "source_kind", "source_id").Unique()}
+}
+
 type ModelRelease struct{ ent.Schema }
 
 func (ModelRelease) Fields() []ent.Field {

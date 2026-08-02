@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// AcademicProgram is the predicate function for academicprogram builders.
+type AcademicProgram func(*sql.Selector)
+
 // AccountabilityGroup is the predicate function for accountabilitygroup builders.
 type AccountabilityGroup func(*sql.Selector)
 
@@ -48,8 +51,26 @@ type EducationRevision func(*sql.Selector)
 // EmergencyKeyRequest is the predicate function for emergencykeyrequest builders.
 type EmergencyKeyRequest func(*sql.Selector)
 
+// ExperienceGrant is the predicate function for experiencegrant builders.
+type ExperienceGrant func(*sql.Selector)
+
+// Institution is the predicate function for institution builders.
+type Institution func(*sql.Selector)
+
 // Intention is the predicate function for intention builders.
 type Intention func(*sql.Selector)
+
+// LearningCluster is the predicate function for learningcluster builders.
+type LearningCluster func(*sql.Selector)
+
+// LearningItem is the predicate function for learningitem builders.
+type LearningItem func(*sql.Selector)
+
+// LearningProgress is the predicate function for learningprogress builders.
+type LearningProgress func(*sql.Selector)
+
+// LearningRevision is the predicate function for learningrevision builders.
+type LearningRevision func(*sql.Selector)
 
 // MembershipExitRequest is the predicate function for membershipexitrequest builders.
 type MembershipExitRequest func(*sql.Selector)

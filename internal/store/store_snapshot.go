@@ -57,6 +57,16 @@ func (s *Store) Snapshot() Store {
 		SiteSocialLinks:           append([]SiteSocialLink(nil), s.SiteSocialLinks...),
 		OperatorInvitations:       append([]OperatorInvitation(nil), s.OperatorInvitations...),
 		ReleaseRollouts:           append([]ReleaseRollout(nil), s.ReleaseRollouts...),
+		Institutions:              append([]Institution(nil), s.Institutions...),
+		AcademicPrograms:          append([]AcademicProgram(nil), s.AcademicPrograms...),
+		LearningClusters:          append([]LearningCluster(nil), s.LearningClusters...),
+		AdminLearningClusters:     append([]AdminLearningCluster(nil), s.AdminLearningClusters...),
+		AdminAcademicPrograms:     append([]AdminAcademicProgram(nil), s.AdminAcademicPrograms...),
+		LearningItems:             append([]LearningItem(nil), s.LearningItems...),
+		AdminLearningItems:        append([]AdminLearningItem(nil), s.AdminLearningItems...),
+		LearningRevisions:         append([]LearningRevision(nil), s.LearningRevisions...),
+		LearningProgress:          append([]LearningProgress(nil), s.LearningProgress...),
+		ExperienceGrants:          append([]ExperienceGrant(nil), s.ExperienceGrants...),
 	}
 }
 

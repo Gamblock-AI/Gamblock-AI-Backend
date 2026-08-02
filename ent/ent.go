@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/academicprogram"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitygroup"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitymembership"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/aggregateevent"
@@ -26,7 +27,13 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/experiencegrant"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/institution"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningcluster"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningitem"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningprogress"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/membershipexitrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
@@ -114,6 +121,7 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			academicprogram.Table:          academicprogram.ValidColumn,
 			accountabilitygroup.Table:      accountabilitygroup.ValidColumn,
 			accountabilitymembership.Table: accountabilitymembership.ValidColumn,
 			aggregateevent.Table:           aggregateevent.ValidColumn,
@@ -128,7 +136,13 @@ func checkColumn(t, c string) error {
 			educationmedia.Table:           educationmedia.ValidColumn,
 			educationrevision.Table:        educationrevision.ValidColumn,
 			emergencykeyrequest.Table:      emergencykeyrequest.ValidColumn,
+			experiencegrant.Table:          experiencegrant.ValidColumn,
+			institution.Table:              institution.ValidColumn,
 			intention.Table:                intention.ValidColumn,
+			learningcluster.Table:          learningcluster.ValidColumn,
+			learningitem.Table:             learningitem.ValidColumn,
+			learningprogress.Table:         learningprogress.ValidColumn,
+			learningrevision.Table:         learningrevision.ValidColumn,
 			membershipexitrequest.Table:    membershipexitrequest.ValidColumn,
 			modelrelease.Table:             modelrelease.ValidColumn,
 			modelrollout.Table:             modelrollout.ValidColumn,

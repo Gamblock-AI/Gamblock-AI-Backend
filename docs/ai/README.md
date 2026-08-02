@@ -1,6 +1,6 @@
 # Backend AI Context
 
-Context version: `2026-07-31.15`
+Context version: `2026-08-02.23`
 
 ## Product capsule
 
@@ -46,12 +46,20 @@ are supporting/operational features.
 | Recovery room, journal, and progress | Implemented supporting workflow | student-only completed practices and typed weekly reviews retain a rolling 12 months; deterministic room unlock/placement state retains for account lifetime (rule version 2: a 20-item tiered catalog over practices/active days/reviews/missions/levels computed as the union of stored and derived unlocks so earlier unlocks are always preserved, per-item placement slots validated server-side with one item per slot, and a second `sunrise_study` theme at level 18; locked placements/themes reject with the stable code `recovery_space_item_locked`); AES-256-GCM reflection payload v3 stores one rich-text daily journal per `Asia/Jakarta` day (headings, emphasis, lists, quotations, and up to five private inline images), while legacy v1/v2 reflections remain readable; check-ins update the current `Asia/Jakarta` day without backfill; private progress exposes category-tagged 7/30/90-day activity and suppresses trends below three check-ins; the full `PKM-WEB-002` focus-period/reminder lifecycle remains incomplete core work |
 | Threaded support | Implemented operational workflow | only user/partner requesters access their own cases; encrypted messages transition between waiting-support/waiting-user/resolved/closed; verified admins work exclusively from the queue and atomically claim/release ownership before reading or replying |
 | Daily mission EXP | Implemented supporting PKM-WEB-005 workflow | exactly five `Asia/Jakarta` slots per day, each worth 10 EXP: the default system catalog has active protection, check-in, education section, education module, and recovery practice. A student may create up to five private custom missions; each replaces one system slot, is editable/deletable while pending, and completes by private self-attestation. System claims remain server-verified, custom self-attestations use the same claim contract, and all claims are idempotent. The skip endpoint and mutation are retired; historical skipped records are read only for compatibility. Custom titles are AES-256-GCM encrypted at rest, and custom self-attestations are excluded from partner/admin aggregates. The old primary/bonus rotation, replacement flow, and separate practice EXP award are retired |
+| Learning Hub catalog, progress, and CMS | Implemented supporting PKM-WEB-006 workflow | idempotent UTY institution/program/cluster/content seed; published bilingual catalog API; user-scoped saved/started/completed progress; AES-256-GCM checkpoint reflections/outcomes; once-per-item 10 EXP grants with a shared Jakarta daily cap of 50; verified-admin item/taxonomy CRUD, review/publish/archive lifecycle, immutable revisions, and reasoned rollback; catalog reads never use an unpublished draft and CMS reads never expose student progress/reflections |
+
+Phase 3 self-regulation loop (`PKM-WEB-002`/`PKM-WEB-007`) is implemented for
+the structured weekly-review slice: `/v1/weekly-reviews/current` restores and
+upserts one encrypted review per Jakarta week, preserves legacy fields, and
+grants one idempotent 10-EXP reward under the shared daily cap. The response
+reports the reward/cap state and current experience; no separate journal entry,
+URL, DOM, or browsing data is accepted.
 | Dashboard/profile/aggregate API | Implemented | user-scoped summaries derive from owned records; Flutter sends only bounded daily aggregate categories with idempotency; authenticated avatar upload/delete and session-gated avatar retrieval use managed 2 MiB WebP files rather than provider-hosted image URLs; own-profile responses expose only a derived password-enabled boolean for provider-aware security UI |
 | Emergency recovery | Implemented operational workflow | protected user requests for an owned device; one platform admin reviews and a distinct second admin issues within 30 minutes; hashed device-bound key is single-use for 24 hours and produces a ten-minute grant |
 | Psychoeducation authoring and progress | Implemented supporting PKM-WEB-003 workflow | bilingual revisioned rich-text documents, immutable draft/publish/rollback snapshots, role-enforced student/partner/all audience and article/response-simulator experience metadata, 1–8 thumbnails, allowlisted image/video/PDF media, reviewer/source metadata, review/publish/archive lifecycle, and revision-scoped section/media/check progress are wired; editorial and clinical governance remain operational responsibilities |
 | Data export/deletion | Implemented operational workflow | export creates an AES-256-GCM encrypted ZIP at rest with a seven-day recent-auth download; missing configuration fails at startup, expired/legacy results are marked unavailable rather than advertised as downloads, and failed processing remains visible for recovery; student/partner deletion requires a hashed 30-minute email token and recent auth, deletes account-scoped records, and anonymizes retained audit/request rows; external lifecycle cleanup remains operational |
 | Three-role admin control plane | Implemented operational v1 | authoritative roles are `user`, `partner`, and `admin`; legacy roles migrate transactionally; admins directly create immutable-role accounts with a one-time temporary password and forced first-login change, enable/disable other accounts, and manage all operational work behind verified-email/recent-auth/audit gates |
-| Release gates and rollout | Implemented operational v1 | allowlisted artifact upload uses randomized managed storage and server-computed SHA-256; model/ruleset/network releases can be staged to manual platform/percentage/app-version cohorts and activated, paused, completed, or rolled back; signing and automated health decisions remain planned |
+| Release gates and rollout | Implemented operational v1 | allowlisted artifact upload uses randomized managed storage and server-computed SHA-256; model/ruleset/network releases can be staged to manual platform/percentage/app-version cohorts and activated, paused, completed, or rolled back; contextual demo releases explicitly say `evaluated: false` and carry no fabricated Phase 4 metrics; signing and automated health decisions remain planned |
 | WhatsApp delivery | Implemented Fonnte adapter | immediate delivery uses configured phone numbers and Fonnte; logs omit tokens, recipients, and message bodies |
 | Model training/inference | Outside this repository | proposal-required training belongs to a governed model workstream; inference is client-side |
 
@@ -60,7 +68,9 @@ route wiring, persistence path, tests, and external integration separately.
 
 Operational deployment status: the Docker image creates persistent
 artifact/export/media/avatar paths and contains the API plus migrate-up,
-guarded migrate-down, and production-safe seeder binaries. The safe seeder
+guarded migrate-down, production-safe seeder, and Learning Hub seeder
+binaries. The safe seeder logs only aggregate Learning Hub inserted/skipped
+counts and
 installs public education/social defaults only when their collections are
 empty; it creates no demo users or activity. CI can deploy the private GHCR
 image to the pinned VPS as root over password SSH, where `update.sh` takes a

@@ -238,8 +238,16 @@ func (r *Repository) upsertMissionDB(
 
 	if ent.IsNotFound(queryErr) {
 		status := dailymission.StatusPending
+		effectiveReward := reward
 		if completed {
 			status = dailymission.StatusCompleted
+			available, availableErr := availableDailyExperience(ctx, tx.Client(), userID, date)
+			if availableErr != nil {
+				return model.DailyMission{}, 0, availableErr
+			}
+			if available < reward {
+				effectiveReward = 0
+			}
 		}
 		creator := tx.DailyMission.Create().
 			SetID("mis_" + uuid.NewString()[:8]).
@@ -247,7 +255,7 @@ func (r *Repository) upsertMissionDB(
 			SetMissionDate(date).
 			SetMissionKey(key).
 			SetStatus(status).
-			SetExpReward(reward)
+			SetExpReward(effectiveReward)
 		if completed {
 			creator.SetCompletedAt(time.Now().UTC())
 		}
@@ -257,7 +265,7 @@ func (r *Repository) upsertMissionDB(
 		if completed {
 			if _, err = tx.User.Update().
 				Where(entuser.IDEQ(userID)).
-				AddExperiencePoints(reward).
+				AddExperiencePoints(effectiveReward).
 				Save(ctx); err != nil {
 				return model.DailyMission{}, 0, err
 			}
@@ -273,6 +281,15 @@ func (r *Repository) upsertMissionDB(
 		effectiveReward := row.ExpReward
 		if effectiveReward == 0 && row.Status != dailymission.StatusCompleted {
 			effectiveReward = reward
+			if completed {
+				available, availableErr := availableDailyExperience(ctx, tx.Client(), userID, date)
+				if availableErr != nil {
+					return model.DailyMission{}, 0, availableErr
+				}
+				if available < effectiveReward {
+					effectiveReward = 0
+				}
+			}
 		}
 		updater := tx.DailyMission.Update().Where(
 			dailymission.IDEQ(row.ID),
@@ -691,14 +708,22 @@ func (r *Repository) CompleteCustomMission(ctx context.Context, userID, date, id
 			return model.DailyMission{}, 0, ErrCustomMissionResolved
 		}
 		if row.Status == dailymission.StatusPending {
-			changed, err := tx.DailyMission.Update().Where(dailymission.IDEQ(id), dailymission.StatusEQ(dailymission.StatusPending)).SetStatus(dailymission.StatusCompleted).SetExpReward(reward).SetCompletedAt(time.Now().UTC()).SetUpdatedAt(time.Now().UTC()).Save(ctx)
+			available, availableErr := availableDailyExperience(ctx, tx.Client(), userID, date)
+			if availableErr != nil {
+				return model.DailyMission{}, 0, availableErr
+			}
+			effectiveReward := reward
+			if available < reward {
+				effectiveReward = 0
+			}
+			changed, err := tx.DailyMission.Update().Where(dailymission.IDEQ(id), dailymission.StatusEQ(dailymission.StatusPending)).SetStatus(dailymission.StatusCompleted).SetExpReward(effectiveReward).SetCompletedAt(time.Now().UTC()).SetUpdatedAt(time.Now().UTC()).Save(ctx)
 			if err != nil {
 				return model.DailyMission{}, 0, err
 			}
 			if changed != 1 {
 				return model.DailyMission{}, 0, fmt.Errorf("custom mission claim conflicted")
 			}
-			if _, err = tx.User.Update().Where(entuser.IDEQ(userID)).AddExperiencePoints(reward).Save(ctx); err != nil {
+			if _, err = tx.User.Update().Where(entuser.IDEQ(userID)).AddExperiencePoints(effectiveReward).Save(ctx); err != nil {
 				return model.DailyMission{}, 0, err
 			}
 		}

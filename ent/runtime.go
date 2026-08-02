@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/academicprogram"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitygroup"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitymembership"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/aggregateevent"
@@ -19,7 +20,13 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/experiencegrant"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/institution"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningcluster"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningitem"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningprogress"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/membershipexitrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
@@ -54,6 +61,34 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	academicprogramFields := schema.AcademicProgram{}.Fields()
+	_ = academicprogramFields
+	// academicprogramDescDegree is the schema descriptor for degree field.
+	academicprogramDescDegree := academicprogramFields[4].Descriptor()
+	// academicprogram.DefaultDegree holds the default value on creation for the degree field.
+	academicprogram.DefaultDegree = academicprogramDescDegree.Default.(string)
+	// academicprogramDescSortOrder is the schema descriptor for sort_order field.
+	academicprogramDescSortOrder := academicprogramFields[6].Descriptor()
+	// academicprogram.DefaultSortOrder holds the default value on creation for the sort_order field.
+	academicprogram.DefaultSortOrder = academicprogramDescSortOrder.Default.(int)
+	// academicprogramDescActive is the schema descriptor for active field.
+	academicprogramDescActive := academicprogramFields[7].Descriptor()
+	// academicprogram.DefaultActive holds the default value on creation for the active field.
+	academicprogram.DefaultActive = academicprogramDescActive.Default.(bool)
+	// academicprogramDescCreatedAt is the schema descriptor for created_at field.
+	academicprogramDescCreatedAt := academicprogramFields[8].Descriptor()
+	// academicprogram.DefaultCreatedAt holds the default value on creation for the created_at field.
+	academicprogram.DefaultCreatedAt = academicprogramDescCreatedAt.Default.(func() time.Time)
+	// academicprogramDescUpdatedAt is the schema descriptor for updated_at field.
+	academicprogramDescUpdatedAt := academicprogramFields[9].Descriptor()
+	// academicprogram.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	academicprogram.DefaultUpdatedAt = academicprogramDescUpdatedAt.Default.(func() time.Time)
+	// academicprogram.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	academicprogram.UpdateDefaultUpdatedAt = academicprogramDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// academicprogramDescID is the schema descriptor for id field.
+	academicprogramDescID := academicprogramFields[0].Descriptor()
+	// academicprogram.DefaultID holds the default value on creation for the id field.
+	academicprogram.DefaultID = academicprogramDescID.Default.(func() string)
 	accountabilitygroupFields := schema.AccountabilityGroup{}.Fields()
 	_ = accountabilitygroupFields
 	// accountabilitygroupDescDescription is the schema descriptor for description field.
@@ -302,6 +337,36 @@ func init() {
 	emergencykeyrequestDescID := emergencykeyrequestFields[0].Descriptor()
 	// emergencykeyrequest.DefaultID holds the default value on creation for the id field.
 	emergencykeyrequest.DefaultID = emergencykeyrequestDescID.Default.(func() string)
+	experiencegrantFields := schema.ExperienceGrant{}.Fields()
+	_ = experiencegrantFields
+	// experiencegrantDescAmount is the schema descriptor for amount field.
+	experiencegrantDescAmount := experiencegrantFields[5].Descriptor()
+	// experiencegrant.AmountValidator is a validator for the "amount" field. It is called by the builders before save.
+	experiencegrant.AmountValidator = experiencegrantDescAmount.Validators[0].(func(int) error)
+	// experiencegrantDescCreatedAt is the schema descriptor for created_at field.
+	experiencegrantDescCreatedAt := experiencegrantFields[7].Descriptor()
+	// experiencegrant.DefaultCreatedAt holds the default value on creation for the created_at field.
+	experiencegrant.DefaultCreatedAt = experiencegrantDescCreatedAt.Default.(func() time.Time)
+	// experiencegrantDescID is the schema descriptor for id field.
+	experiencegrantDescID := experiencegrantFields[0].Descriptor()
+	// experiencegrant.DefaultID holds the default value on creation for the id field.
+	experiencegrant.DefaultID = experiencegrantDescID.Default.(func() string)
+	institutionFields := schema.Institution{}.Fields()
+	_ = institutionFields
+	// institutionDescCreatedAt is the schema descriptor for created_at field.
+	institutionDescCreatedAt := institutionFields[4].Descriptor()
+	// institution.DefaultCreatedAt holds the default value on creation for the created_at field.
+	institution.DefaultCreatedAt = institutionDescCreatedAt.Default.(func() time.Time)
+	// institutionDescUpdatedAt is the schema descriptor for updated_at field.
+	institutionDescUpdatedAt := institutionFields[5].Descriptor()
+	// institution.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	institution.DefaultUpdatedAt = institutionDescUpdatedAt.Default.(func() time.Time)
+	// institution.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	institution.UpdateDefaultUpdatedAt = institutionDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// institutionDescID is the schema descriptor for id field.
+	institutionDescID := institutionFields[0].Descriptor()
+	// institution.DefaultID holds the default value on creation for the id field.
+	institution.DefaultID = institutionDescID.Default.(func() string)
 	intentionFields := schema.Intention{}.Fields()
 	_ = intentionFields
 	// intentionDescCreatedAt is the schema descriptor for created_at field.
@@ -318,6 +383,96 @@ func init() {
 	intentionDescID := intentionFields[0].Descriptor()
 	// intention.DefaultID holds the default value on creation for the id field.
 	intention.DefaultID = intentionDescID.Default.(func() string)
+	learningclusterFields := schema.LearningCluster{}.Fields()
+	_ = learningclusterFields
+	// learningclusterDescDescriptionID is the schema descriptor for description_id field.
+	learningclusterDescDescriptionID := learningclusterFields[4].Descriptor()
+	// learningcluster.DefaultDescriptionID holds the default value on creation for the description_id field.
+	learningcluster.DefaultDescriptionID = learningclusterDescDescriptionID.Default.(string)
+	// learningclusterDescDescriptionEn is the schema descriptor for description_en field.
+	learningclusterDescDescriptionEn := learningclusterFields[5].Descriptor()
+	// learningcluster.DefaultDescriptionEn holds the default value on creation for the description_en field.
+	learningcluster.DefaultDescriptionEn = learningclusterDescDescriptionEn.Default.(string)
+	// learningclusterDescSortOrder is the schema descriptor for sort_order field.
+	learningclusterDescSortOrder := learningclusterFields[6].Descriptor()
+	// learningcluster.DefaultSortOrder holds the default value on creation for the sort_order field.
+	learningcluster.DefaultSortOrder = learningclusterDescSortOrder.Default.(int)
+	// learningclusterDescActive is the schema descriptor for active field.
+	learningclusterDescActive := learningclusterFields[7].Descriptor()
+	// learningcluster.DefaultActive holds the default value on creation for the active field.
+	learningcluster.DefaultActive = learningclusterDescActive.Default.(bool)
+	// learningclusterDescCreatedAt is the schema descriptor for created_at field.
+	learningclusterDescCreatedAt := learningclusterFields[8].Descriptor()
+	// learningcluster.DefaultCreatedAt holds the default value on creation for the created_at field.
+	learningcluster.DefaultCreatedAt = learningclusterDescCreatedAt.Default.(func() time.Time)
+	// learningclusterDescUpdatedAt is the schema descriptor for updated_at field.
+	learningclusterDescUpdatedAt := learningclusterFields[9].Descriptor()
+	// learningcluster.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	learningcluster.DefaultUpdatedAt = learningclusterDescUpdatedAt.Default.(func() time.Time)
+	// learningcluster.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	learningcluster.UpdateDefaultUpdatedAt = learningclusterDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// learningclusterDescID is the schema descriptor for id field.
+	learningclusterDescID := learningclusterFields[0].Descriptor()
+	// learningcluster.DefaultID holds the default value on creation for the id field.
+	learningcluster.DefaultID = learningclusterDescID.Default.(func() string)
+	learningitemFields := schema.LearningItem{}.Fields()
+	_ = learningitemFields
+	// learningitemDescSummaryID is the schema descriptor for summary_id field.
+	learningitemDescSummaryID := learningitemFields[5].Descriptor()
+	// learningitem.DefaultSummaryID holds the default value on creation for the summary_id field.
+	learningitem.DefaultSummaryID = learningitemDescSummaryID.Default.(string)
+	// learningitemDescSummaryEn is the schema descriptor for summary_en field.
+	learningitemDescSummaryEn := learningitemFields[6].Descriptor()
+	// learningitem.DefaultSummaryEn holds the default value on creation for the summary_en field.
+	learningitem.DefaultSummaryEn = learningitemDescSummaryEn.Default.(string)
+	// learningitemDescDraftRevision is the schema descriptor for draft_revision field.
+	learningitemDescDraftRevision := learningitemFields[9].Descriptor()
+	// learningitem.DefaultDraftRevision holds the default value on creation for the draft_revision field.
+	learningitem.DefaultDraftRevision = learningitemDescDraftRevision.Default.(int)
+	// learningitemDescPublishedRevision is the schema descriptor for published_revision field.
+	learningitemDescPublishedRevision := learningitemFields[10].Descriptor()
+	// learningitem.DefaultPublishedRevision holds the default value on creation for the published_revision field.
+	learningitem.DefaultPublishedRevision = learningitemDescPublishedRevision.Default.(int)
+	// learningitemDescCreatedAt is the schema descriptor for created_at field.
+	learningitemDescCreatedAt := learningitemFields[15].Descriptor()
+	// learningitem.DefaultCreatedAt holds the default value on creation for the created_at field.
+	learningitem.DefaultCreatedAt = learningitemDescCreatedAt.Default.(func() time.Time)
+	// learningitemDescUpdatedAt is the schema descriptor for updated_at field.
+	learningitemDescUpdatedAt := learningitemFields[16].Descriptor()
+	// learningitem.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	learningitem.DefaultUpdatedAt = learningitemDescUpdatedAt.Default.(func() time.Time)
+	// learningitem.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	learningitem.UpdateDefaultUpdatedAt = learningitemDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// learningitemDescID is the schema descriptor for id field.
+	learningitemDescID := learningitemFields[0].Descriptor()
+	// learningitem.DefaultID holds the default value on creation for the id field.
+	learningitem.DefaultID = learningitemDescID.Default.(func() string)
+	learningprogressFields := schema.LearningProgress{}.Fields()
+	_ = learningprogressFields
+	// learningprogressDescCreatedAt is the schema descriptor for created_at field.
+	learningprogressDescCreatedAt := learningprogressFields[7].Descriptor()
+	// learningprogress.DefaultCreatedAt holds the default value on creation for the created_at field.
+	learningprogress.DefaultCreatedAt = learningprogressDescCreatedAt.Default.(func() time.Time)
+	// learningprogressDescUpdatedAt is the schema descriptor for updated_at field.
+	learningprogressDescUpdatedAt := learningprogressFields[8].Descriptor()
+	// learningprogress.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	learningprogress.DefaultUpdatedAt = learningprogressDescUpdatedAt.Default.(func() time.Time)
+	// learningprogress.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	learningprogress.UpdateDefaultUpdatedAt = learningprogressDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// learningprogressDescID is the schema descriptor for id field.
+	learningprogressDescID := learningprogressFields[0].Descriptor()
+	// learningprogress.DefaultID holds the default value on creation for the id field.
+	learningprogress.DefaultID = learningprogressDescID.Default.(func() string)
+	learningrevisionFields := schema.LearningRevision{}.Fields()
+	_ = learningrevisionFields
+	// learningrevisionDescCreatedAt is the schema descriptor for created_at field.
+	learningrevisionDescCreatedAt := learningrevisionFields[6].Descriptor()
+	// learningrevision.DefaultCreatedAt holds the default value on creation for the created_at field.
+	learningrevision.DefaultCreatedAt = learningrevisionDescCreatedAt.Default.(func() time.Time)
+	// learningrevisionDescID is the schema descriptor for id field.
+	learningrevisionDescID := learningrevisionFields[0].Descriptor()
+	// learningrevision.DefaultID holds the default value on creation for the id field.
+	learningrevision.DefaultID = learningrevisionDescID.Default.(func() string)
 	membershipexitrequestFields := schema.MembershipExitRequest{}.Fields()
 	_ = membershipexitrequestFields
 	// membershipexitrequestDescReason is the schema descriptor for reason field.
