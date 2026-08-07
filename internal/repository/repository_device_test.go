@@ -29,8 +29,10 @@ func TestProtectionAnalytics_AggregatesOwnedDeviceOnly(t *testing.T) {
 	repo, _ := newRepo(t)
 	ctx := context.Background()
 	today := time.Now().UTC()
+	baseline, err := repo.GetProtectionAnalytics(ctx, "usr_gading", "dev_android", 7, today)
+	require.NoError(t, err)
 	for index, eventType := range []string{"block_count_sync", "intervention_shown", "tamper_detected", "permission_revoked"} {
-		_, err := repo.SaveAggregateEvent(ctx, model.AggregateEvent{
+		_, err = repo.SaveAggregateEvent(ctx, model.AggregateEvent{
 			ID: "agg_test_" + eventType, UserID: "usr_gading", DeviceID: "dev_android",
 			IdempotencyKey: "analytics-" + eventType, EventType: eventType, EventDate: today, Count: index + 1,
 		})
@@ -38,10 +40,10 @@ func TestProtectionAnalytics_AggregatesOwnedDeviceOnly(t *testing.T) {
 	}
 	analytics, err := repo.GetProtectionAnalytics(ctx, "usr_gading", "dev_android", 7, today)
 	require.NoError(t, err)
-	assert.Equal(t, 1, analytics.Totals.Blocked)
-	assert.Equal(t, 2, analytics.Totals.Interventions)
-	assert.Equal(t, 3, analytics.Totals.TamperEvents)
-	assert.Equal(t, 4, analytics.Totals.PermissionRevoked)
+	assert.Equal(t, baseline.Totals.Blocked+1, analytics.Totals.Blocked)
+	assert.Equal(t, baseline.Totals.Interventions+2, analytics.Totals.Interventions)
+	assert.Equal(t, baseline.Totals.TamperEvents+3, analytics.Totals.TamperEvents)
+	assert.Equal(t, baseline.Totals.PermissionRevoked+4, analytics.Totals.PermissionRevoked)
 
 	_, err = repo.GetProtectionAnalytics(ctx, "usr_suci", "dev_android", 7, today)
 	require.Error(t, err)

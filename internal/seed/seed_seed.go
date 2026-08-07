@@ -35,6 +35,9 @@ func Seed(ctx context.Context, client *ent.Client, mediaPath ...string) error {
 	if err := SeedAccountabilityGroups(ctx, client, now); err != nil {
 		return err
 	}
+	if err := SeedAggregateEvents(ctx, client, now); err != nil {
+		return err
+	}
 	if err := SeedApprovals(ctx, client, now); err != nil {
 		return err
 	}

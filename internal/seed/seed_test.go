@@ -39,9 +39,33 @@ func TestSeed_Idempotent(t *testing.T) {
 	first, err := client.User.Query().Count(ctx)
 	require.NoError(t, err)
 	require.Greater(t, first, 0)
+	firstAggregates, err := client.AggregateEvent.Query().Count(ctx)
+	require.NoError(t, err)
+	require.Greater(t, firstAggregates, 0)
+	firstGroups, err := client.AccountabilityGroup.Query().Count(ctx)
+	require.NoError(t, err)
+	require.GreaterOrEqual(t, firstGroups, 2)
 
 	require.NoError(t, Seed(ctx, client))
 	second, err := client.User.Query().Count(ctx)
 	require.NoError(t, err)
 	assert.Equal(t, first, second, "second seed must not duplicate users")
+	secondAggregates, err := client.AggregateEvent.Query().Count(ctx)
+	require.NoError(t, err)
+	assert.Equal(t, firstAggregates, secondAggregates, "second seed must not duplicate aggregate events")
+}
+
+func TestSeedProductionDefaults_DoesNotCreateDemoActivity(t *testing.T) {
+	client := openSQLiteEnt(t)
+	defer client.Close()
+	ctx := context.Background()
+
+	require.NoError(t, SeedProductionDefaults(ctx, client, t.TempDir()))
+
+	users, err := client.User.Query().Count(ctx)
+	require.NoError(t, err)
+	aggregates, err := client.AggregateEvent.Query().Count(ctx)
+	require.NoError(t, err)
+	assert.Zero(t, users)
+	assert.Zero(t, aggregates)
 }

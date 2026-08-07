@@ -12,6 +12,10 @@ func NewSeeded() *Store {
 	now := time.Now().UTC()
 	verifiedAt := now
 	jakartaDate := now.In(time.FixedZone("Asia/Jakarta", 7*60*60)).Format("2006-01-02")
+	aggregateDate := func(daysAgo int) time.Time {
+		value := now.In(time.FixedZone("Asia/Jakarta", 7*60*60)).AddDate(0, 0, -daysAgo)
+		return time.Date(value.Year(), value.Month(), value.Day(), 0, 0, 0, 0, time.UTC)
+	}
 	demoPasswordHash, _ := authn.HashPassword("password")
 	return &Store{
 		Users: []User{
@@ -23,18 +27,36 @@ func NewSeeded() *Store {
 		Devices: []Device{
 			{ID: "dev_android", UserID: "usr_gading", Platform: "android", Label: "Gading Android", AppVersion: "1.0.0", OSVersion: "Android 15", ModelVersion: "artifact-v0.3.1", RulesetVersion: "ruleset-2026.05.1", ProtectionStatus: "active", LastSeenAt: now.Add(-2 * time.Minute), CreatedAt: now, UpdatedAt: now},
 			{ID: "dev_windows", UserID: "usr_gading", Platform: "windows", Label: "Gading Windows", AppVersion: "1.0.0", OSVersion: "Windows 11", ModelVersion: "artifact-v0.3.1", RulesetVersion: "ruleset-2026.05.1", ProtectionStatus: "degraded", LastSeenAt: now.Add(-38 * time.Minute), CreatedAt: now, UpdatedAt: now},
+			{ID: "dev_dery_android", UserID: "usr_dery", Platform: "android", Label: "Dery Android", AppVersion: "1.0.0", OSVersion: "Android 14", ModelVersion: "artifact-v0.3.1", RulesetVersion: "ruleset-2026.05.1", ProtectionStatus: "active", LastSeenAt: now.Add(-4 * time.Minute), CreatedAt: now, UpdatedAt: now},
 		},
 		Partners: []Partner{{ID: "pl_active", UserID: "usr_gading", PartnerUserID: "usr_suci", Name: "Suci", Contact: "suci@gmail.com | +62 812-0000-0000", Status: "active", PartnerEmail: "suci@gmail.com", CreatedAt: now, UpdatedAt: now}},
 		AccountabilityGroups: []AccountabilityGroup{{
 			ID: "grp_demo", OwnerPartnerID: "usr_suci", OwnerName: "Suci",
 			Name: "Ruang dukungan Gading", Description: "Pendampingan pribadi yang berfokus pada dukungan dan keputusan proteksi.",
 			JoinCodeHint: "DEMO", Status: "active", MemberCount: 1, CodeRotatedAt: now, CreatedAt: now, UpdatedAt: now,
+		}, {
+			ID: "grp_demo_dery", OwnerPartnerID: "usr_suci", OwnerName: "Suci",
+			Name: "Ruang dukungan Dery", Description: "Pendampingan demo kedua untuk menguji filter grup dan batas izin berbagi.",
+			JoinCodeHint: "CK84", Status: "active", MemberCount: 1, CodeRotatedAt: now, CreatedAt: now, UpdatedAt: now,
 		}},
 		AccountabilityMemberships: []AccountabilityMembership{{
 			ID: "mbr_active", GroupID: "grp_demo", StudentID: "usr_gading", StudentName: "Gading", StudentMail: "gading@gmail.com",
 			Status: "active", Sharing: SharingPreferences{ProtectionHealth: true, ProtectionActivity: true, RecoveryEngagement: true, EducationProgress: true},
 			JoinedAt: now, CreatedAt: now, UpdatedAt: now,
+		}, {
+			ID: "mbr_dery_active", GroupID: "grp_demo_dery", StudentID: "usr_dery", StudentName: "Dery", StudentMail: "dery@gmail.com",
+			Status: "active", Sharing: SharingPreferences{ProtectionHealth: true, ProtectionActivity: true, RecoveryEngagement: false, EducationProgress: false},
+			JoinedAt: now, CreatedAt: now, UpdatedAt: now,
 		}},
+		AggregateEvents: []AggregateEvent{
+			{ID: "agg_seed_gading_android_0", UserID: "usr_gading", DeviceID: "dev_android", IdempotencyKey: "seed:gading:android:0:block", EventType: "block_count_sync", EventDate: aggregateDate(0), Count: 3, CreatedAt: now},
+			{ID: "agg_seed_gading_windows_0", UserID: "usr_gading", DeviceID: "dev_windows", IdempotencyKey: "seed:gading:windows:0:block", EventType: "block_count_sync", EventDate: aggregateDate(0), Count: 1, CreatedAt: now},
+			{ID: "agg_seed_gading_android_1", UserID: "usr_gading", DeviceID: "dev_android", IdempotencyKey: "seed:gading:android:1:block", EventType: "block_count_sync", EventDate: aggregateDate(1), Count: 2, CreatedAt: now},
+			{ID: "agg_seed_gading_windows_2", UserID: "usr_gading", DeviceID: "dev_windows", IdempotencyKey: "seed:gading:windows:2:block", EventType: "block_count_sync", EventDate: aggregateDate(2), Count: 2, CreatedAt: now},
+			{ID: "agg_seed_gading_android_3", UserID: "usr_gading", DeviceID: "dev_android", IdempotencyKey: "seed:gading:android:3:block", EventType: "block_count_sync", EventDate: aggregateDate(3), Count: 1, CreatedAt: now},
+			{ID: "agg_seed_dery_android_0", UserID: "usr_dery", DeviceID: "dev_dery_android", IdempotencyKey: "seed:dery:android:0:block", EventType: "block_count_sync", EventDate: aggregateDate(0), Count: 2, CreatedAt: now},
+			{ID: "agg_seed_dery_android_4", UserID: "usr_dery", DeviceID: "dev_dery_android", IdempotencyKey: "seed:dery:android:4:block", EventType: "block_count_sync", EventDate: aggregateDate(4), Count: 1, CreatedAt: now},
+		},
 		Approvals: []ApprovalRequest{
 			{ID: "APR-2401", UserID: "usr_gading", DeviceID: "dev_android", MembershipID: "mbr_active", Action: "pause_protection", ExpiresIn: "Expires in 23 minutes", Status: "pending", Reason: "Troubleshooting app setup", RequestedDurationMinutes: 15, CreatedAt: now.Add(-7 * time.Minute), UpdatedAt: now.Add(-7 * time.Minute), ExpiresAt: now.Add(23 * time.Minute)},
 			{ID: "APR-2398", UserID: "usr_gading", DeviceID: "dev_android", MembershipID: "mbr_active", Action: "uninstall_detected", ExpiresIn: "Reviewed yesterday", Status: "approved", Reason: "Accessibility service disabled", CreatedAt: now.Add(-24 * time.Hour), UpdatedAt: now.Add(-24 * time.Hour), ExpiresAt: now.Add(-23 * time.Hour)},

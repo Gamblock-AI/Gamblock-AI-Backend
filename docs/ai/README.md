@@ -1,6 +1,6 @@
 # Backend AI Context
 
-Context version: `2026-08-02.23`
+Context version: `2026-08-02.24`
 
 ## Product capsule
 
@@ -38,7 +38,7 @@ are supporting/operational features.
 |---|---|---|
 | Auth, contact verification, token rotation, RBAC | Implemented code-complete prototype with Fonnte WhatsApp delivery | Argon2id password verification; allowlisted Google ID-token audiences and nonce validation; explicit same-email Google linking behind current-password authentication; authoritative roles; phone verification and single-use hashed password-reset codes with latest-code/attempt limits; refresh rotation; per-request disabled/role checks; and password/reset session revocation are wired. Infrastructure supplies the public web/Windows audience IDs. Production requires FONNTE_TOKEN. |
 | Device and aggregate client APIs | Implemented | stable client-instance upsert, owned-device enforcement, heartbeat/status, completed-day idempotent aggregate ingest, and 7/30-day aggregate analytics are wired; no browsing schema exists |
-| Accountability groups and approvals | Implemented supporting workflow | verified partners own multiple groups with hashed/rotatable codes; a verified student has one live membership with category-specific aggregate sharing; pending normal exits can be cancelled by the requesting student, while unsafe exit remains immediate and support-reviewed; removal, archive, scoped pause/uninstall requests, recent-auth partner decisions, bounded one-time native grants, and hashed quick tokens are wired; native device proof remains |
+| Accountability groups and approvals | Implemented supporting workflow | verified partners own multiple groups with hashed/rotatable codes; a verified student has one live membership with category-specific aggregate sharing; the workspace projection exposes consented per-student `block_count_sync` totals over the latest seven `Asia/Jakarta` calendar dates, lets clients distinguish a shared zero through the accompanying sharing preference, and has privacy-safe demo fixtures for two groups; pending normal exits can be cancelled by the requesting student, while unsafe exit remains immediate and support-reviewed; removal, archive, scoped pause/uninstall requests, recent-auth partner decisions, bounded one-time native grants, and hashed quick tokens are wired; native device proof remains |
 | PrivacyGuard | Implemented | forbidden-key regression tests; values are not censored; narrow credential routes are exempt and CORS wraps guard rejections so localhost browser clients receive readable envelopes |
 | Journal encryption | Implemented server invariant | AES-256-GCM write/read paths fail closed; every environment validates a required 32-byte hex key at startup |
 | PostgreSQL/ent persistence | Implemented production path | production fails closed on open/migration/load failure; development can use empty memory and explicitly enabled contextual demo data |

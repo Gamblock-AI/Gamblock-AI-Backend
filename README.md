@@ -30,7 +30,10 @@ password `password` for `gading@gmail.com`, `dery@gmail.com`,
 `suci@gmail.com`, `nasywa@gmail.com`, `student@gmail.com`,
 and `partner@gmail.com`. These
 credentials are development fixtures only and demo data is forbidden in
-production.
+production. The optional demo seed includes two active accountability groups
+and privacy-safe daily aggregate fixtures for partner-dashboard testing; it
+contains no URL, domain, title, timestamped visit, or browsing-history fixture.
+The production-safe `make seeder` path never creates demo users or activity.
 
 Useful Makefile targets: `make dev` (air live-reload), `make key-generate`,
 `make lint`, `make migrate-up`, `make seeder`, `make seed`,
@@ -133,7 +136,11 @@ the standard envelope.
   within 15 minutes.
 - Category-specific partner projections expose only protection health/activity,
   recovery engagement counts, and education progress bands. Unsafe student
-  exit and partner removal stop sharing immediately.
+  exit and partner removal stop sharing immediately. Protection activity is
+  summed over the latest seven `Asia/Jakarta` calendar dates. The accompanying
+  sharing preference lets clients render an omitted numeric zero as a shared
+  zero while keeping an unshared category hidden. No event timestamp, URL,
+  domain, or browsing-history detail enters the projection.
 - Emergency recovery is device-bound: the user creates a request, one platform
   admin reviews it, a different platform admin approves/issues it, and
   `/v1/devices/unlock` consumes the 24-hour single-use key for a ten-minute

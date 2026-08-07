@@ -790,8 +790,14 @@ func (r *Repository) hydrateMembership(item model.AccountabilityMembership) mode
 }
 
 func aggregateForMembership(snapshot *store.Store, item model.AccountabilityMembership) model.MemberAggregateSummary {
+	return aggregateForMembershipAt(snapshot, item, time.Now().UTC())
+}
+
+func aggregateForMembershipAt(snapshot *store.Store, item model.AccountabilityMembership, now time.Time) model.MemberAggregateSummary {
 	result := model.MemberAggregateSummary{}
-	now := time.Now().UTC()
+	jakarta := time.FixedZone("Asia/Jakarta", 7*60*60)
+	periodEnd := now.In(jakarta).Format("2006-01-02")
+	periodStart := now.In(jakarta).AddDate(0, 0, -6).Format("2006-01-02")
 	if item.Sharing.ProtectionHealth {
 		latest := time.Time{}
 		status := "unknown"
@@ -815,7 +821,10 @@ func aggregateForMembership(snapshot *store.Store, item model.AccountabilityMemb
 	}
 	if item.Sharing.ProtectionActivity {
 		for _, event := range snapshot.AggregateEvents {
-			if event.UserID == item.StudentID && event.EventType == "block_count_sync" && event.EventDate.After(now.Add(-7*24*time.Hour)) {
+			eventDate := event.EventDate.UTC().Format("2006-01-02")
+			if event.UserID == item.StudentID &&
+				event.EventType == "block_count_sync" &&
+				eventDate >= periodStart && eventDate <= periodEnd {
 				result.WeeklyBlockCount += event.Count
 			}
 		}
@@ -823,8 +832,9 @@ func aggregateForMembership(snapshot *store.Store, item model.AccountabilityMemb
 	if item.Sharing.RecoveryEngagement {
 		days := map[string]bool{}
 		for _, checkIn := range snapshot.CheckIns {
-			if checkIn.UserID == item.StudentID && checkIn.CreatedAt.After(now.Add(-7*24*time.Hour)) {
-				days[checkIn.CreatedAt.In(time.FixedZone("Asia/Jakarta", 7*60*60)).Format("2006-01-02")] = true
+			checkInDate := checkIn.CreatedAt.In(jakarta).Format("2006-01-02")
+			if checkIn.UserID == item.StudentID && checkInDate >= periodStart && checkInDate <= periodEnd {
+				days[checkInDate] = true
 			}
 		}
 		result.CheckInDays = len(days)
