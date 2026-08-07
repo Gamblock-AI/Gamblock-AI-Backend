@@ -234,6 +234,156 @@ func StatusNotIn(vs ...Status) predicate.Intention {
 	return predicate.Intention(sql.FieldNotIn(FieldStatus, vs...))
 }
 
+// SchoolImpactEQ applies the EQ predicate on the "school_impact" field.
+func SchoolImpactEQ(v SchoolImpact) predicate.Intention {
+	return predicate.Intention(sql.FieldEQ(FieldSchoolImpact, v))
+}
+
+// SchoolImpactNEQ applies the NEQ predicate on the "school_impact" field.
+func SchoolImpactNEQ(v SchoolImpact) predicate.Intention {
+	return predicate.Intention(sql.FieldNEQ(FieldSchoolImpact, v))
+}
+
+// SchoolImpactIn applies the In predicate on the "school_impact" field.
+func SchoolImpactIn(vs ...SchoolImpact) predicate.Intention {
+	return predicate.Intention(sql.FieldIn(FieldSchoolImpact, vs...))
+}
+
+// SchoolImpactNotIn applies the NotIn predicate on the "school_impact" field.
+func SchoolImpactNotIn(vs ...SchoolImpact) predicate.Intention {
+	return predicate.Intention(sql.FieldNotIn(FieldSchoolImpact, vs...))
+}
+
+// SchoolImpactIsNil applies the IsNil predicate on the "school_impact" field.
+func SchoolImpactIsNil() predicate.Intention {
+	return predicate.Intention(sql.FieldIsNull(FieldSchoolImpact))
+}
+
+// SchoolImpactNotNil applies the NotNil predicate on the "school_impact" field.
+func SchoolImpactNotNil() predicate.Intention {
+	return predicate.Intention(sql.FieldNotNull(FieldSchoolImpact))
+}
+
+// MoneySpentEQ applies the EQ predicate on the "money_spent" field.
+func MoneySpentEQ(v MoneySpent) predicate.Intention {
+	return predicate.Intention(sql.FieldEQ(FieldMoneySpent, v))
+}
+
+// MoneySpentNEQ applies the NEQ predicate on the "money_spent" field.
+func MoneySpentNEQ(v MoneySpent) predicate.Intention {
+	return predicate.Intention(sql.FieldNEQ(FieldMoneySpent, v))
+}
+
+// MoneySpentIn applies the In predicate on the "money_spent" field.
+func MoneySpentIn(vs ...MoneySpent) predicate.Intention {
+	return predicate.Intention(sql.FieldIn(FieldMoneySpent, vs...))
+}
+
+// MoneySpentNotIn applies the NotIn predicate on the "money_spent" field.
+func MoneySpentNotIn(vs ...MoneySpent) predicate.Intention {
+	return predicate.Intention(sql.FieldNotIn(FieldMoneySpent, vs...))
+}
+
+// MoneySpentIsNil applies the IsNil predicate on the "money_spent" field.
+func MoneySpentIsNil() predicate.Intention {
+	return predicate.Intention(sql.FieldIsNull(FieldMoneySpent))
+}
+
+// MoneySpentNotNil applies the NotNil predicate on the "money_spent" field.
+func MoneySpentNotNil() predicate.Intention {
+	return predicate.Intention(sql.FieldNotNull(FieldMoneySpent))
+}
+
+// ScreenTimeEQ applies the EQ predicate on the "screen_time" field.
+func ScreenTimeEQ(v ScreenTime) predicate.Intention {
+	return predicate.Intention(sql.FieldEQ(FieldScreenTime, v))
+}
+
+// ScreenTimeNEQ applies the NEQ predicate on the "screen_time" field.
+func ScreenTimeNEQ(v ScreenTime) predicate.Intention {
+	return predicate.Intention(sql.FieldNEQ(FieldScreenTime, v))
+}
+
+// ScreenTimeIn applies the In predicate on the "screen_time" field.
+func ScreenTimeIn(vs ...ScreenTime) predicate.Intention {
+	return predicate.Intention(sql.FieldIn(FieldScreenTime, vs...))
+}
+
+// ScreenTimeNotIn applies the NotIn predicate on the "screen_time" field.
+func ScreenTimeNotIn(vs ...ScreenTime) predicate.Intention {
+	return predicate.Intention(sql.FieldNotIn(FieldScreenTime, vs...))
+}
+
+// ScreenTimeIsNil applies the IsNil predicate on the "screen_time" field.
+func ScreenTimeIsNil() predicate.Intention {
+	return predicate.Intention(sql.FieldIsNull(FieldScreenTime))
+}
+
+// ScreenTimeNotNil applies the NotNil predicate on the "screen_time" field.
+func ScreenTimeNotNil() predicate.Intention {
+	return predicate.Intention(sql.FieldNotNull(FieldScreenTime))
+}
+
+// QuitAttemptsEQ applies the EQ predicate on the "quit_attempts" field.
+func QuitAttemptsEQ(v QuitAttempts) predicate.Intention {
+	return predicate.Intention(sql.FieldEQ(FieldQuitAttempts, v))
+}
+
+// QuitAttemptsNEQ applies the NEQ predicate on the "quit_attempts" field.
+func QuitAttemptsNEQ(v QuitAttempts) predicate.Intention {
+	return predicate.Intention(sql.FieldNEQ(FieldQuitAttempts, v))
+}
+
+// QuitAttemptsIn applies the In predicate on the "quit_attempts" field.
+func QuitAttemptsIn(vs ...QuitAttempts) predicate.Intention {
+	return predicate.Intention(sql.FieldIn(FieldQuitAttempts, vs...))
+}
+
+// QuitAttemptsNotIn applies the NotIn predicate on the "quit_attempts" field.
+func QuitAttemptsNotIn(vs ...QuitAttempts) predicate.Intention {
+	return predicate.Intention(sql.FieldNotIn(FieldQuitAttempts, vs...))
+}
+
+// QuitAttemptsIsNil applies the IsNil predicate on the "quit_attempts" field.
+func QuitAttemptsIsNil() predicate.Intention {
+	return predicate.Intention(sql.FieldIsNull(FieldQuitAttempts))
+}
+
+// QuitAttemptsNotNil applies the NotNil predicate on the "quit_attempts" field.
+func QuitAttemptsNotNil() predicate.Intention {
+	return predicate.Intention(sql.FieldNotNull(FieldQuitAttempts))
+}
+
+// QuitMotivationEQ applies the EQ predicate on the "quit_motivation" field.
+func QuitMotivationEQ(v QuitMotivation) predicate.Intention {
+	return predicate.Intention(sql.FieldEQ(FieldQuitMotivation, v))
+}
+
+// QuitMotivationNEQ applies the NEQ predicate on the "quit_motivation" field.
+func QuitMotivationNEQ(v QuitMotivation) predicate.Intention {
+	return predicate.Intention(sql.FieldNEQ(FieldQuitMotivation, v))
+}
+
+// QuitMotivationIn applies the In predicate on the "quit_motivation" field.
+func QuitMotivationIn(vs ...QuitMotivation) predicate.Intention {
+	return predicate.Intention(sql.FieldIn(FieldQuitMotivation, vs...))
+}
+
+// QuitMotivationNotIn applies the NotIn predicate on the "quit_motivation" field.
+func QuitMotivationNotIn(vs ...QuitMotivation) predicate.Intention {
+	return predicate.Intention(sql.FieldNotIn(FieldQuitMotivation, vs...))
+}
+
+// QuitMotivationIsNil applies the IsNil predicate on the "quit_motivation" field.
+func QuitMotivationIsNil() predicate.Intention {
+	return predicate.Intention(sql.FieldIsNull(FieldQuitMotivation))
+}
+
+// QuitMotivationNotNil applies the NotNil predicate on the "quit_motivation" field.
+func QuitMotivationNotNil() predicate.Intention {
+	return predicate.Intention(sql.FieldNotNull(FieldQuitMotivation))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Intention {
 	return predicate.Intention(sql.FieldEQ(FieldCreatedAt, v))

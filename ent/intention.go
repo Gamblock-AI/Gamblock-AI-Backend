@@ -23,6 +23,16 @@ type Intention struct {
 	IntentionText string `json:"intention_text,omitempty"`
 	// Status holds the value of the "status" field.
 	Status intention.Status `json:"status,omitempty"`
+	// Pernah ga gara-gara judol jadi ninggalin sekolah/kuliah
+	SchoolImpact *intention.SchoolImpact `json:"school_impact,omitempty"`
+	// Seberapa besar uang yang udah dihabisin buat judol
+	MoneySpent *intention.MoneySpent `json:"money_spent,omitempty"`
+	// Berapa lama screen time judol per hari
+	ScreenTime *intention.ScreenTime `json:"screen_time,omitempty"`
+	// Pernah nyoba berhenti judol sebelumnya
+	QuitAttempts *intention.QuitAttempts `json:"quit_attempts,omitempty"`
+	// Seberapa yakin mau berhenti total dari judol
+	QuitMotivation *intention.QuitMotivation `json:"quit_motivation,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -35,7 +45,7 @@ func (*Intention) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case intention.FieldID, intention.FieldUserID, intention.FieldIntentionText, intention.FieldStatus:
+		case intention.FieldID, intention.FieldUserID, intention.FieldIntentionText, intention.FieldStatus, intention.FieldSchoolImpact, intention.FieldMoneySpent, intention.FieldScreenTime, intention.FieldQuitAttempts, intention.FieldQuitMotivation:
 			values[i] = new(sql.NullString)
 		case intention.FieldCreatedAt, intention.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -77,6 +87,41 @@ func (_m *Intention) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				_m.Status = intention.Status(value.String)
+			}
+		case intention.FieldSchoolImpact:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field school_impact", values[i])
+			} else if value.Valid {
+				_m.SchoolImpact = new(intention.SchoolImpact)
+				*_m.SchoolImpact = intention.SchoolImpact(value.String)
+			}
+		case intention.FieldMoneySpent:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field money_spent", values[i])
+			} else if value.Valid {
+				_m.MoneySpent = new(intention.MoneySpent)
+				*_m.MoneySpent = intention.MoneySpent(value.String)
+			}
+		case intention.FieldScreenTime:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field screen_time", values[i])
+			} else if value.Valid {
+				_m.ScreenTime = new(intention.ScreenTime)
+				*_m.ScreenTime = intention.ScreenTime(value.String)
+			}
+		case intention.FieldQuitAttempts:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field quit_attempts", values[i])
+			} else if value.Valid {
+				_m.QuitAttempts = new(intention.QuitAttempts)
+				*_m.QuitAttempts = intention.QuitAttempts(value.String)
+			}
+		case intention.FieldQuitMotivation:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field quit_motivation", values[i])
+			} else if value.Valid {
+				_m.QuitMotivation = new(intention.QuitMotivation)
+				*_m.QuitMotivation = intention.QuitMotivation(value.String)
 			}
 		case intention.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -134,6 +179,31 @@ func (_m *Intention) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
+	builder.WriteString(", ")
+	if v := _m.SchoolImpact; v != nil {
+		builder.WriteString("school_impact=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.MoneySpent; v != nil {
+		builder.WriteString("money_spent=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.ScreenTime; v != nil {
+		builder.WriteString("screen_time=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.QuitAttempts; v != nil {
+		builder.WriteString("quit_attempts=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.QuitMotivation; v != nil {
+		builder.WriteString("quit_motivation=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

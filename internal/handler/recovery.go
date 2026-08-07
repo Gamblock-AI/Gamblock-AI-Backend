@@ -20,15 +20,26 @@ func (h *Handler) GetIntention(c *gin.Context) {
 
 func (h *Handler) SaveIntention(c *gin.Context) {
 	var req struct {
-		Text   string `json:"intention_text"`
-		Status string `json:"status"`
+		Text           string `json:"intention_text"`
+		Status         string `json:"status"`
+		SchoolImpact   string `json:"school_impact"`
+		MoneySpent     string `json:"money_spent"`
+		ScreenTime     string `json:"screen_time"`
+		QuitAttempts   string `json:"quit_attempts"`
+		QuitMotivation string `json:"quit_motivation"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		h.respondCode(c, http.StatusBadRequest, "err_validation")
 		return
 	}
 
-	intn, err := h.services.Recovery.SaveIntention(c.Request.Context(), h.currentUserID(c), req.Text, req.Status)
+	intn, err := h.services.Recovery.SaveIntention(c.Request.Context(), h.currentUserID(c), req.Text, req.Status, model.Intention{
+		SchoolImpact:   req.SchoolImpact,
+		MoneySpent:     req.MoneySpent,
+		ScreenTime:     req.ScreenTime,
+		QuitAttempts:   req.QuitAttempts,
+		QuitMotivation: req.QuitMotivation,
+	})
 	if err != nil {
 		h.respondErrorErr(c, http.StatusInternalServerError, "err_internal", err)
 		return

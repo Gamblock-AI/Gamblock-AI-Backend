@@ -390,6 +390,11 @@ var (
 		{Name: "user_id", Type: field.TypeString},
 		{Name: "intention_text", Type: field.TypeString, Size: 2147483647},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "paused", "archived"}, Default: "active"},
+		{Name: "school_impact", Type: field.TypeEnum, Nullable: true, Enums: []string{"never", "almost", "happened"}},
+		{Name: "money_spent", Type: field.TypeEnum, Nullable: true, Enums: []string{"under_500k", "500k_5m", "5m_20m", "over_20m", "unknown"}},
+		{Name: "screen_time", Type: field.TypeEnum, Nullable: true, Enums: []string{"under_1h", "1h_3h", "3h_6h", "over_6h"}},
+		{Name: "quit_attempts", Type: field.TypeEnum, Nullable: true, Enums: []string{"never", "once", "multiple"}},
+		{Name: "quit_motivation", Type: field.TypeEnum, Nullable: true, Enums: []string{"uncertain", "somewhat", "very", "determined"}},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}

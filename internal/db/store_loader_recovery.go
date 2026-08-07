@@ -71,10 +71,40 @@ func loadRecoveryStore(ctx context.Context, client *ent.Client, out *store.Store
 	if intentions, err := client.Intention.Query().All(ctx); err == nil {
 		for _, item := range intentions {
 			out.Intentions = append(out.Intentions, store.Intention{
-				ID:        item.ID,
-				UserID:    item.UserID,
-				Text:      item.IntentionText,
-				Status:    item.Status.String(),
+				ID:       item.ID,
+				UserID:   item.UserID,
+				Text:     item.IntentionText,
+				Status:   item.Status.String(),
+				SchoolImpact: func() string {
+					if item.SchoolImpact != nil {
+						return item.SchoolImpact.String()
+					}
+					return ""
+				}(),
+				MoneySpent: func() string {
+					if item.MoneySpent != nil {
+						return item.MoneySpent.String()
+					}
+					return ""
+				}(),
+				ScreenTime: func() string {
+					if item.ScreenTime != nil {
+						return item.ScreenTime.String()
+					}
+					return ""
+				}(),
+				QuitAttempts: func() string {
+					if item.QuitAttempts != nil {
+						return item.QuitAttempts.String()
+					}
+					return ""
+				}(),
+				QuitMotivation: func() string {
+					if item.QuitMotivation != nil {
+						return item.QuitMotivation.String()
+					}
+					return ""
+				}(),
 				CreatedAt: item.CreatedAt,
 				UpdatedAt: item.UpdatedAt,
 			})

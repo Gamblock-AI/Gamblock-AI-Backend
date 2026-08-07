@@ -46,6 +46,76 @@ func (_c *IntentionCreate) SetNillableStatus(v *intention.Status) *IntentionCrea
 	return _c
 }
 
+// SetSchoolImpact sets the "school_impact" field.
+func (_c *IntentionCreate) SetSchoolImpact(v intention.SchoolImpact) *IntentionCreate {
+	_c.mutation.SetSchoolImpact(v)
+	return _c
+}
+
+// SetNillableSchoolImpact sets the "school_impact" field if the given value is not nil.
+func (_c *IntentionCreate) SetNillableSchoolImpact(v *intention.SchoolImpact) *IntentionCreate {
+	if v != nil {
+		_c.SetSchoolImpact(*v)
+	}
+	return _c
+}
+
+// SetMoneySpent sets the "money_spent" field.
+func (_c *IntentionCreate) SetMoneySpent(v intention.MoneySpent) *IntentionCreate {
+	_c.mutation.SetMoneySpent(v)
+	return _c
+}
+
+// SetNillableMoneySpent sets the "money_spent" field if the given value is not nil.
+func (_c *IntentionCreate) SetNillableMoneySpent(v *intention.MoneySpent) *IntentionCreate {
+	if v != nil {
+		_c.SetMoneySpent(*v)
+	}
+	return _c
+}
+
+// SetScreenTime sets the "screen_time" field.
+func (_c *IntentionCreate) SetScreenTime(v intention.ScreenTime) *IntentionCreate {
+	_c.mutation.SetScreenTime(v)
+	return _c
+}
+
+// SetNillableScreenTime sets the "screen_time" field if the given value is not nil.
+func (_c *IntentionCreate) SetNillableScreenTime(v *intention.ScreenTime) *IntentionCreate {
+	if v != nil {
+		_c.SetScreenTime(*v)
+	}
+	return _c
+}
+
+// SetQuitAttempts sets the "quit_attempts" field.
+func (_c *IntentionCreate) SetQuitAttempts(v intention.QuitAttempts) *IntentionCreate {
+	_c.mutation.SetQuitAttempts(v)
+	return _c
+}
+
+// SetNillableQuitAttempts sets the "quit_attempts" field if the given value is not nil.
+func (_c *IntentionCreate) SetNillableQuitAttempts(v *intention.QuitAttempts) *IntentionCreate {
+	if v != nil {
+		_c.SetQuitAttempts(*v)
+	}
+	return _c
+}
+
+// SetQuitMotivation sets the "quit_motivation" field.
+func (_c *IntentionCreate) SetQuitMotivation(v intention.QuitMotivation) *IntentionCreate {
+	_c.mutation.SetQuitMotivation(v)
+	return _c
+}
+
+// SetNillableQuitMotivation sets the "quit_motivation" field if the given value is not nil.
+func (_c *IntentionCreate) SetNillableQuitMotivation(v *intention.QuitMotivation) *IntentionCreate {
+	if v != nil {
+		_c.SetQuitMotivation(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *IntentionCreate) SetCreatedAt(v time.Time) *IntentionCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -157,6 +227,31 @@ func (_c *IntentionCreate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Intention.status": %w`, err)}
 		}
 	}
+	if v, ok := _c.mutation.SchoolImpact(); ok {
+		if err := intention.SchoolImpactValidator(v); err != nil {
+			return &ValidationError{Name: "school_impact", err: fmt.Errorf(`ent: validator failed for field "Intention.school_impact": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.MoneySpent(); ok {
+		if err := intention.MoneySpentValidator(v); err != nil {
+			return &ValidationError{Name: "money_spent", err: fmt.Errorf(`ent: validator failed for field "Intention.money_spent": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.ScreenTime(); ok {
+		if err := intention.ScreenTimeValidator(v); err != nil {
+			return &ValidationError{Name: "screen_time", err: fmt.Errorf(`ent: validator failed for field "Intention.screen_time": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.QuitAttempts(); ok {
+		if err := intention.QuitAttemptsValidator(v); err != nil {
+			return &ValidationError{Name: "quit_attempts", err: fmt.Errorf(`ent: validator failed for field "Intention.quit_attempts": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.QuitMotivation(); ok {
+		if err := intention.QuitMotivationValidator(v); err != nil {
+			return &ValidationError{Name: "quit_motivation", err: fmt.Errorf(`ent: validator failed for field "Intention.quit_motivation": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Intention.created_at"`)}
 	}
@@ -209,6 +304,26 @@ func (_c *IntentionCreate) createSpec() (*Intention, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(intention.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
+	}
+	if value, ok := _c.mutation.SchoolImpact(); ok {
+		_spec.SetField(intention.FieldSchoolImpact, field.TypeEnum, value)
+		_node.SchoolImpact = &value
+	}
+	if value, ok := _c.mutation.MoneySpent(); ok {
+		_spec.SetField(intention.FieldMoneySpent, field.TypeEnum, value)
+		_node.MoneySpent = &value
+	}
+	if value, ok := _c.mutation.ScreenTime(); ok {
+		_spec.SetField(intention.FieldScreenTime, field.TypeEnum, value)
+		_node.ScreenTime = &value
+	}
+	if value, ok := _c.mutation.QuitAttempts(); ok {
+		_spec.SetField(intention.FieldQuitAttempts, field.TypeEnum, value)
+		_node.QuitAttempts = &value
+	}
+	if value, ok := _c.mutation.QuitMotivation(); ok {
+		_spec.SetField(intention.FieldQuitMotivation, field.TypeEnum, value)
+		_node.QuitMotivation = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(intention.FieldCreatedAt, field.TypeTime, value)

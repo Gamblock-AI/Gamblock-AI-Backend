@@ -24,7 +24,7 @@ var ErrRecoverySpaceItemLocked = fmt.Errorf("recovery space item is not unlocked
 
 type RecoveryRepository interface {
 	GetIntention(ctx context.Context, userID string) (model.Intention, bool)
-	SaveIntention(ctx context.Context, userID, text, status string) (model.Intention, error)
+	SaveIntention(ctx context.Context, userID, text, status string, quiz model.Intention) (model.Intention, error)
 	GetCheckIns(ctx context.Context, userID string) ([]model.CheckIn, error)
 	SaveCheckIn(ctx context.Context, userID string, mood, urge int, contextText string) (model.CheckIn, error)
 }
@@ -52,7 +52,7 @@ func (s *RecoveryService) GetActiveIntention(ctx context.Context, userID string)
 	return intn, nil
 }
 
-func (s *RecoveryService) SaveIntention(ctx context.Context, userID, text, status string) (model.Intention, error) {
+func (s *RecoveryService) SaveIntention(ctx context.Context, userID, text, status string, quiz model.Intention) (model.Intention, error) {
 	text = strings.TrimSpace(text)
 	if text == "" {
 		return model.Intention{}, fmt.Errorf("intention is required")
@@ -63,7 +63,7 @@ func (s *RecoveryService) SaveIntention(ctx context.Context, userID, text, statu
 	if status != "active" && status != "paused" && status != "archived" {
 		return model.Intention{}, fmt.Errorf("invalid intention status")
 	}
-	return s.repo.SaveIntention(ctx, userID, text, status)
+	return s.repo.SaveIntention(ctx, userID, text, status, quiz)
 }
 
 func (s *RecoveryService) GetCheckIns(ctx context.Context, userID string) ([]model.CheckIn, error) {

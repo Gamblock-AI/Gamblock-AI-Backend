@@ -3,12 +3,17 @@ package model
 import "time"
 
 type Intention struct {
-	ID        string    `json:"id"`
-	UserID    string    `json:"user_id"`
-	Text      string    `json:"intention_text"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID             string    `json:"id"`
+	UserID         string    `json:"user_id"`
+	Text           string    `json:"intention_text"`
+	Status         string    `json:"status"`
+	SchoolImpact   string    `json:"school_impact,omitempty"`
+	MoneySpent     string    `json:"money_spent,omitempty"`
+	ScreenTime     string    `json:"screen_time,omitempty"`
+	QuitAttempts   string    `json:"quit_attempts,omitempty"`
+	QuitMotivation string    `json:"quit_motivation,omitempty"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type CheckIn struct {

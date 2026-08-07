@@ -70,6 +70,106 @@ func (_u *IntentionUpdate) SetNillableStatus(v *intention.Status) *IntentionUpda
 	return _u
 }
 
+// SetSchoolImpact sets the "school_impact" field.
+func (_u *IntentionUpdate) SetSchoolImpact(v intention.SchoolImpact) *IntentionUpdate {
+	_u.mutation.SetSchoolImpact(v)
+	return _u
+}
+
+// SetNillableSchoolImpact sets the "school_impact" field if the given value is not nil.
+func (_u *IntentionUpdate) SetNillableSchoolImpact(v *intention.SchoolImpact) *IntentionUpdate {
+	if v != nil {
+		_u.SetSchoolImpact(*v)
+	}
+	return _u
+}
+
+// ClearSchoolImpact clears the value of the "school_impact" field.
+func (_u *IntentionUpdate) ClearSchoolImpact() *IntentionUpdate {
+	_u.mutation.ClearSchoolImpact()
+	return _u
+}
+
+// SetMoneySpent sets the "money_spent" field.
+func (_u *IntentionUpdate) SetMoneySpent(v intention.MoneySpent) *IntentionUpdate {
+	_u.mutation.SetMoneySpent(v)
+	return _u
+}
+
+// SetNillableMoneySpent sets the "money_spent" field if the given value is not nil.
+func (_u *IntentionUpdate) SetNillableMoneySpent(v *intention.MoneySpent) *IntentionUpdate {
+	if v != nil {
+		_u.SetMoneySpent(*v)
+	}
+	return _u
+}
+
+// ClearMoneySpent clears the value of the "money_spent" field.
+func (_u *IntentionUpdate) ClearMoneySpent() *IntentionUpdate {
+	_u.mutation.ClearMoneySpent()
+	return _u
+}
+
+// SetScreenTime sets the "screen_time" field.
+func (_u *IntentionUpdate) SetScreenTime(v intention.ScreenTime) *IntentionUpdate {
+	_u.mutation.SetScreenTime(v)
+	return _u
+}
+
+// SetNillableScreenTime sets the "screen_time" field if the given value is not nil.
+func (_u *IntentionUpdate) SetNillableScreenTime(v *intention.ScreenTime) *IntentionUpdate {
+	if v != nil {
+		_u.SetScreenTime(*v)
+	}
+	return _u
+}
+
+// ClearScreenTime clears the value of the "screen_time" field.
+func (_u *IntentionUpdate) ClearScreenTime() *IntentionUpdate {
+	_u.mutation.ClearScreenTime()
+	return _u
+}
+
+// SetQuitAttempts sets the "quit_attempts" field.
+func (_u *IntentionUpdate) SetQuitAttempts(v intention.QuitAttempts) *IntentionUpdate {
+	_u.mutation.SetQuitAttempts(v)
+	return _u
+}
+
+// SetNillableQuitAttempts sets the "quit_attempts" field if the given value is not nil.
+func (_u *IntentionUpdate) SetNillableQuitAttempts(v *intention.QuitAttempts) *IntentionUpdate {
+	if v != nil {
+		_u.SetQuitAttempts(*v)
+	}
+	return _u
+}
+
+// ClearQuitAttempts clears the value of the "quit_attempts" field.
+func (_u *IntentionUpdate) ClearQuitAttempts() *IntentionUpdate {
+	_u.mutation.ClearQuitAttempts()
+	return _u
+}
+
+// SetQuitMotivation sets the "quit_motivation" field.
+func (_u *IntentionUpdate) SetQuitMotivation(v intention.QuitMotivation) *IntentionUpdate {
+	_u.mutation.SetQuitMotivation(v)
+	return _u
+}
+
+// SetNillableQuitMotivation sets the "quit_motivation" field if the given value is not nil.
+func (_u *IntentionUpdate) SetNillableQuitMotivation(v *intention.QuitMotivation) *IntentionUpdate {
+	if v != nil {
+		_u.SetQuitMotivation(*v)
+	}
+	return _u
+}
+
+// ClearQuitMotivation clears the value of the "quit_motivation" field.
+func (_u *IntentionUpdate) ClearQuitMotivation() *IntentionUpdate {
+	_u.mutation.ClearQuitMotivation()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *IntentionUpdate) SetUpdatedAt(v time.Time) *IntentionUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -124,6 +224,31 @@ func (_u *IntentionUpdate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Intention.status": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.SchoolImpact(); ok {
+		if err := intention.SchoolImpactValidator(v); err != nil {
+			return &ValidationError{Name: "school_impact", err: fmt.Errorf(`ent: validator failed for field "Intention.school_impact": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.MoneySpent(); ok {
+		if err := intention.MoneySpentValidator(v); err != nil {
+			return &ValidationError{Name: "money_spent", err: fmt.Errorf(`ent: validator failed for field "Intention.money_spent": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ScreenTime(); ok {
+		if err := intention.ScreenTimeValidator(v); err != nil {
+			return &ValidationError{Name: "screen_time", err: fmt.Errorf(`ent: validator failed for field "Intention.screen_time": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.QuitAttempts(); ok {
+		if err := intention.QuitAttemptsValidator(v); err != nil {
+			return &ValidationError{Name: "quit_attempts", err: fmt.Errorf(`ent: validator failed for field "Intention.quit_attempts": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.QuitMotivation(); ok {
+		if err := intention.QuitMotivationValidator(v); err != nil {
+			return &ValidationError{Name: "quit_motivation", err: fmt.Errorf(`ent: validator failed for field "Intention.quit_motivation": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -147,6 +272,36 @@ func (_u *IntentionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(intention.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.SchoolImpact(); ok {
+		_spec.SetField(intention.FieldSchoolImpact, field.TypeEnum, value)
+	}
+	if _u.mutation.SchoolImpactCleared() {
+		_spec.ClearField(intention.FieldSchoolImpact, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.MoneySpent(); ok {
+		_spec.SetField(intention.FieldMoneySpent, field.TypeEnum, value)
+	}
+	if _u.mutation.MoneySpentCleared() {
+		_spec.ClearField(intention.FieldMoneySpent, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.ScreenTime(); ok {
+		_spec.SetField(intention.FieldScreenTime, field.TypeEnum, value)
+	}
+	if _u.mutation.ScreenTimeCleared() {
+		_spec.ClearField(intention.FieldScreenTime, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.QuitAttempts(); ok {
+		_spec.SetField(intention.FieldQuitAttempts, field.TypeEnum, value)
+	}
+	if _u.mutation.QuitAttemptsCleared() {
+		_spec.ClearField(intention.FieldQuitAttempts, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.QuitMotivation(); ok {
+		_spec.SetField(intention.FieldQuitMotivation, field.TypeEnum, value)
+	}
+	if _u.mutation.QuitMotivationCleared() {
+		_spec.ClearField(intention.FieldQuitMotivation, field.TypeEnum)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(intention.FieldUpdatedAt, field.TypeTime, value)
@@ -210,6 +365,106 @@ func (_u *IntentionUpdateOne) SetNillableStatus(v *intention.Status) *IntentionU
 	if v != nil {
 		_u.SetStatus(*v)
 	}
+	return _u
+}
+
+// SetSchoolImpact sets the "school_impact" field.
+func (_u *IntentionUpdateOne) SetSchoolImpact(v intention.SchoolImpact) *IntentionUpdateOne {
+	_u.mutation.SetSchoolImpact(v)
+	return _u
+}
+
+// SetNillableSchoolImpact sets the "school_impact" field if the given value is not nil.
+func (_u *IntentionUpdateOne) SetNillableSchoolImpact(v *intention.SchoolImpact) *IntentionUpdateOne {
+	if v != nil {
+		_u.SetSchoolImpact(*v)
+	}
+	return _u
+}
+
+// ClearSchoolImpact clears the value of the "school_impact" field.
+func (_u *IntentionUpdateOne) ClearSchoolImpact() *IntentionUpdateOne {
+	_u.mutation.ClearSchoolImpact()
+	return _u
+}
+
+// SetMoneySpent sets the "money_spent" field.
+func (_u *IntentionUpdateOne) SetMoneySpent(v intention.MoneySpent) *IntentionUpdateOne {
+	_u.mutation.SetMoneySpent(v)
+	return _u
+}
+
+// SetNillableMoneySpent sets the "money_spent" field if the given value is not nil.
+func (_u *IntentionUpdateOne) SetNillableMoneySpent(v *intention.MoneySpent) *IntentionUpdateOne {
+	if v != nil {
+		_u.SetMoneySpent(*v)
+	}
+	return _u
+}
+
+// ClearMoneySpent clears the value of the "money_spent" field.
+func (_u *IntentionUpdateOne) ClearMoneySpent() *IntentionUpdateOne {
+	_u.mutation.ClearMoneySpent()
+	return _u
+}
+
+// SetScreenTime sets the "screen_time" field.
+func (_u *IntentionUpdateOne) SetScreenTime(v intention.ScreenTime) *IntentionUpdateOne {
+	_u.mutation.SetScreenTime(v)
+	return _u
+}
+
+// SetNillableScreenTime sets the "screen_time" field if the given value is not nil.
+func (_u *IntentionUpdateOne) SetNillableScreenTime(v *intention.ScreenTime) *IntentionUpdateOne {
+	if v != nil {
+		_u.SetScreenTime(*v)
+	}
+	return _u
+}
+
+// ClearScreenTime clears the value of the "screen_time" field.
+func (_u *IntentionUpdateOne) ClearScreenTime() *IntentionUpdateOne {
+	_u.mutation.ClearScreenTime()
+	return _u
+}
+
+// SetQuitAttempts sets the "quit_attempts" field.
+func (_u *IntentionUpdateOne) SetQuitAttempts(v intention.QuitAttempts) *IntentionUpdateOne {
+	_u.mutation.SetQuitAttempts(v)
+	return _u
+}
+
+// SetNillableQuitAttempts sets the "quit_attempts" field if the given value is not nil.
+func (_u *IntentionUpdateOne) SetNillableQuitAttempts(v *intention.QuitAttempts) *IntentionUpdateOne {
+	if v != nil {
+		_u.SetQuitAttempts(*v)
+	}
+	return _u
+}
+
+// ClearQuitAttempts clears the value of the "quit_attempts" field.
+func (_u *IntentionUpdateOne) ClearQuitAttempts() *IntentionUpdateOne {
+	_u.mutation.ClearQuitAttempts()
+	return _u
+}
+
+// SetQuitMotivation sets the "quit_motivation" field.
+func (_u *IntentionUpdateOne) SetQuitMotivation(v intention.QuitMotivation) *IntentionUpdateOne {
+	_u.mutation.SetQuitMotivation(v)
+	return _u
+}
+
+// SetNillableQuitMotivation sets the "quit_motivation" field if the given value is not nil.
+func (_u *IntentionUpdateOne) SetNillableQuitMotivation(v *intention.QuitMotivation) *IntentionUpdateOne {
+	if v != nil {
+		_u.SetQuitMotivation(*v)
+	}
+	return _u
+}
+
+// ClearQuitMotivation clears the value of the "quit_motivation" field.
+func (_u *IntentionUpdateOne) ClearQuitMotivation() *IntentionUpdateOne {
+	_u.mutation.ClearQuitMotivation()
 	return _u
 }
 
@@ -280,6 +535,31 @@ func (_u *IntentionUpdateOne) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Intention.status": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.SchoolImpact(); ok {
+		if err := intention.SchoolImpactValidator(v); err != nil {
+			return &ValidationError{Name: "school_impact", err: fmt.Errorf(`ent: validator failed for field "Intention.school_impact": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.MoneySpent(); ok {
+		if err := intention.MoneySpentValidator(v); err != nil {
+			return &ValidationError{Name: "money_spent", err: fmt.Errorf(`ent: validator failed for field "Intention.money_spent": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ScreenTime(); ok {
+		if err := intention.ScreenTimeValidator(v); err != nil {
+			return &ValidationError{Name: "screen_time", err: fmt.Errorf(`ent: validator failed for field "Intention.screen_time": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.QuitAttempts(); ok {
+		if err := intention.QuitAttemptsValidator(v); err != nil {
+			return &ValidationError{Name: "quit_attempts", err: fmt.Errorf(`ent: validator failed for field "Intention.quit_attempts": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.QuitMotivation(); ok {
+		if err := intention.QuitMotivationValidator(v); err != nil {
+			return &ValidationError{Name: "quit_motivation", err: fmt.Errorf(`ent: validator failed for field "Intention.quit_motivation": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -320,6 +600,36 @@ func (_u *IntentionUpdateOne) sqlSave(ctx context.Context) (_node *Intention, er
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(intention.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.SchoolImpact(); ok {
+		_spec.SetField(intention.FieldSchoolImpact, field.TypeEnum, value)
+	}
+	if _u.mutation.SchoolImpactCleared() {
+		_spec.ClearField(intention.FieldSchoolImpact, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.MoneySpent(); ok {
+		_spec.SetField(intention.FieldMoneySpent, field.TypeEnum, value)
+	}
+	if _u.mutation.MoneySpentCleared() {
+		_spec.ClearField(intention.FieldMoneySpent, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.ScreenTime(); ok {
+		_spec.SetField(intention.FieldScreenTime, field.TypeEnum, value)
+	}
+	if _u.mutation.ScreenTimeCleared() {
+		_spec.ClearField(intention.FieldScreenTime, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.QuitAttempts(); ok {
+		_spec.SetField(intention.FieldQuitAttempts, field.TypeEnum, value)
+	}
+	if _u.mutation.QuitAttemptsCleared() {
+		_spec.ClearField(intention.FieldQuitAttempts, field.TypeEnum)
+	}
+	if value, ok := _u.mutation.QuitMotivation(); ok {
+		_spec.SetField(intention.FieldQuitMotivation, field.TypeEnum, value)
+	}
+	if _u.mutation.QuitMotivationCleared() {
+		_spec.ClearField(intention.FieldQuitMotivation, field.TypeEnum)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(intention.FieldUpdatedAt, field.TypeTime, value)

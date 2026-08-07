@@ -560,7 +560,19 @@ func (ContentProgress) Fields() []ent.Field {
 type Intention struct{ ent.Schema }
 
 func (Intention) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.Text("intention_text"), field.Enum("status").Values("active", "paused", "archived").Default("active"), createdAt(), updatedAt()}
+	return []ent.Field{
+		idField(),
+		field.String("user_id"),
+		field.Text("intention_text"),
+		field.Enum("status").Values("active", "paused", "archived").Default("active"),
+		field.Enum("school_impact").Values("never", "almost", "happened").Optional().Nillable().Comment("Pernah ga gara-gara judol jadi ninggalin sekolah/kuliah"),
+		field.Enum("money_spent").Values("under_500k", "500k_5m", "5m_20m", "over_20m", "unknown").Optional().Nillable().Comment("Seberapa besar uang yang udah dihabisin buat judol"),
+		field.Enum("screen_time").Values("under_1h", "1h_3h", "3h_6h", "over_6h").Optional().Nillable().Comment("Berapa lama screen time judol per hari"),
+		field.Enum("quit_attempts").Values("never", "once", "multiple").Optional().Nillable().Comment("Pernah nyoba berhenti judol sebelumnya"),
+		field.Enum("quit_motivation").Values("uncertain", "somewhat", "very", "determined").Optional().Nillable().Comment("Seberapa yakin mau berhenti total dari judol"),
+		createdAt(),
+		updatedAt(),
+	}
 }
 
 type CheckIn struct{ ent.Schema }

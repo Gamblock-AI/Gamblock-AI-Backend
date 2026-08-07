@@ -370,11 +370,11 @@ func init() {
 	intentionFields := schema.Intention{}.Fields()
 	_ = intentionFields
 	// intentionDescCreatedAt is the schema descriptor for created_at field.
-	intentionDescCreatedAt := intentionFields[4].Descriptor()
+	intentionDescCreatedAt := intentionFields[9].Descriptor()
 	// intention.DefaultCreatedAt holds the default value on creation for the created_at field.
 	intention.DefaultCreatedAt = intentionDescCreatedAt.Default.(func() time.Time)
 	// intentionDescUpdatedAt is the schema descriptor for updated_at field.
-	intentionDescUpdatedAt := intentionFields[5].Descriptor()
+	intentionDescUpdatedAt := intentionFields[10].Descriptor()
 	// intention.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	intention.DefaultUpdatedAt = intentionDescUpdatedAt.Default.(func() time.Time)
 	// intention.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

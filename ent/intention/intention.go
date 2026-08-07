@@ -20,6 +20,16 @@ const (
 	FieldIntentionText = "intention_text"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldSchoolImpact holds the string denoting the school_impact field in the database.
+	FieldSchoolImpact = "school_impact"
+	// FieldMoneySpent holds the string denoting the money_spent field in the database.
+	FieldMoneySpent = "money_spent"
+	// FieldScreenTime holds the string denoting the screen_time field in the database.
+	FieldScreenTime = "screen_time"
+	// FieldQuitAttempts holds the string denoting the quit_attempts field in the database.
+	FieldQuitAttempts = "quit_attempts"
+	// FieldQuitMotivation holds the string denoting the quit_motivation field in the database.
+	FieldQuitMotivation = "quit_motivation"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -34,6 +44,11 @@ var Columns = []string{
 	FieldUserID,
 	FieldIntentionText,
 	FieldStatus,
+	FieldSchoolImpact,
+	FieldMoneySpent,
+	FieldScreenTime,
+	FieldQuitAttempts,
+	FieldQuitMotivation,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -86,6 +101,130 @@ func StatusValidator(s Status) error {
 	}
 }
 
+// SchoolImpact defines the type for the "school_impact" enum field.
+type SchoolImpact string
+
+// SchoolImpact values.
+const (
+	SchoolImpactNever    SchoolImpact = "never"
+	SchoolImpactAlmost   SchoolImpact = "almost"
+	SchoolImpactHappened SchoolImpact = "happened"
+)
+
+func (si SchoolImpact) String() string {
+	return string(si)
+}
+
+// SchoolImpactValidator is a validator for the "school_impact" field enum values. It is called by the builders before save.
+func SchoolImpactValidator(si SchoolImpact) error {
+	switch si {
+	case SchoolImpactNever, SchoolImpactAlmost, SchoolImpactHappened:
+		return nil
+	default:
+		return fmt.Errorf("intention: invalid enum value for school_impact field: %q", si)
+	}
+}
+
+// MoneySpent defines the type for the "money_spent" enum field.
+type MoneySpent string
+
+// MoneySpent values.
+const (
+	MoneySpentUnder500k MoneySpent = "under_500k"
+	MoneySpent500k5m    MoneySpent = "500k_5m"
+	MoneySpent5m20m     MoneySpent = "5m_20m"
+	MoneySpentOver20m   MoneySpent = "over_20m"
+	MoneySpentUnknown   MoneySpent = "unknown"
+)
+
+func (ms MoneySpent) String() string {
+	return string(ms)
+}
+
+// MoneySpentValidator is a validator for the "money_spent" field enum values. It is called by the builders before save.
+func MoneySpentValidator(ms MoneySpent) error {
+	switch ms {
+	case MoneySpentUnder500k, MoneySpent500k5m, MoneySpent5m20m, MoneySpentOver20m, MoneySpentUnknown:
+		return nil
+	default:
+		return fmt.Errorf("intention: invalid enum value for money_spent field: %q", ms)
+	}
+}
+
+// ScreenTime defines the type for the "screen_time" enum field.
+type ScreenTime string
+
+// ScreenTime values.
+const (
+	ScreenTimeUnder1h ScreenTime = "under_1h"
+	ScreenTime1h3h    ScreenTime = "1h_3h"
+	ScreenTime3h6h    ScreenTime = "3h_6h"
+	ScreenTimeOver6h  ScreenTime = "over_6h"
+)
+
+func (st ScreenTime) String() string {
+	return string(st)
+}
+
+// ScreenTimeValidator is a validator for the "screen_time" field enum values. It is called by the builders before save.
+func ScreenTimeValidator(st ScreenTime) error {
+	switch st {
+	case ScreenTimeUnder1h, ScreenTime1h3h, ScreenTime3h6h, ScreenTimeOver6h:
+		return nil
+	default:
+		return fmt.Errorf("intention: invalid enum value for screen_time field: %q", st)
+	}
+}
+
+// QuitAttempts defines the type for the "quit_attempts" enum field.
+type QuitAttempts string
+
+// QuitAttempts values.
+const (
+	QuitAttemptsNever    QuitAttempts = "never"
+	QuitAttemptsOnce     QuitAttempts = "once"
+	QuitAttemptsMultiple QuitAttempts = "multiple"
+)
+
+func (qa QuitAttempts) String() string {
+	return string(qa)
+}
+
+// QuitAttemptsValidator is a validator for the "quit_attempts" field enum values. It is called by the builders before save.
+func QuitAttemptsValidator(qa QuitAttempts) error {
+	switch qa {
+	case QuitAttemptsNever, QuitAttemptsOnce, QuitAttemptsMultiple:
+		return nil
+	default:
+		return fmt.Errorf("intention: invalid enum value for quit_attempts field: %q", qa)
+	}
+}
+
+// QuitMotivation defines the type for the "quit_motivation" enum field.
+type QuitMotivation string
+
+// QuitMotivation values.
+const (
+	QuitMotivationUncertain  QuitMotivation = "uncertain"
+	QuitMotivationSomewhat   QuitMotivation = "somewhat"
+	QuitMotivationVery       QuitMotivation = "very"
+	QuitMotivationDetermined QuitMotivation = "determined"
+)
+
+func (qm QuitMotivation) String() string {
+	return string(qm)
+}
+
+// QuitMotivationValidator is a validator for the "quit_motivation" field enum values. It is called by the builders before save.
+func QuitMotivationValidator(qm QuitMotivation) error {
+	switch qm {
+	case QuitMotivationUncertain, QuitMotivationSomewhat, QuitMotivationVery, QuitMotivationDetermined:
+		return nil
+	default:
+		return fmt.Errorf("intention: invalid enum value for quit_motivation field: %q", qm)
+	}
+}
+
 // OrderOption defines the ordering options for the Intention queries.
 type OrderOption func(*sql.Selector)
 
@@ -107,6 +246,31 @@ func ByIntentionText(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// BySchoolImpact orders the results by the school_impact field.
+func BySchoolImpact(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSchoolImpact, opts...).ToFunc()
+}
+
+// ByMoneySpent orders the results by the money_spent field.
+func ByMoneySpent(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMoneySpent, opts...).ToFunc()
+}
+
+// ByScreenTime orders the results by the screen_time field.
+func ByScreenTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldScreenTime, opts...).ToFunc()
+}
+
+// ByQuitAttempts orders the results by the quit_attempts field.
+func ByQuitAttempts(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldQuitAttempts, opts...).ToFunc()
+}
+
+// ByQuitMotivation orders the results by the quit_motivation field.
+func ByQuitMotivation(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldQuitMotivation, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

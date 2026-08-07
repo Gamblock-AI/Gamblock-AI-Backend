@@ -15153,18 +15153,23 @@ func (m *InstitutionMutation) ResetEdge(name string) error {
 // IntentionMutation represents an operation that mutates the Intention nodes in the graph.
 type IntentionMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *string
-	user_id        *string
-	intention_text *string
-	status         *intention.Status
-	created_at     *time.Time
-	updated_at     *time.Time
-	clearedFields  map[string]struct{}
-	done           bool
-	oldValue       func(context.Context) (*Intention, error)
-	predicates     []predicate.Intention
+	op              Op
+	typ             string
+	id              *string
+	user_id         *string
+	intention_text  *string
+	status          *intention.Status
+	school_impact   *intention.SchoolImpact
+	money_spent     *intention.MoneySpent
+	screen_time     *intention.ScreenTime
+	quit_attempts   *intention.QuitAttempts
+	quit_motivation *intention.QuitMotivation
+	created_at      *time.Time
+	updated_at      *time.Time
+	clearedFields   map[string]struct{}
+	done            bool
+	oldValue        func(context.Context) (*Intention, error)
+	predicates      []predicate.Intention
 }
 
 var _ ent.Mutation = (*IntentionMutation)(nil)
@@ -15379,6 +15384,251 @@ func (m *IntentionMutation) ResetStatus() {
 	m.status = nil
 }
 
+// SetSchoolImpact sets the "school_impact" field.
+func (m *IntentionMutation) SetSchoolImpact(ii intention.SchoolImpact) {
+	m.school_impact = &ii
+}
+
+// SchoolImpact returns the value of the "school_impact" field in the mutation.
+func (m *IntentionMutation) SchoolImpact() (r intention.SchoolImpact, exists bool) {
+	v := m.school_impact
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSchoolImpact returns the old "school_impact" field's value of the Intention entity.
+// If the Intention object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntentionMutation) OldSchoolImpact(ctx context.Context) (v *intention.SchoolImpact, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSchoolImpact is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSchoolImpact requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSchoolImpact: %w", err)
+	}
+	return oldValue.SchoolImpact, nil
+}
+
+// ClearSchoolImpact clears the value of the "school_impact" field.
+func (m *IntentionMutation) ClearSchoolImpact() {
+	m.school_impact = nil
+	m.clearedFields[intention.FieldSchoolImpact] = struct{}{}
+}
+
+// SchoolImpactCleared returns if the "school_impact" field was cleared in this mutation.
+func (m *IntentionMutation) SchoolImpactCleared() bool {
+	_, ok := m.clearedFields[intention.FieldSchoolImpact]
+	return ok
+}
+
+// ResetSchoolImpact resets all changes to the "school_impact" field.
+func (m *IntentionMutation) ResetSchoolImpact() {
+	m.school_impact = nil
+	delete(m.clearedFields, intention.FieldSchoolImpact)
+}
+
+// SetMoneySpent sets the "money_spent" field.
+func (m *IntentionMutation) SetMoneySpent(is intention.MoneySpent) {
+	m.money_spent = &is
+}
+
+// MoneySpent returns the value of the "money_spent" field in the mutation.
+func (m *IntentionMutation) MoneySpent() (r intention.MoneySpent, exists bool) {
+	v := m.money_spent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMoneySpent returns the old "money_spent" field's value of the Intention entity.
+// If the Intention object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntentionMutation) OldMoneySpent(ctx context.Context) (v *intention.MoneySpent, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMoneySpent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMoneySpent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMoneySpent: %w", err)
+	}
+	return oldValue.MoneySpent, nil
+}
+
+// ClearMoneySpent clears the value of the "money_spent" field.
+func (m *IntentionMutation) ClearMoneySpent() {
+	m.money_spent = nil
+	m.clearedFields[intention.FieldMoneySpent] = struct{}{}
+}
+
+// MoneySpentCleared returns if the "money_spent" field was cleared in this mutation.
+func (m *IntentionMutation) MoneySpentCleared() bool {
+	_, ok := m.clearedFields[intention.FieldMoneySpent]
+	return ok
+}
+
+// ResetMoneySpent resets all changes to the "money_spent" field.
+func (m *IntentionMutation) ResetMoneySpent() {
+	m.money_spent = nil
+	delete(m.clearedFields, intention.FieldMoneySpent)
+}
+
+// SetScreenTime sets the "screen_time" field.
+func (m *IntentionMutation) SetScreenTime(it intention.ScreenTime) {
+	m.screen_time = &it
+}
+
+// ScreenTime returns the value of the "screen_time" field in the mutation.
+func (m *IntentionMutation) ScreenTime() (r intention.ScreenTime, exists bool) {
+	v := m.screen_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScreenTime returns the old "screen_time" field's value of the Intention entity.
+// If the Intention object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntentionMutation) OldScreenTime(ctx context.Context) (v *intention.ScreenTime, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScreenTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScreenTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScreenTime: %w", err)
+	}
+	return oldValue.ScreenTime, nil
+}
+
+// ClearScreenTime clears the value of the "screen_time" field.
+func (m *IntentionMutation) ClearScreenTime() {
+	m.screen_time = nil
+	m.clearedFields[intention.FieldScreenTime] = struct{}{}
+}
+
+// ScreenTimeCleared returns if the "screen_time" field was cleared in this mutation.
+func (m *IntentionMutation) ScreenTimeCleared() bool {
+	_, ok := m.clearedFields[intention.FieldScreenTime]
+	return ok
+}
+
+// ResetScreenTime resets all changes to the "screen_time" field.
+func (m *IntentionMutation) ResetScreenTime() {
+	m.screen_time = nil
+	delete(m.clearedFields, intention.FieldScreenTime)
+}
+
+// SetQuitAttempts sets the "quit_attempts" field.
+func (m *IntentionMutation) SetQuitAttempts(ia intention.QuitAttempts) {
+	m.quit_attempts = &ia
+}
+
+// QuitAttempts returns the value of the "quit_attempts" field in the mutation.
+func (m *IntentionMutation) QuitAttempts() (r intention.QuitAttempts, exists bool) {
+	v := m.quit_attempts
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldQuitAttempts returns the old "quit_attempts" field's value of the Intention entity.
+// If the Intention object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntentionMutation) OldQuitAttempts(ctx context.Context) (v *intention.QuitAttempts, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldQuitAttempts is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldQuitAttempts requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldQuitAttempts: %w", err)
+	}
+	return oldValue.QuitAttempts, nil
+}
+
+// ClearQuitAttempts clears the value of the "quit_attempts" field.
+func (m *IntentionMutation) ClearQuitAttempts() {
+	m.quit_attempts = nil
+	m.clearedFields[intention.FieldQuitAttempts] = struct{}{}
+}
+
+// QuitAttemptsCleared returns if the "quit_attempts" field was cleared in this mutation.
+func (m *IntentionMutation) QuitAttemptsCleared() bool {
+	_, ok := m.clearedFields[intention.FieldQuitAttempts]
+	return ok
+}
+
+// ResetQuitAttempts resets all changes to the "quit_attempts" field.
+func (m *IntentionMutation) ResetQuitAttempts() {
+	m.quit_attempts = nil
+	delete(m.clearedFields, intention.FieldQuitAttempts)
+}
+
+// SetQuitMotivation sets the "quit_motivation" field.
+func (m *IntentionMutation) SetQuitMotivation(im intention.QuitMotivation) {
+	m.quit_motivation = &im
+}
+
+// QuitMotivation returns the value of the "quit_motivation" field in the mutation.
+func (m *IntentionMutation) QuitMotivation() (r intention.QuitMotivation, exists bool) {
+	v := m.quit_motivation
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldQuitMotivation returns the old "quit_motivation" field's value of the Intention entity.
+// If the Intention object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntentionMutation) OldQuitMotivation(ctx context.Context) (v *intention.QuitMotivation, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldQuitMotivation is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldQuitMotivation requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldQuitMotivation: %w", err)
+	}
+	return oldValue.QuitMotivation, nil
+}
+
+// ClearQuitMotivation clears the value of the "quit_motivation" field.
+func (m *IntentionMutation) ClearQuitMotivation() {
+	m.quit_motivation = nil
+	m.clearedFields[intention.FieldQuitMotivation] = struct{}{}
+}
+
+// QuitMotivationCleared returns if the "quit_motivation" field was cleared in this mutation.
+func (m *IntentionMutation) QuitMotivationCleared() bool {
+	_, ok := m.clearedFields[intention.FieldQuitMotivation]
+	return ok
+}
+
+// ResetQuitMotivation resets all changes to the "quit_motivation" field.
+func (m *IntentionMutation) ResetQuitMotivation() {
+	m.quit_motivation = nil
+	delete(m.clearedFields, intention.FieldQuitMotivation)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *IntentionMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -15485,7 +15735,7 @@ func (m *IntentionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IntentionMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 10)
 	if m.user_id != nil {
 		fields = append(fields, intention.FieldUserID)
 	}
@@ -15494,6 +15744,21 @@ func (m *IntentionMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, intention.FieldStatus)
+	}
+	if m.school_impact != nil {
+		fields = append(fields, intention.FieldSchoolImpact)
+	}
+	if m.money_spent != nil {
+		fields = append(fields, intention.FieldMoneySpent)
+	}
+	if m.screen_time != nil {
+		fields = append(fields, intention.FieldScreenTime)
+	}
+	if m.quit_attempts != nil {
+		fields = append(fields, intention.FieldQuitAttempts)
+	}
+	if m.quit_motivation != nil {
+		fields = append(fields, intention.FieldQuitMotivation)
 	}
 	if m.created_at != nil {
 		fields = append(fields, intention.FieldCreatedAt)
@@ -15515,6 +15780,16 @@ func (m *IntentionMutation) Field(name string) (ent.Value, bool) {
 		return m.IntentionText()
 	case intention.FieldStatus:
 		return m.Status()
+	case intention.FieldSchoolImpact:
+		return m.SchoolImpact()
+	case intention.FieldMoneySpent:
+		return m.MoneySpent()
+	case intention.FieldScreenTime:
+		return m.ScreenTime()
+	case intention.FieldQuitAttempts:
+		return m.QuitAttempts()
+	case intention.FieldQuitMotivation:
+		return m.QuitMotivation()
 	case intention.FieldCreatedAt:
 		return m.CreatedAt()
 	case intention.FieldUpdatedAt:
@@ -15534,6 +15809,16 @@ func (m *IntentionMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldIntentionText(ctx)
 	case intention.FieldStatus:
 		return m.OldStatus(ctx)
+	case intention.FieldSchoolImpact:
+		return m.OldSchoolImpact(ctx)
+	case intention.FieldMoneySpent:
+		return m.OldMoneySpent(ctx)
+	case intention.FieldScreenTime:
+		return m.OldScreenTime(ctx)
+	case intention.FieldQuitAttempts:
+		return m.OldQuitAttempts(ctx)
+	case intention.FieldQuitMotivation:
+		return m.OldQuitMotivation(ctx)
 	case intention.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case intention.FieldUpdatedAt:
@@ -15567,6 +15852,41 @@ func (m *IntentionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
+		return nil
+	case intention.FieldSchoolImpact:
+		v, ok := value.(intention.SchoolImpact)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSchoolImpact(v)
+		return nil
+	case intention.FieldMoneySpent:
+		v, ok := value.(intention.MoneySpent)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMoneySpent(v)
+		return nil
+	case intention.FieldScreenTime:
+		v, ok := value.(intention.ScreenTime)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScreenTime(v)
+		return nil
+	case intention.FieldQuitAttempts:
+		v, ok := value.(intention.QuitAttempts)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetQuitAttempts(v)
+		return nil
+	case intention.FieldQuitMotivation:
+		v, ok := value.(intention.QuitMotivation)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetQuitMotivation(v)
 		return nil
 	case intention.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -15611,7 +15931,23 @@ func (m *IntentionMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *IntentionMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(intention.FieldSchoolImpact) {
+		fields = append(fields, intention.FieldSchoolImpact)
+	}
+	if m.FieldCleared(intention.FieldMoneySpent) {
+		fields = append(fields, intention.FieldMoneySpent)
+	}
+	if m.FieldCleared(intention.FieldScreenTime) {
+		fields = append(fields, intention.FieldScreenTime)
+	}
+	if m.FieldCleared(intention.FieldQuitAttempts) {
+		fields = append(fields, intention.FieldQuitAttempts)
+	}
+	if m.FieldCleared(intention.FieldQuitMotivation) {
+		fields = append(fields, intention.FieldQuitMotivation)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -15624,6 +15960,23 @@ func (m *IntentionMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *IntentionMutation) ClearField(name string) error {
+	switch name {
+	case intention.FieldSchoolImpact:
+		m.ClearSchoolImpact()
+		return nil
+	case intention.FieldMoneySpent:
+		m.ClearMoneySpent()
+		return nil
+	case intention.FieldScreenTime:
+		m.ClearScreenTime()
+		return nil
+	case intention.FieldQuitAttempts:
+		m.ClearQuitAttempts()
+		return nil
+	case intention.FieldQuitMotivation:
+		m.ClearQuitMotivation()
+		return nil
+	}
 	return fmt.Errorf("unknown Intention nullable field %s", name)
 }
 
@@ -15639,6 +15992,21 @@ func (m *IntentionMutation) ResetField(name string) error {
 		return nil
 	case intention.FieldStatus:
 		m.ResetStatus()
+		return nil
+	case intention.FieldSchoolImpact:
+		m.ResetSchoolImpact()
+		return nil
+	case intention.FieldMoneySpent:
+		m.ResetMoneySpent()
+		return nil
+	case intention.FieldScreenTime:
+		m.ResetScreenTime()
+		return nil
+	case intention.FieldQuitAttempts:
+		m.ResetQuitAttempts()
+		return nil
+	case intention.FieldQuitMotivation:
+		m.ResetQuitMotivation()
 		return nil
 	case intention.FieldCreatedAt:
 		m.ResetCreatedAt()
