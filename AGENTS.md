@@ -1,6 +1,5 @@
 # Gamblock-AI Backend Agent Rules
 
-Context version: `2026-08-02.24`
 
 This repository is the Go/Gin API for Gamblock-AI. It must remain safe and
 understandable as a standalone clone; no parent workspace files are required.
@@ -87,16 +86,6 @@ role/disabled state per bearer request.
 
 Quick approval verify/resolve routes are intentionally unauthenticated and use
 single-use tokens. Do not put them behind session auth or expose their tokens.
-
-## Proposal-derived backend role
-
-The PKM core requires on-device Hybrid Analysis, local blocking, Pattern
-Interrupt, web self-regulation, and partner-controlled removal. This backend
-supports `PKM-ACC-001`, `PKM-ACC-002`, `PKM-WEB-001`, `PKM-WEB-002`,
-`PKM-WEB-003`, `PKM-WEB-004`, `PKM-WEB-005`, `PKM-WEB-006`, `PKM-WEB-007`,
-and privacy-safe aggregate/recovery state. It must never become the classifier
-or blocking authority. Group Codes, WhatsApp, admin/operator portals, journals,
-and release management are supporting/operational, not substitutes for core.
 
 ## Sensitive data and storage
 
