@@ -187,6 +187,14 @@ func validateEducationDocument(document model.EducationDocument) error {
 			return errors.New("thumbnail and bilingual alt text are required")
 		}
 	}
+	for _, video := range document.Videos {
+		if video.MediaID == "" {
+			return errors.New("video media id is required")
+		}
+		if strings.TrimSpace(video.AltText["id"]) == "" || strings.TrimSpace(video.AltText["en"]) == "" {
+			return errors.New("video bilingual alt text is required")
+		}
+	}
 	for _, source := range document.Sources {
 		parsed, err := url.Parse(source.URL)
 		if err != nil || parsed.Scheme != "https" || parsed.Hostname() == "" {
@@ -202,6 +210,12 @@ func collectDocumentMedia(document model.EducationDocument) (all []string, requi
 		if !seen[thumbnail.MediaID] {
 			seen[thumbnail.MediaID] = true
 			all = append(all, thumbnail.MediaID)
+		}
+	}
+	for _, video := range document.Videos {
+		if !seen[video.MediaID] {
+			seen[video.MediaID] = true
+			all = append(all, video.MediaID)
 		}
 	}
 	var walk func(any)
@@ -240,8 +254,12 @@ func collectDocumentMedia(document model.EducationDocument) (all []string, requi
 func (s *EducationService) ensureMedia(ctx context.Context, document model.EducationDocument) ([]string, error) {
 	ids, _ := collectDocumentMedia(document)
 	thumbnailIDs := map[string]bool{}
+	videoIDs := map[string]bool{}
 	for _, thumbnail := range document.Thumbnails {
 		thumbnailIDs[thumbnail.MediaID] = true
+	}
+	for _, video := range document.Videos {
+		videoIDs[video.MediaID] = true
 	}
 	for _, id := range ids {
 		media, err := s.repo.GetEducationMedia(ctx, id)
@@ -250,6 +268,9 @@ func (s *EducationService) ensureMedia(ctx context.Context, document model.Educa
 		}
 		if thumbnailIDs[id] && (media.Purpose != "thumbnail" || media.MediaType != "image" || media.Kind != "upload") {
 			return nil, fmt.Errorf("thumbnail %s must be an uploaded image", id)
+		}
+		if videoIDs[id] && (media.Purpose != "content" || media.MediaType != "video") {
+			return nil, fmt.Errorf("video %s must be a content video", id)
 		}
 	}
 	return ids, nil
@@ -454,7 +475,7 @@ func (s *EducationService) localizedModule(ctx context.Context, module model.Edu
 		Category: document.Category, Audience: document.Audience, ExperienceType: document.ExperienceType, EstimatedMinutes: document.EstimatedMinutes,
 		ReviewerName: document.ReviewerName, ReviewerRole: firstNonEmpty(translation.ReviewerRole, document.ReviewerRole), ReviewedAt: document.ReviewedAt,
 		Revision: module.PublishedRevision, Thumbnails: document.Thumbnails, ThumbnailURLs: mediaURLs,
-		MediaURLs: mediaURLs, Sources: document.Sources, Sections: sections, Progress: progress, UpdatedAt: module.UpdatedAt,
+		Videos: document.Videos, MediaURLs: mediaURLs, Sources: document.Sources, Sections: sections, Progress: progress, UpdatedAt: module.UpdatedAt,
 	}, nil
 }
 

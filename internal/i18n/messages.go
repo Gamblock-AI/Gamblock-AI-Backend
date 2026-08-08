@@ -203,6 +203,12 @@ var messages = map[string]string{
 	"emergency_review_failed":           "Peninjauan pemulihan darurat gagal.",
 	"emergency_key_required":            "Kunci darurat wajib diisi.",
 	"invalid_key":                       "Kunci darurat tidak valid.",
+
+	// translation (DeepSeek)
+	"translation_failed":         "Gagal menerjemahkan konten. Silakan coba lagi.",
+	"translation_invalid_input":  "Input translasi tidak valid.",
+	"translation_unavailable":    "Layanan AI penerjemahan sedang tidak tersedia.",
+	"translation_rate_limited":   "Penerjemahan AI sedang sibuk, coba lagi dalam beberapa saat.",
 }
 
 // Friendly returns the end-user-facing message for [code], or [Generic] when

@@ -56,6 +56,13 @@ type EducationThumbnail struct {
 	AltText   map[string]string `json:"alt_text"`
 }
 
+type EducationVideo struct {
+	MediaID   string            `json:"media_id"`
+	SortOrder int               `json:"sort_order"`
+	Title     map[string]string `json:"title"`
+	AltText   map[string]string `json:"alt_text"`
+}
+
 // EducationDocument is a revision-safe bilingual module snapshot. Section and
 // check identifiers are shared across locales so progress survives language
 // changes.
@@ -70,6 +77,7 @@ type EducationDocument struct {
 	Translations     map[string]EducationTranslation `json:"translations"`
 	Sections         []EducationSection              `json:"sections"`
 	Thumbnails       []EducationThumbnail            `json:"thumbnails"`
+	Videos           []EducationVideo                `json:"videos,omitempty"`
 	Sources          []EducationSource               `json:"sources"`
 }
 
@@ -155,6 +163,7 @@ type LocalizedEducationModule struct {
 	Revision          int                         `json:"revision"`
 	Thumbnails        []EducationThumbnail        `json:"thumbnails"`
 	ThumbnailURLs     map[string]string           `json:"thumbnail_urls"`
+	Videos            []EducationVideo            `json:"videos,omitempty"`
 	MediaURLs         map[string]string           `json:"media_urls"`
 	Sources           []EducationSource           `json:"sources"`
 	Sections          []LocalizedEducationSection `json:"sections"`

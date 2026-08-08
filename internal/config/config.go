@@ -32,6 +32,9 @@ type Config struct {
 	FonnteCountryCode    string
 	EnableDevLogin       bool
 	EnableDemoData       bool
+	DeepSeekAPIKey       string
+	DeepSeekBaseURL      string
+	DeepSeekModel        string
 }
 
 func (c Config) Validate() error {
@@ -83,6 +86,9 @@ func Load() Config {
 	viper.SetDefault("FONNTE_COUNTRY_CODE", "62")
 	viper.SetDefault("ENABLE_DEV_LOGIN", false)
 	viper.SetDefault("ENABLE_DEMO_DATA", false)
+	viper.SetDefault("DEEPSEEK_API_KEY", "")
+	viper.SetDefault("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+	viper.SetDefault("DEEPSEEK_MODEL", "deepseek-chat")
 	viper.AutomaticEnv()
 
 	ttl, err := time.ParseDuration(viper.GetString("JWT_ACCESS_TTL"))
@@ -117,6 +123,9 @@ func Load() Config {
 		FonnteCountryCode:    viper.GetString("FONNTE_COUNTRY_CODE"),
 		EnableDevLogin:       viper.GetBool("ENABLE_DEV_LOGIN"),
 		EnableDemoData:       viper.GetBool("ENABLE_DEMO_DATA"),
+		DeepSeekAPIKey:       viper.GetString("DEEPSEEK_API_KEY"),
+		DeepSeekBaseURL:      strings.TrimRight(viper.GetString("DEEPSEEK_BASE_URL"), "/"),
+		DeepSeekModel:        viper.GetString("DEEPSEEK_MODEL"),
 	}
 }
 

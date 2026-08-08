@@ -176,6 +176,7 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 		admin.POST("/content/media", h.UploadAdminEducationMedia)
 		admin.POST("/content/media/external", h.RegisterAdminExternalMedia)
 		admin.GET("/content/media/:id", h.AdminEducationMedia)
+		admin.POST("/translate", h.AdminTranslate)
 		admin.GET("/model-releases", h.AdminModelReleases)
 		admin.GET("/releases", h.AdminReleases)
 		admin.POST("/release-artifacts", mid.RequireRecentAuth(15*time.Minute), h.UploadAdminReleaseArtifact)
