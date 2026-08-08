@@ -86,32 +86,6 @@ func (h *Handler) DevLogin(c *gin.Context) {
 	h.respond(c, http.StatusOK, response)
 }
 
-func (h *Handler) GoogleLogin(c *gin.Context) {
-	var input struct {
-		IDToken  string `json:"id_token"`
-		DeviceID string `json:"device_id"`
-		Role     string `json:"role"`
-		Nonce    string `json:"nonce"`
-	}
-	_ = c.ShouldBindJSON(&input)
-	if input.IDToken == "" {
-		h.respondCode(c, http.StatusBadRequest, "google_token_required")
-		return
-	}
-	response, err := h.services.Auth.GoogleLogin(c.Request.Context(), input.IDToken, input.DeviceID, input.Role, input.Nonce)
-	if err != nil {
-		code := "google_verification_failed"
-		status := http.StatusUnauthorized
-		if errors.Is(err, service.ErrGoogleLinkRequired) {
-			code = "google_link_required"
-			status = http.StatusConflict
-		}
-		h.respondErrorErr(c, status, code, err)
-		return
-	}
-	h.respond(c, http.StatusOK, response)
-}
-
 func (h *Handler) RequestPasswordReset(c *gin.Context) {
 	var input struct {
 		Email string `json:"email"`
@@ -151,27 +125,6 @@ func (h *Handler) ConfirmPasswordReset(c *gin.Context) {
 		return
 	}
 	h.respond(c, http.StatusOK, gin.H{"reset": true})
-}
-
-func (h *Handler) LinkGoogle(c *gin.Context) {
-	var input struct {
-		CurrentPassword string `json:"current_password"`
-		IDToken         string `json:"id_token"`
-		Nonce           string `json:"nonce"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil || input.CurrentPassword == "" || input.IDToken == "" {
-		h.respondCode(c, http.StatusBadRequest, "google_link_failed")
-		return
-	}
-	if err := h.services.Auth.LinkGoogle(c.Request.Context(), h.currentUserID(c), input.CurrentPassword, input.IDToken, input.Nonce); err != nil {
-		code := "google_link_failed"
-		if errors.Is(err, service.ErrCurrentPasswordInvalid) {
-			code = "current_password_invalid"
-		}
-		h.respondErrorErr(c, http.StatusBadRequest, code, err)
-		return
-	}
-	h.respond(c, http.StatusOK, gin.H{"google_linked": true})
 }
 
 func (h *Handler) Refresh(c *gin.Context) {

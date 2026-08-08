@@ -31,10 +31,6 @@ var messages = map[string]string{
 	"invalid_credentials":                "Email atau kata sandi salah. Silakan periksa kembali.",
 	"registration_failed":                "Pendaftaran gagal. Email mungkin sudah terdaftar.",
 	"dev_login_failed":                   "Gagal masuk sebagai pengguna demo.",
-	"google_token_required":              "Token Google wajib diisi.",
-	"google_verification_failed":         "Verifikasi Google gagal. Silakan coba lagi.",
-	"google_link_required":               "Akun ini sudah terdaftar. Masuk dengan kata sandi lalu tautkan Google dari Pengaturan.",
-	"google_link_failed":                 "Akun Google belum dapat ditautkan. Pastikan email Google sama dengan email akun.",
 	"password_reset_invalid":             "Kode pemulihan tidak valid, sudah digunakan, atau telah kedaluwarsa.",
 	"password_reset_failed":              "Pemulihan kata sandi belum dapat diproses. Silakan coba lagi.",
 	"initial_password_change_invalid":    "Tautan penggantian kata sandi awal tidak valid atau telah kedaluwarsa.",
@@ -66,6 +62,13 @@ var messages = map[string]string{
 	"password_update_failed":      "Gagal memperbarui kata sandi.",
 	"analytics_period_invalid":    "Periode analitik harus 7 atau 30 hari.",
 	"protection_analytics_failed": "Gagal memuat analitik perlindungan.",
+
+	// daily reminder & web push
+	"reminder_preference_load_failed":   "Preferensi pengingat belum dapat dimuat.",
+	"reminder_preference_update_failed": "Preferensi pengingat belum dapat disimpan.",
+	"reminder_preference_invalid":       "Waktu atau zona waktu pengingat tidak valid.",
+	"push_subscription_invalid":         "Langganan notifikasi tidak valid.",
+	"push_subscription_update_failed":   "Langganan notifikasi belum dapat disimpan.",
 
 	// partners / accountability
 	"partner_email_required":               "Email pendamping wajib diisi.",

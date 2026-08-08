@@ -12,20 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
-	"google.golang.org/api/idtoken"
 )
 
 type captureAuthNotification struct {
 	resetCode string
-}
-
-type fakeGoogleVerifier struct {
-	payload *idtoken.Payload
-	err     error
-}
-
-func (verifier fakeGoogleVerifier) Validate(context.Context, string, string) (*idtoken.Payload, error) {
-	return verifier.payload, verifier.err
 }
 
 func (sender *captureAuthNotification) SendPhoneVerification(context.Context, string, string) error {
@@ -34,26 +24,6 @@ func (sender *captureAuthNotification) SendPhoneVerification(context.Context, st
 func (sender *captureAuthNotification) SendPasswordReset(_ context.Context, _ string, code string) error {
 	sender.resetCode = code
 	return nil
-}
-
-func TestGoogleLoginRequiresExplicitLinkForExistingEmail(t *testing.T) {
-	cfg := config.Config{
-		AppEnv: "test", GoogleClientIDs: []string{"android-client", "windows-client"},
-		JWTAccessSecret: "test-secret-very-long-please-32bytes!", JWTAccessTTL: time.Hour, JWTRefreshTTL: time.Hour,
-	}
-	verifier := fakeGoogleVerifier{payload: &idtoken.Payload{
-		Audience: "android-client", Subject: "google-existing", Claims: map[string]any{
-			"email": "gading@gmail.com", "name": "Gading", "email_verified": true, "nonce": "expected",
-		},
-	}}
-	repo := repository.New(nil, store.NewSeeded())
-	svc := NewAuthServiceWithDependencies(repo, cfg, zap.NewNop(), verifier, &captureAuthNotification{})
-
-	_, err := svc.GoogleLogin(context.Background(), "token", "", "user", "expected")
-	assert.ErrorIs(t, err, ErrGoogleLinkRequired)
-	_, err = svc.GoogleLogin(context.Background(), "token", "", "user", "wrong")
-	require.Error(t, err)
-	assert.NotErrorIs(t, err, ErrGoogleLinkRequired)
 }
 
 func newRecoveryAuthService(t *testing.T) (*AuthService, *captureAuthNotification) {
@@ -65,7 +35,7 @@ func newRecoveryAuthService(t *testing.T) (*AuthService, *captureAuthNotificatio
 	}
 	email := &captureAuthNotification{}
 	repo := repository.New(nil, store.NewSeeded())
-	return NewAuthServiceWithDependencies(repo, cfg, zap.NewNop(), nil, email), email
+	return NewAuthServiceWithDependencies(repo, cfg, zap.NewNop(), email), email
 }
 
 func TestPasswordResetIsNonEnumeratingAndSingleUse(t *testing.T) {

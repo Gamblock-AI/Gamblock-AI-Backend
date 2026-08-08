@@ -441,6 +441,18 @@ func (f PsychoeducationProgressFunc) Mutate(ctx context.Context, m ent.Mutation)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PsychoeducationProgressMutation", m)
 }
 
+// The PushSubscriptionFunc type is an adapter to allow the use of ordinary
+// function as PushSubscription mutator.
+type PushSubscriptionFunc func(context.Context, *ent.PushSubscriptionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PushSubscriptionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PushSubscriptionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PushSubscriptionMutation", m)
+}
+
 // The RecoveryPracticeSessionFunc type is an adapter to allow the use of ordinary
 // function as RecoveryPracticeSession mutator.
 type RecoveryPracticeSessionFunc func(context.Context, *ent.RecoveryPracticeSessionMutation) (ent.Value, error)
@@ -511,6 +523,18 @@ func (f ReleaseCohortFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ReleaseCohortMutation", m)
+}
+
+// The ReminderPreferenceFunc type is an adapter to allow the use of ordinary
+// function as ReminderPreference mutator.
+type ReminderPreferenceFunc func(context.Context, *ent.ReminderPreferenceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ReminderPreferenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ReminderPreferenceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ReminderPreferenceMutation", m)
 }
 
 // The ReportRollupFunc type is an adapter to allow the use of ordinary

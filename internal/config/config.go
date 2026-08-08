@@ -13,8 +13,6 @@ type Config struct {
 	HTTPAddr             string
 	AppEnv               string
 	DatabaseURL          string
-	GoogleClientID       string
-	GoogleClientIDs      []string
 	PublicWebBaseURL     string
 	NotificationMode     string
 	JWTAccessSecret      string
@@ -35,6 +33,9 @@ type Config struct {
 	DeepSeekAPIKey       string
 	DeepSeekBaseURL      string
 	DeepSeekModel        string
+	VAPIDPublicKey       string
+	VAPIDPrivateKey      string
+	VAPIDSubject         string
 }
 
 func (c Config) Validate() error {
@@ -67,8 +68,6 @@ func Load() Config {
 	viper.SetDefault("APP_ENV", "development")
 	viper.SetDefault("HTTP_ADDR", ":8080")
 	viper.SetDefault("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable")
-	viper.SetDefault("GOOGLE_CLIENT_ID", "")
-	viper.SetDefault("GOOGLE_CLIENT_IDS", "")
 	viper.SetDefault("PUBLIC_WEB_BASE_URL", "http://localhost:3000")
 	viper.SetDefault("NOTIFICATION_MODE", "demo")
 	viper.SetDefault("JWT_ACCESS_SECRET", "dev-only-change-me")
@@ -89,6 +88,9 @@ func Load() Config {
 	viper.SetDefault("DEEPSEEK_API_KEY", "")
 	viper.SetDefault("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
 	viper.SetDefault("DEEPSEEK_MODEL", "deepseek-chat")
+	viper.SetDefault("VAPID_PUBLIC_KEY", "")
+	viper.SetDefault("VAPID_PRIVATE_KEY", "")
+	viper.SetDefault("VAPID_SUBJECT", "mailto:support@gamblock-ai.com")
 	viper.AutomaticEnv()
 
 	ttl, err := time.ParseDuration(viper.GetString("JWT_ACCESS_TTL"))
@@ -104,8 +106,6 @@ func Load() Config {
 		HTTPAddr:             viper.GetString("HTTP_ADDR"),
 		AppEnv:               viper.GetString("APP_ENV"),
 		DatabaseURL:          viper.GetString("DATABASE_URL"),
-		GoogleClientID:       viper.GetString("GOOGLE_CLIENT_ID"),
-		GoogleClientIDs:      googleClientIDs(viper.GetString("GOOGLE_CLIENT_IDS"), viper.GetString("GOOGLE_CLIENT_ID")),
 		PublicWebBaseURL:     strings.TrimRight(viper.GetString("PUBLIC_WEB_BASE_URL"), "/"),
 		NotificationMode:     viper.GetString("NOTIFICATION_MODE"),
 		JWTAccessSecret:      viper.GetString("JWT_ACCESS_SECRET"),
@@ -126,15 +126,10 @@ func Load() Config {
 		DeepSeekAPIKey:       viper.GetString("DEEPSEEK_API_KEY"),
 		DeepSeekBaseURL:      strings.TrimRight(viper.GetString("DEEPSEEK_BASE_URL"), "/"),
 		DeepSeekModel:        viper.GetString("DEEPSEEK_MODEL"),
+		VAPIDPublicKey:       viper.GetString("VAPID_PUBLIC_KEY"),
+		VAPIDPrivateKey:      viper.GetString("VAPID_PRIVATE_KEY"),
+		VAPIDSubject:         viper.GetString("VAPID_SUBJECT"),
 	}
-}
-
-func googleClientIDs(values, fallback string) []string {
-	ids := splitCSV(values)
-	if len(ids) == 0 && strings.TrimSpace(fallback) != "" {
-		return []string{strings.TrimSpace(fallback)}
-	}
-	return ids
 }
 
 func splitCSV(value string) []string {

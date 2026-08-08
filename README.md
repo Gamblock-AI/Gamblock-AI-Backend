@@ -53,18 +53,18 @@ export data needs to be retained.
 - `GET  /healthz`
 - `GET  /readyz`
 - `POST /v1/auth/dev-login`
-- `POST /v1/auth/google`
 - `POST /v1/auth/password-reset/request`
 - `POST /v1/auth/password-reset/confirm`
 - `POST /v1/devices`
 - `PATCH /v1/me/password`
-- `POST /v1/me/google/link`
 - `GET  /v1/client/dashboard-summary`
 - `GET  /v1/client/protection-status`
 - `GET  /v1/client/protection-analytics`
 - `POST /v1/client/aggregate-events`
 - `GET/POST /v1/check-ins`
 - `GET/PATCH /v1/me`
+- `GET/PUT /v1/me/reminder-preference`
+- `POST/DELETE /v1/me/push-subscription`
 - `POST/DELETE /v1/me/avatar`
 - `GET  /v1/users/:id/avatar`
 - `GET  /v1/psychoeducation/modules`
@@ -225,11 +225,7 @@ See `AGENTS.md` for conventions and the privacy/AES/RBAC invariants.
 
 Reflection/journal writes fail closed unless a valid AES-256-GCM key is
 configured; decryption failures never expose ciphertext as user content.
-Password login uses Argon2id. Google sign-in is enabled only when
-an ID-token audience is listed in `GOOGLE_CLIENT_IDS` (with
-`GOOGLE_CLIENT_ID` as a single-ID fallback). Existing password accounts must
-link the same verified Google email through `POST /v1/me/google/link` after
-current-password authentication. `POST /v1/auth/password-reset/request` is
+Password login uses Argon2id. `POST /v1/auth/password-reset/request` is
 non-enumerating; `POST /v1/auth/password-reset/confirm` consumes the latest
 hashed 12-character code within 30 minutes and revokes all refresh sessions.
 Fonnte is the production transactional delivery adapter. Production requires

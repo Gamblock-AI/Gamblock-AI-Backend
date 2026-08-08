@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -29,6 +30,11 @@ func New(cfg config.Config, st *store.Store, logger *zap.Logger, clients ...*ent
 	services := service.NewContainer(repo, cfg, logger)
 	mid := middleware.New(services.Auth, logger)
 	h := handler.New(services, mid, cfg, logger)
+
+	if cfg.VAPIDPublicKey != "" && cfg.VAPIDPrivateKey != "" {
+		scheduler := service.NewReminderScheduler(repo, services.Push, logger)
+		go scheduler.Run(context.Background())
+	}
 
 	r := gin.New()
 	r.Use(gin.Recovery(), mid.RequestID())

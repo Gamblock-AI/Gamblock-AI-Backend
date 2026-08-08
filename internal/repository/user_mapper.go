@@ -33,7 +33,6 @@ func userFromEnt(row *ent.User) model.User {
 		PhoneVerifiedAt:    row.PhoneVerifiedAt,
 		ExperiencePoints:   row.ExperiencePoints,
 		PasswordHash:       value(row.PasswordHash),
-		GoogleSubject:      value(row.GoogleSubject),
 		DisabledAt:         row.DisabledAt,
 		CreatedAt:          row.CreatedAt,
 		UpdatedAt:          row.UpdatedAt,

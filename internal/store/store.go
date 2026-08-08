@@ -58,6 +58,8 @@ type (
 	LearningRevision         = model.LearningRevision
 	LearningProgress         = model.LearningProgress
 	ExperienceGrant          = model.ExperienceGrant
+	ReminderPreference       = model.ReminderPreference
+	PushSubscription         = model.PushSubscription
 )
 
 // Store is a concurrency-safe in-memory backing store. It is used as a
@@ -108,8 +110,10 @@ type Store struct {
 	LearningItems             []LearningItem             `json:"learning_items"`
 	AdminLearningItems        []AdminLearningItem        `json:"admin_learning_items"`
 	LearningRevisions         []LearningRevision         `json:"learning_revisions"`
-	LearningProgress          []LearningProgress         `json:"learning_progress"`
-	ExperienceGrants          []ExperienceGrant          `json:"experience_grants"`
+	LearningProgress          []LearningProgress          `json:"learning_progress"`
+	ExperienceGrants          []ExperienceGrant           `json:"experience_grants"`
+	ReminderPreferences       []ReminderPreference        `json:"reminder_preferences"`
+	PushSubscriptions         []PushSubscription          `json:"push_subscriptions"`
 }
 
 func New() *Store {

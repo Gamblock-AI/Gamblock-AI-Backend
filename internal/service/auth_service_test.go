@@ -53,7 +53,6 @@ func TestAuthService_LoginSeededUser(t *testing.T) {
 	assert.NotEmpty(t, resp.RefreshToken)
 	assert.Equal(t, "gading@gmail.com", resp.User.Email)
 	assert.True(t, resp.PasswordEnabled)
-	assert.False(t, resp.GoogleLinked)
 }
 
 func TestAuthService_LoginUnknownFails(t *testing.T) {

@@ -772,6 +772,30 @@ var (
 			},
 		},
 	}
+	// PushSubscriptionsColumns holds the columns for the "push_subscriptions" table.
+	PushSubscriptionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "endpoint", Type: field.TypeString, Unique: true, Size: 2147483647},
+		{Name: "p256dh", Type: field.TypeString},
+		{Name: "auth_key", Type: field.TypeString},
+		{Name: "user_agent", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// PushSubscriptionsTable holds the schema information for the "push_subscriptions" table.
+	PushSubscriptionsTable = &schema.Table{
+		Name:       "push_subscriptions",
+		Columns:    PushSubscriptionsColumns,
+		PrimaryKey: []*schema.Column{PushSubscriptionsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "pushsubscription_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{PushSubscriptionsColumns[1]},
+			},
+		},
+	}
 	// RecoveryPracticeSessionsColumns holds the columns for the "recovery_practice_sessions" table.
 	RecoveryPracticeSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -894,6 +918,24 @@ var (
 		Columns:    ReleaseCohortsColumns,
 		PrimaryKey: []*schema.Column{ReleaseCohortsColumns[0]},
 	}
+	// ReminderPreferencesColumns holds the columns for the "reminder_preferences" table.
+	ReminderPreferencesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString, Unique: true},
+		{Name: "enabled", Type: field.TypeBool, Default: false},
+		{Name: "local_time", Type: field.TypeString, Default: "19:00"},
+		{Name: "timezone", Type: field.TypeString, Default: "Asia/Jakarta"},
+		{Name: "locale", Type: field.TypeString, Default: "id"},
+		{Name: "last_fired_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// ReminderPreferencesTable holds the schema information for the "reminder_preferences" table.
+	ReminderPreferencesTable = &schema.Table{
+		Name:       "reminder_preferences",
+		Columns:    ReminderPreferencesColumns,
+		PrimaryKey: []*schema.Column{ReminderPreferencesColumns[0]},
+	}
 	// ReportRollupsColumns holds the columns for the "report_rollups" table.
 	ReportRollupsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -1015,7 +1057,6 @@ var (
 		{Name: "display_name", Type: field.TypeString},
 		{Name: "password_hash", Type: field.TypeString, Nullable: true},
 		{Name: "avatar_url", Type: field.TypeString, Nullable: true},
-		{Name: "google_subject", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"user", "partner", "admin"}, Default: "user"},
 		{Name: "must_change_password", Type: field.TypeBool, Default: false},
 		{Name: "email_verified_at", Type: field.TypeTime, Nullable: true},
@@ -1071,12 +1112,14 @@ var (
 		PartnerLinksTable,
 		PsychoeducationModulesTable,
 		PsychoeducationProgressesTable,
+		PushSubscriptionsTable,
 		RecoveryPracticeSessionsTable,
 		RecoveryRecordsTable,
 		RecoverySpacesTable,
 		ReflectionsTable,
 		RefreshTokensTable,
 		ReleaseCohortsTable,
+		ReminderPreferencesTable,
 		ReportRollupsTable,
 		RulesetReleasesTable,
 		SiteSocialLinksTable,

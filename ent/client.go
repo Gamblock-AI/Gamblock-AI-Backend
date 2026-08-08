@@ -50,12 +50,14 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationprogress"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/pushsubscription"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoverypracticesession"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryrecord"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryspace"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/reminderpreference"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/sitesociallink"
@@ -142,6 +144,8 @@ type Client struct {
 	PsychoeducationModule *PsychoeducationModuleClient
 	// PsychoeducationProgress is the client for interacting with the PsychoeducationProgress builders.
 	PsychoeducationProgress *PsychoeducationProgressClient
+	// PushSubscription is the client for interacting with the PushSubscription builders.
+	PushSubscription *PushSubscriptionClient
 	// RecoveryPracticeSession is the client for interacting with the RecoveryPracticeSession builders.
 	RecoveryPracticeSession *RecoveryPracticeSessionClient
 	// RecoveryRecord is the client for interacting with the RecoveryRecord builders.
@@ -154,6 +158,8 @@ type Client struct {
 	RefreshToken *RefreshTokenClient
 	// ReleaseCohort is the client for interacting with the ReleaseCohort builders.
 	ReleaseCohort *ReleaseCohortClient
+	// ReminderPreference is the client for interacting with the ReminderPreference builders.
+	ReminderPreference *ReminderPreferenceClient
 	// ReportRollup is the client for interacting with the ReportRollup builders.
 	ReportRollup *ReportRollupClient
 	// RulesetRelease is the client for interacting with the RulesetRelease builders.
@@ -215,12 +221,14 @@ func (c *Client) init() {
 	c.PartnerLink = NewPartnerLinkClient(c.config)
 	c.PsychoeducationModule = NewPsychoeducationModuleClient(c.config)
 	c.PsychoeducationProgress = NewPsychoeducationProgressClient(c.config)
+	c.PushSubscription = NewPushSubscriptionClient(c.config)
 	c.RecoveryPracticeSession = NewRecoveryPracticeSessionClient(c.config)
 	c.RecoveryRecord = NewRecoveryRecordClient(c.config)
 	c.RecoverySpace = NewRecoverySpaceClient(c.config)
 	c.Reflection = NewReflectionClient(c.config)
 	c.RefreshToken = NewRefreshTokenClient(c.config)
 	c.ReleaseCohort = NewReleaseCohortClient(c.config)
+	c.ReminderPreference = NewReminderPreferenceClient(c.config)
 	c.ReportRollup = NewReportRollupClient(c.config)
 	c.RulesetRelease = NewRulesetReleaseClient(c.config)
 	c.SiteSocialLink = NewSiteSocialLinkClient(c.config)
@@ -356,12 +364,14 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		PartnerLink:              NewPartnerLinkClient(cfg),
 		PsychoeducationModule:    NewPsychoeducationModuleClient(cfg),
 		PsychoeducationProgress:  NewPsychoeducationProgressClient(cfg),
+		PushSubscription:         NewPushSubscriptionClient(cfg),
 		RecoveryPracticeSession:  NewRecoveryPracticeSessionClient(cfg),
 		RecoveryRecord:           NewRecoveryRecordClient(cfg),
 		RecoverySpace:            NewRecoverySpaceClient(cfg),
 		Reflection:               NewReflectionClient(cfg),
 		RefreshToken:             NewRefreshTokenClient(cfg),
 		ReleaseCohort:            NewReleaseCohortClient(cfg),
+		ReminderPreference:       NewReminderPreferenceClient(cfg),
 		ReportRollup:             NewReportRollupClient(cfg),
 		RulesetRelease:           NewRulesetReleaseClient(cfg),
 		SiteSocialLink:           NewSiteSocialLinkClient(cfg),
@@ -424,12 +434,14 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		PartnerLink:              NewPartnerLinkClient(cfg),
 		PsychoeducationModule:    NewPsychoeducationModuleClient(cfg),
 		PsychoeducationProgress:  NewPsychoeducationProgressClient(cfg),
+		PushSubscription:         NewPushSubscriptionClient(cfg),
 		RecoveryPracticeSession:  NewRecoveryPracticeSessionClient(cfg),
 		RecoveryRecord:           NewRecoveryRecordClient(cfg),
 		RecoverySpace:            NewRecoverySpaceClient(cfg),
 		Reflection:               NewReflectionClient(cfg),
 		RefreshToken:             NewRefreshTokenClient(cfg),
 		ReleaseCohort:            NewReleaseCohortClient(cfg),
+		ReminderPreference:       NewReminderPreferenceClient(cfg),
 		ReportRollup:             NewReportRollupClient(cfg),
 		RulesetRelease:           NewRulesetReleaseClient(cfg),
 		SiteSocialLink:           NewSiteSocialLinkClient(cfg),
@@ -476,10 +488,11 @@ func (c *Client) Use(hooks ...Hook) {
 		c.NetworkRulesetRelease, c.NotificationDelivery, c.OperatorInvitation,
 		c.Organization, c.OrganizationInvite, c.OrganizationMember,
 		c.OrganizationPolicy, c.PartnerContactRequest, c.PartnerLink,
-		c.PsychoeducationModule, c.PsychoeducationProgress, c.RecoveryPracticeSession,
-		c.RecoveryRecord, c.RecoverySpace, c.Reflection, c.RefreshToken,
-		c.ReleaseCohort, c.ReportRollup, c.RulesetRelease, c.SiteSocialLink,
-		c.SupportActionAudit, c.SupportCase, c.SupportMessage, c.User,
+		c.PsychoeducationModule, c.PsychoeducationProgress, c.PushSubscription,
+		c.RecoveryPracticeSession, c.RecoveryRecord, c.RecoverySpace, c.Reflection,
+		c.RefreshToken, c.ReleaseCohort, c.ReminderPreference, c.ReportRollup,
+		c.RulesetRelease, c.SiteSocialLink, c.SupportActionAudit, c.SupportCase,
+		c.SupportMessage, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -499,10 +512,11 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.NetworkRulesetRelease, c.NotificationDelivery, c.OperatorInvitation,
 		c.Organization, c.OrganizationInvite, c.OrganizationMember,
 		c.OrganizationPolicy, c.PartnerContactRequest, c.PartnerLink,
-		c.PsychoeducationModule, c.PsychoeducationProgress, c.RecoveryPracticeSession,
-		c.RecoveryRecord, c.RecoverySpace, c.Reflection, c.RefreshToken,
-		c.ReleaseCohort, c.ReportRollup, c.RulesetRelease, c.SiteSocialLink,
-		c.SupportActionAudit, c.SupportCase, c.SupportMessage, c.User,
+		c.PsychoeducationModule, c.PsychoeducationProgress, c.PushSubscription,
+		c.RecoveryPracticeSession, c.RecoveryRecord, c.RecoverySpace, c.Reflection,
+		c.RefreshToken, c.ReleaseCohort, c.ReminderPreference, c.ReportRollup,
+		c.RulesetRelease, c.SiteSocialLink, c.SupportActionAudit, c.SupportCase,
+		c.SupportMessage, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -583,6 +597,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.PsychoeducationModule.mutate(ctx, m)
 	case *PsychoeducationProgressMutation:
 		return c.PsychoeducationProgress.mutate(ctx, m)
+	case *PushSubscriptionMutation:
+		return c.PushSubscription.mutate(ctx, m)
 	case *RecoveryPracticeSessionMutation:
 		return c.RecoveryPracticeSession.mutate(ctx, m)
 	case *RecoveryRecordMutation:
@@ -595,6 +611,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.RefreshToken.mutate(ctx, m)
 	case *ReleaseCohortMutation:
 		return c.ReleaseCohort.mutate(ctx, m)
+	case *ReminderPreferenceMutation:
+		return c.ReminderPreference.mutate(ctx, m)
 	case *ReportRollupMutation:
 		return c.ReportRollup.mutate(ctx, m)
 	case *RulesetReleaseMutation:
@@ -5402,6 +5420,139 @@ func (c *PsychoeducationProgressClient) mutate(ctx context.Context, m *Psychoedu
 	}
 }
 
+// PushSubscriptionClient is a client for the PushSubscription schema.
+type PushSubscriptionClient struct {
+	config
+}
+
+// NewPushSubscriptionClient returns a client for the PushSubscription from the given config.
+func NewPushSubscriptionClient(c config) *PushSubscriptionClient {
+	return &PushSubscriptionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `pushsubscription.Hooks(f(g(h())))`.
+func (c *PushSubscriptionClient) Use(hooks ...Hook) {
+	c.hooks.PushSubscription = append(c.hooks.PushSubscription, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `pushsubscription.Intercept(f(g(h())))`.
+func (c *PushSubscriptionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PushSubscription = append(c.inters.PushSubscription, interceptors...)
+}
+
+// Create returns a builder for creating a PushSubscription entity.
+func (c *PushSubscriptionClient) Create() *PushSubscriptionCreate {
+	mutation := newPushSubscriptionMutation(c.config, OpCreate)
+	return &PushSubscriptionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PushSubscription entities.
+func (c *PushSubscriptionClient) CreateBulk(builders ...*PushSubscriptionCreate) *PushSubscriptionCreateBulk {
+	return &PushSubscriptionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PushSubscriptionClient) MapCreateBulk(slice any, setFunc func(*PushSubscriptionCreate, int)) *PushSubscriptionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PushSubscriptionCreateBulk{err: fmt.Errorf("calling to PushSubscriptionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PushSubscriptionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PushSubscriptionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PushSubscription.
+func (c *PushSubscriptionClient) Update() *PushSubscriptionUpdate {
+	mutation := newPushSubscriptionMutation(c.config, OpUpdate)
+	return &PushSubscriptionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PushSubscriptionClient) UpdateOne(_m *PushSubscription) *PushSubscriptionUpdateOne {
+	mutation := newPushSubscriptionMutation(c.config, OpUpdateOne, withPushSubscription(_m))
+	return &PushSubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PushSubscriptionClient) UpdateOneID(id string) *PushSubscriptionUpdateOne {
+	mutation := newPushSubscriptionMutation(c.config, OpUpdateOne, withPushSubscriptionID(id))
+	return &PushSubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PushSubscription.
+func (c *PushSubscriptionClient) Delete() *PushSubscriptionDelete {
+	mutation := newPushSubscriptionMutation(c.config, OpDelete)
+	return &PushSubscriptionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PushSubscriptionClient) DeleteOne(_m *PushSubscription) *PushSubscriptionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PushSubscriptionClient) DeleteOneID(id string) *PushSubscriptionDeleteOne {
+	builder := c.Delete().Where(pushsubscription.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PushSubscriptionDeleteOne{builder}
+}
+
+// Query returns a query builder for PushSubscription.
+func (c *PushSubscriptionClient) Query() *PushSubscriptionQuery {
+	return &PushSubscriptionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePushSubscription},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PushSubscription entity by its id.
+func (c *PushSubscriptionClient) Get(ctx context.Context, id string) (*PushSubscription, error) {
+	return c.Query().Where(pushsubscription.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PushSubscriptionClient) GetX(ctx context.Context, id string) *PushSubscription {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *PushSubscriptionClient) Hooks() []Hook {
+	return c.hooks.PushSubscription
+}
+
+// Interceptors returns the client interceptors.
+func (c *PushSubscriptionClient) Interceptors() []Interceptor {
+	return c.inters.PushSubscription
+}
+
+func (c *PushSubscriptionClient) mutate(ctx context.Context, m *PushSubscriptionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PushSubscriptionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PushSubscriptionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PushSubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PushSubscriptionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PushSubscription mutation op: %q", m.Op())
+	}
+}
+
 // RecoveryPracticeSessionClient is a client for the RecoveryPracticeSession schema.
 type RecoveryPracticeSessionClient struct {
 	config
@@ -6197,6 +6348,139 @@ func (c *ReleaseCohortClient) mutate(ctx context.Context, m *ReleaseCohortMutati
 		return (&ReleaseCohortDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ReleaseCohort mutation op: %q", m.Op())
+	}
+}
+
+// ReminderPreferenceClient is a client for the ReminderPreference schema.
+type ReminderPreferenceClient struct {
+	config
+}
+
+// NewReminderPreferenceClient returns a client for the ReminderPreference from the given config.
+func NewReminderPreferenceClient(c config) *ReminderPreferenceClient {
+	return &ReminderPreferenceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `reminderpreference.Hooks(f(g(h())))`.
+func (c *ReminderPreferenceClient) Use(hooks ...Hook) {
+	c.hooks.ReminderPreference = append(c.hooks.ReminderPreference, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `reminderpreference.Intercept(f(g(h())))`.
+func (c *ReminderPreferenceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ReminderPreference = append(c.inters.ReminderPreference, interceptors...)
+}
+
+// Create returns a builder for creating a ReminderPreference entity.
+func (c *ReminderPreferenceClient) Create() *ReminderPreferenceCreate {
+	mutation := newReminderPreferenceMutation(c.config, OpCreate)
+	return &ReminderPreferenceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ReminderPreference entities.
+func (c *ReminderPreferenceClient) CreateBulk(builders ...*ReminderPreferenceCreate) *ReminderPreferenceCreateBulk {
+	return &ReminderPreferenceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ReminderPreferenceClient) MapCreateBulk(slice any, setFunc func(*ReminderPreferenceCreate, int)) *ReminderPreferenceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ReminderPreferenceCreateBulk{err: fmt.Errorf("calling to ReminderPreferenceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ReminderPreferenceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ReminderPreferenceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ReminderPreference.
+func (c *ReminderPreferenceClient) Update() *ReminderPreferenceUpdate {
+	mutation := newReminderPreferenceMutation(c.config, OpUpdate)
+	return &ReminderPreferenceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ReminderPreferenceClient) UpdateOne(_m *ReminderPreference) *ReminderPreferenceUpdateOne {
+	mutation := newReminderPreferenceMutation(c.config, OpUpdateOne, withReminderPreference(_m))
+	return &ReminderPreferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ReminderPreferenceClient) UpdateOneID(id string) *ReminderPreferenceUpdateOne {
+	mutation := newReminderPreferenceMutation(c.config, OpUpdateOne, withReminderPreferenceID(id))
+	return &ReminderPreferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ReminderPreference.
+func (c *ReminderPreferenceClient) Delete() *ReminderPreferenceDelete {
+	mutation := newReminderPreferenceMutation(c.config, OpDelete)
+	return &ReminderPreferenceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ReminderPreferenceClient) DeleteOne(_m *ReminderPreference) *ReminderPreferenceDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ReminderPreferenceClient) DeleteOneID(id string) *ReminderPreferenceDeleteOne {
+	builder := c.Delete().Where(reminderpreference.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ReminderPreferenceDeleteOne{builder}
+}
+
+// Query returns a query builder for ReminderPreference.
+func (c *ReminderPreferenceClient) Query() *ReminderPreferenceQuery {
+	return &ReminderPreferenceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeReminderPreference},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ReminderPreference entity by its id.
+func (c *ReminderPreferenceClient) Get(ctx context.Context, id string) (*ReminderPreference, error) {
+	return c.Query().Where(reminderpreference.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ReminderPreferenceClient) GetX(ctx context.Context, id string) *ReminderPreference {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ReminderPreferenceClient) Hooks() []Hook {
+	return c.hooks.ReminderPreference
+}
+
+// Interceptors returns the client interceptors.
+func (c *ReminderPreferenceClient) Interceptors() []Interceptor {
+	return c.inters.ReminderPreference
+}
+
+func (c *ReminderPreferenceClient) mutate(ctx context.Context, m *ReminderPreferenceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ReminderPreferenceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ReminderPreferenceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ReminderPreferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ReminderPreferenceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ReminderPreference mutation op: %q", m.Op())
 	}
 }
 
@@ -7142,10 +7426,10 @@ type (
 		ModelRelease, ModelRollout, NetworkRulesetRelease, NotificationDelivery,
 		OperatorInvitation, Organization, OrganizationInvite, OrganizationMember,
 		OrganizationPolicy, PartnerContactRequest, PartnerLink, PsychoeducationModule,
-		PsychoeducationProgress, RecoveryPracticeSession, RecoveryRecord,
-		RecoverySpace, Reflection, RefreshToken, ReleaseCohort, ReportRollup,
-		RulesetRelease, SiteSocialLink, SupportActionAudit, SupportCase,
-		SupportMessage, User []ent.Hook
+		PsychoeducationProgress, PushSubscription, RecoveryPracticeSession,
+		RecoveryRecord, RecoverySpace, Reflection, RefreshToken, ReleaseCohort,
+		ReminderPreference, ReportRollup, RulesetRelease, SiteSocialLink,
+		SupportActionAudit, SupportCase, SupportMessage, User []ent.Hook
 	}
 	inters struct {
 		AcademicProgram, AccountabilityGroup, AccountabilityMembership, AggregateEvent,
@@ -7156,9 +7440,9 @@ type (
 		ModelRelease, ModelRollout, NetworkRulesetRelease, NotificationDelivery,
 		OperatorInvitation, Organization, OrganizationInvite, OrganizationMember,
 		OrganizationPolicy, PartnerContactRequest, PartnerLink, PsychoeducationModule,
-		PsychoeducationProgress, RecoveryPracticeSession, RecoveryRecord,
-		RecoverySpace, Reflection, RefreshToken, ReleaseCohort, ReportRollup,
-		RulesetRelease, SiteSocialLink, SupportActionAudit, SupportCase,
-		SupportMessage, User []ent.Interceptor
+		PsychoeducationProgress, PushSubscription, RecoveryPracticeSession,
+		RecoveryRecord, RecoverySpace, Reflection, RefreshToken, ReleaseCohort,
+		ReminderPreference, ReportRollup, RulesetRelease, SiteSocialLink,
+		SupportActionAudit, SupportCase, SupportMessage, User []ent.Interceptor
 	}
 )

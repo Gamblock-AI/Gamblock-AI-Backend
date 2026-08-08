@@ -114,6 +114,9 @@ type PsychoeducationModule func(*sql.Selector)
 // PsychoeducationProgress is the predicate function for psychoeducationprogress builders.
 type PsychoeducationProgress func(*sql.Selector)
 
+// PushSubscription is the predicate function for pushsubscription builders.
+type PushSubscription func(*sql.Selector)
+
 // RecoveryPracticeSession is the predicate function for recoverypracticesession builders.
 type RecoveryPracticeSession func(*sql.Selector)
 
@@ -131,6 +134,9 @@ type RefreshToken func(*sql.Selector)
 
 // ReleaseCohort is the predicate function for releasecohort builders.
 type ReleaseCohort func(*sql.Selector)
+
+// ReminderPreference is the predicate function for reminderpreference builders.
+type ReminderPreference func(*sql.Selector)
 
 // ReportRollup is the predicate function for reportrollup builders.
 type ReportRollup func(*sql.Selector)

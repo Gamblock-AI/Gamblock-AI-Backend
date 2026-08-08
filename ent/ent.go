@@ -48,12 +48,14 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationprogress"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/pushsubscription"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoverypracticesession"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryrecord"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryspace"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/reminderpreference"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/sitesociallink"
@@ -157,12 +159,14 @@ func checkColumn(t, c string) error {
 			partnerlink.Table:              partnerlink.ValidColumn,
 			psychoeducationmodule.Table:    psychoeducationmodule.ValidColumn,
 			psychoeducationprogress.Table:  psychoeducationprogress.ValidColumn,
+			pushsubscription.Table:         pushsubscription.ValidColumn,
 			recoverypracticesession.Table:  recoverypracticesession.ValidColumn,
 			recoveryrecord.Table:           recoveryrecord.ValidColumn,
 			recoveryspace.Table:            recoveryspace.ValidColumn,
 			reflection.Table:               reflection.ValidColumn,
 			refreshtoken.Table:             refreshtoken.ValidColumn,
 			releasecohort.Table:            releasecohort.ValidColumn,
+			reminderpreference.Table:       reminderpreference.ValidColumn,
 			reportrollup.Table:             reportrollup.ValidColumn,
 			rulesetrelease.Table:           rulesetrelease.ValidColumn,
 			sitesociallink.Table:           sitesociallink.ValidColumn,

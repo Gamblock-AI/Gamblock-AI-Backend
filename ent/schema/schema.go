@@ -26,7 +26,6 @@ func (User) Fields() []ent.Field {
 		field.String("display_name"),
 		field.String("password_hash").Optional().Nillable().Sensitive(),
 		field.String("avatar_url").Optional().Nillable(),
-		field.String("google_subject").Optional().Nillable().Unique(),
 		field.Enum("role").Values("user", "partner", "admin").Default("user"),
 		field.Bool("must_change_password").Default(false),
 		field.Time("email_verified_at").Optional().Nillable(),
@@ -681,4 +680,39 @@ func (RecoveryRecord) Fields() []ent.Field {
 
 func (RecoveryRecord) Indexes() []ent.Index {
 	return []ent.Index{index.Fields("user_id", "kind", "record_date")}
+}
+
+type ReminderPreference struct{ ent.Schema }
+
+func (ReminderPreference) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("user_id").Unique(),
+		field.Bool("enabled").Default(false),
+		field.String("local_time").Default("19:00"),
+		field.String("timezone").Default("Asia/Jakarta"),
+		field.String("locale").Default("id"),
+		field.Time("last_fired_at").Optional().Nillable(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+type PushSubscription struct{ ent.Schema }
+
+func (PushSubscription) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("user_id"),
+		field.Text("endpoint").Unique(),
+		field.String("p256dh"),
+		field.String("auth_key"),
+		field.String("user_agent").Optional().Nillable(),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+func (PushSubscription) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("user_id")}
 }

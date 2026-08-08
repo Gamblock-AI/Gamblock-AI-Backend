@@ -96,26 +96,6 @@ func (_u *UserUpdate) ClearAvatarURL() *UserUpdate {
 	return _u
 }
 
-// SetGoogleSubject sets the "google_subject" field.
-func (_u *UserUpdate) SetGoogleSubject(v string) *UserUpdate {
-	_u.mutation.SetGoogleSubject(v)
-	return _u
-}
-
-// SetNillableGoogleSubject sets the "google_subject" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableGoogleSubject(v *string) *UserUpdate {
-	if v != nil {
-		_u.SetGoogleSubject(*v)
-	}
-	return _u
-}
-
-// ClearGoogleSubject clears the value of the "google_subject" field.
-func (_u *UserUpdate) ClearGoogleSubject() *UserUpdate {
-	_u.mutation.ClearGoogleSubject()
-	return _u
-}
-
 // SetRole sets the "role" field.
 func (_u *UserUpdate) SetRole(v user.Role) *UserUpdate {
 	_u.mutation.SetRole(v)
@@ -349,12 +329,6 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.AvatarURLCleared() {
 		_spec.ClearField(user.FieldAvatarURL, field.TypeString)
 	}
-	if value, ok := _u.mutation.GoogleSubject(); ok {
-		_spec.SetField(user.FieldGoogleSubject, field.TypeString, value)
-	}
-	if _u.mutation.GoogleSubjectCleared() {
-		_spec.ClearField(user.FieldGoogleSubject, field.TypeString)
-	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 	}
@@ -485,26 +459,6 @@ func (_u *UserUpdateOne) SetNillableAvatarURL(v *string) *UserUpdateOne {
 // ClearAvatarURL clears the value of the "avatar_url" field.
 func (_u *UserUpdateOne) ClearAvatarURL() *UserUpdateOne {
 	_u.mutation.ClearAvatarURL()
-	return _u
-}
-
-// SetGoogleSubject sets the "google_subject" field.
-func (_u *UserUpdateOne) SetGoogleSubject(v string) *UserUpdateOne {
-	_u.mutation.SetGoogleSubject(v)
-	return _u
-}
-
-// SetNillableGoogleSubject sets the "google_subject" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableGoogleSubject(v *string) *UserUpdateOne {
-	if v != nil {
-		_u.SetGoogleSubject(*v)
-	}
-	return _u
-}
-
-// ClearGoogleSubject clears the value of the "google_subject" field.
-func (_u *UserUpdateOne) ClearGoogleSubject() *UserUpdateOne {
-	_u.mutation.ClearGoogleSubject()
 	return _u
 }
 
@@ -770,12 +724,6 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.AvatarURLCleared() {
 		_spec.ClearField(user.FieldAvatarURL, field.TypeString)
-	}
-	if value, ok := _u.mutation.GoogleSubject(); ok {
-		_spec.SetField(user.FieldGoogleSubject, field.TypeString, value)
-	}
-	if _u.mutation.GoogleSubjectCleared() {
-		_spec.ClearField(user.FieldGoogleSubject, field.TypeString)
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)

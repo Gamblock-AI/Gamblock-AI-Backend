@@ -67,6 +67,8 @@ func (s *Store) Snapshot() Store {
 		LearningRevisions:         append([]LearningRevision(nil), s.LearningRevisions...),
 		LearningProgress:          append([]LearningProgress(nil), s.LearningProgress...),
 		ExperienceGrants:          append([]ExperienceGrant(nil), s.ExperienceGrants...),
+		ReminderPreferences:       append([]ReminderPreference(nil), s.ReminderPreferences...),
+		PushSubscriptions:         append([]PushSubscription(nil), s.PushSubscriptions...),
 	}
 }
 

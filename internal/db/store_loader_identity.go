@@ -21,7 +21,6 @@ func loadIdentityStore(ctx context.Context, client *ent.Client, out *store.Store
 			PhoneVerifiedAt:    item.PhoneVerifiedAt,
 			ExperiencePoints:   item.ExperiencePoints,
 			PasswordHash:       value(item.PasswordHash),
-			GoogleSubject:      value(item.GoogleSubject),
 			DisabledAt:         item.DisabledAt,
 			CreatedAt:          item.CreatedAt,
 			UpdatedAt:          item.UpdatedAt,

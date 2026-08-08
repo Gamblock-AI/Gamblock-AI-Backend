@@ -22,6 +22,8 @@ type Container struct {
 	Education            *EducationService
 	LearningHub          *LearningHubService
 	DeepSeek             *DeepSeekService
+	Reminder             *ReminderService
+	Push                 *PushService
 }
 
 func NewContainer(repo *repository.Repository, cfg config.Config, logger *zap.Logger) *Container {
@@ -42,5 +44,7 @@ func NewContainer(repo *repository.Repository, cfg config.Config, logger *zap.Lo
 		Education:            NewEducationService(repo, cfg),
 		LearningHub:          NewLearningHubService(repo, cfg, logger),
 		DeepSeek:             NewDeepSeekService(cfg, logger),
+		Reminder:             NewReminderService(repo),
+		Push:                 NewPushService(repo, cfg, logger),
 	}
 }

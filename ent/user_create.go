@@ -60,20 +60,6 @@ func (_c *UserCreate) SetNillableAvatarURL(v *string) *UserCreate {
 	return _c
 }
 
-// SetGoogleSubject sets the "google_subject" field.
-func (_c *UserCreate) SetGoogleSubject(v string) *UserCreate {
-	_c.mutation.SetGoogleSubject(v)
-	return _c
-}
-
-// SetNillableGoogleSubject sets the "google_subject" field if the given value is not nil.
-func (_c *UserCreate) SetNillableGoogleSubject(v *string) *UserCreate {
-	if v != nil {
-		_c.SetGoogleSubject(*v)
-	}
-	return _c
-}
-
 // SetRole sets the "role" field.
 func (_c *UserCreate) SetRole(v user.Role) *UserCreate {
 	_c.mutation.SetRole(v)
@@ -364,10 +350,6 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.AvatarURL(); ok {
 		_spec.SetField(user.FieldAvatarURL, field.TypeString, value)
 		_node.AvatarURL = &value
-	}
-	if value, ok := _c.mutation.GoogleSubject(); ok {
-		_spec.SetField(user.FieldGoogleSubject, field.TypeString, value)
-		_node.GoogleSubject = &value
 	}
 	if value, ok := _c.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)

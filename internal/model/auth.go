@@ -9,7 +9,6 @@ type AuthResponse struct {
 	VerificationRequired    bool   `json:"verification_required"`
 	VerificationPreviewCode string `json:"phone_verification_preview_code,omitempty"`
 	PasswordEnabled         bool   `json:"password_enabled"`
-	GoogleLinked            bool   `json:"google_linked"`
 	PasswordChangeRequired  bool   `json:"password_change_required,omitempty"`
 	PasswordChangeToken     string `json:"password_change_token,omitempty"`
 }

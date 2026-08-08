@@ -84,11 +84,6 @@ func AvatarURL(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAvatarURL, v))
 }
 
-// GoogleSubject applies equality check predicate on the "google_subject" field. It's identical to GoogleSubjectEQ.
-func GoogleSubject(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldGoogleSubject, v))
-}
-
 // MustChangePassword applies equality check predicate on the "must_change_password" field. It's identical to MustChangePasswordEQ.
 func MustChangePassword(v bool) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldMustChangePassword, v))
@@ -407,81 +402,6 @@ func AvatarURLEqualFold(v string) predicate.User {
 // AvatarURLContainsFold applies the ContainsFold predicate on the "avatar_url" field.
 func AvatarURLContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldAvatarURL, v))
-}
-
-// GoogleSubjectEQ applies the EQ predicate on the "google_subject" field.
-func GoogleSubjectEQ(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldGoogleSubject, v))
-}
-
-// GoogleSubjectNEQ applies the NEQ predicate on the "google_subject" field.
-func GoogleSubjectNEQ(v string) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldGoogleSubject, v))
-}
-
-// GoogleSubjectIn applies the In predicate on the "google_subject" field.
-func GoogleSubjectIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldIn(FieldGoogleSubject, vs...))
-}
-
-// GoogleSubjectNotIn applies the NotIn predicate on the "google_subject" field.
-func GoogleSubjectNotIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldGoogleSubject, vs...))
-}
-
-// GoogleSubjectGT applies the GT predicate on the "google_subject" field.
-func GoogleSubjectGT(v string) predicate.User {
-	return predicate.User(sql.FieldGT(FieldGoogleSubject, v))
-}
-
-// GoogleSubjectGTE applies the GTE predicate on the "google_subject" field.
-func GoogleSubjectGTE(v string) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldGoogleSubject, v))
-}
-
-// GoogleSubjectLT applies the LT predicate on the "google_subject" field.
-func GoogleSubjectLT(v string) predicate.User {
-	return predicate.User(sql.FieldLT(FieldGoogleSubject, v))
-}
-
-// GoogleSubjectLTE applies the LTE predicate on the "google_subject" field.
-func GoogleSubjectLTE(v string) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldGoogleSubject, v))
-}
-
-// GoogleSubjectContains applies the Contains predicate on the "google_subject" field.
-func GoogleSubjectContains(v string) predicate.User {
-	return predicate.User(sql.FieldContains(FieldGoogleSubject, v))
-}
-
-// GoogleSubjectHasPrefix applies the HasPrefix predicate on the "google_subject" field.
-func GoogleSubjectHasPrefix(v string) predicate.User {
-	return predicate.User(sql.FieldHasPrefix(FieldGoogleSubject, v))
-}
-
-// GoogleSubjectHasSuffix applies the HasSuffix predicate on the "google_subject" field.
-func GoogleSubjectHasSuffix(v string) predicate.User {
-	return predicate.User(sql.FieldHasSuffix(FieldGoogleSubject, v))
-}
-
-// GoogleSubjectIsNil applies the IsNil predicate on the "google_subject" field.
-func GoogleSubjectIsNil() predicate.User {
-	return predicate.User(sql.FieldIsNull(FieldGoogleSubject))
-}
-
-// GoogleSubjectNotNil applies the NotNil predicate on the "google_subject" field.
-func GoogleSubjectNotNil() predicate.User {
-	return predicate.User(sql.FieldNotNull(FieldGoogleSubject))
-}
-
-// GoogleSubjectEqualFold applies the EqualFold predicate on the "google_subject" field.
-func GoogleSubjectEqualFold(v string) predicate.User {
-	return predicate.User(sql.FieldEqualFold(FieldGoogleSubject, v))
-}
-
-// GoogleSubjectContainsFold applies the ContainsFold predicate on the "google_subject" field.
-func GoogleSubjectContainsFold(v string) predicate.User {
-	return predicate.User(sql.FieldContainsFold(FieldGoogleSubject, v))
 }
 
 // RoleEQ applies the EQ predicate on the "role" field.

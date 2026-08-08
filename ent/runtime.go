@@ -41,12 +41,14 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationprogress"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/pushsubscription"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoverypracticesession"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryrecord"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryspace"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/reminderpreference"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/schema"
@@ -715,6 +717,22 @@ func init() {
 	psychoeducationprogressDescID := psychoeducationprogressFields[0].Descriptor()
 	// psychoeducationprogress.DefaultID holds the default value on creation for the id field.
 	psychoeducationprogress.DefaultID = psychoeducationprogressDescID.Default.(func() string)
+	pushsubscriptionFields := schema.PushSubscription{}.Fields()
+	_ = pushsubscriptionFields
+	// pushsubscriptionDescCreatedAt is the schema descriptor for created_at field.
+	pushsubscriptionDescCreatedAt := pushsubscriptionFields[6].Descriptor()
+	// pushsubscription.DefaultCreatedAt holds the default value on creation for the created_at field.
+	pushsubscription.DefaultCreatedAt = pushsubscriptionDescCreatedAt.Default.(func() time.Time)
+	// pushsubscriptionDescUpdatedAt is the schema descriptor for updated_at field.
+	pushsubscriptionDescUpdatedAt := pushsubscriptionFields[7].Descriptor()
+	// pushsubscription.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	pushsubscription.DefaultUpdatedAt = pushsubscriptionDescUpdatedAt.Default.(func() time.Time)
+	// pushsubscription.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	pushsubscription.UpdateDefaultUpdatedAt = pushsubscriptionDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// pushsubscriptionDescID is the schema descriptor for id field.
+	pushsubscriptionDescID := pushsubscriptionFields[0].Descriptor()
+	// pushsubscription.DefaultID holds the default value on creation for the id field.
+	pushsubscription.DefaultID = pushsubscriptionDescID.Default.(func() string)
 	recoverypracticesessionFields := schema.RecoveryPracticeSession{}.Fields()
 	_ = recoverypracticesessionFields
 	// recoverypracticesessionDescDurationSeconds is the schema descriptor for duration_seconds field.
@@ -833,6 +851,38 @@ func init() {
 	releasecohortDescID := releasecohortFields[0].Descriptor()
 	// releasecohort.DefaultID holds the default value on creation for the id field.
 	releasecohort.DefaultID = releasecohortDescID.Default.(func() string)
+	reminderpreferenceFields := schema.ReminderPreference{}.Fields()
+	_ = reminderpreferenceFields
+	// reminderpreferenceDescEnabled is the schema descriptor for enabled field.
+	reminderpreferenceDescEnabled := reminderpreferenceFields[2].Descriptor()
+	// reminderpreference.DefaultEnabled holds the default value on creation for the enabled field.
+	reminderpreference.DefaultEnabled = reminderpreferenceDescEnabled.Default.(bool)
+	// reminderpreferenceDescLocalTime is the schema descriptor for local_time field.
+	reminderpreferenceDescLocalTime := reminderpreferenceFields[3].Descriptor()
+	// reminderpreference.DefaultLocalTime holds the default value on creation for the local_time field.
+	reminderpreference.DefaultLocalTime = reminderpreferenceDescLocalTime.Default.(string)
+	// reminderpreferenceDescTimezone is the schema descriptor for timezone field.
+	reminderpreferenceDescTimezone := reminderpreferenceFields[4].Descriptor()
+	// reminderpreference.DefaultTimezone holds the default value on creation for the timezone field.
+	reminderpreference.DefaultTimezone = reminderpreferenceDescTimezone.Default.(string)
+	// reminderpreferenceDescLocale is the schema descriptor for locale field.
+	reminderpreferenceDescLocale := reminderpreferenceFields[5].Descriptor()
+	// reminderpreference.DefaultLocale holds the default value on creation for the locale field.
+	reminderpreference.DefaultLocale = reminderpreferenceDescLocale.Default.(string)
+	// reminderpreferenceDescCreatedAt is the schema descriptor for created_at field.
+	reminderpreferenceDescCreatedAt := reminderpreferenceFields[7].Descriptor()
+	// reminderpreference.DefaultCreatedAt holds the default value on creation for the created_at field.
+	reminderpreference.DefaultCreatedAt = reminderpreferenceDescCreatedAt.Default.(func() time.Time)
+	// reminderpreferenceDescUpdatedAt is the schema descriptor for updated_at field.
+	reminderpreferenceDescUpdatedAt := reminderpreferenceFields[8].Descriptor()
+	// reminderpreference.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	reminderpreference.DefaultUpdatedAt = reminderpreferenceDescUpdatedAt.Default.(func() time.Time)
+	// reminderpreference.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	reminderpreference.UpdateDefaultUpdatedAt = reminderpreferenceDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// reminderpreferenceDescID is the schema descriptor for id field.
+	reminderpreferenceDescID := reminderpreferenceFields[0].Descriptor()
+	// reminderpreference.DefaultID holds the default value on creation for the id field.
+	reminderpreference.DefaultID = reminderpreferenceDescID.Default.(func() string)
 	reportrollupFields := schema.ReportRollup{}.Fields()
 	_ = reportrollupFields
 	// reportrollupDescCreatedAt is the schema descriptor for created_at field.
@@ -926,21 +976,21 @@ func init() {
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescMustChangePassword is the schema descriptor for must_change_password field.
-	userDescMustChangePassword := userFields[7].Descriptor()
+	userDescMustChangePassword := userFields[6].Descriptor()
 	// user.DefaultMustChangePassword holds the default value on creation for the must_change_password field.
 	user.DefaultMustChangePassword = userDescMustChangePassword.Default.(bool)
 	// userDescExperiencePoints is the schema descriptor for experience_points field.
-	userDescExperiencePoints := userFields[12].Descriptor()
+	userDescExperiencePoints := userFields[11].Descriptor()
 	// user.DefaultExperiencePoints holds the default value on creation for the experience_points field.
 	user.DefaultExperiencePoints = userDescExperiencePoints.Default.(int)
 	// user.ExperiencePointsValidator is a validator for the "experience_points" field. It is called by the builders before save.
 	user.ExperiencePointsValidator = userDescExperiencePoints.Validators[0].(func(int) error)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[14].Descriptor()
+	userDescCreatedAt := userFields[13].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
-	userDescUpdatedAt := userFields[15].Descriptor()
+	userDescUpdatedAt := userFields[14].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

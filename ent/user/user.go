@@ -22,8 +22,6 @@ const (
 	FieldPasswordHash = "password_hash"
 	// FieldAvatarURL holds the string denoting the avatar_url field in the database.
 	FieldAvatarURL = "avatar_url"
-	// FieldGoogleSubject holds the string denoting the google_subject field in the database.
-	FieldGoogleSubject = "google_subject"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
 	// FieldMustChangePassword holds the string denoting the must_change_password field in the database.
@@ -55,7 +53,6 @@ var Columns = []string{
 	FieldDisplayName,
 	FieldPasswordHash,
 	FieldAvatarURL,
-	FieldGoogleSubject,
 	FieldRole,
 	FieldMustChangePassword,
 	FieldEmailVerifiedAt,
@@ -148,11 +145,6 @@ func ByPasswordHash(opts ...sql.OrderTermOption) OrderOption {
 // ByAvatarURL orders the results by the avatar_url field.
 func ByAvatarURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAvatarURL, opts...).ToFunc()
-}
-
-// ByGoogleSubject orders the results by the google_subject field.
-func ByGoogleSubject(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldGoogleSubject, opts...).ToFunc()
 }
 
 // ByRole orders the results by the role field.

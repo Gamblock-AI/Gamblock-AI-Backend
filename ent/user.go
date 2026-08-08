@@ -26,8 +26,6 @@ type User struct {
 	PasswordHash *string `json:"-"`
 	// AvatarURL holds the value of the "avatar_url" field.
 	AvatarURL *string `json:"avatar_url,omitempty"`
-	// GoogleSubject holds the value of the "google_subject" field.
-	GoogleSubject *string `json:"google_subject,omitempty"`
 	// Role holds the value of the "role" field.
 	Role user.Role `json:"role,omitempty"`
 	// MustChangePassword holds the value of the "must_change_password" field.
@@ -62,7 +60,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldExperiencePoints:
 			values[i] = new(sql.NullInt64)
-		case user.FieldID, user.FieldEmail, user.FieldDisplayName, user.FieldPasswordHash, user.FieldAvatarURL, user.FieldGoogleSubject, user.FieldRole, user.FieldPhoneE164:
+		case user.FieldID, user.FieldEmail, user.FieldDisplayName, user.FieldPasswordHash, user.FieldAvatarURL, user.FieldRole, user.FieldPhoneE164:
 			values[i] = new(sql.NullString)
 		case user.FieldEmailVerifiedAt, user.FieldPhoneVerifiedAt, user.FieldDisabledAt, user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -112,13 +110,6 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.AvatarURL = new(string)
 				*_m.AvatarURL = value.String
-			}
-		case user.FieldGoogleSubject:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field google_subject", values[i])
-			} else if value.Valid {
-				_m.GoogleSubject = new(string)
-				*_m.GoogleSubject = value.String
 			}
 		case user.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -232,11 +223,6 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	if v := _m.AvatarURL; v != nil {
 		builder.WriteString("avatar_url=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := _m.GoogleSubject; v != nil {
-		builder.WriteString("google_subject=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

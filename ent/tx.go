@@ -84,6 +84,8 @@ type Tx struct {
 	PsychoeducationModule *PsychoeducationModuleClient
 	// PsychoeducationProgress is the client for interacting with the PsychoeducationProgress builders.
 	PsychoeducationProgress *PsychoeducationProgressClient
+	// PushSubscription is the client for interacting with the PushSubscription builders.
+	PushSubscription *PushSubscriptionClient
 	// RecoveryPracticeSession is the client for interacting with the RecoveryPracticeSession builders.
 	RecoveryPracticeSession *RecoveryPracticeSessionClient
 	// RecoveryRecord is the client for interacting with the RecoveryRecord builders.
@@ -96,6 +98,8 @@ type Tx struct {
 	RefreshToken *RefreshTokenClient
 	// ReleaseCohort is the client for interacting with the ReleaseCohort builders.
 	ReleaseCohort *ReleaseCohortClient
+	// ReminderPreference is the client for interacting with the ReminderPreference builders.
+	ReminderPreference *ReminderPreferenceClient
 	// ReportRollup is the client for interacting with the ReportRollup builders.
 	ReportRollup *ReportRollupClient
 	// RulesetRelease is the client for interacting with the RulesetRelease builders.
@@ -277,12 +281,14 @@ func (tx *Tx) init() {
 	tx.PartnerLink = NewPartnerLinkClient(tx.config)
 	tx.PsychoeducationModule = NewPsychoeducationModuleClient(tx.config)
 	tx.PsychoeducationProgress = NewPsychoeducationProgressClient(tx.config)
+	tx.PushSubscription = NewPushSubscriptionClient(tx.config)
 	tx.RecoveryPracticeSession = NewRecoveryPracticeSessionClient(tx.config)
 	tx.RecoveryRecord = NewRecoveryRecordClient(tx.config)
 	tx.RecoverySpace = NewRecoverySpaceClient(tx.config)
 	tx.Reflection = NewReflectionClient(tx.config)
 	tx.RefreshToken = NewRefreshTokenClient(tx.config)
 	tx.ReleaseCohort = NewReleaseCohortClient(tx.config)
+	tx.ReminderPreference = NewReminderPreferenceClient(tx.config)
 	tx.ReportRollup = NewReportRollupClient(tx.config)
 	tx.RulesetRelease = NewRulesetReleaseClient(tx.config)
 	tx.SiteSocialLink = NewSiteSocialLinkClient(tx.config)

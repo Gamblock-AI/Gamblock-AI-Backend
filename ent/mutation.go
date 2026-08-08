@@ -48,12 +48,14 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/predicate"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationprogress"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/pushsubscription"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoverypracticesession"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryrecord"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryspace"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/reminderpreference"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/sitesociallink"
@@ -109,12 +111,14 @@ const (
 	TypePartnerLink              = "PartnerLink"
 	TypePsychoeducationModule    = "PsychoeducationModule"
 	TypePsychoeducationProgress  = "PsychoeducationProgress"
+	TypePushSubscription         = "PushSubscription"
 	TypeRecoveryPracticeSession  = "RecoveryPracticeSession"
 	TypeRecoveryRecord           = "RecoveryRecord"
 	TypeRecoverySpace            = "RecoverySpace"
 	TypeReflection               = "Reflection"
 	TypeRefreshToken             = "RefreshToken"
 	TypeReleaseCohort            = "ReleaseCohort"
+	TypeReminderPreference       = "ReminderPreference"
 	TypeReportRollup             = "ReportRollup"
 	TypeRulesetRelease           = "RulesetRelease"
 	TypeSiteSocialLink           = "SiteSocialLink"
@@ -31379,6 +31383,684 @@ func (m *PsychoeducationProgressMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown PsychoeducationProgress edge %s", name)
 }
 
+// PushSubscriptionMutation represents an operation that mutates the PushSubscription nodes in the graph.
+type PushSubscriptionMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *string
+	user_id       *string
+	endpoint      *string
+	p256dh        *string
+	auth_key      *string
+	user_agent    *string
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*PushSubscription, error)
+	predicates    []predicate.PushSubscription
+}
+
+var _ ent.Mutation = (*PushSubscriptionMutation)(nil)
+
+// pushsubscriptionOption allows management of the mutation configuration using functional options.
+type pushsubscriptionOption func(*PushSubscriptionMutation)
+
+// newPushSubscriptionMutation creates new mutation for the PushSubscription entity.
+func newPushSubscriptionMutation(c config, op Op, opts ...pushsubscriptionOption) *PushSubscriptionMutation {
+	m := &PushSubscriptionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypePushSubscription,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withPushSubscriptionID sets the ID field of the mutation.
+func withPushSubscriptionID(id string) pushsubscriptionOption {
+	return func(m *PushSubscriptionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *PushSubscription
+		)
+		m.oldValue = func(ctx context.Context) (*PushSubscription, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().PushSubscription.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withPushSubscription sets the old PushSubscription of the mutation.
+func withPushSubscription(node *PushSubscription) pushsubscriptionOption {
+	return func(m *PushSubscriptionMutation) {
+		m.oldValue = func(context.Context) (*PushSubscription, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m PushSubscriptionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m PushSubscriptionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of PushSubscription entities.
+func (m *PushSubscriptionMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *PushSubscriptionMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *PushSubscriptionMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().PushSubscription.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *PushSubscriptionMutation) SetUserID(s string) {
+	m.user_id = &s
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *PushSubscriptionMutation) UserID() (r string, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the PushSubscription entity.
+// If the PushSubscription object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PushSubscriptionMutation) OldUserID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *PushSubscriptionMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetEndpoint sets the "endpoint" field.
+func (m *PushSubscriptionMutation) SetEndpoint(s string) {
+	m.endpoint = &s
+}
+
+// Endpoint returns the value of the "endpoint" field in the mutation.
+func (m *PushSubscriptionMutation) Endpoint() (r string, exists bool) {
+	v := m.endpoint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEndpoint returns the old "endpoint" field's value of the PushSubscription entity.
+// If the PushSubscription object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PushSubscriptionMutation) OldEndpoint(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEndpoint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEndpoint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEndpoint: %w", err)
+	}
+	return oldValue.Endpoint, nil
+}
+
+// ResetEndpoint resets all changes to the "endpoint" field.
+func (m *PushSubscriptionMutation) ResetEndpoint() {
+	m.endpoint = nil
+}
+
+// SetP256dh sets the "p256dh" field.
+func (m *PushSubscriptionMutation) SetP256dh(s string) {
+	m.p256dh = &s
+}
+
+// P256dh returns the value of the "p256dh" field in the mutation.
+func (m *PushSubscriptionMutation) P256dh() (r string, exists bool) {
+	v := m.p256dh
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldP256dh returns the old "p256dh" field's value of the PushSubscription entity.
+// If the PushSubscription object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PushSubscriptionMutation) OldP256dh(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldP256dh is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldP256dh requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldP256dh: %w", err)
+	}
+	return oldValue.P256dh, nil
+}
+
+// ResetP256dh resets all changes to the "p256dh" field.
+func (m *PushSubscriptionMutation) ResetP256dh() {
+	m.p256dh = nil
+}
+
+// SetAuthKey sets the "auth_key" field.
+func (m *PushSubscriptionMutation) SetAuthKey(s string) {
+	m.auth_key = &s
+}
+
+// AuthKey returns the value of the "auth_key" field in the mutation.
+func (m *PushSubscriptionMutation) AuthKey() (r string, exists bool) {
+	v := m.auth_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthKey returns the old "auth_key" field's value of the PushSubscription entity.
+// If the PushSubscription object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PushSubscriptionMutation) OldAuthKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthKey: %w", err)
+	}
+	return oldValue.AuthKey, nil
+}
+
+// ResetAuthKey resets all changes to the "auth_key" field.
+func (m *PushSubscriptionMutation) ResetAuthKey() {
+	m.auth_key = nil
+}
+
+// SetUserAgent sets the "user_agent" field.
+func (m *PushSubscriptionMutation) SetUserAgent(s string) {
+	m.user_agent = &s
+}
+
+// UserAgent returns the value of the "user_agent" field in the mutation.
+func (m *PushSubscriptionMutation) UserAgent() (r string, exists bool) {
+	v := m.user_agent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserAgent returns the old "user_agent" field's value of the PushSubscription entity.
+// If the PushSubscription object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PushSubscriptionMutation) OldUserAgent(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserAgent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserAgent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserAgent: %w", err)
+	}
+	return oldValue.UserAgent, nil
+}
+
+// ClearUserAgent clears the value of the "user_agent" field.
+func (m *PushSubscriptionMutation) ClearUserAgent() {
+	m.user_agent = nil
+	m.clearedFields[pushsubscription.FieldUserAgent] = struct{}{}
+}
+
+// UserAgentCleared returns if the "user_agent" field was cleared in this mutation.
+func (m *PushSubscriptionMutation) UserAgentCleared() bool {
+	_, ok := m.clearedFields[pushsubscription.FieldUserAgent]
+	return ok
+}
+
+// ResetUserAgent resets all changes to the "user_agent" field.
+func (m *PushSubscriptionMutation) ResetUserAgent() {
+	m.user_agent = nil
+	delete(m.clearedFields, pushsubscription.FieldUserAgent)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *PushSubscriptionMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *PushSubscriptionMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the PushSubscription entity.
+// If the PushSubscription object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PushSubscriptionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *PushSubscriptionMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *PushSubscriptionMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *PushSubscriptionMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the PushSubscription entity.
+// If the PushSubscription object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PushSubscriptionMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *PushSubscriptionMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the PushSubscriptionMutation builder.
+func (m *PushSubscriptionMutation) Where(ps ...predicate.PushSubscription) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the PushSubscriptionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *PushSubscriptionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.PushSubscription, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *PushSubscriptionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *PushSubscriptionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (PushSubscription).
+func (m *PushSubscriptionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *PushSubscriptionMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.user_id != nil {
+		fields = append(fields, pushsubscription.FieldUserID)
+	}
+	if m.endpoint != nil {
+		fields = append(fields, pushsubscription.FieldEndpoint)
+	}
+	if m.p256dh != nil {
+		fields = append(fields, pushsubscription.FieldP256dh)
+	}
+	if m.auth_key != nil {
+		fields = append(fields, pushsubscription.FieldAuthKey)
+	}
+	if m.user_agent != nil {
+		fields = append(fields, pushsubscription.FieldUserAgent)
+	}
+	if m.created_at != nil {
+		fields = append(fields, pushsubscription.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, pushsubscription.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *PushSubscriptionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case pushsubscription.FieldUserID:
+		return m.UserID()
+	case pushsubscription.FieldEndpoint:
+		return m.Endpoint()
+	case pushsubscription.FieldP256dh:
+		return m.P256dh()
+	case pushsubscription.FieldAuthKey:
+		return m.AuthKey()
+	case pushsubscription.FieldUserAgent:
+		return m.UserAgent()
+	case pushsubscription.FieldCreatedAt:
+		return m.CreatedAt()
+	case pushsubscription.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *PushSubscriptionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case pushsubscription.FieldUserID:
+		return m.OldUserID(ctx)
+	case pushsubscription.FieldEndpoint:
+		return m.OldEndpoint(ctx)
+	case pushsubscription.FieldP256dh:
+		return m.OldP256dh(ctx)
+	case pushsubscription.FieldAuthKey:
+		return m.OldAuthKey(ctx)
+	case pushsubscription.FieldUserAgent:
+		return m.OldUserAgent(ctx)
+	case pushsubscription.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case pushsubscription.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown PushSubscription field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PushSubscriptionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case pushsubscription.FieldUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case pushsubscription.FieldEndpoint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEndpoint(v)
+		return nil
+	case pushsubscription.FieldP256dh:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetP256dh(v)
+		return nil
+	case pushsubscription.FieldAuthKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthKey(v)
+		return nil
+	case pushsubscription.FieldUserAgent:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserAgent(v)
+		return nil
+	case pushsubscription.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case pushsubscription.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown PushSubscription field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *PushSubscriptionMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *PushSubscriptionMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PushSubscriptionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown PushSubscription numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *PushSubscriptionMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(pushsubscription.FieldUserAgent) {
+		fields = append(fields, pushsubscription.FieldUserAgent)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *PushSubscriptionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *PushSubscriptionMutation) ClearField(name string) error {
+	switch name {
+	case pushsubscription.FieldUserAgent:
+		m.ClearUserAgent()
+		return nil
+	}
+	return fmt.Errorf("unknown PushSubscription nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *PushSubscriptionMutation) ResetField(name string) error {
+	switch name {
+	case pushsubscription.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case pushsubscription.FieldEndpoint:
+		m.ResetEndpoint()
+		return nil
+	case pushsubscription.FieldP256dh:
+		m.ResetP256dh()
+		return nil
+	case pushsubscription.FieldAuthKey:
+		m.ResetAuthKey()
+		return nil
+	case pushsubscription.FieldUserAgent:
+		m.ResetUserAgent()
+		return nil
+	case pushsubscription.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case pushsubscription.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown PushSubscription field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *PushSubscriptionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *PushSubscriptionMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *PushSubscriptionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *PushSubscriptionMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *PushSubscriptionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *PushSubscriptionMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *PushSubscriptionMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown PushSubscription unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *PushSubscriptionMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown PushSubscription edge %s", name)
+}
+
 // RecoveryPracticeSessionMutation represents an operation that mutates the RecoveryPracticeSession nodes in the graph.
 type RecoveryPracticeSessionMutation struct {
 	config
@@ -35550,6 +36232,738 @@ func (m *ReleaseCohortMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ReleaseCohortMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown ReleaseCohort edge %s", name)
+}
+
+// ReminderPreferenceMutation represents an operation that mutates the ReminderPreference nodes in the graph.
+type ReminderPreferenceMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *string
+	user_id       *string
+	enabled       *bool
+	local_time    *string
+	timezone      *string
+	locale        *string
+	last_fired_at *time.Time
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*ReminderPreference, error)
+	predicates    []predicate.ReminderPreference
+}
+
+var _ ent.Mutation = (*ReminderPreferenceMutation)(nil)
+
+// reminderpreferenceOption allows management of the mutation configuration using functional options.
+type reminderpreferenceOption func(*ReminderPreferenceMutation)
+
+// newReminderPreferenceMutation creates new mutation for the ReminderPreference entity.
+func newReminderPreferenceMutation(c config, op Op, opts ...reminderpreferenceOption) *ReminderPreferenceMutation {
+	m := &ReminderPreferenceMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeReminderPreference,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withReminderPreferenceID sets the ID field of the mutation.
+func withReminderPreferenceID(id string) reminderpreferenceOption {
+	return func(m *ReminderPreferenceMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ReminderPreference
+		)
+		m.oldValue = func(ctx context.Context) (*ReminderPreference, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ReminderPreference.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withReminderPreference sets the old ReminderPreference of the mutation.
+func withReminderPreference(node *ReminderPreference) reminderpreferenceOption {
+	return func(m *ReminderPreferenceMutation) {
+		m.oldValue = func(context.Context) (*ReminderPreference, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ReminderPreferenceMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ReminderPreferenceMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ReminderPreference entities.
+func (m *ReminderPreferenceMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ReminderPreferenceMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ReminderPreferenceMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ReminderPreference.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *ReminderPreferenceMutation) SetUserID(s string) {
+	m.user_id = &s
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *ReminderPreferenceMutation) UserID() (r string, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the ReminderPreference entity.
+// If the ReminderPreference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderPreferenceMutation) OldUserID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *ReminderPreferenceMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *ReminderPreferenceMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *ReminderPreferenceMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the ReminderPreference entity.
+// If the ReminderPreference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderPreferenceMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *ReminderPreferenceMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetLocalTime sets the "local_time" field.
+func (m *ReminderPreferenceMutation) SetLocalTime(s string) {
+	m.local_time = &s
+}
+
+// LocalTime returns the value of the "local_time" field in the mutation.
+func (m *ReminderPreferenceMutation) LocalTime() (r string, exists bool) {
+	v := m.local_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocalTime returns the old "local_time" field's value of the ReminderPreference entity.
+// If the ReminderPreference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderPreferenceMutation) OldLocalTime(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocalTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocalTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocalTime: %w", err)
+	}
+	return oldValue.LocalTime, nil
+}
+
+// ResetLocalTime resets all changes to the "local_time" field.
+func (m *ReminderPreferenceMutation) ResetLocalTime() {
+	m.local_time = nil
+}
+
+// SetTimezone sets the "timezone" field.
+func (m *ReminderPreferenceMutation) SetTimezone(s string) {
+	m.timezone = &s
+}
+
+// Timezone returns the value of the "timezone" field in the mutation.
+func (m *ReminderPreferenceMutation) Timezone() (r string, exists bool) {
+	v := m.timezone
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezone returns the old "timezone" field's value of the ReminderPreference entity.
+// If the ReminderPreference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderPreferenceMutation) OldTimezone(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezone is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezone requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezone: %w", err)
+	}
+	return oldValue.Timezone, nil
+}
+
+// ResetTimezone resets all changes to the "timezone" field.
+func (m *ReminderPreferenceMutation) ResetTimezone() {
+	m.timezone = nil
+}
+
+// SetLocale sets the "locale" field.
+func (m *ReminderPreferenceMutation) SetLocale(s string) {
+	m.locale = &s
+}
+
+// Locale returns the value of the "locale" field in the mutation.
+func (m *ReminderPreferenceMutation) Locale() (r string, exists bool) {
+	v := m.locale
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocale returns the old "locale" field's value of the ReminderPreference entity.
+// If the ReminderPreference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderPreferenceMutation) OldLocale(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocale is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocale requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocale: %w", err)
+	}
+	return oldValue.Locale, nil
+}
+
+// ResetLocale resets all changes to the "locale" field.
+func (m *ReminderPreferenceMutation) ResetLocale() {
+	m.locale = nil
+}
+
+// SetLastFiredAt sets the "last_fired_at" field.
+func (m *ReminderPreferenceMutation) SetLastFiredAt(t time.Time) {
+	m.last_fired_at = &t
+}
+
+// LastFiredAt returns the value of the "last_fired_at" field in the mutation.
+func (m *ReminderPreferenceMutation) LastFiredAt() (r time.Time, exists bool) {
+	v := m.last_fired_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastFiredAt returns the old "last_fired_at" field's value of the ReminderPreference entity.
+// If the ReminderPreference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderPreferenceMutation) OldLastFiredAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastFiredAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastFiredAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastFiredAt: %w", err)
+	}
+	return oldValue.LastFiredAt, nil
+}
+
+// ClearLastFiredAt clears the value of the "last_fired_at" field.
+func (m *ReminderPreferenceMutation) ClearLastFiredAt() {
+	m.last_fired_at = nil
+	m.clearedFields[reminderpreference.FieldLastFiredAt] = struct{}{}
+}
+
+// LastFiredAtCleared returns if the "last_fired_at" field was cleared in this mutation.
+func (m *ReminderPreferenceMutation) LastFiredAtCleared() bool {
+	_, ok := m.clearedFields[reminderpreference.FieldLastFiredAt]
+	return ok
+}
+
+// ResetLastFiredAt resets all changes to the "last_fired_at" field.
+func (m *ReminderPreferenceMutation) ResetLastFiredAt() {
+	m.last_fired_at = nil
+	delete(m.clearedFields, reminderpreference.FieldLastFiredAt)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *ReminderPreferenceMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ReminderPreferenceMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the ReminderPreference entity.
+// If the ReminderPreference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderPreferenceMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ReminderPreferenceMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *ReminderPreferenceMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *ReminderPreferenceMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the ReminderPreference entity.
+// If the ReminderPreference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderPreferenceMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *ReminderPreferenceMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the ReminderPreferenceMutation builder.
+func (m *ReminderPreferenceMutation) Where(ps ...predicate.ReminderPreference) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ReminderPreferenceMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ReminderPreferenceMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ReminderPreference, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ReminderPreferenceMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ReminderPreferenceMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ReminderPreference).
+func (m *ReminderPreferenceMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ReminderPreferenceMutation) Fields() []string {
+	fields := make([]string, 0, 8)
+	if m.user_id != nil {
+		fields = append(fields, reminderpreference.FieldUserID)
+	}
+	if m.enabled != nil {
+		fields = append(fields, reminderpreference.FieldEnabled)
+	}
+	if m.local_time != nil {
+		fields = append(fields, reminderpreference.FieldLocalTime)
+	}
+	if m.timezone != nil {
+		fields = append(fields, reminderpreference.FieldTimezone)
+	}
+	if m.locale != nil {
+		fields = append(fields, reminderpreference.FieldLocale)
+	}
+	if m.last_fired_at != nil {
+		fields = append(fields, reminderpreference.FieldLastFiredAt)
+	}
+	if m.created_at != nil {
+		fields = append(fields, reminderpreference.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, reminderpreference.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ReminderPreferenceMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case reminderpreference.FieldUserID:
+		return m.UserID()
+	case reminderpreference.FieldEnabled:
+		return m.Enabled()
+	case reminderpreference.FieldLocalTime:
+		return m.LocalTime()
+	case reminderpreference.FieldTimezone:
+		return m.Timezone()
+	case reminderpreference.FieldLocale:
+		return m.Locale()
+	case reminderpreference.FieldLastFiredAt:
+		return m.LastFiredAt()
+	case reminderpreference.FieldCreatedAt:
+		return m.CreatedAt()
+	case reminderpreference.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ReminderPreferenceMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case reminderpreference.FieldUserID:
+		return m.OldUserID(ctx)
+	case reminderpreference.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case reminderpreference.FieldLocalTime:
+		return m.OldLocalTime(ctx)
+	case reminderpreference.FieldTimezone:
+		return m.OldTimezone(ctx)
+	case reminderpreference.FieldLocale:
+		return m.OldLocale(ctx)
+	case reminderpreference.FieldLastFiredAt:
+		return m.OldLastFiredAt(ctx)
+	case reminderpreference.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case reminderpreference.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown ReminderPreference field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ReminderPreferenceMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case reminderpreference.FieldUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case reminderpreference.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case reminderpreference.FieldLocalTime:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocalTime(v)
+		return nil
+	case reminderpreference.FieldTimezone:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezone(v)
+		return nil
+	case reminderpreference.FieldLocale:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocale(v)
+		return nil
+	case reminderpreference.FieldLastFiredAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastFiredAt(v)
+		return nil
+	case reminderpreference.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case reminderpreference.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ReminderPreference field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ReminderPreferenceMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ReminderPreferenceMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ReminderPreferenceMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ReminderPreference numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ReminderPreferenceMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(reminderpreference.FieldLastFiredAt) {
+		fields = append(fields, reminderpreference.FieldLastFiredAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ReminderPreferenceMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ReminderPreferenceMutation) ClearField(name string) error {
+	switch name {
+	case reminderpreference.FieldLastFiredAt:
+		m.ClearLastFiredAt()
+		return nil
+	}
+	return fmt.Errorf("unknown ReminderPreference nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ReminderPreferenceMutation) ResetField(name string) error {
+	switch name {
+	case reminderpreference.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case reminderpreference.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case reminderpreference.FieldLocalTime:
+		m.ResetLocalTime()
+		return nil
+	case reminderpreference.FieldTimezone:
+		m.ResetTimezone()
+		return nil
+	case reminderpreference.FieldLocale:
+		m.ResetLocale()
+		return nil
+	case reminderpreference.FieldLastFiredAt:
+		m.ResetLastFiredAt()
+		return nil
+	case reminderpreference.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case reminderpreference.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown ReminderPreference field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ReminderPreferenceMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ReminderPreferenceMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ReminderPreferenceMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ReminderPreferenceMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ReminderPreferenceMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ReminderPreferenceMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ReminderPreferenceMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown ReminderPreference unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ReminderPreferenceMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown ReminderPreference edge %s", name)
 }
 
 // ReportRollupMutation represents an operation that mutates the ReportRollup nodes in the graph.
@@ -40009,7 +41423,6 @@ type UserMutation struct {
 	display_name                  *string
 	password_hash                 *string
 	avatar_url                    *string
-	google_subject                *string
 	role                          *user.Role
 	must_change_password          *bool
 	email_verified_at             *time.Time
@@ -40299,55 +41712,6 @@ func (m *UserMutation) AvatarURLCleared() bool {
 func (m *UserMutation) ResetAvatarURL() {
 	m.avatar_url = nil
 	delete(m.clearedFields, user.FieldAvatarURL)
-}
-
-// SetGoogleSubject sets the "google_subject" field.
-func (m *UserMutation) SetGoogleSubject(s string) {
-	m.google_subject = &s
-}
-
-// GoogleSubject returns the value of the "google_subject" field in the mutation.
-func (m *UserMutation) GoogleSubject() (r string, exists bool) {
-	v := m.google_subject
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldGoogleSubject returns the old "google_subject" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldGoogleSubject(ctx context.Context) (v *string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldGoogleSubject is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldGoogleSubject requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldGoogleSubject: %w", err)
-	}
-	return oldValue.GoogleSubject, nil
-}
-
-// ClearGoogleSubject clears the value of the "google_subject" field.
-func (m *UserMutation) ClearGoogleSubject() {
-	m.google_subject = nil
-	m.clearedFields[user.FieldGoogleSubject] = struct{}{}
-}
-
-// GoogleSubjectCleared returns if the "google_subject" field was cleared in this mutation.
-func (m *UserMutation) GoogleSubjectCleared() bool {
-	_, ok := m.clearedFields[user.FieldGoogleSubject]
-	return ok
-}
-
-// ResetGoogleSubject resets all changes to the "google_subject" field.
-func (m *UserMutation) ResetGoogleSubject() {
-	m.google_subject = nil
-	delete(m.clearedFields, user.FieldGoogleSubject)
 }
 
 // SetRole sets the "role" field.
@@ -40829,7 +42193,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 15)
+	fields := make([]string, 0, 14)
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
 	}
@@ -40841,9 +42205,6 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.avatar_url != nil {
 		fields = append(fields, user.FieldAvatarURL)
-	}
-	if m.google_subject != nil {
-		fields = append(fields, user.FieldGoogleSubject)
 	}
 	if m.role != nil {
 		fields = append(fields, user.FieldRole)
@@ -40891,8 +42252,6 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.PasswordHash()
 	case user.FieldAvatarURL:
 		return m.AvatarURL()
-	case user.FieldGoogleSubject:
-		return m.GoogleSubject()
 	case user.FieldRole:
 		return m.Role()
 	case user.FieldMustChangePassword:
@@ -40930,8 +42289,6 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldPasswordHash(ctx)
 	case user.FieldAvatarURL:
 		return m.OldAvatarURL(ctx)
-	case user.FieldGoogleSubject:
-		return m.OldGoogleSubject(ctx)
 	case user.FieldRole:
 		return m.OldRole(ctx)
 	case user.FieldMustChangePassword:
@@ -40988,13 +42345,6 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAvatarURL(v)
-		return nil
-	case user.FieldGoogleSubject:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetGoogleSubject(v)
 		return nil
 	case user.FieldRole:
 		v, ok := value.(user.Role)
@@ -41117,9 +42467,6 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldAvatarURL) {
 		fields = append(fields, user.FieldAvatarURL)
 	}
-	if m.FieldCleared(user.FieldGoogleSubject) {
-		fields = append(fields, user.FieldGoogleSubject)
-	}
 	if m.FieldCleared(user.FieldEmailVerifiedAt) {
 		fields = append(fields, user.FieldEmailVerifiedAt)
 	}
@@ -41155,9 +42502,6 @@ func (m *UserMutation) ClearField(name string) error {
 	case user.FieldAvatarURL:
 		m.ClearAvatarURL()
 		return nil
-	case user.FieldGoogleSubject:
-		m.ClearGoogleSubject()
-		return nil
 	case user.FieldEmailVerifiedAt:
 		m.ClearEmailVerifiedAt()
 		return nil
@@ -41192,9 +42536,6 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldAvatarURL:
 		m.ResetAvatarURL()
-		return nil
-	case user.FieldGoogleSubject:
-		m.ResetGoogleSubject()
 		return nil
 	case user.FieldRole:
 		m.ResetRole()

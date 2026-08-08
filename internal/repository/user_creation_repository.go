@@ -66,30 +66,3 @@ func (r *Repository) CreateProvisionedUserWithPhone(ctx context.Context, id, ema
 	r.RefreshStore(ctx)
 	return userFromEnt(row), nil
 }
-
-func (r *Repository) CreateUserGoogle(ctx context.Context, id, email, name string, _ *string, subject, role string) (model.User, error) {
-	if r.db == nil {
-		if _, exists := r.store.UserByEmail(email); exists {
-			return model.User{}, fmt.Errorf("email already exists")
-		}
-		now := time.Now().UTC()
-		user := model.User{ID: id, Email: email, DisplayName: name, Role: role, GoogleSubject: subject, EmailVerifiedAt: &now, CreatedAt: now, UpdatedAt: now}
-		r.store.Lock()
-		r.store.Users = append(r.store.Users, user)
-		r.store.Unlock()
-		return userForResponse(user), nil
-	}
-	creator := r.db.User.Create().
-		SetID(id).
-		SetEmail(email).
-		SetDisplayName(name).
-		SetGoogleSubject(subject).
-		SetRole(entuser.Role(role)).
-		SetEmailVerifiedAt(time.Now().UTC())
-	row, err := creator.Save(ctx)
-	if err != nil {
-		return model.User{}, err
-	}
-	r.RefreshStore(ctx)
-	return userFromEnt(row), nil
-}

@@ -9,60 +9,6 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 )
 
-func (r *Repository) UpdateUserGoogle(ctx context.Context, id, name string, avatarURL *string, subject string) (model.User, error) {
-	if r.db == nil {
-		r.store.Lock()
-		defer r.store.Unlock()
-		for index := range r.store.Users {
-			if r.store.Users[index].ID == id {
-				r.store.Users[index].DisplayName = name
-				r.store.Users[index].GoogleSubject = subject
-				r.store.Users[index].UpdatedAt = time.Now().UTC()
-				return userForResponse(r.store.Users[index]), nil
-			}
-		}
-		return model.User{}, fmt.Errorf("user not found")
-	}
-	updater := r.db.User.UpdateOneID(id).
-		SetGoogleSubject(subject).
-		SetDisplayName(name)
-	// Provider-hosted Google photos are intentionally not retained as account
-	// avatars. Only images uploaded through the authenticated avatar flow are
-	// exposed by this service.
-	_ = avatarURL
-	row, err := updater.Save(ctx)
-	if err != nil {
-		return model.User{}, err
-	}
-	r.RefreshStore(ctx)
-	return userFromEnt(row), nil
-}
-
-func (r *Repository) LinkUserGoogleSubject(ctx context.Context, id, subject string) error {
-	if r.db == nil {
-		r.store.Lock()
-		defer r.store.Unlock()
-		for index := range r.store.Users {
-			if r.store.Users[index].GoogleSubject == subject && r.store.Users[index].ID != id {
-				return fmt.Errorf("google identity is already linked")
-			}
-		}
-		for index := range r.store.Users {
-			if r.store.Users[index].ID == id {
-				r.store.Users[index].GoogleSubject = subject
-				r.store.Users[index].UpdatedAt = time.Now().UTC()
-				return nil
-			}
-		}
-		return fmt.Errorf("user not found")
-	}
-	if _, err := r.db.User.UpdateOneID(id).SetGoogleSubject(subject).Save(ctx); err != nil {
-		return err
-	}
-	r.RefreshStore(ctx)
-	return nil
-}
-
 func (r *Repository) UpdateUserDisplayName(ctx context.Context, id, displayName string) (model.User, error) {
 	if r.db == nil {
 		r.store.Lock()
