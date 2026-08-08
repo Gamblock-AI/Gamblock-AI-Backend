@@ -10,9 +10,13 @@ cp .env.example .env
 make key-generate  # creates and saves a valid JOURNAL_ENCRYPTION_KEY in .env
 make migrate-up     # apply schema migrations with values loaded from .env
 make seeder         # install missing production-safe public baseline content
-make seed           # (optional) seed demo data
+make seed           # (optional) seed demo data — does NOT install Learning Hub
 make seed-education # upsert the six bilingual education modules/media
 make seed-learning-hub # install or verify the UTY Learning Hub catalog
+
+> The Learning Hub catalog (skills page "Pilih arah belajar") is populated only
+> by `make seeder` or `make seed-learning-hub`. `make seed` fills demo users and
+> demo content but leaves `learning_items`/`learning_clusters` empty.
 make run            # start the API (default 127.0.0.1:8080)
 ```
 

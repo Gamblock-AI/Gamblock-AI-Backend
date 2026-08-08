@@ -46,6 +46,8 @@ type LearningItem struct {
 	Summary         string            `json:"summary"`
 	Provider        string            `json:"provider,omitempty"`
 	URL             string            `json:"url,omitempty"`
+	ProviderLogoURL string            `json:"provider_logo_url,omitempty"`
+	ThumbnailURL    string            `json:"thumbnail_url,omitempty"`
 	Cost            string            `json:"cost,omitempty"`
 	Certificate     string            `json:"certificate,omitempty"`
 	Language        []string          `json:"language,omitempty"`

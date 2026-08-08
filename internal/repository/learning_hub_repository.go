@@ -87,12 +87,21 @@ func learningItemFromEntDocument(row *ent.LearningItem, document map[string]any,
 		title, summary = titleEN, summaryEN
 	}
 	item := model.LearningItem{ID: row.ID, Slug: slug, Kind: kind, Title: title, Summary: summary}
+	var logoMediaID, thumbnailMediaID, logoURL, thumbnailURL string
 	for key, value := range document {
 		switch key {
 		case "provider":
 			item.Provider, _ = value.(string)
 		case "url":
 			item.URL = safeLearningURL(value)
+		case "provider_logo_media_id":
+			logoMediaID, _ = value.(string)
+		case "provider_logo_url":
+			logoURL, _ = value.(string)
+		case "thumbnail_media_id":
+			thumbnailMediaID, _ = value.(string)
+		case "thumbnail_url":
+			thumbnailURL, _ = value.(string)
 		case "cost":
 			item.Cost, _ = value.(string)
 		case "certificate":
@@ -133,7 +142,28 @@ func learningItemFromEntDocument(row *ent.LearningItem, document map[string]any,
 			item.Projects = stringSlice(value)
 		}
 	}
+	// Self-hosted media (uploaded to the education media pipeline) wins over an
+	// external fallback URL, and both are resolved to public URLs the website
+	// renders directly.
+	item.ProviderLogoURL = learningMediaURL(logoMediaID, logoURL)
+	item.ThumbnailURL = learningMediaURL(thumbnailMediaID, thumbnailURL)
 	return item
+}
+
+// learningMediaURL returns the public route for a self-hosted education media
+// id, falling back to a pre-resolved external URL when no media was uploaded.
+func learningMediaURL(mediaID, externalURL string) string {
+	if mediaID != "" {
+		return "/v1/education/media/" + mediaID
+	}
+	if externalURL == "" {
+		return ""
+	}
+	parsed, err := url.Parse(externalURL)
+	if err != nil || (parsed.Scheme != "https" && parsed.Scheme != "http") || parsed.Hostname() == "" {
+		return ""
+	}
+	return externalURL
 }
 
 func learningItemFromEnt(row *ent.LearningItem, locale string) model.LearningItem {

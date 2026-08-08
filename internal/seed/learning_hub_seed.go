@@ -59,6 +59,14 @@ var learningSeedClusters = []learningSeedCluster{
 			{"certification", "azure-data-fundamentals", "Persiapan Azure Data Fundamentals", "Azure Data Fundamentals Preparation", "Microsoft Credentials", "https://learn.microsoft.com/en-us/credentials/certifications/azure-data-fundamentals/"},
 			{"toolkit", "computing-data-toolkit", "Toolkit Portofolio Data dan Aplikasi", "Data and Application Portfolio Toolkit", "Gamblock-AI", "https://learn.microsoft.com/en-us/training/"},
 			{"career_snapshot", "computing-data-careers", "Peta Karier Komputasi dan Data", "Computing and Data Career Map", "Gamblock-AI", "https://learn.microsoft.com/en-us/training/career-paths/"},
+			{"course", "dicoding-basic-web", "Dasar Pemrograman Web", "Web Programming Basics", "Dicoding", "https://www.dicoding.com/academies/261"},
+			{"course", "dicoding-html-css", "Belajar Dasar HTML dan CSS", "HTML & CSS Basics", "Dicoding", "https://www.dicoding.com/academies/153"},
+			{"course", "dicoding-javascript", "Belajar JavaScript Dasar", "JavaScript Fundamentals", "Dicoding", "https://www.dicoding.com/academies/256"},
+			{"course", "dicoding-flutter", "Belajar Flutter untuk Pemula", "Flutter for Beginners", "Dicoding", "https://www.dicoding.com/academies/159"},
+			{"course", "dicoding-android", "Membuat Aplikasi Android untuk Pemula", "Android Apps for Beginners", "Dicoding", "https://www.dicoding.com/academies/84"},
+			{"course", "dicoding-machine-learning", "Memulai Machine Learning", "Getting Started with Machine Learning", "Dicoding", "https://www.dicoding.com/academies/257"},
+			{"course", "dicoding-github", "Kolaborasi dengan Git dan GitHub", "Collaborating with Git & GitHub", "Dicoding", "https://www.dicoding.com/academies/278"},
+			{"course", "dicoding-aws-cloud", "Belajar Dasar AWS Cloud", "AWS Cloud Fundamentals", "Dicoding", "https://www.dicoding.com/academies/173"},
 		},
 	},
 	{
@@ -141,7 +149,11 @@ func SeedLearningHubDefaults(ctx context.Context, client *ent.Client) error {
 	return err
 }
 
-func SeedLearningHubDefaultsWithReport(ctx context.Context, client *ent.Client) (LearningHubSeedReport, error) {
+func SeedLearningHubDefaultsWithReport(ctx context.Context, client *ent.Client, mediaPath ...string) (LearningHubSeedReport, error) {
+	root := "./var/media"
+	if len(mediaPath) > 0 && mediaPath[0] != "" {
+		root = mediaPath[0]
+	}
 	before, err := learningHubRecordCount(ctx, client)
 	if err != nil {
 		return LearningHubSeedReport{}, err
@@ -156,7 +168,7 @@ func SeedLearningHubDefaultsWithReport(ctx context.Context, client *ent.Client) 
 			_ = tx.Rollback()
 		}
 	}()
-	if err := seedLearningHubWithClient(ctx, tx.Client()); err != nil {
+	if err := seedLearningHubWithClient(ctx, tx.Client(), root); err != nil {
 		return LearningHubSeedReport{}, err
 	}
 	after, err := learningHubRecordCount(ctx, tx.Client())
@@ -207,7 +219,10 @@ func learningHubExpectedRecordCount() int {
 	return 1 + len(learningSeedClusters) + programs + items + items
 }
 
-func seedLearningHubWithClient(ctx context.Context, client *ent.Client) error {
+func seedLearningHubWithClient(ctx context.Context, client *ent.Client, mediaPath string) error {
+	if err := seedLearningHubAssets(ctx, client, mediaPath); err != nil {
+		return err
+	}
 	uty, err := client.Institution.Query().Where(institution.SlugEQ("uty")).Only(ctx)
 	if ent.IsNotFound(err) {
 		uty, err = client.Institution.Create().SetID("inst_uty").SetSlug("uty").SetName("Universitas Teknologi Yogyakarta").SetStatus(institution.StatusActive).Save(ctx)
@@ -226,23 +241,23 @@ func seedLearningHubWithClient(ctx context.Context, client *ent.Client) error {
 			}
 		}
 		for resourceIndex, resource := range cluster.resources {
-			if err := seedLearningItem(ctx, client, learningSeedItem{resource.kind, resource.slug, resource.titleID, resource.titleEN, resource.titleID, resource.titleEN, resource.provider, resource.url, cluster.slug, resourceIndex, nil}, reviewedAt); err != nil {
+			if err := seedLearningItem(ctx, client, learningSeedItem{resource.kind, resource.slug, resource.titleID, resource.titleEN, resource.titleID, resource.titleEN, resource.provider, resource.url, cluster.slug, resourceIndex, nil}, reviewedAt, mediaPath); err != nil {
 				return err
 			}
 		}
 		path := learningSeedItem{"learning_path", cluster.slug + "-path", "Jalur Belajar " + cluster.titleID, cluster.titleEN + " Learning Path", "Susunan langkah pendek untuk mencoba bidang ini dengan proyek nyata.", "A short sequence for trying this field through a practical project.", "Gamblock-AI", "https://uty.ac.id/", cluster.slug, 90, nil}
 		path.stepSlugs = []string{cluster.resources[0].slug, cluster.resources[1].slug, cluster.slug + "-mini-project-1"}
-		if err := seedLearningItem(ctx, client, path, reviewedAt); err != nil {
+		if err := seedLearningItem(ctx, client, path, reviewedAt, mediaPath); err != nil {
 			return err
 		}
 		for projectIndex := 1; projectIndex <= 2; projectIndex++ {
 			project := learningSeedItem{"mini_project", fmt.Sprintf("%s-mini-project-%d", cluster.slug, projectIndex), fmt.Sprintf("Mini-project %s %d", cluster.titleID, projectIndex), fmt.Sprintf("%s Mini-project %d", cluster.titleEN, projectIndex), "Hasil kecil yang dapat dipamerkan, bukan tugas yang harus sempurna.", "A small portfolio-ready outcome, not a perfection test.", "Gamblock-AI", "https://uty.ac.id/", cluster.slug, 100 + projectIndex, nil}
-			if err := seedLearningItem(ctx, client, project, reviewedAt); err != nil {
+			if err := seedLearningItem(ctx, client, project, reviewedAt, mediaPath); err != nil {
 				return err
 			}
 		}
 	}
-	return nil
+	return fillLearningHubMedia(ctx, client)
 }
 
 type learningSeedItem struct {
@@ -271,11 +286,13 @@ func seedLearningProgram(ctx context.Context, client *ent.Client, institutionID 
 	return err
 }
 
-func seedLearningItem(ctx context.Context, client *ent.Client, item learningSeedItem, reviewedAt time.Time) error {
-	if _, err := client.LearningItem.Query().Where(learningitem.SlugEQ(item.slug)).Only(ctx); err == nil {
-		return nil
-	} else if !ent.IsNotFound(err) {
+func seedLearningItem(ctx context.Context, client *ent.Client, item learningSeedItem, reviewedAt time.Time, mediaPath string) error {
+	existing, err := client.LearningItem.Query().Where(learningitem.SlugEQ(item.slug)).Only(ctx)
+	if err != nil && !ent.IsNotFound(err) {
 		return err
+	}
+	if existing != nil {
+		return nil
 	}
 	cost := "free_or_audit"
 	if item.kind == "certification" {
@@ -291,6 +308,12 @@ func seedLearningItem(ctx context.Context, client *ent.Client, item learningSeed
 		"reviewed_at": reviewedAt.Format("2006-01-02"), "reviewer_name": "Gamblock-AI baseline curation",
 		"duration_basis": "suggested_starter_session",
 	}
+	if mediaPath != "" {
+		if logoID := learningProviderLogoID(item.provider); logoID != "" {
+			document["provider_logo_media_id"] = logoID
+		}
+		document["thumbnail_media_id"] = thumbnailMediaIDFor(item.slug)
+	}
 	if item.kind == "mini_project" {
 		document["outcomes_id"] = []string{"Menghasilkan artefak kecil yang dapat dijelaskan dalam portofolio."}
 		document["outcomes_en"] = []string{"Create a small artifact you can explain in a portfolio."}
@@ -305,6 +328,47 @@ func seedLearningItem(ctx context.Context, client *ent.Client, item learningSeed
 	}
 	_, err = client.LearningRevision.Create().SetID("learnrev_" + item.slug).SetItemID(created.ID).SetRevision(1).SetDocumentJSON(learningRevisionSnapshot(document, item)).SetKind(learningrevision.KindPublished).SetCreatedBy("seed").Save(ctx)
 	return err
+}
+
+// fillLearningHubMedia retrofits provider logos and course thumbnails onto items
+// that were seeded before media support existed (skip-if-exists keeps them out
+// of the create path), so existing databases converge to the same presentation.
+func fillLearningHubMedia(ctx context.Context, client *ent.Client) error {
+	items, err := client.LearningItem.Query().Where(learningitem.StatusNEQ(learningitem.StatusArchived)).All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, item := range items {
+		document := cloneSeedDocument(item.DocumentJSON)
+		logoID := learningProviderLogoID(seedDocumentString(document, "provider"))
+		if logoID != "" {
+			if _, exists := document["provider_logo_media_id"]; !exists {
+				document["provider_logo_media_id"] = logoID
+			}
+		}
+		if _, exists := document["thumbnail_media_id"]; !exists {
+			document["thumbnail_media_id"] = thumbnailMediaIDFor(item.Slug)
+		}
+		if _, err := client.LearningItem.UpdateOneID(item.ID).SetDocumentJSON(document).Save(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func cloneSeedDocument(document map[string]any) map[string]any {
+	clone := make(map[string]any, len(document))
+	for key, value := range document {
+		clone[key] = value
+	}
+	return clone
+}
+
+func seedDocumentString(document map[string]any, key string) string {
+	if value, ok := document[key].(string); ok {
+		return value
+	}
+	return ""
 }
 
 func learningProgramSlugs(clusterSlug string) []string {

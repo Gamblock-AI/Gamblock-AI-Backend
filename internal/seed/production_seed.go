@@ -24,7 +24,7 @@ func SeedProductionDefaultsWithReport(ctx context.Context, client *ent.Client, m
 			return LearningHubSeedReport{}, err
 		}
 	}
-	report, err := SeedLearningHubDefaultsWithReport(ctx, client)
+	report, err := SeedLearningHubDefaultsWithReport(ctx, client, mediaPath)
 	if err != nil {
 		return LearningHubSeedReport{}, err
 	}

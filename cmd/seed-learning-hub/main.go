@@ -30,7 +30,7 @@ func main() {
 	if err := db.Migrate(ctx, client); err != nil {
 		log.Fatalf("migrate database: %v", err)
 	}
-	report, err := seed.SeedLearningHubDefaultsWithReport(ctx, client)
+	report, err := seed.SeedLearningHubDefaultsWithReport(ctx, client, cfg.MediaStoragePath)
 	if err != nil {
 		log.Fatalf("seed learning hub: %v", err)
 	}
