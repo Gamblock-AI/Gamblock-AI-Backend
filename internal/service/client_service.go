@@ -17,7 +17,7 @@ type ClientService struct {
 	avatarStoragePath string
 }
 
-func (s *ClientService) RecordAggregate(ctx context.Context, userID, deviceID, eventType, date, idempotencyKey string, count int) (model.AggregateEvent, error) {
+func (s *ClientService) RecordAggregate(ctx context.Context, userID, deviceID, eventType, date, idempotencyKey string, count int, metadataJSON map[string]any) (model.AggregateEvent, error) {
 	allowed := map[string]bool{
 		"intervention_shown": true, "block_count_sync": true, "tamper_detected": true,
 		"permission_revoked": true, "model_updated": true, "ruleset_updated": true,
@@ -25,6 +25,9 @@ func (s *ClientService) RecordAggregate(ctx context.Context, userID, deviceID, e
 	eventDate, err := time.Parse("2006-01-02", date)
 	if err != nil || !allowed[eventType] || count < 0 || count > 1_000_000 || len(idempotencyKey) < 8 || len(idempotencyKey) > 120 {
 		return model.AggregateEvent{}, fmt.Errorf("invalid aggregate event")
+	}
+	if err := validateHourlyMetadata(metadataJSON, count); err != nil {
+		return model.AggregateEvent{}, err
 	}
 	now := time.Now().UTC()
 	if eventDate.After(now.Add(24*time.Hour)) || eventDate.Before(now.AddDate(0, 0, -90)) {
@@ -37,7 +40,37 @@ func (s *ClientService) RecordAggregate(ctx context.Context, userID, deviceID, e
 		ID: "agg_" + uuid.NewString(), UserID: userID, DeviceID: deviceID,
 		IdempotencyKey: userID + ":" + idempotencyKey,
 		EventType:      eventType, EventDate: eventDate, Count: count,
+		MetadataJSON: metadataJSON,
 	})
+}
+
+// validateHourlyMetadata accepts an optional 24-element hourly histogram whose
+// total must not exceed the event count. Anything else is rejected so raw or
+// unexpected payload shapes never reach the store.
+func validateHourlyMetadata(metadataJSON map[string]any, count int) error {
+	if len(metadataJSON) == 0 {
+		return nil
+	}
+	raw, ok := metadataJSON["hourly"]
+	if !ok {
+		return fmt.Errorf("metadata contains no hourly histogram")
+	}
+	values, ok := raw.([]any)
+	if !ok || len(values) != 24 {
+		return fmt.Errorf("hourly histogram must contain 24 values")
+	}
+	total := 0
+	for _, value := range values {
+		hour, ok := value.(float64)
+		if !ok || hour < 0 || hour != float64(int(hour)) {
+			return fmt.Errorf("hourly histogram values must be non-negative integers")
+		}
+		total += int(hour)
+	}
+	if total > count {
+		return fmt.Errorf("hourly histogram total exceeds the event count")
+	}
+	return nil
 }
 
 func (s *ClientService) GetProfile(ctx context.Context, userID string) (model.User, error) {

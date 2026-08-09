@@ -29,6 +29,17 @@ func (s *AccountabilityService) GetPartners(ctx context.Context, userID string) 
 	return s.repo.GetPartners(ctx, userID)
 }
 
+// GroupAnalytics returns partner-scoped aggregate analytics. days must be 14
+// or 30; the optional groupID restricts the scope to one group owned by the
+// partner. Only members who consented to sharing protection activity
+// contribute counts.
+func (s *AccountabilityService) GroupAnalytics(ctx context.Context, partnerID, groupID string, days int) (model.AnalyticsSummary, error) {
+	if days != 14 && days != 30 {
+		return model.AnalyticsSummary{}, fmt.Errorf("analytics period must be 14 or 30 days")
+	}
+	return s.repo.PartnerAnalytics(ctx, partnerID, groupID, days, time.Now().UTC())
+}
+
 func (s *AccountabilityService) CreatePartnerInvitation(ctx context.Context, userID, email, phone string) (model.Partner, string, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
 	if email == "" {

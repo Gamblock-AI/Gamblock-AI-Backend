@@ -53,6 +53,40 @@ func learningProviderLogoID(providerName string) string {
 	return ""
 }
 
+type learningSeedProviderDescription struct {
+	key    string
+	name   string
+	descID string
+	descEN string
+}
+
+// Short bilingual descriptions shown on the skills provider cards. Keys are
+// matched the same way logos are, so any item from a recognised service gets
+// the same description regardless of which resource seeded it.
+var learningSeedProviderDescriptions = []learningSeedProviderDescription{
+	{"microsoft", "Microsoft Learn", "Kursus gratis dan jalur belajar teknologi dari Microsoft untuk membangun keterampilan digital yang siap kerja.", "Free Microsoft courses and learning paths that build job-ready digital skills."},
+	{"dicoding", "Dicoding", "Akademi pemrograman berbahasa Indonesia dengan kelas praktik dan sertifikasi.", "Indonesian-language programming academy with hands-on classes and certification."},
+	{"hubspot", "HubSpot Academy", "Sertifikasi gratis pemasaran digital, konten, dan media sosial.", "Free digital marketing, content, and social media certifications."},
+	{"openlearn", "OpenLearn", "Kursus terbuka gratis dari The Open University untuk berbagai bidang.", "Free open courses from The Open University across a wide range of subjects."},
+	{"britishcouncil", "British Council", "Sumber belajar bahasa Inggris dan pengajaran dari British Council.", "English learning and teaching resources from the British Council."},
+	{"freecodecamp", "freeCodeCamp", "Belajar coding gratis dengan proyek nyata dan sertifikat komunitas.", "Learn to code free with real projects and community certificates."},
+	{"autodesk", "Autodesk Learning", "Pelatihan resmi desain dan pemodelan dari Autodesk.", "Official design and modeling training from Autodesk."},
+	{"cisco", "Cisco Networking Academy", "Kursus jaringan dan keamanan siber gratis dari Cisco.", "Free networking and cybersecurity courses from Cisco."},
+	{"qgis", "QGIS Documentation", "Panduan resmi pemetaan dan analisis spasial dengan QGIS.", "Official mapping and spatial analysis guides for QGIS."},
+	{"gamblock-ai", "Gamblock-AI", "Toolkit dan peta karier kurasi Gamblock-AI untuk pendampingan belajar.", "Gamblock-AI curated toolkits and career maps for guided learning."},
+}
+
+func learningProviderDescription(providerName string) (string, string) {
+	normalized := strings.ToLower(providerName)
+	for _, provider := range learningSeedProviderDescriptions {
+		if strings.Contains(normalized, strings.ToLower(provider.name)) ||
+			strings.Contains(normalized, strings.ToLower(provider.key)) {
+			return provider.descID, provider.descEN
+		}
+	}
+	return "", ""
+}
+
 // thumbnailMediaIDFor deterministically maps an item slug onto one of the
 // bundled dummy thumbnails so every course has a thumbnail without shipping a
 // unique image per item.

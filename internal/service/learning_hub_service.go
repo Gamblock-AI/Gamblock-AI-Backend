@@ -133,6 +133,11 @@ func validateLearningDraft(draft model.LearningItemDraft, requireReview bool) er
 			return ErrLearningHubAdminInvalid
 		}
 	}
+	for _, key := range []string{"provider_description_id", "provider_description_en"} {
+		if len([]rune(documentString(draft.Document, key))) > 200 {
+			return ErrLearningHubAdminInvalid
+		}
+	}
 	if requireReview {
 		if strings.TrimSpace(documentString(draft.Document, "provider")) == "" || strings.TrimSpace(documentString(draft.Document, "url")) == "" {
 			return ErrLearningHubAdminInvalid

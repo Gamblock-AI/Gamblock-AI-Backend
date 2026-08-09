@@ -40,6 +40,7 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	accountability.Use(mid.AuthRequired(), mid.RequireRoles("user", "partner"))
 	{
 		accountability.GET("/workspace", h.AccountabilityWorkspace)
+	accountability.GET("/analytics", h.AccountabilityAnalytics)
 		accountability.POST("/groups", mid.RequireRoles("partner"), h.CreateAccountabilityGroup)
 		accountability.POST("/groups/preview", mid.RequireRoles("user"), mid.RateLimitMiddleware("12-M"), h.PreviewAccountabilityGroup)
 		accountability.POST("/groups/join", mid.RequireRoles("user"), mid.RateLimitMiddleware("6-M"), h.JoinAccountabilityGroup)
@@ -150,6 +151,7 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	admin.Use(mid.AuthRequired(), mid.RequireRoles("admin"), mid.RequireVerifiedPhone())
 	{
 		admin.GET("/overview", h.AdminOverview)
+	admin.GET("/analytics", h.AdminAnalytics)
 		admin.GET("/content/modules", h.AdminModules)
 		admin.POST("/content/modules", h.CreateAdminModule)
 		admin.GET("/content/modules/:id", h.AdminModuleDetail)

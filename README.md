@@ -10,13 +10,14 @@ cp .env.example .env
 make key-generate  # creates and saves a valid JOURNAL_ENCRYPTION_KEY in .env
 make migrate-up     # apply schema migrations with values loaded from .env
 make seeder         # install missing production-safe public baseline content
-make seed           # (optional) seed demo data — does NOT install Learning Hub
+make seed           # (optional) seed demo data plus the Learning Hub catalog
 make seed-education # upsert the six bilingual education modules/media
 make seed-learning-hub # install or verify the UTY Learning Hub catalog
 
-> The Learning Hub catalog (skills page "Pilih arah belajar") is populated only
-> by `make seeder` or `make seed-learning-hub`. `make seed` fills demo users and
-> demo content but leaves `learning_items`/`learning_clusters` empty.
+> `make seed` fills demo users and demo content AND installs the Learning Hub
+> catalog (skills page "Pilih arah belajar"). The production-safe `make seeder`
+> path installs the same Learning Hub baseline without creating demo users;
+> `make seed-learning-hub` installs or verifies only the Learning Hub catalog.
 make run            # start the API (default 127.0.0.1:8080)
 ```
 
@@ -81,6 +82,8 @@ export data needs to be retained.
 - `GET/POST/PUT/DELETE /v1/admin/content/learning-hub/taxonomy[...]`
 - `POST /v1/admin/content/media`
 - `GET  /v1/accountability/workspace`
+- `GET  /v1/accountability/analytics?days=14|30&group_id=`
+- `GET  /v1/admin/analytics?days=14|30`
 - `POST /v1/accountability/groups[...]`
 - `PATCH /v1/accountability/memberships/:membership_id/sharing`
 - `POST /v1/accountability/memberships/:membership_id/leave`

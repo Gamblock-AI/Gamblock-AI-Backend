@@ -39,6 +39,15 @@ func NewAdminServiceWithConfig(repo *repository.Repository, cfg config.Config, l
 	return &AdminService{repo: repo, cfg: cfg, logger: logger}
 }
 
+// PlatformAnalytics returns platform-wide aggregate analytics for admin
+// dashboards. days must be 14 or 30.
+func (s *AdminService) PlatformAnalytics(ctx context.Context, days int) (model.AnalyticsSummary, error) {
+	if days != 14 && days != 30 {
+		return model.AnalyticsSummary{}, fmt.Errorf("analytics period must be 14 or 30 days")
+	}
+	return s.repo.PlatformAnalytics(ctx, days, time.Now().UTC())
+}
+
 var socialHosts = map[string][]string{
 	"instagram": {"instagram.com"},
 	"tiktok":    {"tiktok.com"},

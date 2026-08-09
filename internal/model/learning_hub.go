@@ -39,14 +39,15 @@ type LearningProgress struct {
 }
 
 type LearningItem struct {
-	ID              string            `json:"id"`
-	Slug            string            `json:"slug"`
-	Kind            string            `json:"kind"`
-	Title           string            `json:"title"`
-	Summary         string            `json:"summary"`
-	Provider        string            `json:"provider,omitempty"`
-	URL             string            `json:"url,omitempty"`
-	ProviderLogoURL string            `json:"provider_logo_url,omitempty"`
+	ID                  string            `json:"id"`
+	Slug                string            `json:"slug"`
+	Kind                string            `json:"kind"`
+	Title               string            `json:"title"`
+	Summary             string            `json:"summary"`
+	Provider            string            `json:"provider,omitempty"`
+	ProviderDescription string            `json:"provider_description,omitempty"`
+	URL                 string            `json:"url,omitempty"`
+	ProviderLogoURL     string            `json:"provider_logo_url,omitempty"`
 	ThumbnailURL    string            `json:"thumbnail_url,omitempty"`
 	Cost            string            `json:"cost,omitempty"`
 	Certificate     string            `json:"certificate,omitempty"`

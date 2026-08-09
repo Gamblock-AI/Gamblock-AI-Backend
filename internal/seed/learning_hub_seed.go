@@ -314,6 +314,10 @@ func seedLearningItem(ctx context.Context, client *ent.Client, item learningSeed
 		}
 		document["thumbnail_media_id"] = thumbnailMediaIDFor(item.slug)
 	}
+	if descID, descEN := learningProviderDescription(item.provider); descID != "" || descEN != "" {
+		document["provider_description_id"] = descID
+		document["provider_description_en"] = descEN
+	}
 	if item.kind == "mini_project" {
 		document["outcomes_id"] = []string{"Menghasilkan artefak kecil yang dapat dijelaskan dalam portofolio."}
 		document["outcomes_en"] = []string{"Create a small artifact you can explain in a portfolio."}
@@ -348,6 +352,12 @@ func fillLearningHubMedia(ctx context.Context, client *ent.Client) error {
 		}
 		if _, exists := document["thumbnail_media_id"]; !exists {
 			document["thumbnail_media_id"] = thumbnailMediaIDFor(item.Slug)
+		}
+		if _, exists := document["provider_description_id"]; !exists {
+			if descID, descEN := learningProviderDescription(seedDocumentString(document, "provider")); descID != "" || descEN != "" {
+				document["provider_description_id"] = descID
+				document["provider_description_en"] = descEN
+			}
 		}
 		if _, err := client.LearningItem.UpdateOneID(item.ID).SetDocumentJSON(document).Save(ctx); err != nil {
 			return err

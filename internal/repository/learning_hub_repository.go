@@ -92,6 +92,14 @@ func learningItemFromEntDocument(row *ent.LearningItem, document map[string]any,
 		switch key {
 		case "provider":
 			item.Provider, _ = value.(string)
+		case "provider_description_id":
+			if locale != "en" {
+				item.ProviderDescription, _ = value.(string)
+			}
+		case "provider_description_en":
+			if locale == "en" {
+				item.ProviderDescription, _ = value.(string)
+			}
 		case "url":
 			item.URL = safeLearningURL(value)
 		case "provider_logo_media_id":

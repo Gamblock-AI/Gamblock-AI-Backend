@@ -18,6 +18,9 @@ func Seed(ctx context.Context, client *ent.Client, mediaPath ...string) error {
 	if err := SeedSiteSocialLinks(ctx, client); err != nil {
 		return err
 	}
+	if _, err := SeedLearningHubDefaultsWithReport(ctx, client, mediaPath...); err != nil {
+		return err
+	}
 	if count > 0 {
 		return nil
 	}

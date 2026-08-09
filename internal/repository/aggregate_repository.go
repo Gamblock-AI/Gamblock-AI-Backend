@@ -24,7 +24,7 @@ func (r *Repository) SaveAggregateEvent(ctx context.Context, event model.Aggrega
 	}
 	existing, err := r.db.AggregateEvent.Query().Where(aggregateevent.IdempotencyKeyEQ(event.IdempotencyKey)).Only(ctx)
 	if err == nil {
-		return model.AggregateEvent{ID: existing.ID, UserID: existing.UserID, DeviceID: value(existing.DeviceID), IdempotencyKey: existing.IdempotencyKey, EventType: existing.EventType.String(), EventDate: existing.EventDate, Count: existing.Count, CreatedAt: existing.CreatedAt}, nil
+		return model.AggregateEvent{ID: existing.ID, UserID: existing.UserID, DeviceID: value(existing.DeviceID), IdempotencyKey: existing.IdempotencyKey, EventType: existing.EventType.String(), EventDate: existing.EventDate, Count: existing.Count, MetadataJSON: existing.MetadataJSON, CreatedAt: existing.CreatedAt}, nil
 	}
 	item, err := r.db.AggregateEvent.Create().
 		SetID(event.ID).
@@ -34,11 +34,12 @@ func (r *Repository) SaveAggregateEvent(ctx context.Context, event model.Aggrega
 		SetEventType(aggregateevent.EventType(event.EventType)).
 		SetEventDate(event.EventDate).
 		SetCount(event.Count).
+		SetMetadataJSON(event.MetadataJSON).
 		Save(ctx)
 	if err != nil {
 		return model.AggregateEvent{}, err
 	}
-	return model.AggregateEvent{ID: item.ID, UserID: item.UserID, DeviceID: value(item.DeviceID), IdempotencyKey: item.IdempotencyKey, EventType: item.EventType.String(), EventDate: item.EventDate, Count: item.Count, CreatedAt: item.CreatedAt}, nil
+	return model.AggregateEvent{ID: item.ID, UserID: item.UserID, DeviceID: value(item.DeviceID), IdempotencyKey: item.IdempotencyKey, EventType: item.EventType.String(), EventDate: item.EventDate, Count: item.Count, MetadataJSON: item.MetadataJSON, CreatedAt: item.CreatedAt}, nil
 }
 
 func (r *Repository) GetProtectionAnalytics(ctx context.Context, userID, deviceID string, days int, now time.Time) (model.ProtectionAnalytics, error) {
