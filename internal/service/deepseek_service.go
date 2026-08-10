@@ -42,8 +42,7 @@ func NewDeepSeekService(cfg config.Config, logger *zap.Logger) *DeepSeekService 
 	}
 }
 
-func (s *DeepSeekService) BatchTranslate(ctx context.Context, texts []string, sourceLang, targetLang string) ([]string, error) {
-	if err := validateTranslateInput(texts, sourceLang, targetLang); err != nil {
+func (s *DeepSeekService) BatchTranslate(ctx context.Context, texts []string, sourceLang, targetLang string) ([]string, error) {	if err := validateTranslateInput(texts, sourceLang, targetLang); err != nil {
 		return nil, err
 	}
 
@@ -88,6 +87,16 @@ func (s *DeepSeekService) BatchTranslate(ctx context.Context, texts []string, so
 	}
 
 	return translations, nil
+}
+
+// PersonalizeJSON runs a deterministic chat completion with a structured JSON
+// response into target. It is used by the SPK LLM enrichment layer; the caller
+// owns the prompt constraints (never browsing data or blocked timestamps).
+func (s *DeepSeekService) PersonalizeJSON(ctx context.Context, systemPrompt, userMessage string, target any) error {
+	if s.client == nil {
+		return fmt.Errorf("deepseek client is not configured")
+	}
+	return s.client.ChatJSON(ctx, systemPrompt, userMessage, target)
 }
 
 func validateTranslateInput(texts []string, sourceLang, targetLang string) error {

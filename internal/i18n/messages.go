@@ -209,6 +209,13 @@ var messages = map[string]string{
 	"translation_invalid_input":  "Input translasi tidak valid.",
 	"translation_unavailable":    "Layanan AI penerjemahan sedang tidak tersedia.",
 	"translation_rate_limited":   "Penerjemahan AI sedang sibuk, coba lagi dalam beberapa saat.",
+
+	// SPK decision support
+	"spk_recommendation_failed":     "Rekomendasi harian belum dapat dimuat.",
+	"spk_intervention_not_found":    "Rekomendasi tidak ditemukan atau bukan milik Anda.",
+	"spk_intervention_complete_failed": "Rekomendasi belum dapat ditandai selesai.",
+	"blocked_events_rejected":       "Data waktu blokir perangkat tidak dapat diterima.",
+	"spk_preference_invalid":        "Preferensi belum valid.",
 }
 
 // Friendly returns the end-user-facing message for [code], or [Generic] when

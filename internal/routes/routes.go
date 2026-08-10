@@ -141,6 +141,12 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	v1.POST("/client/aggregate-events", mid.AuthRequired(), h.RecordAggregateEvent)
 	v1.GET("/client/protection-analytics", mid.AuthRequired(), h.ProtectionAnalytics)
 
+	// SPK decision support (dashboard recommendation for students)
+	v1.GET("/client/spk-recommendation", mid.AuthRequired(), mid.RequireRoles("user"), h.GetSpkRecommendation)
+	v1.POST("/client/spk-interventions/:id/complete", mid.AuthRequired(), mid.RequireRoles("user"), h.CompleteSpkIntervention)
+	v1.GET("/client/spk-preference", mid.AuthRequired(), mid.RequireRoles("user"), h.GetSpkPreference)
+	v1.PUT("/client/spk-preference", mid.AuthRequired(), mid.RequireRoles("user"), h.UpdateSpkPreference)
+
 	// Portal Overview
 	v1.GET("/portal/overview", mid.AuthRequired(), mid.RequireRoles("admin"), mid.RequireVerifiedPhone(), h.PortalOverview)
 

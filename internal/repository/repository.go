@@ -77,6 +77,9 @@ func (r *Repository) RefreshStore(ctx context.Context) {
 	r.store.ExperienceGrants = loaded.ExperienceGrants
 	r.store.ReminderPreferences = loaded.ReminderPreferences
 	r.store.PushSubscriptions = loaded.PushSubscriptions
+	r.store.InterventionRecords = loaded.InterventionRecords
+	r.store.BlockedEvents = loaded.BlockedEvents
+	r.store.SpkPreferences = loaded.SpkPreferences
 }
 
 func value(v *string) string {

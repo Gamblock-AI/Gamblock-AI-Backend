@@ -11,6 +11,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/aggregateevent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/approvalrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/auditlog"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/blockedevent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/checkin"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/contactverification"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/contentprogress"
@@ -23,6 +24,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/experiencegrant"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/institution"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/interventionrecord"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningcluster"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningitem"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningprogress"
@@ -53,6 +55,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/schema"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/sitesociallink"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/spkpreference"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportactionaudit"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportcase"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportmessage"
@@ -179,6 +182,16 @@ func init() {
 	auditlogDescID := auditlogFields[0].Descriptor()
 	// auditlog.DefaultID holds the default value on creation for the id field.
 	auditlog.DefaultID = auditlogDescID.Default.(func() string)
+	blockedeventFields := schema.BlockedEvent{}.Fields()
+	_ = blockedeventFields
+	// blockedeventDescCreatedAt is the schema descriptor for created_at field.
+	blockedeventDescCreatedAt := blockedeventFields[4].Descriptor()
+	// blockedevent.DefaultCreatedAt holds the default value on creation for the created_at field.
+	blockedevent.DefaultCreatedAt = blockedeventDescCreatedAt.Default.(func() time.Time)
+	// blockedeventDescID is the schema descriptor for id field.
+	blockedeventDescID := blockedeventFields[0].Descriptor()
+	// blockedevent.DefaultID holds the default value on creation for the id field.
+	blockedevent.DefaultID = blockedeventDescID.Default.(func() string)
 	checkinFields := schema.CheckIn{}.Fields()
 	_ = checkinFields
 	// checkinDescCreatedAt is the schema descriptor for created_at field.
@@ -385,6 +398,30 @@ func init() {
 	intentionDescID := intentionFields[0].Descriptor()
 	// intention.DefaultID holds the default value on creation for the id field.
 	intention.DefaultID = intentionDescID.Default.(func() string)
+	interventionrecordFields := schema.InterventionRecord{}.Fields()
+	_ = interventionrecordFields
+	// interventionrecordDescReadinessLevel is the schema descriptor for readiness_level field.
+	interventionrecordDescReadinessLevel := interventionrecordFields[6].Descriptor()
+	// interventionrecord.DefaultReadinessLevel holds the default value on creation for the readiness_level field.
+	interventionrecord.DefaultReadinessLevel = interventionrecordDescReadinessLevel.Default.(string)
+	// interventionrecordDescLlmUsed is the schema descriptor for llm_used field.
+	interventionrecordDescLlmUsed := interventionrecordFields[13].Descriptor()
+	// interventionrecord.DefaultLlmUsed holds the default value on creation for the llm_used field.
+	interventionrecord.DefaultLlmUsed = interventionrecordDescLlmUsed.Default.(bool)
+	// interventionrecordDescCreatedAt is the schema descriptor for created_at field.
+	interventionrecordDescCreatedAt := interventionrecordFields[14].Descriptor()
+	// interventionrecord.DefaultCreatedAt holds the default value on creation for the created_at field.
+	interventionrecord.DefaultCreatedAt = interventionrecordDescCreatedAt.Default.(func() time.Time)
+	// interventionrecordDescUpdatedAt is the schema descriptor for updated_at field.
+	interventionrecordDescUpdatedAt := interventionrecordFields[15].Descriptor()
+	// interventionrecord.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	interventionrecord.DefaultUpdatedAt = interventionrecordDescUpdatedAt.Default.(func() time.Time)
+	// interventionrecord.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	interventionrecord.UpdateDefaultUpdatedAt = interventionrecordDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// interventionrecordDescID is the schema descriptor for id field.
+	interventionrecordDescID := interventionrecordFields[0].Descriptor()
+	// interventionrecord.DefaultID holds the default value on creation for the id field.
+	interventionrecord.DefaultID = interventionrecordDescID.Default.(func() string)
 	learningclusterFields := schema.LearningCluster{}.Fields()
 	_ = learningclusterFields
 	// learningclusterDescDescriptionID is the schema descriptor for description_id field.
@@ -933,6 +970,42 @@ func init() {
 	sitesociallinkDescID := sitesociallinkFields[0].Descriptor()
 	// sitesociallink.DefaultID holds the default value on creation for the id field.
 	sitesociallink.DefaultID = sitesociallinkDescID.Default.(func() string)
+	spkpreferenceFields := schema.SpkPreference{}.Fields()
+	_ = spkpreferenceFields
+	// spkpreferenceDescSpkRecommendationEnabled is the schema descriptor for spk_recommendation_enabled field.
+	spkpreferenceDescSpkRecommendationEnabled := spkpreferenceFields[2].Descriptor()
+	// spkpreference.DefaultSpkRecommendationEnabled holds the default value on creation for the spk_recommendation_enabled field.
+	spkpreference.DefaultSpkRecommendationEnabled = spkpreferenceDescSpkRecommendationEnabled.Default.(bool)
+	// spkpreferenceDescSpkUseProtection is the schema descriptor for spk_use_protection field.
+	spkpreferenceDescSpkUseProtection := spkpreferenceFields[3].Descriptor()
+	// spkpreference.DefaultSpkUseProtection holds the default value on creation for the spk_use_protection field.
+	spkpreference.DefaultSpkUseProtection = spkpreferenceDescSpkUseProtection.Default.(bool)
+	// spkpreferenceDescSpkUseRecovery is the schema descriptor for spk_use_recovery field.
+	spkpreferenceDescSpkUseRecovery := spkpreferenceFields[4].Descriptor()
+	// spkpreference.DefaultSpkUseRecovery holds the default value on creation for the spk_use_recovery field.
+	spkpreference.DefaultSpkUseRecovery = spkpreferenceDescSpkUseRecovery.Default.(bool)
+	// spkpreferenceDescSpkUsePersonal is the schema descriptor for spk_use_personal field.
+	spkpreferenceDescSpkUsePersonal := spkpreferenceFields[5].Descriptor()
+	// spkpreference.DefaultSpkUsePersonal holds the default value on creation for the spk_use_personal field.
+	spkpreference.DefaultSpkUsePersonal = spkpreferenceDescSpkUsePersonal.Default.(bool)
+	// spkpreferenceDescLlmPersonalizationEnabled is the schema descriptor for llm_personalization_enabled field.
+	spkpreferenceDescLlmPersonalizationEnabled := spkpreferenceFields[6].Descriptor()
+	// spkpreference.DefaultLlmPersonalizationEnabled holds the default value on creation for the llm_personalization_enabled field.
+	spkpreference.DefaultLlmPersonalizationEnabled = spkpreferenceDescLlmPersonalizationEnabled.Default.(bool)
+	// spkpreferenceDescCreatedAt is the schema descriptor for created_at field.
+	spkpreferenceDescCreatedAt := spkpreferenceFields[7].Descriptor()
+	// spkpreference.DefaultCreatedAt holds the default value on creation for the created_at field.
+	spkpreference.DefaultCreatedAt = spkpreferenceDescCreatedAt.Default.(func() time.Time)
+	// spkpreferenceDescUpdatedAt is the schema descriptor for updated_at field.
+	spkpreferenceDescUpdatedAt := spkpreferenceFields[8].Descriptor()
+	// spkpreference.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	spkpreference.DefaultUpdatedAt = spkpreferenceDescUpdatedAt.Default.(func() time.Time)
+	// spkpreference.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	spkpreference.UpdateDefaultUpdatedAt = spkpreferenceDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// spkpreferenceDescID is the schema descriptor for id field.
+	spkpreferenceDescID := spkpreferenceFields[0].Descriptor()
+	// spkpreference.DefaultID holds the default value on creation for the id field.
+	spkpreference.DefaultID = spkpreferenceDescID.Default.(func() string)
 	supportactionauditFields := schema.SupportActionAudit{}.Fields()
 	_ = supportactionauditFields
 	// supportactionauditDescCreatedAt is the schema descriptor for created_at field.

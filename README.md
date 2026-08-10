@@ -70,7 +70,10 @@ export data needs to be retained.
 - `GET  /v1/client/dashboard-summary`
 - `GET  /v1/client/protection-status`
 - `GET  /v1/client/protection-analytics`
-- `POST /v1/client/aggregate-events`
+- `POST /v1/client/aggregate-events` (may include `blocked_event_times`)
+- `GET  /v1/client/spk-recommendation`
+- `POST /v1/client/spk-interventions/:id/complete`
+- `GET/PUT /v1/client/spk-preference`
 - `GET/POST /v1/check-ins`
 - `GET/PATCH /v1/me`
 - `GET/PUT /v1/me/reminder-preference`

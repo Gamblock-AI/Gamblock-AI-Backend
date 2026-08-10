@@ -24,10 +24,12 @@ type Container struct {
 	DeepSeek             *DeepSeekService
 	Reminder             *ReminderService
 	Push                 *PushService
+	Spk                  *SpkService
 }
 
 func NewContainer(repo *repository.Repository, cfg config.Config, logger *zap.Logger) *Container {
 	whatsapp := NewWhatsAppService(cfg, logger)
+	deepseek := NewDeepSeekService(cfg, logger)
 
 	return &Container{
 		Auth:                 NewAuthService(repo, cfg, logger),
@@ -43,8 +45,9 @@ func NewContainer(repo *repository.Repository, cfg config.Config, logger *zap.Lo
 		Client:               NewClientService(repo, cfg),
 		Education:            NewEducationService(repo, cfg),
 		LearningHub:          NewLearningHubService(repo, cfg, logger),
-		DeepSeek:             NewDeepSeekService(cfg, logger),
+		DeepSeek:             deepseek,
 		Reminder:             NewReminderService(repo),
 		Push:                 NewPushService(repo, cfg, logger),
+		Spk:                  NewSpkService(repo, cfg, logger, deepseek),
 	}
 }

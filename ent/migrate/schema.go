@@ -144,6 +144,27 @@ var (
 		Columns:    AuditLogsColumns,
 		PrimaryKey: []*schema.Column{AuditLogsColumns[0]},
 	}
+	// BlockedEventsColumns holds the columns for the "blocked_events" table.
+	BlockedEventsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "device_id", Type: field.TypeString, Nullable: true},
+		{Name: "occurred_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// BlockedEventsTable holds the schema information for the "blocked_events" table.
+	BlockedEventsTable = &schema.Table{
+		Name:       "blocked_events",
+		Columns:    BlockedEventsColumns,
+		PrimaryKey: []*schema.Column{BlockedEventsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "blockedevent_user_id_occurred_at",
+				Unique:  false,
+				Columns: []*schema.Column{BlockedEventsColumns[1], BlockedEventsColumns[3]},
+			},
+		},
+	}
 	// CheckInsColumns holds the columns for the "check_ins" table.
 	CheckInsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -403,6 +424,43 @@ var (
 		Name:       "intentions",
 		Columns:    IntentionsColumns,
 		PrimaryKey: []*schema.Column{IntentionsColumns[0]},
+	}
+	// InterventionRecordsColumns holds the columns for the "intervention_records" table.
+	InterventionRecordsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "intervention_key", Type: field.TypeString},
+		{Name: "response_type", Type: field.TypeString},
+		{Name: "support_level", Type: field.TypeEnum, Enums: []string{"LOW", "MEDIUM", "HIGH"}},
+		{Name: "engagement_level", Type: field.TypeEnum, Enums: []string{"HIGH", "MEDIUM", "LOW"}},
+		{Name: "readiness_level", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"recommended", "completed"}, Default: "recommended"},
+		{Name: "recommended_at", Type: field.TypeTime},
+		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "effectiveness_status", Type: field.TypeEnum, Enums: []string{"NOT_EVALUATED", "UNCLEAR", "EFFECTIVE", "LESS_EFFECTIVE"}, Default: "NOT_EVALUATED"},
+		{Name: "personalized_message", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "personalized_explanation", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "llm_used", Type: field.TypeBool, Default: false},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// InterventionRecordsTable holds the schema information for the "intervention_records" table.
+	InterventionRecordsTable = &schema.Table{
+		Name:       "intervention_records",
+		Columns:    InterventionRecordsColumns,
+		PrimaryKey: []*schema.Column{InterventionRecordsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "interventionrecord_user_id_recommended_at",
+				Unique:  false,
+				Columns: []*schema.Column{InterventionRecordsColumns[1], InterventionRecordsColumns[8]},
+			},
+			{
+				Name:    "interventionrecord_user_id_intervention_key",
+				Unique:  false,
+				Columns: []*schema.Column{InterventionRecordsColumns[1], InterventionRecordsColumns[2]},
+			},
+		},
 	}
 	// LearningClustersColumns holds the columns for the "learning_clusters" table.
 	LearningClustersColumns = []*schema.Column{
@@ -995,6 +1053,24 @@ var (
 			},
 		},
 	}
+	// SpkPreferencesColumns holds the columns for the "spk_preferences" table.
+	SpkPreferencesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString, Unique: true},
+		{Name: "spk_recommendation_enabled", Type: field.TypeBool, Default: true},
+		{Name: "spk_use_protection", Type: field.TypeBool, Default: true},
+		{Name: "spk_use_recovery", Type: field.TypeBool, Default: true},
+		{Name: "spk_use_personal", Type: field.TypeBool, Default: true},
+		{Name: "llm_personalization_enabled", Type: field.TypeBool, Default: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// SpkPreferencesTable holds the schema information for the "spk_preferences" table.
+	SpkPreferencesTable = &schema.Table{
+		Name:       "spk_preferences",
+		Columns:    SpkPreferencesColumns,
+		PrimaryKey: []*schema.Column{SpkPreferencesColumns[0]},
+	}
 	// SupportActionAuditsColumns holds the columns for the "support_action_audits" table.
 	SupportActionAuditsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -1082,6 +1158,7 @@ var (
 		AggregateEventsTable,
 		ApprovalRequestsTable,
 		AuditLogsTable,
+		BlockedEventsTable,
 		CheckInsTable,
 		ContactVerificationsTable,
 		ContentProgressesTable,
@@ -1094,6 +1171,7 @@ var (
 		ExperienceGrantsTable,
 		InstitutionsTable,
 		IntentionsTable,
+		InterventionRecordsTable,
 		LearningClustersTable,
 		LearningItemsTable,
 		LearningProgressesTable,
@@ -1123,6 +1201,7 @@ var (
 		ReportRollupsTable,
 		RulesetReleasesTable,
 		SiteSocialLinksTable,
+		SpkPreferencesTable,
 		SupportActionAuditsTable,
 		SupportCasesTable,
 		SupportMessagesTable,

@@ -58,8 +58,15 @@ Every response uses `{ "data", "error", "request_id" }`. Use the helpers in
 ## Privacy boundary
 
 All classification runs on-device. The API must never receive or store raw DOM,
-URLs, domains, screenshots, keystrokes, or browsing history. Only aggregate
-protection events are permitted.
+URLs, domains, screenshots, keystrokes, or browsing history. Aggregate
+protection events and system-generated blocked-event timestamps (when a block
+fired; never URL/domain/content) are permitted and feed SPK time-pattern
+detection. Students control the SPK recommendation, each data category
+(protection/recovery/personal), and LLM personalization through per-category
+toggles on `GET/PUT /v1/client/spk-preference`; toggles govern usage, never
+storage. LLM personalization sends only the SPK decision and the user's
+self-reported context to DeepSeek; never blocked-event timestamps, raw data, or
+browsing content.
 
 `PrivacyGuard` currently enforces this by rejecting forbidden JSON/query field
 names on non-GET, non-OPTIONS, non-auth requests. It intentionally does not

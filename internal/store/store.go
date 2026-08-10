@@ -60,6 +60,9 @@ type (
 	ExperienceGrant          = model.ExperienceGrant
 	ReminderPreference       = model.ReminderPreference
 	PushSubscription         = model.PushSubscription
+	InterventionRecord       = model.InterventionRecord
+	BlockedEvent             = model.BlockedEvent
+	SpkPreference            = model.SpkPreference
 )
 
 // Store is a concurrency-safe in-memory backing store. It is used as a
@@ -114,6 +117,9 @@ type Store struct {
 	ExperienceGrants          []ExperienceGrant           `json:"experience_grants"`
 	ReminderPreferences       []ReminderPreference        `json:"reminder_preferences"`
 	PushSubscriptions         []PushSubscription          `json:"push_subscriptions"`
+	InterventionRecords       []InterventionRecord        `json:"intervention_records"`
+	BlockedEvents             []BlockedEvent              `json:"blocked_events"`
+	SpkPreferences            []SpkPreference             `json:"spk_preferences"`
 }
 
 func New() *Store {

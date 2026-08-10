@@ -24,6 +24,8 @@ type Tx struct {
 	ApprovalRequest *ApprovalRequestClient
 	// AuditLog is the client for interacting with the AuditLog builders.
 	AuditLog *AuditLogClient
+	// BlockedEvent is the client for interacting with the BlockedEvent builders.
+	BlockedEvent *BlockedEventClient
 	// CheckIn is the client for interacting with the CheckIn builders.
 	CheckIn *CheckInClient
 	// ContactVerification is the client for interacting with the ContactVerification builders.
@@ -48,6 +50,8 @@ type Tx struct {
 	Institution *InstitutionClient
 	// Intention is the client for interacting with the Intention builders.
 	Intention *IntentionClient
+	// InterventionRecord is the client for interacting with the InterventionRecord builders.
+	InterventionRecord *InterventionRecordClient
 	// LearningCluster is the client for interacting with the LearningCluster builders.
 	LearningCluster *LearningClusterClient
 	// LearningItem is the client for interacting with the LearningItem builders.
@@ -106,6 +110,8 @@ type Tx struct {
 	RulesetRelease *RulesetReleaseClient
 	// SiteSocialLink is the client for interacting with the SiteSocialLink builders.
 	SiteSocialLink *SiteSocialLinkClient
+	// SpkPreference is the client for interacting with the SpkPreference builders.
+	SpkPreference *SpkPreferenceClient
 	// SupportActionAudit is the client for interacting with the SupportActionAudit builders.
 	SupportActionAudit *SupportActionAuditClient
 	// SupportCase is the client for interacting with the SupportCase builders.
@@ -251,6 +257,7 @@ func (tx *Tx) init() {
 	tx.AggregateEvent = NewAggregateEventClient(tx.config)
 	tx.ApprovalRequest = NewApprovalRequestClient(tx.config)
 	tx.AuditLog = NewAuditLogClient(tx.config)
+	tx.BlockedEvent = NewBlockedEventClient(tx.config)
 	tx.CheckIn = NewCheckInClient(tx.config)
 	tx.ContactVerification = NewContactVerificationClient(tx.config)
 	tx.ContentProgress = NewContentProgressClient(tx.config)
@@ -263,6 +270,7 @@ func (tx *Tx) init() {
 	tx.ExperienceGrant = NewExperienceGrantClient(tx.config)
 	tx.Institution = NewInstitutionClient(tx.config)
 	tx.Intention = NewIntentionClient(tx.config)
+	tx.InterventionRecord = NewInterventionRecordClient(tx.config)
 	tx.LearningCluster = NewLearningClusterClient(tx.config)
 	tx.LearningItem = NewLearningItemClient(tx.config)
 	tx.LearningProgress = NewLearningProgressClient(tx.config)
@@ -292,6 +300,7 @@ func (tx *Tx) init() {
 	tx.ReportRollup = NewReportRollupClient(tx.config)
 	tx.RulesetRelease = NewRulesetReleaseClient(tx.config)
 	tx.SiteSocialLink = NewSiteSocialLinkClient(tx.config)
+	tx.SpkPreference = NewSpkPreferenceClient(tx.config)
 	tx.SupportActionAudit = NewSupportActionAuditClient(tx.config)
 	tx.SupportCase = NewSupportCaseClient(tx.config)
 	tx.SupportMessage = NewSupportMessageClient(tx.config)

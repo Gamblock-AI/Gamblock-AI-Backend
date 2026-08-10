@@ -72,8 +72,7 @@ func (c *Client) Translate(ctx context.Context, text string, sourceLang, targetL
 	return c.Chat(ctx, systemPrompt, text)
 }
 
-func (c *Client) Chat(ctx context.Context, systemPrompt string, userMessage string) (string, error) {
-	if strings.TrimSpace(c.apiKey) == "" {
+func (c *Client) Chat(ctx context.Context, systemPrompt string, userMessage string) (string, error) {	if strings.TrimSpace(c.apiKey) == "" {
 		return "", ErrInvalidAPIKey
 	}
 
@@ -142,6 +141,25 @@ func (c *Client) Chat(ctx context.Context, systemPrompt string, userMessage stri
 	}
 
 	return content, nil
+}
+
+// ChatJSON runs a chat completion and unmarshals the response into target,
+// tolerating a ```json fence wrapper. Temperature stays at the deterministic
+// 0.1 value used across the codebase.
+func (c *Client) ChatJSON(ctx context.Context, systemPrompt, userMessage string, target any) error {
+	raw, err := c.Chat(ctx, systemPrompt, userMessage)
+	if err != nil {
+		return err
+	}
+	clean := strings.TrimSpace(raw)
+	clean = strings.TrimPrefix(clean, "```json")
+	clean = strings.TrimPrefix(clean, "```")
+	clean = strings.TrimSuffix(clean, "```")
+	clean = strings.TrimSpace(clean)
+	if err := json.Unmarshal([]byte(clean), target); err != nil {
+		return fmt.Errorf("deepseek: parse json response: %w", err)
+	}
+	return nil
 }
 
 func languageName(code string) string {

@@ -73,8 +73,30 @@ func validateHourlyMetadata(metadataJSON map[string]any, count int) error {
 	return nil
 }
 
-func (s *ClientService) GetProfile(ctx context.Context, userID string) (model.User, error) {
-	user, ok := s.repo.UserByID(ctx, userID)
+// SaveBlockedEvents validates and persists a bounded batch of system-generated
+// blocked-event timestamps (when a block fired). It never carries the URL or
+// content that was blocked.
+func (s *ClientService) SaveBlockedEvents(ctx context.Context, userID, deviceID string, times []time.Time) error {
+	if len(times) == 0 {
+		return nil
+	}
+	if len(times) > 500 {
+		return fmt.Errorf("blocked event batch exceeds 500 timestamps")
+	}
+	if !s.repo.IsDeviceOwnedBy(ctx, deviceID, userID) {
+		return fmt.Errorf("device does not belong to user")
+	}
+	now := time.Now().UTC()
+	for _, ts := range times {
+		if ts.After(now.Add(24*time.Hour)) || ts.Before(now.AddDate(0, 0, -30)) {
+			return fmt.Errorf("blocked event timestamp outside accepted window")
+		}
+	}
+	_, err := s.repo.SaveBlockedEvents(ctx, userID, deviceID, times)
+	return err
+}
+
+func (s *ClientService) GetProfile(ctx context.Context, userID string) (model.User, error) {	user, ok := s.repo.UserByID(ctx, userID)
 	if !ok {
 		return model.User{}, fmt.Errorf("user not found")
 	}

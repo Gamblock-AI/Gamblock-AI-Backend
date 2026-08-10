@@ -24,6 +24,9 @@ type ApprovalRequest func(*sql.Selector)
 // AuditLog is the predicate function for auditlog builders.
 type AuditLog func(*sql.Selector)
 
+// BlockedEvent is the predicate function for blockedevent builders.
+type BlockedEvent func(*sql.Selector)
+
 // CheckIn is the predicate function for checkin builders.
 type CheckIn func(*sql.Selector)
 
@@ -59,6 +62,9 @@ type Institution func(*sql.Selector)
 
 // Intention is the predicate function for intention builders.
 type Intention func(*sql.Selector)
+
+// InterventionRecord is the predicate function for interventionrecord builders.
+type InterventionRecord func(*sql.Selector)
 
 // LearningCluster is the predicate function for learningcluster builders.
 type LearningCluster func(*sql.Selector)
@@ -146,6 +152,9 @@ type RulesetRelease func(*sql.Selector)
 
 // SiteSocialLink is the predicate function for sitesociallink builders.
 type SiteSocialLink func(*sql.Selector)
+
+// SpkPreference is the predicate function for spkpreference builders.
+type SpkPreference func(*sql.Selector)
 
 // SupportActionAudit is the predicate function for supportactionaudit builders.
 type SupportActionAudit func(*sql.Selector)

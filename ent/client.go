@@ -20,6 +20,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/aggregateevent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/approvalrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/auditlog"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/blockedevent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/checkin"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/contactverification"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/contentprogress"
@@ -32,6 +33,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/experiencegrant"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/institution"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/interventionrecord"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningcluster"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningitem"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningprogress"
@@ -61,6 +63,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/sitesociallink"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/spkpreference"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportactionaudit"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportcase"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportmessage"
@@ -84,6 +87,8 @@ type Client struct {
 	ApprovalRequest *ApprovalRequestClient
 	// AuditLog is the client for interacting with the AuditLog builders.
 	AuditLog *AuditLogClient
+	// BlockedEvent is the client for interacting with the BlockedEvent builders.
+	BlockedEvent *BlockedEventClient
 	// CheckIn is the client for interacting with the CheckIn builders.
 	CheckIn *CheckInClient
 	// ContactVerification is the client for interacting with the ContactVerification builders.
@@ -108,6 +113,8 @@ type Client struct {
 	Institution *InstitutionClient
 	// Intention is the client for interacting with the Intention builders.
 	Intention *IntentionClient
+	// InterventionRecord is the client for interacting with the InterventionRecord builders.
+	InterventionRecord *InterventionRecordClient
 	// LearningCluster is the client for interacting with the LearningCluster builders.
 	LearningCluster *LearningClusterClient
 	// LearningItem is the client for interacting with the LearningItem builders.
@@ -166,6 +173,8 @@ type Client struct {
 	RulesetRelease *RulesetReleaseClient
 	// SiteSocialLink is the client for interacting with the SiteSocialLink builders.
 	SiteSocialLink *SiteSocialLinkClient
+	// SpkPreference is the client for interacting with the SpkPreference builders.
+	SpkPreference *SpkPreferenceClient
 	// SupportActionAudit is the client for interacting with the SupportActionAudit builders.
 	SupportActionAudit *SupportActionAuditClient
 	// SupportCase is the client for interacting with the SupportCase builders.
@@ -191,6 +200,7 @@ func (c *Client) init() {
 	c.AggregateEvent = NewAggregateEventClient(c.config)
 	c.ApprovalRequest = NewApprovalRequestClient(c.config)
 	c.AuditLog = NewAuditLogClient(c.config)
+	c.BlockedEvent = NewBlockedEventClient(c.config)
 	c.CheckIn = NewCheckInClient(c.config)
 	c.ContactVerification = NewContactVerificationClient(c.config)
 	c.ContentProgress = NewContentProgressClient(c.config)
@@ -203,6 +213,7 @@ func (c *Client) init() {
 	c.ExperienceGrant = NewExperienceGrantClient(c.config)
 	c.Institution = NewInstitutionClient(c.config)
 	c.Intention = NewIntentionClient(c.config)
+	c.InterventionRecord = NewInterventionRecordClient(c.config)
 	c.LearningCluster = NewLearningClusterClient(c.config)
 	c.LearningItem = NewLearningItemClient(c.config)
 	c.LearningProgress = NewLearningProgressClient(c.config)
@@ -232,6 +243,7 @@ func (c *Client) init() {
 	c.ReportRollup = NewReportRollupClient(c.config)
 	c.RulesetRelease = NewRulesetReleaseClient(c.config)
 	c.SiteSocialLink = NewSiteSocialLinkClient(c.config)
+	c.SpkPreference = NewSpkPreferenceClient(c.config)
 	c.SupportActionAudit = NewSupportActionAuditClient(c.config)
 	c.SupportCase = NewSupportCaseClient(c.config)
 	c.SupportMessage = NewSupportMessageClient(c.config)
@@ -334,6 +346,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AggregateEvent:           NewAggregateEventClient(cfg),
 		ApprovalRequest:          NewApprovalRequestClient(cfg),
 		AuditLog:                 NewAuditLogClient(cfg),
+		BlockedEvent:             NewBlockedEventClient(cfg),
 		CheckIn:                  NewCheckInClient(cfg),
 		ContactVerification:      NewContactVerificationClient(cfg),
 		ContentProgress:          NewContentProgressClient(cfg),
@@ -346,6 +359,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ExperienceGrant:          NewExperienceGrantClient(cfg),
 		Institution:              NewInstitutionClient(cfg),
 		Intention:                NewIntentionClient(cfg),
+		InterventionRecord:       NewInterventionRecordClient(cfg),
 		LearningCluster:          NewLearningClusterClient(cfg),
 		LearningItem:             NewLearningItemClient(cfg),
 		LearningProgress:         NewLearningProgressClient(cfg),
@@ -375,6 +389,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ReportRollup:             NewReportRollupClient(cfg),
 		RulesetRelease:           NewRulesetReleaseClient(cfg),
 		SiteSocialLink:           NewSiteSocialLinkClient(cfg),
+		SpkPreference:            NewSpkPreferenceClient(cfg),
 		SupportActionAudit:       NewSupportActionAuditClient(cfg),
 		SupportCase:              NewSupportCaseClient(cfg),
 		SupportMessage:           NewSupportMessageClient(cfg),
@@ -404,6 +419,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AggregateEvent:           NewAggregateEventClient(cfg),
 		ApprovalRequest:          NewApprovalRequestClient(cfg),
 		AuditLog:                 NewAuditLogClient(cfg),
+		BlockedEvent:             NewBlockedEventClient(cfg),
 		CheckIn:                  NewCheckInClient(cfg),
 		ContactVerification:      NewContactVerificationClient(cfg),
 		ContentProgress:          NewContentProgressClient(cfg),
@@ -416,6 +432,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ExperienceGrant:          NewExperienceGrantClient(cfg),
 		Institution:              NewInstitutionClient(cfg),
 		Intention:                NewIntentionClient(cfg),
+		InterventionRecord:       NewInterventionRecordClient(cfg),
 		LearningCluster:          NewLearningClusterClient(cfg),
 		LearningItem:             NewLearningItemClient(cfg),
 		LearningProgress:         NewLearningProgressClient(cfg),
@@ -445,6 +462,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ReportRollup:             NewReportRollupClient(cfg),
 		RulesetRelease:           NewRulesetReleaseClient(cfg),
 		SiteSocialLink:           NewSiteSocialLinkClient(cfg),
+		SpkPreference:            NewSpkPreferenceClient(cfg),
 		SupportActionAudit:       NewSupportActionAuditClient(cfg),
 		SupportCase:              NewSupportCaseClient(cfg),
 		SupportMessage:           NewSupportMessageClient(cfg),
@@ -479,11 +497,11 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AcademicProgram, c.AccountabilityGroup, c.AccountabilityMembership,
-		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.CheckIn,
+		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.BlockedEvent, c.CheckIn,
 		c.ContactVerification, c.ContentProgress, c.DailyMission, c.DataRequest,
 		c.Device, c.EducationMedia, c.EducationRevision, c.EmergencyKeyRequest,
-		c.ExperienceGrant, c.Institution, c.Intention, c.LearningCluster,
-		c.LearningItem, c.LearningProgress, c.LearningRevision,
+		c.ExperienceGrant, c.Institution, c.Intention, c.InterventionRecord,
+		c.LearningCluster, c.LearningItem, c.LearningProgress, c.LearningRevision,
 		c.MembershipExitRequest, c.ModelRelease, c.ModelRollout,
 		c.NetworkRulesetRelease, c.NotificationDelivery, c.OperatorInvitation,
 		c.Organization, c.OrganizationInvite, c.OrganizationMember,
@@ -491,8 +509,8 @@ func (c *Client) Use(hooks ...Hook) {
 		c.PsychoeducationModule, c.PsychoeducationProgress, c.PushSubscription,
 		c.RecoveryPracticeSession, c.RecoveryRecord, c.RecoverySpace, c.Reflection,
 		c.RefreshToken, c.ReleaseCohort, c.ReminderPreference, c.ReportRollup,
-		c.RulesetRelease, c.SiteSocialLink, c.SupportActionAudit, c.SupportCase,
-		c.SupportMessage, c.User,
+		c.RulesetRelease, c.SiteSocialLink, c.SpkPreference, c.SupportActionAudit,
+		c.SupportCase, c.SupportMessage, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -503,11 +521,11 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AcademicProgram, c.AccountabilityGroup, c.AccountabilityMembership,
-		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.CheckIn,
+		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.BlockedEvent, c.CheckIn,
 		c.ContactVerification, c.ContentProgress, c.DailyMission, c.DataRequest,
 		c.Device, c.EducationMedia, c.EducationRevision, c.EmergencyKeyRequest,
-		c.ExperienceGrant, c.Institution, c.Intention, c.LearningCluster,
-		c.LearningItem, c.LearningProgress, c.LearningRevision,
+		c.ExperienceGrant, c.Institution, c.Intention, c.InterventionRecord,
+		c.LearningCluster, c.LearningItem, c.LearningProgress, c.LearningRevision,
 		c.MembershipExitRequest, c.ModelRelease, c.ModelRollout,
 		c.NetworkRulesetRelease, c.NotificationDelivery, c.OperatorInvitation,
 		c.Organization, c.OrganizationInvite, c.OrganizationMember,
@@ -515,8 +533,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.PsychoeducationModule, c.PsychoeducationProgress, c.PushSubscription,
 		c.RecoveryPracticeSession, c.RecoveryRecord, c.RecoverySpace, c.Reflection,
 		c.RefreshToken, c.ReleaseCohort, c.ReminderPreference, c.ReportRollup,
-		c.RulesetRelease, c.SiteSocialLink, c.SupportActionAudit, c.SupportCase,
-		c.SupportMessage, c.User,
+		c.RulesetRelease, c.SiteSocialLink, c.SpkPreference, c.SupportActionAudit,
+		c.SupportCase, c.SupportMessage, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -537,6 +555,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ApprovalRequest.mutate(ctx, m)
 	case *AuditLogMutation:
 		return c.AuditLog.mutate(ctx, m)
+	case *BlockedEventMutation:
+		return c.BlockedEvent.mutate(ctx, m)
 	case *CheckInMutation:
 		return c.CheckIn.mutate(ctx, m)
 	case *ContactVerificationMutation:
@@ -561,6 +581,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Institution.mutate(ctx, m)
 	case *IntentionMutation:
 		return c.Intention.mutate(ctx, m)
+	case *InterventionRecordMutation:
+		return c.InterventionRecord.mutate(ctx, m)
 	case *LearningClusterMutation:
 		return c.LearningCluster.mutate(ctx, m)
 	case *LearningItemMutation:
@@ -619,6 +641,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.RulesetRelease.mutate(ctx, m)
 	case *SiteSocialLinkMutation:
 		return c.SiteSocialLink.mutate(ctx, m)
+	case *SpkPreferenceMutation:
+		return c.SpkPreference.mutate(ctx, m)
 	case *SupportActionAuditMutation:
 		return c.SupportActionAudit.mutate(ctx, m)
 	case *SupportCaseMutation:
@@ -1427,6 +1451,139 @@ func (c *AuditLogClient) mutate(ctx context.Context, m *AuditLogMutation) (Value
 		return (&AuditLogDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown AuditLog mutation op: %q", m.Op())
+	}
+}
+
+// BlockedEventClient is a client for the BlockedEvent schema.
+type BlockedEventClient struct {
+	config
+}
+
+// NewBlockedEventClient returns a client for the BlockedEvent from the given config.
+func NewBlockedEventClient(c config) *BlockedEventClient {
+	return &BlockedEventClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `blockedevent.Hooks(f(g(h())))`.
+func (c *BlockedEventClient) Use(hooks ...Hook) {
+	c.hooks.BlockedEvent = append(c.hooks.BlockedEvent, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `blockedevent.Intercept(f(g(h())))`.
+func (c *BlockedEventClient) Intercept(interceptors ...Interceptor) {
+	c.inters.BlockedEvent = append(c.inters.BlockedEvent, interceptors...)
+}
+
+// Create returns a builder for creating a BlockedEvent entity.
+func (c *BlockedEventClient) Create() *BlockedEventCreate {
+	mutation := newBlockedEventMutation(c.config, OpCreate)
+	return &BlockedEventCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of BlockedEvent entities.
+func (c *BlockedEventClient) CreateBulk(builders ...*BlockedEventCreate) *BlockedEventCreateBulk {
+	return &BlockedEventCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *BlockedEventClient) MapCreateBulk(slice any, setFunc func(*BlockedEventCreate, int)) *BlockedEventCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &BlockedEventCreateBulk{err: fmt.Errorf("calling to BlockedEventClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*BlockedEventCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &BlockedEventCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for BlockedEvent.
+func (c *BlockedEventClient) Update() *BlockedEventUpdate {
+	mutation := newBlockedEventMutation(c.config, OpUpdate)
+	return &BlockedEventUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BlockedEventClient) UpdateOne(_m *BlockedEvent) *BlockedEventUpdateOne {
+	mutation := newBlockedEventMutation(c.config, OpUpdateOne, withBlockedEvent(_m))
+	return &BlockedEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BlockedEventClient) UpdateOneID(id string) *BlockedEventUpdateOne {
+	mutation := newBlockedEventMutation(c.config, OpUpdateOne, withBlockedEventID(id))
+	return &BlockedEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for BlockedEvent.
+func (c *BlockedEventClient) Delete() *BlockedEventDelete {
+	mutation := newBlockedEventMutation(c.config, OpDelete)
+	return &BlockedEventDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *BlockedEventClient) DeleteOne(_m *BlockedEvent) *BlockedEventDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *BlockedEventClient) DeleteOneID(id string) *BlockedEventDeleteOne {
+	builder := c.Delete().Where(blockedevent.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BlockedEventDeleteOne{builder}
+}
+
+// Query returns a query builder for BlockedEvent.
+func (c *BlockedEventClient) Query() *BlockedEventQuery {
+	return &BlockedEventQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeBlockedEvent},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a BlockedEvent entity by its id.
+func (c *BlockedEventClient) Get(ctx context.Context, id string) (*BlockedEvent, error) {
+	return c.Query().Where(blockedevent.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BlockedEventClient) GetX(ctx context.Context, id string) *BlockedEvent {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *BlockedEventClient) Hooks() []Hook {
+	return c.hooks.BlockedEvent
+}
+
+// Interceptors returns the client interceptors.
+func (c *BlockedEventClient) Interceptors() []Interceptor {
+	return c.inters.BlockedEvent
+}
+
+func (c *BlockedEventClient) mutate(ctx context.Context, m *BlockedEventMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&BlockedEventCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&BlockedEventUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&BlockedEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&BlockedEventDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown BlockedEvent mutation op: %q", m.Op())
 	}
 }
 
@@ -3023,6 +3180,139 @@ func (c *IntentionClient) mutate(ctx context.Context, m *IntentionMutation) (Val
 		return (&IntentionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Intention mutation op: %q", m.Op())
+	}
+}
+
+// InterventionRecordClient is a client for the InterventionRecord schema.
+type InterventionRecordClient struct {
+	config
+}
+
+// NewInterventionRecordClient returns a client for the InterventionRecord from the given config.
+func NewInterventionRecordClient(c config) *InterventionRecordClient {
+	return &InterventionRecordClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `interventionrecord.Hooks(f(g(h())))`.
+func (c *InterventionRecordClient) Use(hooks ...Hook) {
+	c.hooks.InterventionRecord = append(c.hooks.InterventionRecord, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `interventionrecord.Intercept(f(g(h())))`.
+func (c *InterventionRecordClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InterventionRecord = append(c.inters.InterventionRecord, interceptors...)
+}
+
+// Create returns a builder for creating a InterventionRecord entity.
+func (c *InterventionRecordClient) Create() *InterventionRecordCreate {
+	mutation := newInterventionRecordMutation(c.config, OpCreate)
+	return &InterventionRecordCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InterventionRecord entities.
+func (c *InterventionRecordClient) CreateBulk(builders ...*InterventionRecordCreate) *InterventionRecordCreateBulk {
+	return &InterventionRecordCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InterventionRecordClient) MapCreateBulk(slice any, setFunc func(*InterventionRecordCreate, int)) *InterventionRecordCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InterventionRecordCreateBulk{err: fmt.Errorf("calling to InterventionRecordClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InterventionRecordCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InterventionRecordCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InterventionRecord.
+func (c *InterventionRecordClient) Update() *InterventionRecordUpdate {
+	mutation := newInterventionRecordMutation(c.config, OpUpdate)
+	return &InterventionRecordUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InterventionRecordClient) UpdateOne(_m *InterventionRecord) *InterventionRecordUpdateOne {
+	mutation := newInterventionRecordMutation(c.config, OpUpdateOne, withInterventionRecord(_m))
+	return &InterventionRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InterventionRecordClient) UpdateOneID(id string) *InterventionRecordUpdateOne {
+	mutation := newInterventionRecordMutation(c.config, OpUpdateOne, withInterventionRecordID(id))
+	return &InterventionRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InterventionRecord.
+func (c *InterventionRecordClient) Delete() *InterventionRecordDelete {
+	mutation := newInterventionRecordMutation(c.config, OpDelete)
+	return &InterventionRecordDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InterventionRecordClient) DeleteOne(_m *InterventionRecord) *InterventionRecordDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InterventionRecordClient) DeleteOneID(id string) *InterventionRecordDeleteOne {
+	builder := c.Delete().Where(interventionrecord.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InterventionRecordDeleteOne{builder}
+}
+
+// Query returns a query builder for InterventionRecord.
+func (c *InterventionRecordClient) Query() *InterventionRecordQuery {
+	return &InterventionRecordQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInterventionRecord},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InterventionRecord entity by its id.
+func (c *InterventionRecordClient) Get(ctx context.Context, id string) (*InterventionRecord, error) {
+	return c.Query().Where(interventionrecord.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InterventionRecordClient) GetX(ctx context.Context, id string) *InterventionRecord {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *InterventionRecordClient) Hooks() []Hook {
+	return c.hooks.InterventionRecord
+}
+
+// Interceptors returns the client interceptors.
+func (c *InterventionRecordClient) Interceptors() []Interceptor {
+	return c.inters.InterventionRecord
+}
+
+func (c *InterventionRecordClient) mutate(ctx context.Context, m *InterventionRecordMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InterventionRecordCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InterventionRecordUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InterventionRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InterventionRecordDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InterventionRecord mutation op: %q", m.Op())
 	}
 }
 
@@ -6883,6 +7173,139 @@ func (c *SiteSocialLinkClient) mutate(ctx context.Context, m *SiteSocialLinkMuta
 	}
 }
 
+// SpkPreferenceClient is a client for the SpkPreference schema.
+type SpkPreferenceClient struct {
+	config
+}
+
+// NewSpkPreferenceClient returns a client for the SpkPreference from the given config.
+func NewSpkPreferenceClient(c config) *SpkPreferenceClient {
+	return &SpkPreferenceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `spkpreference.Hooks(f(g(h())))`.
+func (c *SpkPreferenceClient) Use(hooks ...Hook) {
+	c.hooks.SpkPreference = append(c.hooks.SpkPreference, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `spkpreference.Intercept(f(g(h())))`.
+func (c *SpkPreferenceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SpkPreference = append(c.inters.SpkPreference, interceptors...)
+}
+
+// Create returns a builder for creating a SpkPreference entity.
+func (c *SpkPreferenceClient) Create() *SpkPreferenceCreate {
+	mutation := newSpkPreferenceMutation(c.config, OpCreate)
+	return &SpkPreferenceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SpkPreference entities.
+func (c *SpkPreferenceClient) CreateBulk(builders ...*SpkPreferenceCreate) *SpkPreferenceCreateBulk {
+	return &SpkPreferenceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SpkPreferenceClient) MapCreateBulk(slice any, setFunc func(*SpkPreferenceCreate, int)) *SpkPreferenceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SpkPreferenceCreateBulk{err: fmt.Errorf("calling to SpkPreferenceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SpkPreferenceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SpkPreferenceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SpkPreference.
+func (c *SpkPreferenceClient) Update() *SpkPreferenceUpdate {
+	mutation := newSpkPreferenceMutation(c.config, OpUpdate)
+	return &SpkPreferenceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SpkPreferenceClient) UpdateOne(_m *SpkPreference) *SpkPreferenceUpdateOne {
+	mutation := newSpkPreferenceMutation(c.config, OpUpdateOne, withSpkPreference(_m))
+	return &SpkPreferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SpkPreferenceClient) UpdateOneID(id string) *SpkPreferenceUpdateOne {
+	mutation := newSpkPreferenceMutation(c.config, OpUpdateOne, withSpkPreferenceID(id))
+	return &SpkPreferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SpkPreference.
+func (c *SpkPreferenceClient) Delete() *SpkPreferenceDelete {
+	mutation := newSpkPreferenceMutation(c.config, OpDelete)
+	return &SpkPreferenceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SpkPreferenceClient) DeleteOne(_m *SpkPreference) *SpkPreferenceDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SpkPreferenceClient) DeleteOneID(id string) *SpkPreferenceDeleteOne {
+	builder := c.Delete().Where(spkpreference.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SpkPreferenceDeleteOne{builder}
+}
+
+// Query returns a query builder for SpkPreference.
+func (c *SpkPreferenceClient) Query() *SpkPreferenceQuery {
+	return &SpkPreferenceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSpkPreference},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SpkPreference entity by its id.
+func (c *SpkPreferenceClient) Get(ctx context.Context, id string) (*SpkPreference, error) {
+	return c.Query().Where(spkpreference.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SpkPreferenceClient) GetX(ctx context.Context, id string) *SpkPreference {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *SpkPreferenceClient) Hooks() []Hook {
+	return c.hooks.SpkPreference
+}
+
+// Interceptors returns the client interceptors.
+func (c *SpkPreferenceClient) Interceptors() []Interceptor {
+	return c.inters.SpkPreference
+}
+
+func (c *SpkPreferenceClient) mutate(ctx context.Context, m *SpkPreferenceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SpkPreferenceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SpkPreferenceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SpkPreferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SpkPreferenceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SpkPreference mutation op: %q", m.Op())
+	}
+}
+
 // SupportActionAuditClient is a client for the SupportActionAudit schema.
 type SupportActionAuditClient struct {
 	config
@@ -7419,30 +7842,33 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 type (
 	hooks struct {
 		AcademicProgram, AccountabilityGroup, AccountabilityMembership, AggregateEvent,
-		ApprovalRequest, AuditLog, CheckIn, ContactVerification, ContentProgress,
-		DailyMission, DataRequest, Device, EducationMedia, EducationRevision,
-		EmergencyKeyRequest, ExperienceGrant, Institution, Intention, LearningCluster,
-		LearningItem, LearningProgress, LearningRevision, MembershipExitRequest,
-		ModelRelease, ModelRollout, NetworkRulesetRelease, NotificationDelivery,
-		OperatorInvitation, Organization, OrganizationInvite, OrganizationMember,
-		OrganizationPolicy, PartnerContactRequest, PartnerLink, PsychoeducationModule,
+		ApprovalRequest, AuditLog, BlockedEvent, CheckIn, ContactVerification,
+		ContentProgress, DailyMission, DataRequest, Device, EducationMedia,
+		EducationRevision, EmergencyKeyRequest, ExperienceGrant, Institution,
+		Intention, InterventionRecord, LearningCluster, LearningItem, LearningProgress,
+		LearningRevision, MembershipExitRequest, ModelRelease, ModelRollout,
+		NetworkRulesetRelease, NotificationDelivery, OperatorInvitation, Organization,
+		OrganizationInvite, OrganizationMember, OrganizationPolicy,
+		PartnerContactRequest, PartnerLink, PsychoeducationModule,
 		PsychoeducationProgress, PushSubscription, RecoveryPracticeSession,
 		RecoveryRecord, RecoverySpace, Reflection, RefreshToken, ReleaseCohort,
 		ReminderPreference, ReportRollup, RulesetRelease, SiteSocialLink,
-		SupportActionAudit, SupportCase, SupportMessage, User []ent.Hook
+		SpkPreference, SupportActionAudit, SupportCase, SupportMessage, User []ent.Hook
 	}
 	inters struct {
 		AcademicProgram, AccountabilityGroup, AccountabilityMembership, AggregateEvent,
-		ApprovalRequest, AuditLog, CheckIn, ContactVerification, ContentProgress,
-		DailyMission, DataRequest, Device, EducationMedia, EducationRevision,
-		EmergencyKeyRequest, ExperienceGrant, Institution, Intention, LearningCluster,
-		LearningItem, LearningProgress, LearningRevision, MembershipExitRequest,
-		ModelRelease, ModelRollout, NetworkRulesetRelease, NotificationDelivery,
-		OperatorInvitation, Organization, OrganizationInvite, OrganizationMember,
-		OrganizationPolicy, PartnerContactRequest, PartnerLink, PsychoeducationModule,
+		ApprovalRequest, AuditLog, BlockedEvent, CheckIn, ContactVerification,
+		ContentProgress, DailyMission, DataRequest, Device, EducationMedia,
+		EducationRevision, EmergencyKeyRequest, ExperienceGrant, Institution,
+		Intention, InterventionRecord, LearningCluster, LearningItem, LearningProgress,
+		LearningRevision, MembershipExitRequest, ModelRelease, ModelRollout,
+		NetworkRulesetRelease, NotificationDelivery, OperatorInvitation, Organization,
+		OrganizationInvite, OrganizationMember, OrganizationPolicy,
+		PartnerContactRequest, PartnerLink, PsychoeducationModule,
 		PsychoeducationProgress, PushSubscription, RecoveryPracticeSession,
 		RecoveryRecord, RecoverySpace, Reflection, RefreshToken, ReleaseCohort,
 		ReminderPreference, ReportRollup, RulesetRelease, SiteSocialLink,
-		SupportActionAudit, SupportCase, SupportMessage, User []ent.Interceptor
+		SpkPreference, SupportActionAudit, SupportCase, SupportMessage,
+		User []ent.Interceptor
 	}
 )

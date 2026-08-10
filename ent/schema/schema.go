@@ -716,3 +716,79 @@ func (PushSubscription) Fields() []ent.Field {
 func (PushSubscription) Indexes() []ent.Index {
 	return []ent.Index{index.Fields("user_id")}
 }
+
+// InterventionRecord persists one SPK daily recommendation so the effectiveness
+// feedback loop can feed history back into the engine. It stores only SPK
+// decision metadata plus the optional LLM-personalized message; it never stores
+// browsing content or blocked-event timestamps.
+type InterventionRecord struct{ ent.Schema }
+
+func (InterventionRecord) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("user_id"),
+		field.String("intervention_key"),
+		field.String("response_type"),
+		field.Enum("support_level").Values("LOW", "MEDIUM", "HIGH"),
+		field.Enum("engagement_level").Values("HIGH", "MEDIUM", "LOW"),
+		field.String("readiness_level").Optional().Default(""),
+		field.Enum("status").Values("recommended", "completed").Default("recommended"),
+		field.Time("recommended_at"),
+		field.Time("completed_at").Optional().Nillable(),
+		field.Enum("effectiveness_status").Values("NOT_EVALUATED", "UNCLEAR", "EFFECTIVE", "LESS_EFFECTIVE").Default("NOT_EVALUATED"),
+		field.Text("personalized_message").Optional().Nillable(),
+		field.Text("personalized_explanation").Optional().Nillable(),
+		field.Bool("llm_used").Default(false),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+func (InterventionRecord) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("user_id", "recommended_at"),
+		index.Fields("user_id", "intervention_key"),
+	}
+}
+
+// BlockedEvent stores system-generated blocked-event timestamps (when a block
+// fired) so the SPK engine can detect risky-hour patterns. It carries no URL,
+// domain, DOM, or other browsing content.
+type BlockedEvent struct{ ent.Schema }
+
+func (BlockedEvent) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("user_id"),
+		field.String("device_id").Optional().Nillable(),
+		field.Time("occurred_at"),
+		createdAt(),
+	}
+}
+
+func (BlockedEvent) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("user_id", "occurred_at")}
+}
+
+// SpkPreference holds the single opt-in SPK privacy set synced across
+// surfaces. Each boolean gates which data the daily recommendation may use:
+// spk_recommendation_enabled is the master switch, spk_use_protection gates
+// aggregate block counts + blocked-event timestamps, spk_use_recovery gates
+// streak/mission/learning activity, spk_use_personal gates the self-reported
+// intention context (readiness + LLM context), and llm_personalization_enabled
+// gates the DeepSeek LLM enrichment. Toggles control usage, never storage.
+type SpkPreference struct{ ent.Schema }
+
+func (SpkPreference) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.String("user_id").Unique(),
+		field.Bool("spk_recommendation_enabled").Default(true),
+		field.Bool("spk_use_protection").Default(true),
+		field.Bool("spk_use_recovery").Default(true),
+		field.Bool("spk_use_personal").Default(true),
+		field.Bool("llm_personalization_enabled").Default(true),
+		createdAt(),
+		updatedAt(),
+	}
+}

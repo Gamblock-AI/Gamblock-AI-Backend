@@ -18,6 +18,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/aggregateevent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/approvalrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/auditlog"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/blockedevent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/checkin"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/contactverification"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/contentprogress"
@@ -30,6 +31,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/experiencegrant"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/institution"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/interventionrecord"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningcluster"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningitem"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningprogress"
@@ -59,6 +61,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/sitesociallink"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/spkpreference"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportactionaudit"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportcase"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportmessage"
@@ -129,6 +132,7 @@ func checkColumn(t, c string) error {
 			aggregateevent.Table:           aggregateevent.ValidColumn,
 			approvalrequest.Table:          approvalrequest.ValidColumn,
 			auditlog.Table:                 auditlog.ValidColumn,
+			blockedevent.Table:             blockedevent.ValidColumn,
 			checkin.Table:                  checkin.ValidColumn,
 			contactverification.Table:      contactverification.ValidColumn,
 			contentprogress.Table:          contentprogress.ValidColumn,
@@ -141,6 +145,7 @@ func checkColumn(t, c string) error {
 			experiencegrant.Table:          experiencegrant.ValidColumn,
 			institution.Table:              institution.ValidColumn,
 			intention.Table:                intention.ValidColumn,
+			interventionrecord.Table:       interventionrecord.ValidColumn,
 			learningcluster.Table:          learningcluster.ValidColumn,
 			learningitem.Table:             learningitem.ValidColumn,
 			learningprogress.Table:         learningprogress.ValidColumn,
@@ -170,6 +175,7 @@ func checkColumn(t, c string) error {
 			reportrollup.Table:             reportrollup.ValidColumn,
 			rulesetrelease.Table:           rulesetrelease.ValidColumn,
 			sitesociallink.Table:           sitesociallink.ValidColumn,
+			spkpreference.Table:            spkpreference.ValidColumn,
 			supportactionaudit.Table:       supportactionaudit.ValidColumn,
 			supportcase.Table:              supportcase.ValidColumn,
 			supportmessage.Table:           supportmessage.ValidColumn,

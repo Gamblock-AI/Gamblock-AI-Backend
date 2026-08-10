@@ -81,6 +81,18 @@ func (f AuditLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AuditLogMutation", m)
 }
 
+// The BlockedEventFunc type is an adapter to allow the use of ordinary
+// function as BlockedEvent mutator.
+type BlockedEventFunc func(context.Context, *ent.BlockedEventMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f BlockedEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.BlockedEventMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BlockedEventMutation", m)
+}
+
 // The CheckInFunc type is an adapter to allow the use of ordinary
 // function as CheckIn mutator.
 type CheckInFunc func(context.Context, *ent.CheckInMutation) (ent.Value, error)
@@ -223,6 +235,18 @@ func (f IntentionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntentionMutation", m)
+}
+
+// The InterventionRecordFunc type is an adapter to allow the use of ordinary
+// function as InterventionRecord mutator.
+type InterventionRecordFunc func(context.Context, *ent.InterventionRecordMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InterventionRecordFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InterventionRecordMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InterventionRecordMutation", m)
 }
 
 // The LearningClusterFunc type is an adapter to allow the use of ordinary
@@ -571,6 +595,18 @@ func (f SiteSocialLinkFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SiteSocialLinkMutation", m)
+}
+
+// The SpkPreferenceFunc type is an adapter to allow the use of ordinary
+// function as SpkPreference mutator.
+type SpkPreferenceFunc func(context.Context, *ent.SpkPreferenceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SpkPreferenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SpkPreferenceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SpkPreferenceMutation", m)
 }
 
 // The SupportActionAuditFunc type is an adapter to allow the use of ordinary

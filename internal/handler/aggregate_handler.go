@@ -3,18 +3,20 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 func (h *Handler) RecordAggregateEvent(c *gin.Context) {
 	var input struct {
-		DeviceID       string         `json:"device_id"`
-		EventType      string         `json:"event_type"`
-		EventDate      string         `json:"event_date"`
-		Count          int            `json:"count"`
-		IdempotencyKey string         `json:"idempotency_key"`
-		MetadataJSON   map[string]any `json:"metadata_json"`
+		DeviceID          string         `json:"device_id"`
+		EventType         string         `json:"event_type"`
+		EventDate         string         `json:"event_date"`
+		Count             int            `json:"count"`
+		IdempotencyKey    string         `json:"idempotency_key"`
+		MetadataJSON      map[string]any `json:"metadata_json"`
+		BlockedEventTimes []string       `json:"blocked_event_times"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		h.respondCode(c, http.StatusBadRequest, "err_validation")
@@ -25,7 +27,32 @@ func (h *Handler) RecordAggregateEvent(c *gin.Context) {
 		h.respondErrorErr(c, http.StatusBadRequest, "aggregate_event_rejected", err)
 		return
 	}
+	if len(input.BlockedEventTimes) > 0 {
+		times, parseErr := parseBlockedEventTimes(input.BlockedEventTimes)
+		if parseErr != nil {
+			h.respondErrorErr(c, http.StatusBadRequest, "blocked_events_rejected", parseErr)
+			return
+		}
+		if saveErr := h.services.Client.SaveBlockedEvents(c.Request.Context(), h.currentUserID(c), input.DeviceID, times); saveErr != nil {
+			h.respondErrorErr(c, http.StatusBadRequest, "blocked_events_rejected", saveErr)
+			return
+		}
+	}
 	h.respond(c, http.StatusAccepted, event)
+}
+
+// parseBlockedEventTimes converts RFC3339 strings to UTC timestamps. It is a
+// strict, bounded parser; any invalid entry rejects the whole batch.
+func parseBlockedEventTimes(raw []string) ([]time.Time, error) {
+	out := make([]time.Time, 0, len(raw))
+	for _, value := range raw {
+		parsed, err := time.Parse(time.RFC3339, value)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, parsed.UTC())
+	}
+	return out, nil
 }
 
 func (h *Handler) ProtectionAnalytics(c *gin.Context) {
