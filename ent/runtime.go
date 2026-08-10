@@ -30,9 +30,6 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningprogress"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/membershipexitrequest"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/networkrulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/notificationdelivery"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/operatorinvitation"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organization"
@@ -49,10 +46,8 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryspace"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reminderpreference"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/schema"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/sitesociallink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/spkpreference"
@@ -532,56 +527,6 @@ func init() {
 	membershipexitrequestDescID := membershipexitrequestFields[0].Descriptor()
 	// membershipexitrequest.DefaultID holds the default value on creation for the id field.
 	membershipexitrequest.DefaultID = membershipexitrequestDescID.Default.(func() string)
-	modelreleaseFields := schema.ModelRelease{}.Fields()
-	_ = modelreleaseFields
-	// modelreleaseDescThreshold is the schema descriptor for threshold field.
-	modelreleaseDescThreshold := modelreleaseFields[5].Descriptor()
-	// modelrelease.DefaultThreshold holds the default value on creation for the threshold field.
-	modelrelease.DefaultThreshold = modelreleaseDescThreshold.Default.(float64)
-	// modelreleaseDescContractVersion is the schema descriptor for contract_version field.
-	modelreleaseDescContractVersion := modelreleaseFields[6].Descriptor()
-	// modelrelease.DefaultContractVersion holds the default value on creation for the contract_version field.
-	modelrelease.DefaultContractVersion = modelreleaseDescContractVersion.Default.(string)
-	// modelreleaseDescCreatedAt is the schema descriptor for created_at field.
-	modelreleaseDescCreatedAt := modelreleaseFields[10].Descriptor()
-	// modelrelease.DefaultCreatedAt holds the default value on creation for the created_at field.
-	modelrelease.DefaultCreatedAt = modelreleaseDescCreatedAt.Default.(func() time.Time)
-	// modelreleaseDescUpdatedAt is the schema descriptor for updated_at field.
-	modelreleaseDescUpdatedAt := modelreleaseFields[11].Descriptor()
-	// modelrelease.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	modelrelease.DefaultUpdatedAt = modelreleaseDescUpdatedAt.Default.(func() time.Time)
-	// modelrelease.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	modelrelease.UpdateDefaultUpdatedAt = modelreleaseDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// modelreleaseDescID is the schema descriptor for id field.
-	modelreleaseDescID := modelreleaseFields[0].Descriptor()
-	// modelrelease.DefaultID holds the default value on creation for the id field.
-	modelrelease.DefaultID = modelreleaseDescID.Default.(func() string)
-	modelrolloutFields := schema.ModelRollout{}.Fields()
-	_ = modelrolloutFields
-	// modelrolloutDescCreatedAt is the schema descriptor for created_at field.
-	modelrolloutDescCreatedAt := modelrolloutFields[7].Descriptor()
-	// modelrollout.DefaultCreatedAt holds the default value on creation for the created_at field.
-	modelrollout.DefaultCreatedAt = modelrolloutDescCreatedAt.Default.(func() time.Time)
-	// modelrolloutDescUpdatedAt is the schema descriptor for updated_at field.
-	modelrolloutDescUpdatedAt := modelrolloutFields[8].Descriptor()
-	// modelrollout.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	modelrollout.DefaultUpdatedAt = modelrolloutDescUpdatedAt.Default.(func() time.Time)
-	// modelrollout.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	modelrollout.UpdateDefaultUpdatedAt = modelrolloutDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// modelrolloutDescID is the schema descriptor for id field.
-	modelrolloutDescID := modelrolloutFields[0].Descriptor()
-	// modelrollout.DefaultID holds the default value on creation for the id field.
-	modelrollout.DefaultID = modelrolloutDescID.Default.(func() string)
-	networkrulesetreleaseFields := schema.NetworkRulesetRelease{}.Fields()
-	_ = networkrulesetreleaseFields
-	// networkrulesetreleaseDescCreatedAt is the schema descriptor for created_at field.
-	networkrulesetreleaseDescCreatedAt := networkrulesetreleaseFields[8].Descriptor()
-	// networkrulesetrelease.DefaultCreatedAt holds the default value on creation for the created_at field.
-	networkrulesetrelease.DefaultCreatedAt = networkrulesetreleaseDescCreatedAt.Default.(func() time.Time)
-	// networkrulesetreleaseDescID is the schema descriptor for id field.
-	networkrulesetreleaseDescID := networkrulesetreleaseFields[0].Descriptor()
-	// networkrulesetrelease.DefaultID holds the default value on creation for the id field.
-	networkrulesetrelease.DefaultID = networkrulesetreleaseDescID.Default.(func() string)
 	notificationdeliveryFields := schema.NotificationDelivery{}.Fields()
 	_ = notificationdeliveryFields
 	// notificationdeliveryDescAttemptCount is the schema descriptor for attempt_count field.
@@ -878,16 +823,6 @@ func init() {
 	refreshtokenDescID := refreshtokenFields[0].Descriptor()
 	// refreshtoken.DefaultID holds the default value on creation for the id field.
 	refreshtoken.DefaultID = refreshtokenDescID.Default.(func() string)
-	releasecohortFields := schema.ReleaseCohort{}.Fields()
-	_ = releasecohortFields
-	// releasecohortDescCreatedAt is the schema descriptor for created_at field.
-	releasecohortDescCreatedAt := releasecohortFields[6].Descriptor()
-	// releasecohort.DefaultCreatedAt holds the default value on creation for the created_at field.
-	releasecohort.DefaultCreatedAt = releasecohortDescCreatedAt.Default.(func() time.Time)
-	// releasecohortDescID is the schema descriptor for id field.
-	releasecohortDescID := releasecohortFields[0].Descriptor()
-	// releasecohort.DefaultID holds the default value on creation for the id field.
-	releasecohort.DefaultID = releasecohortDescID.Default.(func() string)
 	reminderpreferenceFields := schema.ReminderPreference{}.Fields()
 	_ = reminderpreferenceFields
 	// reminderpreferenceDescEnabled is the schema descriptor for enabled field.
@@ -930,22 +865,6 @@ func init() {
 	reportrollupDescID := reportrollupFields[0].Descriptor()
 	// reportrollup.DefaultID holds the default value on creation for the id field.
 	reportrollup.DefaultID = reportrollupDescID.Default.(func() string)
-	rulesetreleaseFields := schema.RulesetRelease{}.Fields()
-	_ = rulesetreleaseFields
-	// rulesetreleaseDescCreatedAt is the schema descriptor for created_at field.
-	rulesetreleaseDescCreatedAt := rulesetreleaseFields[7].Descriptor()
-	// rulesetrelease.DefaultCreatedAt holds the default value on creation for the created_at field.
-	rulesetrelease.DefaultCreatedAt = rulesetreleaseDescCreatedAt.Default.(func() time.Time)
-	// rulesetreleaseDescUpdatedAt is the schema descriptor for updated_at field.
-	rulesetreleaseDescUpdatedAt := rulesetreleaseFields[8].Descriptor()
-	// rulesetrelease.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	rulesetrelease.DefaultUpdatedAt = rulesetreleaseDescUpdatedAt.Default.(func() time.Time)
-	// rulesetrelease.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	rulesetrelease.UpdateDefaultUpdatedAt = rulesetreleaseDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// rulesetreleaseDescID is the schema descriptor for id field.
-	rulesetreleaseDescID := rulesetreleaseFields[0].Descriptor()
-	// rulesetrelease.DefaultID holds the default value on creation for the id field.
-	rulesetrelease.DefaultID = rulesetreleaseDescID.Default.(func() string)
 	sitesociallinkFields := schema.SiteSocialLink{}.Fields()
 	_ = sitesociallinkFields
 	// sitesociallinkDescEnabled is the schema descriptor for enabled field.

@@ -186,11 +186,6 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 		admin.POST("/content/media/external", h.RegisterAdminExternalMedia)
 		admin.GET("/content/media/:id", h.AdminEducationMedia)
 		admin.POST("/translate", mid.RateLimitMiddleware("2-S"), h.AdminTranslate)
-		admin.GET("/model-releases", h.AdminModelReleases)
-		admin.GET("/releases", h.AdminReleases)
-		admin.POST("/release-artifacts", mid.RequireRecentAuth(15*time.Minute), h.UploadAdminReleaseArtifact)
-		admin.POST("/releases/rollouts", mid.RequireRecentAuth(15*time.Minute), h.CreateAdminRollout)
-		admin.POST("/releases/rollouts/:id/transition", mid.RequireRecentAuth(15*time.Minute), h.TransitionAdminRollout)
 		admin.GET("/support-cases", h.AdminSupportCases)
 		admin.GET("/support-cases/:id", h.GetAdminSupportCaseDetail)
 		admin.POST("/support-cases/:id/claim", h.ClaimAdminSupportCase)
@@ -211,21 +206,4 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 		admin.POST("/emergency-key-requests/:id/approve", mid.RequireRecentAuth(15*time.Minute), h.ApproveEmergencyKeyRequest)
 	}
 
-	// Releases Creation
-	releasesGroup := v1.Group("/releases")
-	releasesGroup.Use(mid.AuthRequired(), mid.RequireRoles("admin"), mid.RequireVerifiedPhone())
-	{
-		releasesGroup.POST("/model", h.CreateModelRelease)
-		releasesGroup.POST("/ruleset", h.CreateRulesetRelease)
-		releasesGroup.POST("/network-rulesets", h.CreateNetworkRulesetRelease)
-	}
-
-	// Downloads
-	v1.GET("/releases/model/:version/download", h.DownloadModelRelease)
-	v1.GET("/releases/ruleset/:version/download", h.DownloadRulesetRelease)
-	v1.GET("/releases/network-rulesets/:version/download", h.DownloadNetworkRulesetRelease)
-
-	v1.GET("/releases/model/latest", h.LatestModelRelease)
-	v1.GET("/releases/ruleset/latest", h.LatestRulesetRelease)
-	v1.GET("/releases/network-rulesets/latest", h.LatestNetworkRulesetRelease)
 }

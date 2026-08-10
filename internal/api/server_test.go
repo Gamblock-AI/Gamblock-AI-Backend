@@ -39,7 +39,7 @@ func TestNew_ReadyEndpoint(t *testing.T) {
 		AppEnv: "test", JWTAccessSecret: "test-secret-very-long-please",
 		JWTAccessTTL: 3600e9, JWTRefreshTTL: 720 * 3600e9,
 		AllowedOrigins:      []string{"*"},
-		ArtifactStoragePath: "./var/artifacts",
+		MediaStoragePath:    "./var/media",
 	}
 	st := store.NewSeeded()
 	r := New(cfg, st, zap.NewNop())

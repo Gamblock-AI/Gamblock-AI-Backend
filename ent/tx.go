@@ -62,12 +62,6 @@ type Tx struct {
 	LearningRevision *LearningRevisionClient
 	// MembershipExitRequest is the client for interacting with the MembershipExitRequest builders.
 	MembershipExitRequest *MembershipExitRequestClient
-	// ModelRelease is the client for interacting with the ModelRelease builders.
-	ModelRelease *ModelReleaseClient
-	// ModelRollout is the client for interacting with the ModelRollout builders.
-	ModelRollout *ModelRolloutClient
-	// NetworkRulesetRelease is the client for interacting with the NetworkRulesetRelease builders.
-	NetworkRulesetRelease *NetworkRulesetReleaseClient
 	// NotificationDelivery is the client for interacting with the NotificationDelivery builders.
 	NotificationDelivery *NotificationDeliveryClient
 	// OperatorInvitation is the client for interacting with the OperatorInvitation builders.
@@ -100,14 +94,10 @@ type Tx struct {
 	Reflection *ReflectionClient
 	// RefreshToken is the client for interacting with the RefreshToken builders.
 	RefreshToken *RefreshTokenClient
-	// ReleaseCohort is the client for interacting with the ReleaseCohort builders.
-	ReleaseCohort *ReleaseCohortClient
 	// ReminderPreference is the client for interacting with the ReminderPreference builders.
 	ReminderPreference *ReminderPreferenceClient
 	// ReportRollup is the client for interacting with the ReportRollup builders.
 	ReportRollup *ReportRollupClient
-	// RulesetRelease is the client for interacting with the RulesetRelease builders.
-	RulesetRelease *RulesetReleaseClient
 	// SiteSocialLink is the client for interacting with the SiteSocialLink builders.
 	SiteSocialLink *SiteSocialLinkClient
 	// SpkPreference is the client for interacting with the SpkPreference builders.
@@ -276,9 +266,6 @@ func (tx *Tx) init() {
 	tx.LearningProgress = NewLearningProgressClient(tx.config)
 	tx.LearningRevision = NewLearningRevisionClient(tx.config)
 	tx.MembershipExitRequest = NewMembershipExitRequestClient(tx.config)
-	tx.ModelRelease = NewModelReleaseClient(tx.config)
-	tx.ModelRollout = NewModelRolloutClient(tx.config)
-	tx.NetworkRulesetRelease = NewNetworkRulesetReleaseClient(tx.config)
 	tx.NotificationDelivery = NewNotificationDeliveryClient(tx.config)
 	tx.OperatorInvitation = NewOperatorInvitationClient(tx.config)
 	tx.Organization = NewOrganizationClient(tx.config)
@@ -295,10 +282,8 @@ func (tx *Tx) init() {
 	tx.RecoverySpace = NewRecoverySpaceClient(tx.config)
 	tx.Reflection = NewReflectionClient(tx.config)
 	tx.RefreshToken = NewRefreshTokenClient(tx.config)
-	tx.ReleaseCohort = NewReleaseCohortClient(tx.config)
 	tx.ReminderPreference = NewReminderPreferenceClient(tx.config)
 	tx.ReportRollup = NewReportRollupClient(tx.config)
-	tx.RulesetRelease = NewRulesetReleaseClient(tx.config)
 	tx.SiteSocialLink = NewSiteSocialLinkClient(tx.config)
 	tx.SpkPreference = NewSpkPreferenceClient(tx.config)
 	tx.SupportActionAudit = NewSupportActionAuditClient(tx.config)

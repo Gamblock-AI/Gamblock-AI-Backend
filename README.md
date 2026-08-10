@@ -50,8 +50,8 @@ log only aggregate Learning Hub inserted/skipped counts.
 `migrate-down` and `make migrate-fresh` drop the database schema
 and must never be run against shared or production data; `migrate-down`
 additionally refuses to run without `CONFIRM_MIGRATE_DOWN=DROP_ALL_DATA`.
-Both commands also empty the runtime storage directories (media/avatars,
-encrypted exports, and release artifacts) through `make reset-storage`, since
+Both commands also empty the runtime storage directories (media/avatars and
+encrypted exports) through `make reset-storage`, since
 every dynamic file is orphaned once the schema is dropped; run `make seed`
 afterwards to regenerate the bundled seed media.
 `make key-generate` refuses to replace a valid existing key; use
@@ -203,13 +203,10 @@ the standard envelope.
   external media is restricted to configured HTTPS hosts.
 - Account roles are exactly `user`, `partner`, and `admin`. Admins directly
   provision immutable-role accounts with one-time temporary passwords, and
-  manage content, releases, support queue, research, safe public social links,
+  manage content, support queue, safe public social links,
   audit history, and dual-control emergency access. Refresh rotation preserves the original authentication time
   used by recent-auth gates, and disabled/changed operator identity is checked
   on every bearer request.
-- Admins upload allowlisted artifacts to randomized managed storage;
-  the backend computes SHA-256 before model/ruleset/network registration and
-  supports manual staged cohort activate/pause/complete/rollback transitions.
 - Account export is encrypted at rest and expires after seven days. Student or
   partner deletion requires a 30-minute email confirmation plus recent auth;
   account-scoped records are removed while retained audit/request rows are

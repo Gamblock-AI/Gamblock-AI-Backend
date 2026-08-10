@@ -19,7 +19,6 @@ type Config struct {
 	JWTAccessTTL         time.Duration
 	JWTRefreshTTL        time.Duration
 	AllowedOrigins       []string
-	ArtifactStoragePath  string
 	ExportStoragePath    string
 	MediaStoragePath     string
 	AvatarStoragePath    string
@@ -75,7 +74,6 @@ func Load() Config {
 	viper.SetDefault("JWT_ACCESS_TTL", "24h")
 	viper.SetDefault("JWT_REFRESH_TTL", "720h")
 	viper.SetDefault("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8099,http://127.0.0.1:8099")
-	viper.SetDefault("ARTIFACT_STORAGE_PATH", "./var/artifacts")
 	viper.SetDefault("EXPORT_STORAGE_PATH", "./var/exports")
 	viper.SetDefault("MEDIA_STORAGE_PATH", "./var/media")
 	viper.SetDefault("AVATAR_STORAGE_PATH", "./var/media/avatars")
@@ -114,7 +112,6 @@ func Load() Config {
 		JWTAccessTTL:         ttl,
 		JWTRefreshTTL:        refreshTTL,
 		AllowedOrigins:       splitCSV(viper.GetString("CORS_ALLOWED_ORIGINS")),
-		ArtifactStoragePath:  viper.GetString("ARTIFACT_STORAGE_PATH"),
 		ExportStoragePath:    viper.GetString("EXPORT_STORAGE_PATH"),
 		MediaStoragePath:     viper.GetString("MEDIA_STORAGE_PATH"),
 		AvatarStoragePath:    viper.GetString("AVATAR_STORAGE_PATH"),

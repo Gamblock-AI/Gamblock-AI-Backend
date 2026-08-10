@@ -83,7 +83,8 @@ value censorship.
 `AuthRequired` validates access tokens and `RequireRoles(...)` gates actions.
 Account roles are exactly `user`, `partner`, and `admin`. Organization
 owner/admin/member/viewer values are membership-relation roles, never account
-roles. `admin` owns all operational capabilities, but verified-email,
+roles. `admin` owns the remaining content, support, platform, audit, and
+emergency capabilities, but verified-email,
 recent-auth, audit, resource-ownership, and two-admin emergency checks remain
 mandatory. Requester support endpoints accept only `user` and `partner`; admins
 handle their queue through `/v1/admin/support-cases[...]`. Roles are immutable

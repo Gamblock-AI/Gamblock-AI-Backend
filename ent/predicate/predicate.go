@@ -81,15 +81,6 @@ type LearningRevision func(*sql.Selector)
 // MembershipExitRequest is the predicate function for membershipexitrequest builders.
 type MembershipExitRequest func(*sql.Selector)
 
-// ModelRelease is the predicate function for modelrelease builders.
-type ModelRelease func(*sql.Selector)
-
-// ModelRollout is the predicate function for modelrollout builders.
-type ModelRollout func(*sql.Selector)
-
-// NetworkRulesetRelease is the predicate function for networkrulesetrelease builders.
-type NetworkRulesetRelease func(*sql.Selector)
-
 // NotificationDelivery is the predicate function for notificationdelivery builders.
 type NotificationDelivery func(*sql.Selector)
 
@@ -138,17 +129,11 @@ type Reflection func(*sql.Selector)
 // RefreshToken is the predicate function for refreshtoken builders.
 type RefreshToken func(*sql.Selector)
 
-// ReleaseCohort is the predicate function for releasecohort builders.
-type ReleaseCohort func(*sql.Selector)
-
 // ReminderPreference is the predicate function for reminderpreference builders.
 type ReminderPreference func(*sql.Selector)
 
 // ReportRollup is the predicate function for reportrollup builders.
 type ReportRollup func(*sql.Selector)
-
-// RulesetRelease is the predicate function for rulesetrelease builders.
-type RulesetRelease func(*sql.Selector)
 
 // SiteSocialLink is the predicate function for sitesociallink builders.
 type SiteSocialLink func(*sql.Selector)

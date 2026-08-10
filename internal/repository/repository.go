@@ -48,9 +48,6 @@ func (r *Repository) RefreshStore(ctx context.Context) {
 	r.store.SupportMessages = loaded.SupportMessages
 	r.store.DataRequests = loaded.DataRequests
 	r.store.Organizations = loaded.Organizations
-	r.store.ModelReleases = loaded.ModelReleases
-	r.store.RulesetReleases = loaded.RulesetReleases
-	r.store.NetworkRulesets = loaded.NetworkRulesets
 	r.store.AuditEvents = loaded.AuditEvents
 	r.store.NotificationEvents = loaded.NotificationEvents
 	r.store.JournalEntries = loaded.JournalEntries
@@ -64,7 +61,6 @@ func (r *Repository) RefreshStore(ctx context.Context) {
 	r.store.EmergencyKeyRequests = loaded.EmergencyKeyRequests
 	r.store.SiteSocialLinks = loaded.SiteSocialLinks
 	r.store.OperatorInvitations = loaded.OperatorInvitations
-	r.store.ReleaseRollouts = loaded.ReleaseRollouts
 	r.store.Institutions = loaded.Institutions
 	r.store.AcademicPrograms = loaded.AcademicPrograms
 	r.store.LearningClusters = loaded.LearningClusters

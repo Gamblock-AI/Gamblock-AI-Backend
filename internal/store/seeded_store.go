@@ -63,13 +63,8 @@ func NewSeeded() *Store {
 			{ID: "DR-1042", UserID: "usr_gading", Title: "Export account data", Type: "export", Status: "completed", FailureCode: "result_unavailable", CreatedAt: now, UpdatedAt: now},
 			{ID: "DR-1035", UserID: "usr_dery", Title: "Delete archived support notes", Type: "delete", Status: "processing", CreatedAt: now, UpdatedAt: now},
 		},
-		Organizations:   []Organization{{ID: "org_community", Name: "Gamblock Community Pilot", Slug: "community-pilot", Status: "active", Members: 128, CreatedAt: now, UpdatedAt: now}},
-		ModelReleases:   []Release{{ID: "rel_model_031", Version: "artifact-v0.3.1", Platform: "all", SHA256: "c3a12b939f2923c21d3e729a514610a3989cab321c895c9d2f63ac8eb8a0199c", Status: "published", DownloadURL: "/v1/releases/model/artifact-v0.3.1/download", Metrics: map[string]any{"evaluated": false, "evidence_status": "demo_fixture_not_evaluated"}, PublishedAtText: "Published 2 days ago", CreatedAt: now, UpdatedAt: now}},
-		RulesetReleases: []Release{{ID: "rel_rules_202605", Version: "ruleset-2026.05.1", Platform: "all", SHA256: "c9a31a473ca232c060d49d431e6a1029670df9c4888f32dbc4d06554a41bf586", Status: "published", DownloadURL: "/v1/releases/ruleset/ruleset-2026.05.1/download", Metrics: map[string]any{"rules": 42}, PublishedAtText: "Published today", CreatedAt: now, UpdatedAt: now}},
-		NetworkRulesets: []Release{{ID: "rel_net_12", Version: "global-risk-category-v12", Platform: "all", SHA256: "e6091a4405a8db35789ea9197f2b44d46d16d425ee8b805c35c8f4b7f5d76127", Status: "validated", DownloadURL: "/v1/releases/network-rulesets/global-risk-category-v12/download", Metrics: map[string]any{"domains": 0, "privacy": "metadata_only"}, PublishedAtText: "Validated today", CreatedAt: now, UpdatedAt: now}},
 		AuditEvents: []AuditEvent{
-			{ID: "audit_1", Actor: "nasywa@gmail.com", Action: "Published content module", Target: "pause-before-impulse", CreatedAt: now, UpdatedAt: now},
-			{ID: "audit_2", Actor: "nasywa@gmail.com", Action: "Staged model artifact", Target: "artifact-v0.4.0-rc1", CreatedAt: now, UpdatedAt: now},
+			{ID: "audit_1", Actor: "nasywa@gmail.com", Action: "education_module_published", TargetType: "education_module", Target: "mod_impulse_cycle", CreatedAt: now, UpdatedAt: now},
 		},
 		NotificationEvents: []NotificationItem{{ID: "ntf_1", Channel: "whatsapp", Recipient: "+6281200000000", Status: "sent", Reason: "approval_request", CreatedAt: now, UpdatedAt: now}},
 		JournalEntries: []JournalEntry{

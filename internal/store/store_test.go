@@ -18,7 +18,6 @@ func TestNewSeeded_Populated(t *testing.T) {
 	assert.NotEmpty(t, s.Modules)
 	assert.NotEmpty(t, s.SupportCases)
 	assert.NotEmpty(t, s.Organizations)
-	assert.NotEmpty(t, s.ModelReleases)
 	assert.NotEmpty(t, s.Missions)
 }
 

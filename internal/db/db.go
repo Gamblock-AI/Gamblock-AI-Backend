@@ -67,7 +67,7 @@ func Migrate(ctx context.Context, client *ent.Client) error {
 		return cause
 	}
 	adminLegacyRoles := []entuser.Role{
-		entuser.Role("content_admin"), entuser.Role("model_release_operator"),
+		entuser.Role("content_admin"),
 		entuser.Role("support_operator"), entuser.Role("research_evaluator"),
 		entuser.Role("platform_admin"),
 	}

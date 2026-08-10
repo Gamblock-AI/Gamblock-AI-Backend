@@ -20,7 +20,7 @@ type ClientService struct {
 func (s *ClientService) RecordAggregate(ctx context.Context, userID, deviceID, eventType, date, idempotencyKey string, count int, metadataJSON map[string]any) (model.AggregateEvent, error) {
 	allowed := map[string]bool{
 		"intervention_shown": true, "block_count_sync": true, "tamper_detected": true,
-		"permission_revoked": true, "model_updated": true, "ruleset_updated": true,
+		"permission_revoked": true,
 	}
 	eventDate, err := time.Parse("2006-01-02", date)
 	if err != nil || !allowed[eventType] || count < 0 || count > 1_000_000 || len(idempotencyKey) < 8 || len(idempotencyKey) > 120 {

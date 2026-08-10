@@ -87,7 +87,7 @@ var (
 		{Name: "user_id", Type: field.TypeString},
 		{Name: "device_id", Type: field.TypeString, Nullable: true},
 		{Name: "idempotency_key", Type: field.TypeString, Unique: true, Nullable: true},
-		{Name: "event_type", Type: field.TypeEnum, Enums: []string{"intervention_shown", "block_count_sync", "tamper_detected", "permission_revoked", "model_updated", "ruleset_updated"}},
+		{Name: "event_type", Type: field.TypeEnum, Enums: []string{"intervention_shown", "block_count_sync", "tamper_detected", "permission_revoked"}},
 		{Name: "event_date", Type: field.TypeTime},
 		{Name: "count", Type: field.TypeInt},
 		{Name: "metadata_json", Type: field.TypeJSON, Nullable: true},
@@ -575,63 +575,6 @@ var (
 		Columns:    MembershipExitRequestsColumns,
 		PrimaryKey: []*schema.Column{MembershipExitRequestsColumns[0]},
 	}
-	// ModelReleasesColumns holds the columns for the "model_releases" table.
-	ModelReleasesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
-		{Name: "version", Type: field.TypeString, Unique: true},
-		{Name: "platform", Type: field.TypeEnum, Enums: []string{"android", "windows", "linux", "macos", "web", "all"}, Default: "all"},
-		{Name: "artifact_path", Type: field.TypeString},
-		{Name: "sha256", Type: field.TypeString},
-		{Name: "threshold", Type: field.TypeFloat64, Default: 0},
-		{Name: "contract_version", Type: field.TypeString, Default: "v1"},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "validated", "staged", "published", "paused", "rolled_back", "retired"}, Default: "draft"},
-		{Name: "metrics_json", Type: field.TypeJSON, Nullable: true},
-		{Name: "published_at", Type: field.TypeTime, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-	}
-	// ModelReleasesTable holds the schema information for the "model_releases" table.
-	ModelReleasesTable = &schema.Table{
-		Name:       "model_releases",
-		Columns:    ModelReleasesColumns,
-		PrimaryKey: []*schema.Column{ModelReleasesColumns[0]},
-	}
-	// ModelRolloutsColumns holds the columns for the "model_rollouts" table.
-	ModelRolloutsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
-		{Name: "model_release_id", Type: field.TypeString, Nullable: true},
-		{Name: "ruleset_release_id", Type: field.TypeString, Nullable: true},
-		{Name: "network_ruleset_release_id", Type: field.TypeString, Nullable: true},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "staged", "active", "paused", "rolled_back", "completed"}, Default: "draft"},
-		{Name: "cohort_json", Type: field.TypeJSON, Nullable: true},
-		{Name: "created_by", Type: field.TypeString},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-	}
-	// ModelRolloutsTable holds the schema information for the "model_rollouts" table.
-	ModelRolloutsTable = &schema.Table{
-		Name:       "model_rollouts",
-		Columns:    ModelRolloutsColumns,
-		PrimaryKey: []*schema.Column{ModelRolloutsColumns[0]},
-	}
-	// NetworkRulesetReleasesColumns holds the columns for the "network_ruleset_releases" table.
-	NetworkRulesetReleasesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
-		{Name: "version", Type: field.TypeString, Unique: true},
-		{Name: "artifact_path", Type: field.TypeString},
-		{Name: "sha256", Type: field.TypeString},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "validated", "staged", "published", "paused", "rolled_back", "retired"}, Default: "draft"},
-		{Name: "rules_json", Type: field.TypeJSON, Nullable: true},
-		{Name: "created_by", Type: field.TypeString, Nullable: true},
-		{Name: "published_at", Type: field.TypeTime, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-	}
-	// NetworkRulesetReleasesTable holds the schema information for the "network_ruleset_releases" table.
-	NetworkRulesetReleasesTable = &schema.Table{
-		Name:       "network_ruleset_releases",
-		Columns:    NetworkRulesetReleasesColumns,
-		PrimaryKey: []*schema.Column{NetworkRulesetReleasesColumns[0]},
-	}
 	// NotificationDeliveriesColumns holds the columns for the "notification_deliveries" table.
 	NotificationDeliveriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -960,22 +903,6 @@ var (
 		Columns:    RefreshTokensColumns,
 		PrimaryKey: []*schema.Column{RefreshTokensColumns[0]},
 	}
-	// ReleaseCohortsColumns holds the columns for the "release_cohorts" table.
-	ReleaseCohortsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
-		{Name: "rollout_id", Type: field.TypeString},
-		{Name: "platform", Type: field.TypeEnum, Enums: []string{"android", "windows", "linux", "macos", "web", "all"}},
-		{Name: "percentage", Type: field.TypeInt},
-		{Name: "organization_id", Type: field.TypeString, Nullable: true},
-		{Name: "app_version_constraint", Type: field.TypeString, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-	}
-	// ReleaseCohortsTable holds the schema information for the "release_cohorts" table.
-	ReleaseCohortsTable = &schema.Table{
-		Name:       "release_cohorts",
-		Columns:    ReleaseCohortsColumns,
-		PrimaryKey: []*schema.Column{ReleaseCohortsColumns[0]},
-	}
 	// ReminderPreferencesColumns holds the columns for the "reminder_preferences" table.
 	ReminderPreferencesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -1009,24 +936,6 @@ var (
 		Name:       "report_rollups",
 		Columns:    ReportRollupsColumns,
 		PrimaryKey: []*schema.Column{ReportRollupsColumns[0]},
-	}
-	// RulesetReleasesColumns holds the columns for the "ruleset_releases" table.
-	RulesetReleasesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString},
-		{Name: "version", Type: field.TypeString, Unique: true},
-		{Name: "artifact_path", Type: field.TypeString},
-		{Name: "sha256", Type: field.TypeString},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "validated", "staged", "published", "paused", "rolled_back", "retired"}, Default: "draft"},
-		{Name: "rules_json", Type: field.TypeJSON, Nullable: true},
-		{Name: "published_at", Type: field.TypeTime, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-	}
-	// RulesetReleasesTable holds the schema information for the "ruleset_releases" table.
-	RulesetReleasesTable = &schema.Table{
-		Name:       "ruleset_releases",
-		Columns:    RulesetReleasesColumns,
-		PrimaryKey: []*schema.Column{RulesetReleasesColumns[0]},
 	}
 	// SiteSocialLinksColumns holds the columns for the "site_social_links" table.
 	SiteSocialLinksColumns = []*schema.Column{
@@ -1177,9 +1086,6 @@ var (
 		LearningProgressesTable,
 		LearningRevisionsTable,
 		MembershipExitRequestsTable,
-		ModelReleasesTable,
-		ModelRolloutsTable,
-		NetworkRulesetReleasesTable,
 		NotificationDeliveriesTable,
 		OperatorInvitationsTable,
 		OrganizationsTable,
@@ -1196,10 +1102,8 @@ var (
 		RecoverySpacesTable,
 		ReflectionsTable,
 		RefreshTokensTable,
-		ReleaseCohortsTable,
 		ReminderPreferencesTable,
 		ReportRollupsTable,
-		RulesetReleasesTable,
 		SiteSocialLinksTable,
 		SpkPreferencesTable,
 		SupportActionAuditsTable,

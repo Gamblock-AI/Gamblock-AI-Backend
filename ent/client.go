@@ -39,9 +39,6 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningprogress"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/membershipexitrequest"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/networkrulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/notificationdelivery"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/operatorinvitation"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organization"
@@ -58,10 +55,8 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryspace"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reminderpreference"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/sitesociallink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/spkpreference"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportactionaudit"
@@ -125,12 +120,6 @@ type Client struct {
 	LearningRevision *LearningRevisionClient
 	// MembershipExitRequest is the client for interacting with the MembershipExitRequest builders.
 	MembershipExitRequest *MembershipExitRequestClient
-	// ModelRelease is the client for interacting with the ModelRelease builders.
-	ModelRelease *ModelReleaseClient
-	// ModelRollout is the client for interacting with the ModelRollout builders.
-	ModelRollout *ModelRolloutClient
-	// NetworkRulesetRelease is the client for interacting with the NetworkRulesetRelease builders.
-	NetworkRulesetRelease *NetworkRulesetReleaseClient
 	// NotificationDelivery is the client for interacting with the NotificationDelivery builders.
 	NotificationDelivery *NotificationDeliveryClient
 	// OperatorInvitation is the client for interacting with the OperatorInvitation builders.
@@ -163,14 +152,10 @@ type Client struct {
 	Reflection *ReflectionClient
 	// RefreshToken is the client for interacting with the RefreshToken builders.
 	RefreshToken *RefreshTokenClient
-	// ReleaseCohort is the client for interacting with the ReleaseCohort builders.
-	ReleaseCohort *ReleaseCohortClient
 	// ReminderPreference is the client for interacting with the ReminderPreference builders.
 	ReminderPreference *ReminderPreferenceClient
 	// ReportRollup is the client for interacting with the ReportRollup builders.
 	ReportRollup *ReportRollupClient
-	// RulesetRelease is the client for interacting with the RulesetRelease builders.
-	RulesetRelease *RulesetReleaseClient
 	// SiteSocialLink is the client for interacting with the SiteSocialLink builders.
 	SiteSocialLink *SiteSocialLinkClient
 	// SpkPreference is the client for interacting with the SpkPreference builders.
@@ -219,9 +204,6 @@ func (c *Client) init() {
 	c.LearningProgress = NewLearningProgressClient(c.config)
 	c.LearningRevision = NewLearningRevisionClient(c.config)
 	c.MembershipExitRequest = NewMembershipExitRequestClient(c.config)
-	c.ModelRelease = NewModelReleaseClient(c.config)
-	c.ModelRollout = NewModelRolloutClient(c.config)
-	c.NetworkRulesetRelease = NewNetworkRulesetReleaseClient(c.config)
 	c.NotificationDelivery = NewNotificationDeliveryClient(c.config)
 	c.OperatorInvitation = NewOperatorInvitationClient(c.config)
 	c.Organization = NewOrganizationClient(c.config)
@@ -238,10 +220,8 @@ func (c *Client) init() {
 	c.RecoverySpace = NewRecoverySpaceClient(c.config)
 	c.Reflection = NewReflectionClient(c.config)
 	c.RefreshToken = NewRefreshTokenClient(c.config)
-	c.ReleaseCohort = NewReleaseCohortClient(c.config)
 	c.ReminderPreference = NewReminderPreferenceClient(c.config)
 	c.ReportRollup = NewReportRollupClient(c.config)
-	c.RulesetRelease = NewRulesetReleaseClient(c.config)
 	c.SiteSocialLink = NewSiteSocialLinkClient(c.config)
 	c.SpkPreference = NewSpkPreferenceClient(c.config)
 	c.SupportActionAudit = NewSupportActionAuditClient(c.config)
@@ -365,9 +345,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		LearningProgress:         NewLearningProgressClient(cfg),
 		LearningRevision:         NewLearningRevisionClient(cfg),
 		MembershipExitRequest:    NewMembershipExitRequestClient(cfg),
-		ModelRelease:             NewModelReleaseClient(cfg),
-		ModelRollout:             NewModelRolloutClient(cfg),
-		NetworkRulesetRelease:    NewNetworkRulesetReleaseClient(cfg),
 		NotificationDelivery:     NewNotificationDeliveryClient(cfg),
 		OperatorInvitation:       NewOperatorInvitationClient(cfg),
 		Organization:             NewOrganizationClient(cfg),
@@ -384,10 +361,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		RecoverySpace:            NewRecoverySpaceClient(cfg),
 		Reflection:               NewReflectionClient(cfg),
 		RefreshToken:             NewRefreshTokenClient(cfg),
-		ReleaseCohort:            NewReleaseCohortClient(cfg),
 		ReminderPreference:       NewReminderPreferenceClient(cfg),
 		ReportRollup:             NewReportRollupClient(cfg),
-		RulesetRelease:           NewRulesetReleaseClient(cfg),
 		SiteSocialLink:           NewSiteSocialLinkClient(cfg),
 		SpkPreference:            NewSpkPreferenceClient(cfg),
 		SupportActionAudit:       NewSupportActionAuditClient(cfg),
@@ -438,9 +413,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		LearningProgress:         NewLearningProgressClient(cfg),
 		LearningRevision:         NewLearningRevisionClient(cfg),
 		MembershipExitRequest:    NewMembershipExitRequestClient(cfg),
-		ModelRelease:             NewModelReleaseClient(cfg),
-		ModelRollout:             NewModelRolloutClient(cfg),
-		NetworkRulesetRelease:    NewNetworkRulesetReleaseClient(cfg),
 		NotificationDelivery:     NewNotificationDeliveryClient(cfg),
 		OperatorInvitation:       NewOperatorInvitationClient(cfg),
 		Organization:             NewOrganizationClient(cfg),
@@ -457,10 +429,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		RecoverySpace:            NewRecoverySpaceClient(cfg),
 		Reflection:               NewReflectionClient(cfg),
 		RefreshToken:             NewRefreshTokenClient(cfg),
-		ReleaseCohort:            NewReleaseCohortClient(cfg),
 		ReminderPreference:       NewReminderPreferenceClient(cfg),
 		ReportRollup:             NewReportRollupClient(cfg),
-		RulesetRelease:           NewRulesetReleaseClient(cfg),
 		SiteSocialLink:           NewSiteSocialLinkClient(cfg),
 		SpkPreference:            NewSpkPreferenceClient(cfg),
 		SupportActionAudit:       NewSupportActionAuditClient(cfg),
@@ -502,15 +472,13 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Device, c.EducationMedia, c.EducationRevision, c.EmergencyKeyRequest,
 		c.ExperienceGrant, c.Institution, c.Intention, c.InterventionRecord,
 		c.LearningCluster, c.LearningItem, c.LearningProgress, c.LearningRevision,
-		c.MembershipExitRequest, c.ModelRelease, c.ModelRollout,
-		c.NetworkRulesetRelease, c.NotificationDelivery, c.OperatorInvitation,
+		c.MembershipExitRequest, c.NotificationDelivery, c.OperatorInvitation,
 		c.Organization, c.OrganizationInvite, c.OrganizationMember,
 		c.OrganizationPolicy, c.PartnerContactRequest, c.PartnerLink,
 		c.PsychoeducationModule, c.PsychoeducationProgress, c.PushSubscription,
 		c.RecoveryPracticeSession, c.RecoveryRecord, c.RecoverySpace, c.Reflection,
-		c.RefreshToken, c.ReleaseCohort, c.ReminderPreference, c.ReportRollup,
-		c.RulesetRelease, c.SiteSocialLink, c.SpkPreference, c.SupportActionAudit,
-		c.SupportCase, c.SupportMessage, c.User,
+		c.RefreshToken, c.ReminderPreference, c.ReportRollup, c.SiteSocialLink,
+		c.SpkPreference, c.SupportActionAudit, c.SupportCase, c.SupportMessage, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -526,15 +494,13 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Device, c.EducationMedia, c.EducationRevision, c.EmergencyKeyRequest,
 		c.ExperienceGrant, c.Institution, c.Intention, c.InterventionRecord,
 		c.LearningCluster, c.LearningItem, c.LearningProgress, c.LearningRevision,
-		c.MembershipExitRequest, c.ModelRelease, c.ModelRollout,
-		c.NetworkRulesetRelease, c.NotificationDelivery, c.OperatorInvitation,
+		c.MembershipExitRequest, c.NotificationDelivery, c.OperatorInvitation,
 		c.Organization, c.OrganizationInvite, c.OrganizationMember,
 		c.OrganizationPolicy, c.PartnerContactRequest, c.PartnerLink,
 		c.PsychoeducationModule, c.PsychoeducationProgress, c.PushSubscription,
 		c.RecoveryPracticeSession, c.RecoveryRecord, c.RecoverySpace, c.Reflection,
-		c.RefreshToken, c.ReleaseCohort, c.ReminderPreference, c.ReportRollup,
-		c.RulesetRelease, c.SiteSocialLink, c.SpkPreference, c.SupportActionAudit,
-		c.SupportCase, c.SupportMessage, c.User,
+		c.RefreshToken, c.ReminderPreference, c.ReportRollup, c.SiteSocialLink,
+		c.SpkPreference, c.SupportActionAudit, c.SupportCase, c.SupportMessage, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -593,12 +559,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.LearningRevision.mutate(ctx, m)
 	case *MembershipExitRequestMutation:
 		return c.MembershipExitRequest.mutate(ctx, m)
-	case *ModelReleaseMutation:
-		return c.ModelRelease.mutate(ctx, m)
-	case *ModelRolloutMutation:
-		return c.ModelRollout.mutate(ctx, m)
-	case *NetworkRulesetReleaseMutation:
-		return c.NetworkRulesetRelease.mutate(ctx, m)
 	case *NotificationDeliveryMutation:
 		return c.NotificationDelivery.mutate(ctx, m)
 	case *OperatorInvitationMutation:
@@ -631,14 +591,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Reflection.mutate(ctx, m)
 	case *RefreshTokenMutation:
 		return c.RefreshToken.mutate(ctx, m)
-	case *ReleaseCohortMutation:
-		return c.ReleaseCohort.mutate(ctx, m)
 	case *ReminderPreferenceMutation:
 		return c.ReminderPreference.mutate(ctx, m)
 	case *ReportRollupMutation:
 		return c.ReportRollup.mutate(ctx, m)
-	case *RulesetReleaseMutation:
-		return c.RulesetRelease.mutate(ctx, m)
 	case *SiteSocialLinkMutation:
 		return c.SiteSocialLink.mutate(ctx, m)
 	case *SpkPreferenceMutation:
@@ -3981,405 +3937,6 @@ func (c *MembershipExitRequestClient) mutate(ctx context.Context, m *MembershipE
 	}
 }
 
-// ModelReleaseClient is a client for the ModelRelease schema.
-type ModelReleaseClient struct {
-	config
-}
-
-// NewModelReleaseClient returns a client for the ModelRelease from the given config.
-func NewModelReleaseClient(c config) *ModelReleaseClient {
-	return &ModelReleaseClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `modelrelease.Hooks(f(g(h())))`.
-func (c *ModelReleaseClient) Use(hooks ...Hook) {
-	c.hooks.ModelRelease = append(c.hooks.ModelRelease, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `modelrelease.Intercept(f(g(h())))`.
-func (c *ModelReleaseClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ModelRelease = append(c.inters.ModelRelease, interceptors...)
-}
-
-// Create returns a builder for creating a ModelRelease entity.
-func (c *ModelReleaseClient) Create() *ModelReleaseCreate {
-	mutation := newModelReleaseMutation(c.config, OpCreate)
-	return &ModelReleaseCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of ModelRelease entities.
-func (c *ModelReleaseClient) CreateBulk(builders ...*ModelReleaseCreate) *ModelReleaseCreateBulk {
-	return &ModelReleaseCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *ModelReleaseClient) MapCreateBulk(slice any, setFunc func(*ModelReleaseCreate, int)) *ModelReleaseCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &ModelReleaseCreateBulk{err: fmt.Errorf("calling to ModelReleaseClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*ModelReleaseCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &ModelReleaseCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for ModelRelease.
-func (c *ModelReleaseClient) Update() *ModelReleaseUpdate {
-	mutation := newModelReleaseMutation(c.config, OpUpdate)
-	return &ModelReleaseUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ModelReleaseClient) UpdateOne(_m *ModelRelease) *ModelReleaseUpdateOne {
-	mutation := newModelReleaseMutation(c.config, OpUpdateOne, withModelRelease(_m))
-	return &ModelReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ModelReleaseClient) UpdateOneID(id string) *ModelReleaseUpdateOne {
-	mutation := newModelReleaseMutation(c.config, OpUpdateOne, withModelReleaseID(id))
-	return &ModelReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for ModelRelease.
-func (c *ModelReleaseClient) Delete() *ModelReleaseDelete {
-	mutation := newModelReleaseMutation(c.config, OpDelete)
-	return &ModelReleaseDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ModelReleaseClient) DeleteOne(_m *ModelRelease) *ModelReleaseDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ModelReleaseClient) DeleteOneID(id string) *ModelReleaseDeleteOne {
-	builder := c.Delete().Where(modelrelease.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ModelReleaseDeleteOne{builder}
-}
-
-// Query returns a query builder for ModelRelease.
-func (c *ModelReleaseClient) Query() *ModelReleaseQuery {
-	return &ModelReleaseQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeModelRelease},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a ModelRelease entity by its id.
-func (c *ModelReleaseClient) Get(ctx context.Context, id string) (*ModelRelease, error) {
-	return c.Query().Where(modelrelease.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ModelReleaseClient) GetX(ctx context.Context, id string) *ModelRelease {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *ModelReleaseClient) Hooks() []Hook {
-	return c.hooks.ModelRelease
-}
-
-// Interceptors returns the client interceptors.
-func (c *ModelReleaseClient) Interceptors() []Interceptor {
-	return c.inters.ModelRelease
-}
-
-func (c *ModelReleaseClient) mutate(ctx context.Context, m *ModelReleaseMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ModelReleaseCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ModelReleaseUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ModelReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ModelReleaseDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown ModelRelease mutation op: %q", m.Op())
-	}
-}
-
-// ModelRolloutClient is a client for the ModelRollout schema.
-type ModelRolloutClient struct {
-	config
-}
-
-// NewModelRolloutClient returns a client for the ModelRollout from the given config.
-func NewModelRolloutClient(c config) *ModelRolloutClient {
-	return &ModelRolloutClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `modelrollout.Hooks(f(g(h())))`.
-func (c *ModelRolloutClient) Use(hooks ...Hook) {
-	c.hooks.ModelRollout = append(c.hooks.ModelRollout, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `modelrollout.Intercept(f(g(h())))`.
-func (c *ModelRolloutClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ModelRollout = append(c.inters.ModelRollout, interceptors...)
-}
-
-// Create returns a builder for creating a ModelRollout entity.
-func (c *ModelRolloutClient) Create() *ModelRolloutCreate {
-	mutation := newModelRolloutMutation(c.config, OpCreate)
-	return &ModelRolloutCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of ModelRollout entities.
-func (c *ModelRolloutClient) CreateBulk(builders ...*ModelRolloutCreate) *ModelRolloutCreateBulk {
-	return &ModelRolloutCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *ModelRolloutClient) MapCreateBulk(slice any, setFunc func(*ModelRolloutCreate, int)) *ModelRolloutCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &ModelRolloutCreateBulk{err: fmt.Errorf("calling to ModelRolloutClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*ModelRolloutCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &ModelRolloutCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for ModelRollout.
-func (c *ModelRolloutClient) Update() *ModelRolloutUpdate {
-	mutation := newModelRolloutMutation(c.config, OpUpdate)
-	return &ModelRolloutUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ModelRolloutClient) UpdateOne(_m *ModelRollout) *ModelRolloutUpdateOne {
-	mutation := newModelRolloutMutation(c.config, OpUpdateOne, withModelRollout(_m))
-	return &ModelRolloutUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ModelRolloutClient) UpdateOneID(id string) *ModelRolloutUpdateOne {
-	mutation := newModelRolloutMutation(c.config, OpUpdateOne, withModelRolloutID(id))
-	return &ModelRolloutUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for ModelRollout.
-func (c *ModelRolloutClient) Delete() *ModelRolloutDelete {
-	mutation := newModelRolloutMutation(c.config, OpDelete)
-	return &ModelRolloutDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ModelRolloutClient) DeleteOne(_m *ModelRollout) *ModelRolloutDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ModelRolloutClient) DeleteOneID(id string) *ModelRolloutDeleteOne {
-	builder := c.Delete().Where(modelrollout.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ModelRolloutDeleteOne{builder}
-}
-
-// Query returns a query builder for ModelRollout.
-func (c *ModelRolloutClient) Query() *ModelRolloutQuery {
-	return &ModelRolloutQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeModelRollout},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a ModelRollout entity by its id.
-func (c *ModelRolloutClient) Get(ctx context.Context, id string) (*ModelRollout, error) {
-	return c.Query().Where(modelrollout.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ModelRolloutClient) GetX(ctx context.Context, id string) *ModelRollout {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *ModelRolloutClient) Hooks() []Hook {
-	return c.hooks.ModelRollout
-}
-
-// Interceptors returns the client interceptors.
-func (c *ModelRolloutClient) Interceptors() []Interceptor {
-	return c.inters.ModelRollout
-}
-
-func (c *ModelRolloutClient) mutate(ctx context.Context, m *ModelRolloutMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ModelRolloutCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ModelRolloutUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ModelRolloutUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ModelRolloutDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown ModelRollout mutation op: %q", m.Op())
-	}
-}
-
-// NetworkRulesetReleaseClient is a client for the NetworkRulesetRelease schema.
-type NetworkRulesetReleaseClient struct {
-	config
-}
-
-// NewNetworkRulesetReleaseClient returns a client for the NetworkRulesetRelease from the given config.
-func NewNetworkRulesetReleaseClient(c config) *NetworkRulesetReleaseClient {
-	return &NetworkRulesetReleaseClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `networkrulesetrelease.Hooks(f(g(h())))`.
-func (c *NetworkRulesetReleaseClient) Use(hooks ...Hook) {
-	c.hooks.NetworkRulesetRelease = append(c.hooks.NetworkRulesetRelease, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `networkrulesetrelease.Intercept(f(g(h())))`.
-func (c *NetworkRulesetReleaseClient) Intercept(interceptors ...Interceptor) {
-	c.inters.NetworkRulesetRelease = append(c.inters.NetworkRulesetRelease, interceptors...)
-}
-
-// Create returns a builder for creating a NetworkRulesetRelease entity.
-func (c *NetworkRulesetReleaseClient) Create() *NetworkRulesetReleaseCreate {
-	mutation := newNetworkRulesetReleaseMutation(c.config, OpCreate)
-	return &NetworkRulesetReleaseCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of NetworkRulesetRelease entities.
-func (c *NetworkRulesetReleaseClient) CreateBulk(builders ...*NetworkRulesetReleaseCreate) *NetworkRulesetReleaseCreateBulk {
-	return &NetworkRulesetReleaseCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *NetworkRulesetReleaseClient) MapCreateBulk(slice any, setFunc func(*NetworkRulesetReleaseCreate, int)) *NetworkRulesetReleaseCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &NetworkRulesetReleaseCreateBulk{err: fmt.Errorf("calling to NetworkRulesetReleaseClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*NetworkRulesetReleaseCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &NetworkRulesetReleaseCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for NetworkRulesetRelease.
-func (c *NetworkRulesetReleaseClient) Update() *NetworkRulesetReleaseUpdate {
-	mutation := newNetworkRulesetReleaseMutation(c.config, OpUpdate)
-	return &NetworkRulesetReleaseUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *NetworkRulesetReleaseClient) UpdateOne(_m *NetworkRulesetRelease) *NetworkRulesetReleaseUpdateOne {
-	mutation := newNetworkRulesetReleaseMutation(c.config, OpUpdateOne, withNetworkRulesetRelease(_m))
-	return &NetworkRulesetReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *NetworkRulesetReleaseClient) UpdateOneID(id string) *NetworkRulesetReleaseUpdateOne {
-	mutation := newNetworkRulesetReleaseMutation(c.config, OpUpdateOne, withNetworkRulesetReleaseID(id))
-	return &NetworkRulesetReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for NetworkRulesetRelease.
-func (c *NetworkRulesetReleaseClient) Delete() *NetworkRulesetReleaseDelete {
-	mutation := newNetworkRulesetReleaseMutation(c.config, OpDelete)
-	return &NetworkRulesetReleaseDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *NetworkRulesetReleaseClient) DeleteOne(_m *NetworkRulesetRelease) *NetworkRulesetReleaseDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *NetworkRulesetReleaseClient) DeleteOneID(id string) *NetworkRulesetReleaseDeleteOne {
-	builder := c.Delete().Where(networkrulesetrelease.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &NetworkRulesetReleaseDeleteOne{builder}
-}
-
-// Query returns a query builder for NetworkRulesetRelease.
-func (c *NetworkRulesetReleaseClient) Query() *NetworkRulesetReleaseQuery {
-	return &NetworkRulesetReleaseQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeNetworkRulesetRelease},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a NetworkRulesetRelease entity by its id.
-func (c *NetworkRulesetReleaseClient) Get(ctx context.Context, id string) (*NetworkRulesetRelease, error) {
-	return c.Query().Where(networkrulesetrelease.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *NetworkRulesetReleaseClient) GetX(ctx context.Context, id string) *NetworkRulesetRelease {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *NetworkRulesetReleaseClient) Hooks() []Hook {
-	return c.hooks.NetworkRulesetRelease
-}
-
-// Interceptors returns the client interceptors.
-func (c *NetworkRulesetReleaseClient) Interceptors() []Interceptor {
-	return c.inters.NetworkRulesetRelease
-}
-
-func (c *NetworkRulesetReleaseClient) mutate(ctx context.Context, m *NetworkRulesetReleaseMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&NetworkRulesetReleaseCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&NetworkRulesetReleaseUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&NetworkRulesetReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&NetworkRulesetReleaseDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown NetworkRulesetRelease mutation op: %q", m.Op())
-	}
-}
-
 // NotificationDeliveryClient is a client for the NotificationDelivery schema.
 type NotificationDeliveryClient struct {
 	config
@@ -6508,139 +6065,6 @@ func (c *RefreshTokenClient) mutate(ctx context.Context, m *RefreshTokenMutation
 	}
 }
 
-// ReleaseCohortClient is a client for the ReleaseCohort schema.
-type ReleaseCohortClient struct {
-	config
-}
-
-// NewReleaseCohortClient returns a client for the ReleaseCohort from the given config.
-func NewReleaseCohortClient(c config) *ReleaseCohortClient {
-	return &ReleaseCohortClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `releasecohort.Hooks(f(g(h())))`.
-func (c *ReleaseCohortClient) Use(hooks ...Hook) {
-	c.hooks.ReleaseCohort = append(c.hooks.ReleaseCohort, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `releasecohort.Intercept(f(g(h())))`.
-func (c *ReleaseCohortClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ReleaseCohort = append(c.inters.ReleaseCohort, interceptors...)
-}
-
-// Create returns a builder for creating a ReleaseCohort entity.
-func (c *ReleaseCohortClient) Create() *ReleaseCohortCreate {
-	mutation := newReleaseCohortMutation(c.config, OpCreate)
-	return &ReleaseCohortCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of ReleaseCohort entities.
-func (c *ReleaseCohortClient) CreateBulk(builders ...*ReleaseCohortCreate) *ReleaseCohortCreateBulk {
-	return &ReleaseCohortCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *ReleaseCohortClient) MapCreateBulk(slice any, setFunc func(*ReleaseCohortCreate, int)) *ReleaseCohortCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &ReleaseCohortCreateBulk{err: fmt.Errorf("calling to ReleaseCohortClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*ReleaseCohortCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &ReleaseCohortCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for ReleaseCohort.
-func (c *ReleaseCohortClient) Update() *ReleaseCohortUpdate {
-	mutation := newReleaseCohortMutation(c.config, OpUpdate)
-	return &ReleaseCohortUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ReleaseCohortClient) UpdateOne(_m *ReleaseCohort) *ReleaseCohortUpdateOne {
-	mutation := newReleaseCohortMutation(c.config, OpUpdateOne, withReleaseCohort(_m))
-	return &ReleaseCohortUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ReleaseCohortClient) UpdateOneID(id string) *ReleaseCohortUpdateOne {
-	mutation := newReleaseCohortMutation(c.config, OpUpdateOne, withReleaseCohortID(id))
-	return &ReleaseCohortUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for ReleaseCohort.
-func (c *ReleaseCohortClient) Delete() *ReleaseCohortDelete {
-	mutation := newReleaseCohortMutation(c.config, OpDelete)
-	return &ReleaseCohortDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ReleaseCohortClient) DeleteOne(_m *ReleaseCohort) *ReleaseCohortDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ReleaseCohortClient) DeleteOneID(id string) *ReleaseCohortDeleteOne {
-	builder := c.Delete().Where(releasecohort.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ReleaseCohortDeleteOne{builder}
-}
-
-// Query returns a query builder for ReleaseCohort.
-func (c *ReleaseCohortClient) Query() *ReleaseCohortQuery {
-	return &ReleaseCohortQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeReleaseCohort},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a ReleaseCohort entity by its id.
-func (c *ReleaseCohortClient) Get(ctx context.Context, id string) (*ReleaseCohort, error) {
-	return c.Query().Where(releasecohort.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ReleaseCohortClient) GetX(ctx context.Context, id string) *ReleaseCohort {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *ReleaseCohortClient) Hooks() []Hook {
-	return c.hooks.ReleaseCohort
-}
-
-// Interceptors returns the client interceptors.
-func (c *ReleaseCohortClient) Interceptors() []Interceptor {
-	return c.inters.ReleaseCohort
-}
-
-func (c *ReleaseCohortClient) mutate(ctx context.Context, m *ReleaseCohortMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ReleaseCohortCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ReleaseCohortUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ReleaseCohortUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ReleaseCohortDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown ReleaseCohort mutation op: %q", m.Op())
-	}
-}
-
 // ReminderPreferenceClient is a client for the ReminderPreference schema.
 type ReminderPreferenceClient struct {
 	config
@@ -6904,139 +6328,6 @@ func (c *ReportRollupClient) mutate(ctx context.Context, m *ReportRollupMutation
 		return (&ReportRollupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ReportRollup mutation op: %q", m.Op())
-	}
-}
-
-// RulesetReleaseClient is a client for the RulesetRelease schema.
-type RulesetReleaseClient struct {
-	config
-}
-
-// NewRulesetReleaseClient returns a client for the RulesetRelease from the given config.
-func NewRulesetReleaseClient(c config) *RulesetReleaseClient {
-	return &RulesetReleaseClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `rulesetrelease.Hooks(f(g(h())))`.
-func (c *RulesetReleaseClient) Use(hooks ...Hook) {
-	c.hooks.RulesetRelease = append(c.hooks.RulesetRelease, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `rulesetrelease.Intercept(f(g(h())))`.
-func (c *RulesetReleaseClient) Intercept(interceptors ...Interceptor) {
-	c.inters.RulesetRelease = append(c.inters.RulesetRelease, interceptors...)
-}
-
-// Create returns a builder for creating a RulesetRelease entity.
-func (c *RulesetReleaseClient) Create() *RulesetReleaseCreate {
-	mutation := newRulesetReleaseMutation(c.config, OpCreate)
-	return &RulesetReleaseCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of RulesetRelease entities.
-func (c *RulesetReleaseClient) CreateBulk(builders ...*RulesetReleaseCreate) *RulesetReleaseCreateBulk {
-	return &RulesetReleaseCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *RulesetReleaseClient) MapCreateBulk(slice any, setFunc func(*RulesetReleaseCreate, int)) *RulesetReleaseCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &RulesetReleaseCreateBulk{err: fmt.Errorf("calling to RulesetReleaseClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*RulesetReleaseCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &RulesetReleaseCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for RulesetRelease.
-func (c *RulesetReleaseClient) Update() *RulesetReleaseUpdate {
-	mutation := newRulesetReleaseMutation(c.config, OpUpdate)
-	return &RulesetReleaseUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *RulesetReleaseClient) UpdateOne(_m *RulesetRelease) *RulesetReleaseUpdateOne {
-	mutation := newRulesetReleaseMutation(c.config, OpUpdateOne, withRulesetRelease(_m))
-	return &RulesetReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *RulesetReleaseClient) UpdateOneID(id string) *RulesetReleaseUpdateOne {
-	mutation := newRulesetReleaseMutation(c.config, OpUpdateOne, withRulesetReleaseID(id))
-	return &RulesetReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for RulesetRelease.
-func (c *RulesetReleaseClient) Delete() *RulesetReleaseDelete {
-	mutation := newRulesetReleaseMutation(c.config, OpDelete)
-	return &RulesetReleaseDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *RulesetReleaseClient) DeleteOne(_m *RulesetRelease) *RulesetReleaseDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RulesetReleaseClient) DeleteOneID(id string) *RulesetReleaseDeleteOne {
-	builder := c.Delete().Where(rulesetrelease.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &RulesetReleaseDeleteOne{builder}
-}
-
-// Query returns a query builder for RulesetRelease.
-func (c *RulesetReleaseClient) Query() *RulesetReleaseQuery {
-	return &RulesetReleaseQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeRulesetRelease},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a RulesetRelease entity by its id.
-func (c *RulesetReleaseClient) Get(ctx context.Context, id string) (*RulesetRelease, error) {
-	return c.Query().Where(rulesetrelease.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *RulesetReleaseClient) GetX(ctx context.Context, id string) *RulesetRelease {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *RulesetReleaseClient) Hooks() []Hook {
-	return c.hooks.RulesetRelease
-}
-
-// Interceptors returns the client interceptors.
-func (c *RulesetReleaseClient) Interceptors() []Interceptor {
-	return c.inters.RulesetRelease
-}
-
-func (c *RulesetReleaseClient) mutate(ctx context.Context, m *RulesetReleaseMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&RulesetReleaseCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&RulesetReleaseUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&RulesetReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&RulesetReleaseDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown RulesetRelease mutation op: %q", m.Op())
 	}
 }
 
@@ -7846,14 +7137,13 @@ type (
 		ContentProgress, DailyMission, DataRequest, Device, EducationMedia,
 		EducationRevision, EmergencyKeyRequest, ExperienceGrant, Institution,
 		Intention, InterventionRecord, LearningCluster, LearningItem, LearningProgress,
-		LearningRevision, MembershipExitRequest, ModelRelease, ModelRollout,
-		NetworkRulesetRelease, NotificationDelivery, OperatorInvitation, Organization,
-		OrganizationInvite, OrganizationMember, OrganizationPolicy,
-		PartnerContactRequest, PartnerLink, PsychoeducationModule,
+		LearningRevision, MembershipExitRequest, NotificationDelivery,
+		OperatorInvitation, Organization, OrganizationInvite, OrganizationMember,
+		OrganizationPolicy, PartnerContactRequest, PartnerLink, PsychoeducationModule,
 		PsychoeducationProgress, PushSubscription, RecoveryPracticeSession,
-		RecoveryRecord, RecoverySpace, Reflection, RefreshToken, ReleaseCohort,
-		ReminderPreference, ReportRollup, RulesetRelease, SiteSocialLink,
-		SpkPreference, SupportActionAudit, SupportCase, SupportMessage, User []ent.Hook
+		RecoveryRecord, RecoverySpace, Reflection, RefreshToken, ReminderPreference,
+		ReportRollup, SiteSocialLink, SpkPreference, SupportActionAudit, SupportCase,
+		SupportMessage, User []ent.Hook
 	}
 	inters struct {
 		AcademicProgram, AccountabilityGroup, AccountabilityMembership, AggregateEvent,
@@ -7861,14 +7151,12 @@ type (
 		ContentProgress, DailyMission, DataRequest, Device, EducationMedia,
 		EducationRevision, EmergencyKeyRequest, ExperienceGrant, Institution,
 		Intention, InterventionRecord, LearningCluster, LearningItem, LearningProgress,
-		LearningRevision, MembershipExitRequest, ModelRelease, ModelRollout,
-		NetworkRulesetRelease, NotificationDelivery, OperatorInvitation, Organization,
-		OrganizationInvite, OrganizationMember, OrganizationPolicy,
-		PartnerContactRequest, PartnerLink, PsychoeducationModule,
+		LearningRevision, MembershipExitRequest, NotificationDelivery,
+		OperatorInvitation, Organization, OrganizationInvite, OrganizationMember,
+		OrganizationPolicy, PartnerContactRequest, PartnerLink, PsychoeducationModule,
 		PsychoeducationProgress, PushSubscription, RecoveryPracticeSession,
-		RecoveryRecord, RecoverySpace, Reflection, RefreshToken, ReleaseCohort,
-		ReminderPreference, ReportRollup, RulesetRelease, SiteSocialLink,
-		SpkPreference, SupportActionAudit, SupportCase, SupportMessage,
-		User []ent.Interceptor
+		RecoveryRecord, RecoverySpace, Reflection, RefreshToken, ReminderPreference,
+		ReportRollup, SiteSocialLink, SpkPreference, SupportActionAudit, SupportCase,
+		SupportMessage, User []ent.Interceptor
 	}
 )

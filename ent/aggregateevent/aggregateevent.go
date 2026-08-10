@@ -73,8 +73,6 @@ const (
 	EventTypeBlockCountSync    EventType = "block_count_sync"
 	EventTypeTamperDetected    EventType = "tamper_detected"
 	EventTypePermissionRevoked EventType = "permission_revoked"
-	EventTypeModelUpdated      EventType = "model_updated"
-	EventTypeRulesetUpdated    EventType = "ruleset_updated"
 )
 
 func (et EventType) String() string {
@@ -84,7 +82,7 @@ func (et EventType) String() string {
 // EventTypeValidator is a validator for the "event_type" field enum values. It is called by the builders before save.
 func EventTypeValidator(et EventType) error {
 	switch et {
-	case EventTypeInterventionShown, EventTypeBlockCountSync, EventTypeTamperDetected, EventTypePermissionRevoked, EventTypeModelUpdated, EventTypeRulesetUpdated:
+	case EventTypeInterventionShown, EventTypeBlockCountSync, EventTypeTamperDetected, EventTypePermissionRevoked:
 		return nil
 	default:
 		return fmt.Errorf("aggregateevent: invalid enum value for event_type field: %q", et)

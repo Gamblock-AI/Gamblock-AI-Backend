@@ -33,7 +33,6 @@ type (
 	SupportMessage           = model.SupportMessage
 	DataRequest              = model.DataRequest
 	Organization             = model.Organization
-	Release                  = model.Release
 	AuditEvent               = model.AuditEvent
 	NotificationItem         = model.NotificationItem
 	JournalEntry             = model.JournalEntry
@@ -47,7 +46,6 @@ type (
 	EmergencyKeyRequest      = model.EmergencyKeyRequest
 	SiteSocialLink           = model.SiteSocialLink
 	OperatorInvitation       = model.OperatorInvitation
-	ReleaseRollout           = model.ReleaseRollout
 	Institution              = model.Institution
 	AcademicProgram          = model.AcademicProgram
 	LearningCluster          = model.LearningCluster
@@ -88,9 +86,6 @@ type Store struct {
 	SupportMessages           []SupportMessage           `json:"support_messages"`
 	DataRequests              []DataRequest              `json:"data_requests"`
 	Organizations             []Organization             `json:"organizations"`
-	ModelReleases             []Release                  `json:"model_releases"`
-	RulesetReleases           []Release                  `json:"ruleset_releases"`
-	NetworkRulesets           []Release                  `json:"network_rulesets"`
 	AuditEvents               []AuditEvent               `json:"audit_events"`
 	NotificationEvents        []NotificationItem         `json:"notification_events"`
 	JournalEntries            []JournalEntry             `json:"journal_entries"`
@@ -104,7 +99,6 @@ type Store struct {
 	EmergencyKeyRequests      []EmergencyKeyRequest      `json:"emergency_key_requests"`
 	SiteSocialLinks           []SiteSocialLink           `json:"site_social_links"`
 	OperatorInvitations       []OperatorInvitation       `json:"operator_invitations"`
-	ReleaseRollouts           []ReleaseRollout           `json:"release_rollouts"`
 	Institutions              []Institution              `json:"institutions"`
 	AcademicPrograms          []AcademicProgram          `json:"academic_programs"`
 	LearningClusters          []LearningCluster          `json:"learning_clusters"`

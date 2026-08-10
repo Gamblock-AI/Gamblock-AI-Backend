@@ -23,7 +23,7 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 	if err := loadIdentityStore(ctx, client, out, users); err != nil {
 		return nil, err
 	}
-	if err := loadReleaseStore(ctx, client, out); err != nil {
+	if err := loadContentStore(ctx, client, out); err != nil {
 		return nil, err
 	}
 	if err := loadOperationsStore(ctx, client, out); err != nil {

@@ -309,42 +309,6 @@ func (f MembershipExitRequestFunc) Mutate(ctx context.Context, m ent.Mutation) (
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MembershipExitRequestMutation", m)
 }
 
-// The ModelReleaseFunc type is an adapter to allow the use of ordinary
-// function as ModelRelease mutator.
-type ModelReleaseFunc func(context.Context, *ent.ModelReleaseMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ModelReleaseFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ModelReleaseMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ModelReleaseMutation", m)
-}
-
-// The ModelRolloutFunc type is an adapter to allow the use of ordinary
-// function as ModelRollout mutator.
-type ModelRolloutFunc func(context.Context, *ent.ModelRolloutMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ModelRolloutFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ModelRolloutMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ModelRolloutMutation", m)
-}
-
-// The NetworkRulesetReleaseFunc type is an adapter to allow the use of ordinary
-// function as NetworkRulesetRelease mutator.
-type NetworkRulesetReleaseFunc func(context.Context, *ent.NetworkRulesetReleaseMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f NetworkRulesetReleaseFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.NetworkRulesetReleaseMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NetworkRulesetReleaseMutation", m)
-}
-
 // The NotificationDeliveryFunc type is an adapter to allow the use of ordinary
 // function as NotificationDelivery mutator.
 type NotificationDeliveryFunc func(context.Context, *ent.NotificationDeliveryMutation) (ent.Value, error)
@@ -537,18 +501,6 @@ func (f RefreshTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RefreshTokenMutation", m)
 }
 
-// The ReleaseCohortFunc type is an adapter to allow the use of ordinary
-// function as ReleaseCohort mutator.
-type ReleaseCohortFunc func(context.Context, *ent.ReleaseCohortMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ReleaseCohortFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ReleaseCohortMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ReleaseCohortMutation", m)
-}
-
 // The ReminderPreferenceFunc type is an adapter to allow the use of ordinary
 // function as ReminderPreference mutator.
 type ReminderPreferenceFunc func(context.Context, *ent.ReminderPreferenceMutation) (ent.Value, error)
@@ -571,18 +523,6 @@ func (f ReportRollupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ReportRollupMutation", m)
-}
-
-// The RulesetReleaseFunc type is an adapter to allow the use of ordinary
-// function as RulesetRelease mutator.
-type RulesetReleaseFunc func(context.Context, *ent.RulesetReleaseMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f RulesetReleaseFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.RulesetReleaseMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RulesetReleaseMutation", m)
 }
 
 // The SiteSocialLinkFunc type is an adapter to allow the use of ordinary

@@ -45,7 +45,7 @@ func (h *Handler) Health(c *gin.Context) {
 }
 
 func (h *Handler) Ready(c *gin.Context) {
-	ready := gin.H{"status": "ready", "database_configured": h.cfg.DatabaseURL != "", "storage": h.cfg.ArtifactStoragePath}
+	ready := gin.H{"status": "ready", "database_configured": h.cfg.DatabaseURL != "", "storage_configured": h.cfg.MediaStoragePath != ""}
 	h.respond(c, http.StatusOK, ready)
 }
 

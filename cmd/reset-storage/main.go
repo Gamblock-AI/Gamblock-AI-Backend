@@ -1,5 +1,5 @@
 // Command reset-storage empties the runtime storage directories (media,
-// avatars, exports, and release artifacts). It is meant to run together with a
+// avatars, and exports). It is meant to run together with a
 // destructive database reset (migrate-fresh / migrate-down), where every
 // dynamic file is orphaned by definition. The directories themselves are
 // recreated so the API can keep writing to them.
@@ -44,7 +44,6 @@ func main() {
 		cfg.MediaStoragePath,
 		cfg.AvatarStoragePath,
 		cfg.ExportStoragePath,
-		cfg.ArtifactStoragePath,
 	} {
 		if err := resetDir(dir); err != nil {
 			log.Fatalf("reset storage %q: %v", dir, err)

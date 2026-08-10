@@ -76,7 +76,7 @@ migrate-fresh:
 	go run ./cmd/reset-storage
 	@echo "Fresh migration complete."
 
-# Empties the runtime storage directories (media/avatars/exports/artifacts).
+# Empties the runtime storage directories (media/avatars/exports).
 # Run after a destructive database reset; seed assets are recreated by `make seed`.
 reset-storage:
 	go run ./cmd/reset-storage

@@ -32,7 +32,7 @@ func testCfg() config.Config {
 
 func TestAdminService_CreateAccountAndImmutableStatusUpdate(t *testing.T) {
 	repo, _ := newRepo(t)
-	svc := NewAdminServiceWithConfig(repo, testCfg(), zap.NewNop())
+	svc := NewAdminService(repo, zap.NewNop())
 	created, temporaryPassword, err := svc.CreateAccount(context.Background(), "usr_nasywa", "new-admin@example.com", "+6281200000012", "New Admin", "admin", "approved staffing")
 	require.NoError(t, err)
 	assert.Equal(t, "admin", created.Role)
@@ -298,28 +298,6 @@ func TestOrganization_GetByUserID_None(t *testing.T) {
 	svc := NewOrganizationService(repo, zap.NewNop())
 	_, err := svc.GetByUserID(context.Background(), "usr_nobody")
 	require.Error(t, err)
-}
-
-func TestAdmin_ReleasesCreateAndGet(t *testing.T) {
-	repo, _ := newRepo(t)
-	svc := NewAdminService(repo, zap.NewNop())
-	ctx := context.Background()
-
-	beforeModel, _ := svc.GetModelReleases(ctx)
-	err := svc.CreateModelRelease(ctx, "artifact-v9", "all", "/p", "sha", "contract", 0.72, map[string]any{"x": 1})
-	require.NoError(t, err)
-	afterModel, _ := svc.GetModelReleases(ctx)
-	assert.Equal(t, len(beforeModel)+1, len(afterModel))
-
-	err = svc.CreateRulesetRelease(ctx, "ruleset-v9", "/p", "sha", map[string]any{"rules": 5})
-	require.NoError(t, err)
-	_, err = svc.GetRulesetReleases(ctx)
-	assert.NoError(t, err)
-
-	err = svc.CreateNetworkRulesetRelease(ctx, "net-v9", "/p", "sha", map[string]any{"domains": 0})
-	require.NoError(t, err)
-	_, err = svc.GetNetworkRulesets(ctx)
-	assert.NoError(t, err)
 }
 
 func TestDevice_CreateMissingOptionalVersions(t *testing.T) {

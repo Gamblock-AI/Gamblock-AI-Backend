@@ -52,9 +52,6 @@ func Seed(ctx context.Context, client *ent.Client, mediaPath ...string) error {
 	if err := SeedApprovals(ctx, client, now); err != nil {
 		return err
 	}
-	if err := SeedReleases(ctx, client, now); err != nil {
-		return err
-	}
 	if err := SeedOrganizations(ctx, client); err != nil {
 		return err
 	}

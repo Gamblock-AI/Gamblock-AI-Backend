@@ -49,20 +49,6 @@ type EducationRevision struct {
 	CreatedAt time.Time         `json:"created_at"`
 }
 
-type ReleaseRollout struct {
-	ID                   string    `json:"id"`
-	Kind                 string    `json:"kind"`
-	ReleaseID            string    `json:"release_id"`
-	ReleaseVersion       string    `json:"release_version"`
-	Status               string    `json:"status"`
-	Platform             string    `json:"platform"`
-	Percentage           int       `json:"percentage"`
-	AppVersionConstraint string    `json:"app_version_constraint,omitempty"`
-	CreatedBy            string    `json:"created_by"`
-	CreatedAt            time.Time `json:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at"`
-}
-
 type AdminOverview struct {
 	Role               string `json:"role"`
 	DraftContent       int    `json:"draft_content,omitempty"`
@@ -70,8 +56,6 @@ type AdminOverview struct {
 	OpenSupport        int    `json:"open_support,omitempty"`
 	UnassignedSupport  int    `json:"unassigned_support,omitempty"`
 	FailedDataRequests int    `json:"failed_data_requests,omitempty"`
-	ValidatedReleases  int    `json:"validated_releases,omitempty"`
-	ActiveRollouts     int    `json:"active_rollouts,omitempty"`
 	PendingEmergency   int    `json:"pending_emergency,omitempty"`
 	ActiveOperators    int    `json:"active_operators,omitempty"`
 	VisibleSocialLinks int    `json:"visible_social_links,omitempty"`

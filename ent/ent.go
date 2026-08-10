@@ -37,9 +37,6 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningprogress"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/membershipexitrequest"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrollout"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/networkrulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/notificationdelivery"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/operatorinvitation"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/organization"
@@ -56,10 +53,8 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryspace"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reflection"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/refreshtoken"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/releasecohort"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reminderpreference"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/reportrollup"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/sitesociallink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/spkpreference"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportactionaudit"
@@ -151,9 +146,6 @@ func checkColumn(t, c string) error {
 			learningprogress.Table:         learningprogress.ValidColumn,
 			learningrevision.Table:         learningrevision.ValidColumn,
 			membershipexitrequest.Table:    membershipexitrequest.ValidColumn,
-			modelrelease.Table:             modelrelease.ValidColumn,
-			modelrollout.Table:             modelrollout.ValidColumn,
-			networkrulesetrelease.Table:    networkrulesetrelease.ValidColumn,
 			notificationdelivery.Table:     notificationdelivery.ValidColumn,
 			operatorinvitation.Table:       operatorinvitation.ValidColumn,
 			organization.Table:             organization.ValidColumn,
@@ -170,10 +162,8 @@ func checkColumn(t, c string) error {
 			recoveryspace.Table:            recoveryspace.ValidColumn,
 			reflection.Table:               reflection.ValidColumn,
 			refreshtoken.Table:             refreshtoken.ValidColumn,
-			releasecohort.Table:            releasecohort.ValidColumn,
 			reminderpreference.Table:       reminderpreference.ValidColumn,
 			reportrollup.Table:             reportrollup.ValidColumn,
-			rulesetrelease.Table:           rulesetrelease.ValidColumn,
 			sitesociallink.Table:           sitesociallink.ValidColumn,
 			spkpreference.Table:            spkpreference.ValidColumn,
 			supportactionaudit.Table:       supportactionaudit.ValidColumn,

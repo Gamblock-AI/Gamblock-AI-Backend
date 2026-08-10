@@ -3,11 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/approvalrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/modelrelease"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/rulesetrelease"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportcase"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 )
@@ -40,18 +37,6 @@ func (r *Repository) GetPortalOverview(ctx context.Context) (model.PortalOvervie
 			HealthyDevicesPercent: percentage(healthy, len(snapshot.Devices)),
 			OpenSupport:           openSupport,
 		}
-		for _, item := range snapshot.ModelReleases {
-			if item.Status == "published" {
-				overview.ModelRelease = item.Version
-				break
-			}
-		}
-		for _, item := range snapshot.RulesetReleases {
-			if item.Status == "published" {
-				overview.RulesetRelease = item.Version
-				break
-			}
-		}
 		return overview, nil
 	}
 
@@ -82,12 +67,6 @@ func (r *Repository) GetPortalOverview(ctx context.Context) (model.PortalOvervie
 		ProtectedUsers: len(protected), PartnerApprovals: pending,
 		HealthyDevicesPercent: percentage(len(healthyDevices), allDevices),
 		OpenSupport:           openSupport,
-	}
-	if item, queryErr := r.db.ModelRelease.Query().Where(modelrelease.StatusEQ(modelrelease.StatusPublished)).Order(ent.Desc(modelrelease.FieldPublishedAt)).First(ctx); queryErr == nil {
-		overview.ModelRelease = item.Version
-	}
-	if item, queryErr := r.db.RulesetRelease.Query().Where(rulesetrelease.StatusEQ(rulesetrelease.StatusPublished)).Order(ent.Desc(rulesetrelease.FieldPublishedAt)).First(ctx); queryErr == nil {
-		overview.RulesetRelease = item.Version
 	}
 	return overview, nil
 }

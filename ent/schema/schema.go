@@ -388,28 +388,10 @@ func (ExperienceGrant) Indexes() []ent.Index {
 	return []ent.Index{index.Fields("user_id", "source_kind", "source_id").Unique()}
 }
 
-type ModelRelease struct{ ent.Schema }
-
-func (ModelRelease) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("version").Unique(), field.Enum("platform").Values("android", "windows", "linux", "macos", "web", "all").Default("all"), field.String("artifact_path"), field.String("sha256"), field.Float("threshold").Default(0), field.String("contract_version").Default("v1"), field.Enum("status").Values("draft", "validated", "staged", "published", "paused", "rolled_back", "retired").Default("draft"), field.JSON("metrics_json", map[string]any{}).Optional(), field.Time("published_at").Optional().Nillable(), createdAt(), updatedAt()}
-}
-
-type RulesetRelease struct{ ent.Schema }
-
-func (RulesetRelease) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("version").Unique(), field.String("artifact_path"), field.String("sha256"), field.Enum("status").Values("draft", "validated", "staged", "published", "paused", "rolled_back", "retired").Default("draft"), field.JSON("rules_json", map[string]any{}).Optional(), field.Time("published_at").Optional().Nillable(), createdAt(), updatedAt()}
-}
-
-type NetworkRulesetRelease struct{ ent.Schema }
-
-func (NetworkRulesetRelease) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("version").Unique(), field.String("artifact_path"), field.String("sha256"), field.Enum("status").Values("draft", "validated", "staged", "published", "paused", "rolled_back", "retired").Default("draft"), field.JSON("rules_json", map[string]any{}).Optional(), field.String("created_by").Optional().Nillable(), field.Time("published_at").Optional().Nillable(), createdAt()}
-}
-
 type AggregateEvent struct{ ent.Schema }
 
 func (AggregateEvent) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("user_id"), field.String("device_id").Optional().Nillable(), field.String("idempotency_key").Optional().Unique(), field.Enum("event_type").Values("intervention_shown", "block_count_sync", "tamper_detected", "permission_revoked", "model_updated", "ruleset_updated"), field.Time("event_date"), field.Int("count"), field.JSON("metadata_json", map[string]any{}).Optional(), createdAt()}
+	return []ent.Field{idField(), field.String("user_id"), field.String("device_id").Optional().Nillable(), field.String("idempotency_key").Optional().Unique(), field.Enum("event_type").Values("intervention_shown", "block_count_sync", "tamper_detected", "permission_revoked"), field.Time("event_date"), field.Int("count"), field.JSON("metadata_json", map[string]any{}).Optional(), createdAt()}
 }
 
 type Organization struct{ ent.Schema }
@@ -493,18 +475,6 @@ func (DataRequest) Fields() []ent.Field {
 		field.Time("completed_at").Optional().Nillable(),
 		updatedAt(),
 	}
-}
-
-type ModelRollout struct{ ent.Schema }
-
-func (ModelRollout) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("model_release_id").Optional().Nillable(), field.String("ruleset_release_id").Optional().Nillable(), field.String("network_ruleset_release_id").Optional().Nillable(), field.Enum("status").Values("draft", "staged", "active", "paused", "rolled_back", "completed").Default("draft"), field.JSON("cohort_json", map[string]any{}).Optional(), field.String("created_by"), createdAt(), updatedAt()}
-}
-
-type ReleaseCohort struct{ ent.Schema }
-
-func (ReleaseCohort) Fields() []ent.Field {
-	return []ent.Field{idField(), field.String("rollout_id"), field.Enum("platform").Values("android", "windows", "linux", "macos", "web", "all"), field.Int("percentage"), field.String("organization_id").Optional().Nillable(), field.String("app_version_constraint").Optional().Nillable(), createdAt()}
 }
 
 type OperatorInvitation struct{ ent.Schema }

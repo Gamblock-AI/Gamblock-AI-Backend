@@ -30,7 +30,7 @@ WORKDIR /app
 COPY --from=build /out/ /app/
 
 # Persistent server-owned storage directories (mapped to volumes in production).
-RUN mkdir -p /app/var/artifacts /app/var/exports \
+RUN mkdir -p /app/var/exports \
     /app/var/media/education /app/var/media/avatars \
     && chown -R app:app /app
 USER app

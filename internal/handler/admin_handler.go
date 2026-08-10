@@ -48,15 +48,6 @@ func (h *Handler) CreateAdminModule(c *gin.Context) {
 	h.respond(c, http.StatusCreated, module)
 }
 
-func (h *Handler) AdminModelReleases(c *gin.Context) {
-	releases, err := h.services.Admin.GetModelReleases(c.Request.Context())
-	if err != nil {
-		h.respondErrorErr(c, http.StatusInternalServerError, "fetch_admin_model_releases_failed", err)
-		return
-	}
-	h.respond(c, http.StatusOK, releases)
-}
-
 func (h *Handler) AdminSupportCases(c *gin.Context) {
 	cases, err := h.services.Support.GetSupportCasesForAdmin(c.Request.Context(), h.currentUserID(c))
 	if err != nil {

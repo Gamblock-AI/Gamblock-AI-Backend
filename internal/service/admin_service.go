@@ -3,15 +3,10 @@ package service
 import (
 	"context"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"fmt"
-	"io"
 	"math/big"
 	"net/url"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -20,23 +15,17 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/authn"
-	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/repository"
 )
 
 type AdminService struct {
 	repo   *repository.Repository
-	cfg    config.Config
 	logger *zap.Logger
 }
 
 func NewAdminService(repo *repository.Repository, logger *zap.Logger) *AdminService {
 	return &AdminService{repo: repo, logger: logger}
-}
-
-func NewAdminServiceWithConfig(repo *repository.Repository, cfg config.Config, logger *zap.Logger) *AdminService {
-	return &AdminService{repo: repo, cfg: cfg, logger: logger}
 }
 
 // PlatformAnalytics returns platform-wide aggregate analytics for admin
@@ -238,34 +227,6 @@ func (s *AdminService) Overview(ctx context.Context, role string) (model.AdminOv
 			overview.FailedDataRequests++
 		}
 	}
-	models, err := s.repo.GetModelReleases(ctx)
-	if err != nil {
-		return overview, err
-	}
-	rules, err := s.repo.GetRulesetReleases(ctx)
-	if err != nil {
-		return overview, err
-	}
-	network, err := s.repo.GetNetworkRulesets(ctx)
-	if err != nil {
-		return overview, err
-	}
-	for _, group := range [][]model.Release{models, rules, network} {
-		for _, item := range group {
-			if item.Status == "validated" {
-				overview.ValidatedReleases++
-			}
-		}
-	}
-	rollouts, err := s.repo.ListReleaseRollouts(ctx)
-	if err != nil {
-		return overview, err
-	}
-	for _, item := range rollouts {
-		if item.Status == "active" || item.Status == "staged" {
-			overview.ActiveRollouts++
-		}
-	}
 	emergency, err := s.repo.GetPendingEmergencyKeyRequests(ctx, time.Now().UTC())
 	if err != nil {
 		return overview, err
@@ -299,158 +260,8 @@ func (s *AdminService) CreateEducationModule(ctx context.Context, m model.Educat
 	return s.repo.CreateEducationModule(ctx, m)
 }
 
-func (s *AdminService) GetModelReleases(ctx context.Context) ([]model.Release, error) {
-	return s.repo.GetModelReleases(ctx)
-}
-
-func (s *AdminService) CreateModelRelease(ctx context.Context, version, platform, artifactPath, sha256Val, contract string, threshold float64, metrics map[string]any) error {
-	id := "rel_model_" + uuid.NewString()[:8]
-	return s.repo.CreateModelRelease(ctx, id, version, platform, artifactPath, sha256Val, contract, threshold, metrics)
-}
-
-func (s *AdminService) GetRulesetReleases(ctx context.Context) ([]model.Release, error) {
-	return s.repo.GetRulesetReleases(ctx)
-}
-
-func (s *AdminService) CreateRulesetRelease(ctx context.Context, version, artifactPath, sha256Val string, rules map[string]any) error {
-	id := "rel_rules_" + uuid.NewString()[:8]
-	return s.repo.CreateRulesetRelease(ctx, id, version, artifactPath, sha256Val, rules)
-}
-
-func (s *AdminService) GetNetworkRulesets(ctx context.Context) ([]model.Release, error) {
-	return s.repo.GetNetworkRulesets(ctx)
-}
-
 func (s *AdminService) GetPortalOverview(ctx context.Context) (model.PortalOverview, error) {
 	return s.repo.GetPortalOverview(ctx)
-}
-
-func (s *AdminService) CreateNetworkRulesetRelease(ctx context.Context, version, artifactPath, sha256Val string, rules map[string]any) error {
-	id := "rel_net_" + uuid.NewString()[:8]
-	return s.repo.CreateNetworkRulesetRelease(ctx, id, version, artifactPath, sha256Val, rules)
-}
-
-func (s *AdminService) Releases(ctx context.Context) (map[string][]model.Release, []model.ReleaseRollout, error) {
-	models, err := s.repo.GetModelReleases(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-	rulesets, err := s.repo.GetRulesetReleases(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-	network, err := s.repo.GetNetworkRulesets(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-	rollouts, err := s.repo.ListReleaseRollouts(ctx)
-	return map[string][]model.Release{"model": models, "ruleset": rulesets, "network": network}, rollouts, err
-}
-
-func (s *AdminService) StoreReleaseArtifact(filename string, source io.Reader) (string, string, error) {
-	filename = filepath.Base(strings.TrimSpace(filename))
-	lower := strings.ToLower(filename)
-	allowed := []string{".onnx", ".tflite", ".json", ".bin", ".zip", ".tar.gz"}
-	extension := ""
-	for _, candidate := range allowed {
-		if strings.HasSuffix(lower, candidate) {
-			extension = candidate
-			break
-		}
-	}
-	if extension == "" {
-		return "", "", fmt.Errorf("release artifact type is not allowed")
-	}
-	if err := os.MkdirAll(s.cfg.ArtifactStoragePath, 0o750); err != nil {
-		return "", "", err
-	}
-	relativePath := "uploads/" + time.Now().UTC().Format("2006/01/") + uuid.NewString() + extension
-	absolutePath := filepath.Join(s.cfg.ArtifactStoragePath, filepath.FromSlash(relativePath))
-	if err := os.MkdirAll(filepath.Dir(absolutePath), 0o750); err != nil {
-		return "", "", err
-	}
-	file, err := os.OpenFile(absolutePath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
-	if err != nil {
-		return "", "", err
-	}
-	hash := sha256.New()
-	_, copyErr := io.Copy(io.MultiWriter(file, hash), source)
-	closeErr := file.Close()
-	if copyErr != nil || closeErr != nil {
-		_ = os.Remove(absolutePath)
-		if copyErr != nil {
-			return "", "", copyErr
-		}
-		return "", "", closeErr
-	}
-	return relativePath, hex.EncodeToString(hash.Sum(nil)), nil
-}
-
-func (s *AdminService) CreateRollout(ctx context.Context, actorID, kind, releaseID, platform string, percentage int, appVersion, reason string) (model.ReleaseRollout, error) {
-	allowedPlatforms := map[string]bool{"android": true, "windows": true, "linux": true, "macos": true, "web": true, "all": true}
-	if !allowedPlatforms[platform] || percentage < 1 || percentage > 100 || len(appVersion) > 80 {
-		return model.ReleaseRollout{}, fmt.Errorf("invalid rollout cohort")
-	}
-	releases, rollouts, err := s.Releases(ctx)
-	if err != nil {
-		return model.ReleaseRollout{}, err
-	}
-	validated := false
-	for _, item := range releases[kind] {
-		if item.ID == releaseID && item.Status == "validated" {
-			validated = true
-			break
-		}
-	}
-	if !validated {
-		return model.ReleaseRollout{}, fmt.Errorf("release must be validated before rollout")
-	}
-	for _, item := range rollouts {
-		if item.Kind == kind && item.Platform == platform && (item.Status == "staged" || item.Status == "active" || item.Status == "paused") {
-			return model.ReleaseRollout{}, fmt.Errorf("another rollout is already active for this kind and platform")
-		}
-	}
-	item, err := s.repo.CreateReleaseRollout(ctx, model.ReleaseRollout{ID: "rollout_" + uuid.NewString()[:12], Kind: kind,
-		ReleaseID: releaseID, Platform: platform, Percentage: percentage, AppVersionConstraint: strings.TrimSpace(appVersion), CreatedBy: actorID})
-	if err != nil {
-		return model.ReleaseRollout{}, err
-	}
-	_ = s.audit(ctx, actorID, "release_rollout_staged", "release_rollout", item.ID, reason, map[string]any{"kind": kind, "percentage": percentage, "platform": platform})
-	return item, nil
-}
-
-func (s *AdminService) TransitionRollout(ctx context.Context, actorID, rolloutID, action, reason string) (model.ReleaseRollout, error) {
-	rollouts, err := s.repo.ListReleaseRollouts(ctx)
-	if err != nil {
-		return model.ReleaseRollout{}, err
-	}
-	var current model.ReleaseRollout
-	for _, item := range rollouts {
-		if item.ID == rolloutID {
-			current = item
-			break
-		}
-	}
-	if current.ID == "" {
-		return model.ReleaseRollout{}, fmt.Errorf("rollout not found")
-	}
-	allowed := map[string]map[string]bool{
-		"staged": {"active": true, "rolled_back": true},
-		"active": {"paused": true, "completed": true, "rolled_back": true},
-		"paused": {"active": true, "rolled_back": true},
-	}
-	if !allowed[current.Status][action] {
-		return model.ReleaseRollout{}, fmt.Errorf("invalid rollout transition")
-	}
-	if strings.TrimSpace(reason) == "" && (action == "rolled_back" || action == "paused") {
-		return model.ReleaseRollout{}, fmt.Errorf("transition reason is required")
-	}
-	item, err := s.repo.TransitionReleaseRollout(ctx, rolloutID, action, time.Now().UTC())
-	if err != nil {
-		return model.ReleaseRollout{}, err
-	}
-	_ = s.audit(ctx, actorID, "release_rollout_"+action, "release_rollout", item.ID, reason, map[string]any{"kind": item.Kind, "release_id": item.ReleaseID})
-	return item, nil
 }
 
 func (s *AdminService) GenerateEmergencyKey(ctx context.Context, createdBy string) (string, error) {

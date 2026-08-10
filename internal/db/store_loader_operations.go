@@ -184,29 +184,6 @@ func loadOperationsStore(ctx context.Context, client *ent.Client, out *store.Sto
 		})
 	}
 
-	cohorts, err := client.ReleaseCohort.Query().All(ctx)
-	if err != nil {
-		return err
-	}
-	cohortByRollout := make(map[string]*ent.ReleaseCohort, len(cohorts))
-	for _, cohort := range cohorts {
-		cohortByRollout[cohort.RolloutID] = cohort
-	}
-	rollouts, err := client.ModelRollout.Query().All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, item := range rollouts {
-		kind, releaseID := releaseKindAndID(item.ModelReleaseID, item.RulesetReleaseID, item.NetworkRulesetReleaseID)
-		rollout := store.ReleaseRollout{ID: item.ID, Kind: kind, ReleaseID: releaseID, Status: item.Status.String(), CreatedBy: item.CreatedBy, CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt}
-		if cohort := cohortByRollout[item.ID]; cohort != nil {
-			rollout.Platform = cohort.Platform.String()
-			rollout.Percentage = cohort.Percentage
-			rollout.AppVersionConstraint = value(cohort.AppVersionConstraint)
-		}
-		out.ReleaseRollouts = append(out.ReleaseRollouts, rollout)
-	}
-
 	notifications, err := client.NotificationDelivery.Query().All(ctx)
 	if err != nil {
 		return err
@@ -223,17 +200,4 @@ func loadOperationsStore(ctx context.Context, client *ent.Client, out *store.Sto
 		})
 	}
 	return nil
-}
-
-func releaseKindAndID(modelID, rulesetID, networkID *string) (string, string) {
-	if modelID != nil {
-		return "model", *modelID
-	}
-	if rulesetID != nil {
-		return "ruleset", *rulesetID
-	}
-	if networkID != nil {
-		return "network", *networkID
-	}
-	return "", ""
 }

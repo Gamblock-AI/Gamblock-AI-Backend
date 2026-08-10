@@ -190,69 +190,6 @@ func (h *Handler) RejectAdminDataRequest(c *gin.Context) {
 	h.respond(c, http.StatusOK, item)
 }
 
-func (h *Handler) AdminReleases(c *gin.Context) {
-	releases, rollouts, err := h.services.Admin.Releases(c.Request.Context())
-	if err != nil {
-		h.respondErrorErr(c, http.StatusInternalServerError, "fetch_admin_releases_failed", err)
-		return
-	}
-	h.respond(c, http.StatusOK, gin.H{"releases": releases, "rollouts": rollouts})
-}
-
-func (h *Handler) UploadAdminReleaseArtifact(c *gin.Context) {
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 256<<20)
-	file, header, err := c.Request.FormFile("file")
-	if err != nil {
-		h.respondCode(c, http.StatusBadRequest, "release_validation_failed")
-		return
-	}
-	defer file.Close() //nolint:errcheck
-	path, checksum, err := h.services.Admin.StoreReleaseArtifact(header.Filename, file)
-	if err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "release_validation_failed", err)
-		return
-	}
-	h.respond(c, http.StatusCreated, gin.H{"artifact_path": path, "sha256": checksum})
-}
-
-func (h *Handler) CreateAdminRollout(c *gin.Context) {
-	var input struct {
-		Kind                 string `json:"kind"`
-		ReleaseID            string `json:"release_id"`
-		Platform             string `json:"platform"`
-		Percentage           int    `json:"percentage"`
-		AppVersionConstraint string `json:"app_version_constraint"`
-		Reason               string `json:"reason"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil || strings.TrimSpace(input.Reason) == "" {
-		h.respondCode(c, http.StatusBadRequest, "err_validation")
-		return
-	}
-	item, err := h.services.Admin.CreateRollout(c.Request.Context(), h.currentUserID(c), input.Kind, input.ReleaseID, input.Platform, input.Percentage, input.AppVersionConstraint, input.Reason)
-	if err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "release_rollout_create_failed", err)
-		return
-	}
-	h.respond(c, http.StatusCreated, item)
-}
-
-func (h *Handler) TransitionAdminRollout(c *gin.Context) {
-	var input struct {
-		Action string `json:"action"`
-		Reason string `json:"reason"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		h.respondCode(c, http.StatusBadRequest, "err_validation")
-		return
-	}
-	item, err := h.services.Admin.TransitionRollout(c.Request.Context(), h.currentUserID(c), c.Param("id"), input.Action, input.Reason)
-	if err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "release_rollout_transition_failed", err)
-		return
-	}
-	h.respond(c, http.StatusOK, item)
-}
-
 func (h *Handler) DownloadDataExport(c *gin.Context) {
 	content, err := h.services.Support.DataExportFile(c.Request.Context(), h.currentUserID(c), c.Param("id"))
 	if err != nil {
