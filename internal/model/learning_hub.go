@@ -36,6 +36,8 @@ type LearningProgress struct {
 	CompletedAt         *time.Time `json:"completed_at,omitempty"`
 	ReflectionEncrypted string     `json:"-"`
 	OutcomeEncrypted    string     `json:"-"`
+	CreatedAt           time.Time  `json:"-"`
+	UpdatedAt           time.Time  `json:"-"`
 }
 
 type LearningItem struct {

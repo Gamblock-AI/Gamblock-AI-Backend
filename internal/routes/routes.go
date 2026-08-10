@@ -95,9 +95,7 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	v1.GET("/recovery-records", mid.AuthRequired(), mid.RequireRoles("user"), h.GetRecoveryRecords)
 	v1.PUT("/recovery-records", mid.AuthRequired(), mid.RequireRoles("user"), h.SaveRecoveryRecord)
 	v1.GET("/recovery-practices", mid.AuthRequired(), mid.RequireRoles("user"), h.GetRecoveryPractices)
-	v1.POST("/recovery-practices", mid.AuthRequired(), mid.RequireRoles("user"), h.CreateRecoveryPractice)
 	v1.GET("/recovery-space", mid.AuthRequired(), mid.RequireRoles("user"), h.GetRecoverySpace)
-	v1.PATCH("/recovery-space", mid.AuthRequired(), mid.RequireRoles("user"), h.UpdateRecoverySpace)
 	v1.GET("/weekly-reviews/current", mid.AuthRequired(), mid.RequireRoles("user"), h.GetCurrentWeeklyReview)
 	v1.PUT("/weekly-reviews/current", mid.AuthRequired(), mid.RequireRoles("user"), h.SaveCurrentWeeklyReview)
 

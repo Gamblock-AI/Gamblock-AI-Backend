@@ -38,37 +38,6 @@ func (r *Repository) ListRecoveryPracticeSessions(ctx context.Context, userID st
 	return result, nil
 }
 
-func (r *Repository) SaveRecoveryPracticeSession(ctx context.Context, item model.RecoveryPracticeSession) (model.RecoveryPracticeSession, error) {
-	if r.db == nil {
-		r.store.Lock()
-		r.store.RecoveryPracticeSessions = append(r.store.RecoveryPracticeSessions, item)
-		r.store.Unlock()
-		return item, nil
-	}
-	var feedback *recoverypracticesession.Feedback
-	if item.Feedback != "" {
-		value := recoverypracticesession.Feedback(item.Feedback)
-		feedback = &value
-	}
-	row, err := r.db.RecoveryPracticeSession.Create().
-		SetID(item.ID).
-		SetUserID(item.UserID).
-		SetPracticeKind(recoverypracticesession.PracticeKind(item.PracticeKind)).
-		SetDurationSeconds(item.DurationSeconds).
-		SetNillableFeedback(feedback).
-		SetCompletedAt(item.CompletedAt).
-		Save(ctx)
-	if err != nil {
-		return model.RecoveryPracticeSession{}, err
-	}
-	r.RefreshStore(ctx)
-	return model.RecoveryPracticeSession{
-		ID: row.ID, UserID: row.UserID, PracticeKind: row.PracticeKind.String(),
-		DurationSeconds: row.DurationSeconds, Feedback: recoveryFeedbackValue(row.Feedback),
-		CompletedAt: row.CompletedAt, CreatedAt: row.CreatedAt,
-	}, nil
-}
-
 func (r *Repository) DeleteExpiredRecoveryPracticeSessions(ctx context.Context, userID string, before time.Time) error {
 	if r.db == nil {
 		r.store.Lock()

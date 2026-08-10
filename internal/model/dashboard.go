@@ -27,13 +27,14 @@ type MoodPoint struct {
 }
 
 type ProgressActivityDay struct {
-	Date      string `json:"date"`
-	CheckIns  int    `json:"check_ins"`
-	Practices int    `json:"practices"`
-	Journals  int    `json:"journals"`
-	Missions  int    `json:"missions"`
-	Education int    `json:"education"`
-	Reviews   int    `json:"reviews"`
+	Date        string `json:"date"`
+	CheckIns    int    `json:"check_ins"`
+	Journals    int    `json:"journals"`
+	Missions    int    `json:"missions"`
+	Education   int    `json:"education"`
+	Reviews     int    `json:"reviews"`
+	LearningHub int    `json:"learning_hub"`
+	Protection  int    `json:"protection"`
 }
 
 type ProgressSnapshot struct {

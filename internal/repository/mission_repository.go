@@ -14,7 +14,6 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnerlink"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationprogress"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoverypracticesession"
 	entuser "github.com/gamblock-ai/gamblock-ai-backend/ent/user"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
@@ -66,13 +65,6 @@ func (r *Repository) IsMissionClaimable(
 					return true, nil
 				}
 			}
-		case 6:
-			for _, item := range snapshot.RecoveryPracticeSessions {
-				if item.UserID == userID &&
-					!item.CompletedAt.Before(dayStartUTC) && item.CompletedAt.Before(dayEndUTC) {
-					return true, nil
-				}
-			}
 		}
 		return false, nil
 	}
@@ -116,12 +108,6 @@ func (r *Repository) IsMissionClaimable(
 			psychoeducationprogress.UserIDEQ(userID),
 			psychoeducationprogress.CompletedAtGTE(dayStartUTC),
 			psychoeducationprogress.CompletedAtLT(dayEndUTC),
-		).Exist(ctx)
-	case 6:
-		return r.db.RecoveryPracticeSession.Query().Where(
-			recoverypracticesession.UserIDEQ(userID),
-			recoverypracticesession.CompletedAtGTE(dayStartUTC),
-			recoverypracticesession.CompletedAtLT(dayEndUTC),
 		).Exist(ctx)
 	default:
 		return false, fmt.Errorf("unsupported mission %d", missionNum)

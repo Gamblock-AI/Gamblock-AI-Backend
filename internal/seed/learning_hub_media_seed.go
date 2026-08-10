@@ -32,6 +32,7 @@ type learningSeedProvider struct {
 // provider is not listed here still keep their provider name; the client falls
 // back to an initials tile when no logo media is attached.
 var learningSeedProviders = []learningSeedProvider{
+	{"gamblock-ai", "Gamblock-AI", "gamblock-ai.png"},
 	{"dicoding", "Dicoding", "dicoding.png"},
 	{"freecodecamp", "freeCodeCamp", "freecodecamp.png"},
 	{"coursera", "Coursera", "coursera.png"},
@@ -40,6 +41,8 @@ var learningSeedProviders = []learningSeedProvider{
 	{"openlearn", "OpenLearn", "openlearn.png"},
 	{"microsoft", "Microsoft Learn", "microsoft-learn.png"},
 	{"autodesk", "Autodesk Learning", "autodesk.png"},
+	{"cisco", "Cisco Networking Academy", "cisco.png"},
+	{"qgis", "QGIS Documentation", "qgis.png"},
 }
 
 func learningProviderLogoID(providerName string) string {

@@ -93,16 +93,12 @@ func TestMission_GetTodayEmptyThenUpdate(t *testing.T) {
 	st.Partners = append(st.Partners, model.Partner{
 		ID: "pl_dery", UserID: "usr_dery", Status: "active", CreatedAt: now, UpdatedAt: now,
 	})
-	st.RecoveryPracticeSessions = append(st.RecoveryPracticeSessions, model.RecoveryPracticeSession{
-		ID: "practice_dery", UserID: "usr_dery", PracticeKind: "grounding_54321",
-		DurationSeconds: 120, CompletedAt: now, CreatedAt: now,
-	})
 	st.Unlock()
 
 	m, err := svc.GetToday(ctx, "usr_dery")
 	require.NoError(t, err)
 	assert.Equal(t, "usr_dery", m.UserID)
-	require.Len(t, m.Tasks, 5)
+	require.Len(t, m.Tasks, 4)
 	assert.Equal(t, 0, m.Experience.TotalEXP)
 
 	primary := m.Tasks[0]

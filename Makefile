@@ -3,7 +3,7 @@ ifneq (,$(wildcard .env))
     export
 endif
 
-.PHONY: dev run build start generate key-generate migrate migrate-up migrate-down migrate-fresh seed seeder seed-education seed-learning-hub lint test test-cover verify
+.PHONY: dev run build start generate key-generate migrate migrate-up migrate-down migrate-fresh reset-storage seed seeder seed-education seed-learning-hub lint test test-cover verify
 
 APP_NAME := api
 BUILD_DIR := ./bin
@@ -48,8 +48,13 @@ key-generate:
 	chmod 600 "$$env_file" 2>/dev/null || true; \
 	echo "Generated a valid JOURNAL_ENCRYPTION_KEY in .env. Keep .env private and restart the API."
 
+# Runs the binary produced by `make build` with the local `.env` loaded into
+# the environment (config reads env vars via viper). The shell `source` is
+# used on top of the top-level include so values with spaces/comments survive.
 start: build
-	$(BUILD_DIR)/$(APP_NAME)
+	@test -f .env || { echo "Error: .env not found. Copy .env.example to .env (make key-generate creates it)." >&2; exit 1; }
+	@echo "Starting $(BUILD_DIR)/$(APP_NAME) with .env..."
+	@set -a; . ./.env; set +a; exec $(BUILD_DIR)/$(APP_NAME)
 
 migrate:
 	go run ./cmd/migrate
@@ -62,12 +67,19 @@ migrate-down:
 		exit 1; \
 	}
 	go run ./cmd/migrate-down
+	go run ./cmd/reset-storage
 
 migrate-fresh:
 	@echo "Dropping and recreating database..."
 	psql "$(DATABASE_URL)" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" || true
 	go run ./cmd/migrate
+	go run ./cmd/reset-storage
 	@echo "Fresh migration complete."
+
+# Empties the runtime storage directories (media/avatars/exports/artifacts).
+# Run after a destructive database reset; seed assets are recreated by `make seed`.
+reset-storage:
+	go run ./cmd/reset-storage
 
 seed:
 	go run ./cmd/seed

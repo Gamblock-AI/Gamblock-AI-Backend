@@ -168,6 +168,8 @@ func (r *Repository) GetProgressData(ctx context.Context, userID string, days in
 		if index >= 0 && index < days {
 			dailyBlocks[index] += event.Count
 		}
+		date := startOfDay(event.EventDate).Format("2006-01-02")
+		activityForDate(activityByDate, date).Protection += event.Count
 	}
 	for _, checkIn := range snapshot.CheckIns {
 		if checkIn.UserID != userID || checkIn.CreatedAt.Before(start) {
@@ -186,12 +188,23 @@ func (r *Repository) GetProgressData(ctx context.Context, userID string, days in
 			activityForDate(activityByDate, date).Journals++
 		}
 	}
-	for _, practice := range snapshot.RecoveryPracticeSessions {
-		if practice.UserID == userID && !practice.CompletedAt.Before(start) {
-			date := practice.CompletedAt.UTC().Format("2006-01-02")
-			activityDays[date] = struct{}{}
-			activityForDate(activityByDate, date).Practices++
+	for _, practice := range snapshot.LearningProgress {
+		if practice.UserID != userID {
+			continue
 		}
+		timestamp := practice.UpdatedAt
+		if timestamp.IsZero() {
+			timestamp = practice.CreatedAt
+		}
+		if timestamp.IsZero() {
+			continue
+		}
+		if timestamp.Before(start) {
+			continue
+		}
+		date := timestamp.UTC().Format("2006-01-02")
+		activityDays[date] = struct{}{}
+		activityForDate(activityByDate, date).LearningHub++
 	}
 	for _, mission := range snapshot.Missions {
 		if mission.UserID != userID || mission.Date < start.Format("2006-01-02") {

@@ -1,11 +1,9 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
-	"github.com/gamblock-ai/gamblock-ai-backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -117,51 +115,10 @@ func (h *Handler) GetRecoveryPractices(c *gin.Context) {
 	h.respond(c, http.StatusOK, items)
 }
 
-func (h *Handler) CreateRecoveryPractice(c *gin.Context) {
-	var input struct {
-		PracticeKind    string `json:"practice_kind"`
-		DurationSeconds int    `json:"duration_seconds"`
-		Feedback        string `json:"feedback"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		h.respondCode(c, http.StatusBadRequest, "recovery_practice_invalid")
-		return
-	}
-	item, err := h.services.Recovery.SaveRecoveryPractice(c.Request.Context(), h.currentUserID(c), input.PracticeKind, input.DurationSeconds, input.Feedback)
-	if err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "recovery_practice_invalid", err)
-		return
-	}
-	h.respond(c, http.StatusCreated, item)
-}
-
 func (h *Handler) GetRecoverySpace(c *gin.Context) {
 	item, err := h.services.Recovery.GetRecoverySpace(c.Request.Context(), h.currentUserID(c))
 	if err != nil {
 		h.respondErrorErr(c, http.StatusInternalServerError, "recovery_space_fetch_failed", err)
-		return
-	}
-	h.respond(c, http.StatusOK, item)
-}
-
-func (h *Handler) UpdateRecoverySpace(c *gin.Context) {
-	var input struct {
-		Theme       string         `json:"theme"`
-		PlacedItems map[string]any `json:"placed_items"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		h.respondCode(c, http.StatusBadRequest, "err_validation")
-		return
-	}
-	item, err := h.services.Recovery.UpdateRecoverySpace(
-		c.Request.Context(), h.currentUserID(c), input.Theme, input.PlacedItems,
-	)
-	if err != nil {
-		if errors.Is(err, service.ErrRecoverySpaceItemLocked) {
-			h.respondErrorErr(c, http.StatusBadRequest, "recovery_space_item_locked", err)
-			return
-		}
-		h.respondErrorErr(c, http.StatusBadRequest, "recovery_space_update_failed", err)
 		return
 	}
 	h.respond(c, http.StatusOK, item)

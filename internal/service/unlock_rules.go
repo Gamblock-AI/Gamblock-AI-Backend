@@ -57,39 +57,6 @@ var levelDecorUnlocks = map[int][]string{
 	16: {"aquarium_mini"},
 }
 
-// decorSlots lists the placement slots allowed per item; the first entry is
-// the default used when a placement value is `true`.
-var decorSlots = map[string][]string{
-	"plant":          {"floor_left", "window_sill", "shelf"},
-	"curtain":        {"window_sill"},
-	"desk_lamp":      {"desk", "shelf"},
-	"note_board":     {"wall_left", "wall_center", "wall_right"},
-	"wall_art":       {"wall_center", "wall_left", "wall_right"},
-	"gami_figure":    {"shelf", "desk", "window_sill"},
-	"cushion":        {"floor_center", "floor_left", "floor_right"},
-	"zen_tray":       {"desk", "shelf"},
-	"fountain_mini":  {"shelf", "window_sill"},
-	"photo_frame":    {"desk", "shelf", "wall_right"},
-	"wall_clock":     {"wall_right", "wall_left"},
-	"calendar_wall":  {"wall_left", "wall_right"},
-	"desk_organizer": {"desk"},
-	"poster_calm":    {"wall_right", "wall_left", "wall_center"},
-	"mug_warm":       {"desk", "shelf"},
-	"rug_soft":       {"floor_center"},
-	"bookshelf_mini": {"floor_right", "floor_left"},
-	"string_lights":  {"wall_center", "window_sill"},
-	"radio_lofi":     {"shelf", "desk"},
-	"aquarium_mini":  {"shelf", "desk"},
-}
-
-func unlockedThemes(evidence model.RecoveryUnlockEvidence) []string {
-	themes := []string{"dorm_room"}
-	if evidenceLevel(evidence) >= 18 {
-		themes = append(themes, "sunrise_study")
-	}
-	return themes
-}
-
 func newlyUnlockedDecor(levelBefore, levelAfter int) []string {
 	if levelAfter <= levelBefore {
 		return nil

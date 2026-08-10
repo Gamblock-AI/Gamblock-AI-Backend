@@ -40,7 +40,6 @@ var defaultSystemMissions = []systemMission{
 	{Number: 2, Key: "daily_check_in"},
 	{Number: 3, Key: "education_section_today"},
 	{Number: 5, Key: "education_module_today"},
-	{Number: 6, Key: "recovery_practice_today"},
 }
 
 type MissionService struct {

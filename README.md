@@ -18,7 +18,8 @@ make seed-learning-hub # install or verify the UTY Learning Hub catalog
 > catalog (skills page "Pilih arah belajar"). The production-safe `make seeder`
 > path installs the same Learning Hub baseline without creating demo users;
 > `make seed-learning-hub` installs or verifies only the Learning Hub catalog.
-make run            # start the API (default 127.0.0.1:8080)
+make run            # start the API with `go run` (default 127.0.0.1:8080)
+make start          # build then run ./bin/api, loading .env into the process
 ```
 
 The service uses ent/PostgreSQL by default. Development may fall back to an
@@ -32,15 +33,15 @@ PostgreSQL is unavailable. The default local URL is
 
 PostgreSQL seed data and the optional in-memory demo store use the shared dummy
 password `password` for `gading@gmail.com`, `dery@gmail.com`,
-`suci@gmail.com`, `nasywa@gmail.com`, `student@gmail.com`,
-and `partner@gmail.com`. These
+`suci@gmail.com`, and `nasywa@gmail.com`. These
 credentials are development fixtures only and demo data is forbidden in
 production. The optional demo seed includes two active accountability groups
 and privacy-safe daily aggregate fixtures for partner-dashboard testing; it
 contains no URL, domain, title, timestamped visit, or browsing-history fixture.
 The production-safe `make seeder` path never creates demo users or activity.
 
-Useful Makefile targets: `make dev` (air live-reload), `make key-generate`,
+Useful Makefile targets: `make dev` (air live-reload), `make start` (build +
+run `./bin/api` with `.env`), `make key-generate`,
 `make lint`, `make migrate-up`, `make seeder`, `make seed`,
 `make seed-education`, `make seed-learning-hub`, and opt-in `make verify`. The
 Docker image exposes the same operational commands as `/app/migrate-up`,
@@ -49,6 +50,10 @@ log only aggregate Learning Hub inserted/skipped counts.
 `migrate-down` and `make migrate-fresh` drop the database schema
 and must never be run against shared or production data; `migrate-down`
 additionally refuses to run without `CONFIRM_MIGRATE_DOWN=DROP_ALL_DATA`.
+Both commands also empty the runtime storage directories (media/avatars,
+encrypted exports, and release artifacts) through `make reset-storage`, since
+every dynamic file is orphaned once the schema is dropped; run `make seed`
+afterwards to regenerate the bundled seed media.
 `make key-generate` refuses to replace a valid existing key; use
 `make key-generate FORCE=1` only when no encrypted local journal, support, or
 export data needs to be retained.

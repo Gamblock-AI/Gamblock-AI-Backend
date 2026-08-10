@@ -84,7 +84,7 @@ func loadLearningHubStore(ctx context.Context, client *ent.Client, out *store.St
 		if row.OutcomeEncrypted != nil {
 			outcome = *row.OutcomeEncrypted
 		}
-		out.LearningProgress = append(out.LearningProgress, model.LearningProgress{UserID: row.UserID, ItemID: row.ItemID, State: row.State.String(), ReflectionEncrypted: reflection, OutcomeEncrypted: outcome, CompletedAt: row.CompletedAt})
+		out.LearningProgress = append(out.LearningProgress, model.LearningProgress{UserID: row.UserID, ItemID: row.ItemID, State: row.State.String(), ReflectionEncrypted: reflection, OutcomeEncrypted: outcome, CompletedAt: row.CompletedAt, CreatedAt: row.CreatedAt, UpdatedAt: row.UpdatedAt})
 	}
 	for _, row := range grants {
 		out.ExperienceGrants = append(out.ExperienceGrants, model.ExperienceGrant{ID: row.ID, UserID: row.UserID, SourceKind: row.SourceKind, SourceID: row.SourceID, GrantDate: row.GrantDate, Amount: row.Amount, IdempotencyKey: row.IdempotencyKey, CreatedAt: row.CreatedAt})
