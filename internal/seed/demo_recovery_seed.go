@@ -6,26 +6,21 @@ import (
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
-	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningprogress"
 )
 
-// SeedDemoRecoveryData installs recommendation-relevant demo records (Niat
-// Perubahan quiz, daily check-in, completed missions, Learning Hub progress,
-// and psychoeducation progress) for the seeded demo students so the SPK
-// recommendation has enough data. It is idempotent (fixed IDs, skip if present)
-// and only ever runs in the demo seed path; the production seeder never creates
-// demo accounts or activity.
+// SeedDemoRecoveryData installs recommendation-relevant demo records (completed
+// missions, Learning Hub progress, and psychoeducation progress) for the seeded
+// demo students so the SPK recommendation has enough input. The Niat Perubahan
+// intention and the daily check-in are intentionally left empty: the website's
+// first-run "Niat Perubahan" modal collects them from the student during the
+// demo, and the SPK then reads that user-provided data. It is idempotent
+// (fixed IDs, skip if present) and only ever runs in the demo seed path; the
+// production seeder never creates demo accounts or activity.
 func SeedDemoRecoveryData(ctx context.Context, client *ent.Client, now time.Time) error {
 	jakarta := time.FixedZone("Asia/Jakarta", 7*60*60)
 	today := now.In(jakarta).Format("2006-01-02")
 
-	if err := seedDemoIntention(ctx, client); err != nil {
-		return err
-	}
-	if err := seedDemoCheckIn(ctx, client); err != nil {
-		return err
-	}
 	if err := seedDemoMissions(ctx, client, today); err != nil {
 		return err
 	}
@@ -36,44 +31,6 @@ func SeedDemoRecoveryData(ctx context.Context, client *ent.Client, now time.Time
 		return err
 	}
 	return nil
-}
-
-func seedDemoIntention(ctx context.Context, client *ent.Client) error {
-	const id = "int_seed_gading"
-	if _, err := client.Intention.Get(ctx, id); err == nil {
-		return nil
-	} else if !ent.IsNotFound(err) {
-		return err
-	}
-	_, err := client.Intention.Create().
-		SetID(id).
-		SetUserID("usr_gading").
-		SetIntentionText("Saya ingin menyelesaikan kuliah dengan pikiran yang lebih tenang.").
-		SetStatus(intention.StatusActive).
-		SetSchoolImpact(intention.SchoolImpactHappened).
-		SetMoneySpent(intention.MoneySpent("500k_5m")).
-		SetScreenTime(intention.ScreenTime("1h_3h")).
-		SetQuitAttempts(intention.QuitAttemptsMultiple).
-		SetQuitMotivation(intention.QuitMotivationDetermined).
-		Save(ctx)
-	return err
-}
-
-func seedDemoCheckIn(ctx context.Context, client *ent.Client) error {
-	const id = "chk_seed_gading"
-	if _, err := client.CheckIn.Get(ctx, id); err == nil {
-		return nil
-	} else if !ent.IsNotFound(err) {
-		return err
-	}
-	_, err := client.CheckIn.Create().
-		SetID(id).
-		SetUserID("usr_gading").
-		SetMoodScore(4).
-		SetUrgeScore(2).
-		SetNillableContextText(&[]string{"Merasa cukup tenang pagi ini."}[0]).
-		Save(ctx)
-	return err
 }
 
 func seedDemoMissions(ctx context.Context, client *ent.Client, today string) error {

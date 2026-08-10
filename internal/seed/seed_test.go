@@ -44,7 +44,7 @@ func TestSeed_Idempotent(t *testing.T) {
 	require.Greater(t, firstAggregates, 0)
 	firstGroups, err := client.AccountabilityGroup.Query().Count(ctx)
 	require.NoError(t, err)
-	require.GreaterOrEqual(t, firstGroups, 2)
+	require.GreaterOrEqual(t, firstGroups, 1)
 
 	require.NoError(t, Seed(ctx, client))
 	second, err := client.User.Query().Count(ctx)

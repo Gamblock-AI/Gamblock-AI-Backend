@@ -42,7 +42,7 @@ var (
 		{Name: "description", Type: field.TypeString, Default: ""},
 		{Name: "join_code_hash", Type: field.TypeString, Unique: true},
 		{Name: "join_code_hint", Type: field.TypeString},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "archived"}, Default: "active"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"active"}, Default: "active"},
 		{Name: "code_rotated_at", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},

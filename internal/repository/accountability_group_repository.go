@@ -9,7 +9,9 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitygroup"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitymembership"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/approvalrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/membershipexitrequest"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/notificationdelivery"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnercontactrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
@@ -671,6 +673,7 @@ func (r *Repository) ListPartnerContactRequests(ctx context.Context, userID, rol
 	for i := range result {
 		if user, ok := r.UserByID(ctx, result[i].StudentID); ok {
 			result[i].StudentName = user.DisplayName
+			result[i].StudentAvatarURL = user.AvatarURL
 		}
 	}
 	return result, nil
@@ -743,7 +746,11 @@ func (r *Repository) TransitionPartnerContactRequest(ctx context.Context, reques
 	return err
 }
 
-func (r *Repository) ArchiveAccountabilityGroup(ctx context.Context, groupID, partnerID string) error {
+// DeleteAccountabilityGroup permanently removes a group and everything tied to
+// it (memberships, exit requests, contact requests, approval requests, and
+// their notification deliveries) once no live member remains. The partner must
+// own the group; there is no soft-delete/archived state.
+func (r *Repository) DeleteAccountabilityGroup(ctx context.Context, groupID, partnerID string) error {
 	group, err := r.AccountabilityGroupByID(ctx, groupID)
 	if err != nil || group.OwnerPartnerID != partnerID {
 		return fmt.Errorf("partner is not authorized for this group")
@@ -757,23 +764,92 @@ func (r *Repository) ArchiveAccountabilityGroup(ctx context.Context, groupID, pa
 			return fmt.Errorf("group still has active members")
 		}
 	}
+	membershipIDs := make([]string, 0, len(members))
+	for _, member := range members {
+		membershipIDs = append(membershipIDs, member.ID)
+	}
+
 	if r.db == nil {
 		r.store.Lock()
 		defer r.store.Unlock()
-		for i := range r.store.AccountabilityGroups {
-			if r.store.AccountabilityGroups[i].ID == groupID {
-				r.store.AccountabilityGroups[i].Status = "archived"
-				r.store.AccountabilityGroups[i].UpdatedAt = time.Now().UTC()
-				return nil
+		membershipSet := make(map[string]bool, len(membershipIDs))
+		for _, id := range membershipIDs {
+			membershipSet[id] = true
+		}
+		groupFound := false
+		r.store.AccountabilityGroups = filterStore(r.store.AccountabilityGroups, func(item store.AccountabilityGroup) bool {
+			if item.ID == groupID {
+				groupFound = true
+				return false
+			}
+			return true
+		})
+		if !groupFound {
+			return fmt.Errorf("group not found")
+		}
+		r.store.AccountabilityMemberships = filterStore(r.store.AccountabilityMemberships, func(item store.AccountabilityMembership) bool {
+			return !membershipSet[item.ID]
+		})
+		r.store.MembershipExitRequests = filterStore(r.store.MembershipExitRequests, func(item store.MembershipExitRequest) bool {
+			return !membershipSet[item.MembershipID]
+		})
+		r.store.PartnerContactRequests = filterStore(r.store.PartnerContactRequests, func(item store.PartnerContactRequest) bool {
+			return !membershipSet[item.MembershipID]
+		})
+		r.store.Approvals = filterStore(r.store.Approvals, func(item store.ApprovalRequest) bool {
+			return !membershipSet[item.MembershipID]
+		})
+		return nil
+	}
+
+	if len(membershipIDs) > 0 {
+		var approvalIDs []string
+		if err := r.db.ApprovalRequest.Query().
+			Where(approvalrequest.MembershipIDIn(membershipIDs...)).
+			Select(approvalrequest.FieldID).Scan(ctx, &approvalIDs); err != nil {
+			return err
+		}
+		if len(approvalIDs) > 0 {
+			if _, err := r.db.NotificationDelivery.Delete().
+				Where(notificationdelivery.ApprovalRequestIDIn(approvalIDs...)).Exec(ctx); err != nil {
+				return err
+			}
+			if _, err := r.db.ApprovalRequest.Delete().
+				Where(approvalrequest.IDIn(approvalIDs...)).Exec(ctx); err != nil {
+				return err
 			}
 		}
-		return fmt.Errorf("group not found")
+		if _, err := r.db.PartnerContactRequest.Delete().
+			Where(partnercontactrequest.MembershipIDIn(membershipIDs...)).Exec(ctx); err != nil {
+			return err
+		}
+		if _, err := r.db.MembershipExitRequest.Delete().
+			Where(membershipexitrequest.MembershipIDIn(membershipIDs...)).Exec(ctx); err != nil {
+			return err
+		}
+		if _, err := r.db.AccountabilityMembership.Delete().
+			Where(accountabilitymembership.GroupIDEQ(groupID)).Exec(ctx); err != nil {
+			return err
+		}
 	}
-	_, err = r.db.AccountabilityGroup.UpdateOneID(groupID).SetStatus(accountabilitygroup.StatusArchived).Save(ctx)
-	if err == nil {
-		r.RefreshStore(ctx)
+	if _, err := r.db.AccountabilityGroup.Delete().
+		Where(accountabilitygroup.IDEQ(groupID)).Exec(ctx); err != nil {
+		return err
 	}
-	return err
+	r.RefreshStore(ctx)
+	return nil
+}
+
+// filterStore returns items for which keep returns true, reusing the backing
+// array so in-memory deletes never leave stale rows behind.
+func filterStore[T any](items []T, keep func(T) bool) []T {
+	out := items[:0]
+	for _, item := range items {
+		if keep(item) {
+			out = append(out, item)
+		}
+	}
+	return out
 }
 
 func (r *Repository) hydrateMembership(item model.AccountabilityMembership) model.AccountabilityMembership {
@@ -782,6 +858,7 @@ func (r *Repository) hydrateMembership(item model.AccountabilityMembership) mode
 		if user.ID == item.StudentID {
 			item.StudentName = user.DisplayName
 			item.StudentMail = user.Email
+			item.StudentAvatarURL = avatarRoute(user.ID, user.AvatarURL)
 			break
 		}
 	}

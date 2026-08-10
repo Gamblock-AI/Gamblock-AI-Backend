@@ -269,8 +269,8 @@ func (s *AccountabilityGroupService) RemoveMember(ctx context.Context, partnerID
 	return err
 }
 
-func (s *AccountabilityGroupService) ArchiveGroup(ctx context.Context, partnerID, groupID string) error {
-	return s.repo.ArchiveAccountabilityGroup(ctx, groupID, partnerID)
+func (s *AccountabilityGroupService) DeleteGroup(ctx context.Context, partnerID, groupID string) error {
+	return s.repo.DeleteAccountabilityGroup(ctx, groupID, partnerID)
 }
 
 func (s *AccountabilityGroupService) CreateContactRequest(ctx context.Context, studentID, membershipID, category, message string) (model.PartnerContactRequest, error) {

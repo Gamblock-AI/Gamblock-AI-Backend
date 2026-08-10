@@ -223,3 +223,72 @@ func TestSpkService_EffectivenessFeedback(t *testing.T) {
 	require.NotNil(t, updated, "past record must still exist")
 	assert.Equal(t, "EFFECTIVE", updated.EffectivenessStatus)
 }
+
+// enrichTestStore returns a seeded store with an active intention so the SPK
+// personalization gate (HasIntention) is satisfied for usr_gading.
+func enrichTestStore() *store.Store {
+	st := store.NewSeeded()
+	st.Intentions = append(st.Intentions, store.Intention{
+		ID: "int_gading", UserID: "usr_gading",
+		Text: "Saya ingin menyelesaikan kuliah dengan tenang.",
+		Status: "active", SchoolImpact: "happened", MoneySpent: "500k_5m",
+		ScreenTime: "1h_3h", QuitAttempts: "multiple", QuitMotivation: "determined",
+		CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+	})
+	return st
+}
+
+func enrichTestService(st *store.Store) *SpkService {
+	return NewSpkService(repository.New(nil, st), config.Config{SPKLLMEnrichment: true}, zap.NewNop(), nil)
+}
+
+// A personalized copy already persisted for today with the same decision must
+// be reused instead of re-invoking DeepSeek, so repeated dashboard refreshes
+// within a day never multiply LLM credit usage.
+func TestSpkService_Recommend_ReusesCachedPersonalization(t *testing.T) {
+	probe := enrichTestService(enrichTestStore())
+	first, err := probe.Recommend(context.Background(), "usr_gading")
+	require.NoError(t, err)
+	require.False(t, first.LLMUsed, "deepseek is nil so the probe run cannot personalize")
+
+	st := enrichTestStore()
+	st.InterventionRecords = append(st.InterventionRecords, store.InterventionRecord{
+		ID: "spk_today_cached", UserID: "usr_gading",
+		InterventionKey: first.Feature.InterventionKey,
+		ResponseType:    first.Feature.ResponseType,
+		Status:          "recommended", RecommendedAt: time.Now().UTC().Add(time.Second),
+		EffectivenessStatus:     "NOT_EVALUATED",
+		PersonalizedMessage:     "Pesan hari ini",
+		PersonalizedExplanation: "Alasan hari ini",
+		LLMUsed:                 true,
+	})
+	svc := enrichTestService(st)
+
+	recommendation, err := svc.Recommend(context.Background(), "usr_gading")
+	require.NoError(t, err)
+	assert.True(t, recommendation.LLMUsed, "cached personalized copy must be reused")
+	assert.Equal(t, "Pesan hari ini", recommendation.PersonalizedMessage)
+	assert.Equal(t, "Alasan hari ini", recommendation.PersonalizedExplanation)
+	assert.Equal(t, "spk_today_cached", recommendation.RecommendationID)
+}
+
+// A cached copy from a different decision must not be reused: the stale message
+// is discarded and the pipeline falls back to re-personalizing.
+func TestSpkService_Recommend_RepersonalizesWhenDecisionChanges(t *testing.T) {
+	st := enrichTestStore()
+	st.InterventionRecords = append(st.InterventionRecords, store.InterventionRecord{
+		ID: "spk_today_stale", UserID: "usr_gading",
+		InterventionKey: "NO_INTERVENTION", ResponseType: "APPRECIATION",
+		Status: "recommended", RecommendedAt: time.Now().UTC().Add(time.Second),
+		EffectivenessStatus:     "NOT_EVALUATED",
+		PersonalizedMessage:     "Pesan basi",
+		PersonalizedExplanation: "Alasan basi",
+		LLMUsed:                 true,
+	})
+	svc := enrichTestService(st)
+
+	recommendation, err := svc.Recommend(context.Background(), "usr_gading")
+	require.NoError(t, err)
+	assert.False(t, recommendation.LLMUsed, "stale copy for a different decision must not be reused")
+	assert.Empty(t, recommendation.PersonalizedMessage)
+}

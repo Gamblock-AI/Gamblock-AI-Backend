@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
@@ -30,6 +31,9 @@ type SpkService struct {
 	deepseek *DeepSeekService
 	cfg      config.Config
 	logger   *zap.Logger
+	// flight collapses concurrent recommendation requests for the same student
+	// (e.g., multiple dashboard tabs) so only one pipeline and one LLM call run.
+	flight singleflight.Group
 }
 
 func NewSpkService(repo *repository.Repository, cfg config.Config, logger *zap.Logger, deepseek *DeepSeekService) *SpkService {
@@ -44,8 +48,20 @@ func NewSpkService(repo *repository.Repository, cfg config.Config, logger *zap.L
 
 // Recommend runs the full SPK pipeline and returns the dashboard-facing
 // recommendation. It is safe for data-poor users: unavailable factors are left
-// nil and the engine re-normalizes and falls back gracefully.
+// nil and the engine re-normalizes and falls back gracefully. Concurrent calls
+// for the same student share one pipeline run so repeated dashboard refreshes
+// or multiple tabs never multiply DeepSeek credit usage.
 func (s *SpkService) Recommend(ctx context.Context, userID string) (model.SpkRecommendation, error) {
+	value, err, _ := s.flight.Do(userID, func() (any, error) {
+		return s.recommend(ctx, userID)
+	})
+	if err != nil {
+		return model.SpkRecommendation{}, err
+	}
+	return value.(model.SpkRecommendation), nil
+}
+
+func (s *SpkService) recommend(ctx context.Context, userID string) (model.SpkRecommendation, error) {
 	now := time.Now().UTC()
 
 	pref, err := s.repo.SpkPreference(ctx, userID)
@@ -88,14 +104,28 @@ func (s *SpkService) Recommend(ctx context.Context, userID string) (model.SpkRec
 	dataState := classifySpkDataState(available, total)
 	feature := mapSpkFeature(result, s.engine.Config())
 
+	// Reuse today's already-personalized copy when the decision is unchanged so
+	// repeated refreshes within the same day never re-bill DeepSeek.
+	_, dayStart, dayEnd := jakartaDay(now)
+	todayRecord, err := s.repo.TodayInterventionRecord(ctx, userID, dayStart, dayEnd)
+	if err != nil {
+		return model.SpkRecommendation{}, err
+	}
+
 	llmUsed := false
 	message := ""
 	explanation := ""
-	if s.cfg.SPKLLMEnrichment && pref.LLMPersonalizationEnabled && pref.SpkUsePersonal && data.HasIntention {
+	canPersonalize := s.cfg.SPKLLMEnrichment && pref.LLMPersonalizationEnabled && pref.SpkUsePersonal && data.HasIntention
+	if canPersonalize && todayRecord != nil && todayRecord.LLMUsed &&
+		todayRecord.InterventionKey == string(result.InterventionKey) &&
+		todayRecord.PersonalizedMessage != "" {
+		llmUsed = true
+		message = todayRecord.PersonalizedMessage
+		explanation = todayRecord.PersonalizedExplanation
+	} else if canPersonalize {
 		llmUsed, message, explanation = s.personalize(ctx, result, feature, dataState, data)
 	}
 
-	_, dayStart, dayEnd := jakartaDay(now)
 	rec := model.InterventionRecord{
 		UserID:                  userID,
 		InterventionKey:         string(result.InterventionKey),
@@ -112,10 +142,6 @@ func (s *SpkService) Recommend(ctx context.Context, userID string) (model.SpkRec
 	}
 
 	recommendationID := ""
-	todayRecord, err := s.repo.TodayInterventionRecord(ctx, userID, dayStart, dayEnd)
-	if err != nil {
-		return model.SpkRecommendation{}, err
-	}
 	if todayRecord != nil {
 		rec.ID = todayRecord.ID
 		if todayRecord.Status == "completed" {

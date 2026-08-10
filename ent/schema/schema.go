@@ -87,7 +87,7 @@ func (AccountabilityGroup) Fields() []ent.Field {
 		field.String("description").Default(""),
 		field.String("join_code_hash").Unique().Sensitive(),
 		field.String("join_code_hint"),
-		field.Enum("status").Values("active", "archived").Default("active"),
+		field.Enum("status").Values("active").Default("active"),
 		field.Time("code_rotated_at"),
 		createdAt(),
 		updatedAt(),

@@ -22,9 +22,11 @@ func Seed(ctx context.Context, client *ent.Client, mediaPath ...string) error {
 		return err
 	}
 	now := time.Now().UTC()
-	// Idempotent demo recovery data (Niat quiz, check-in, missions, learning)
-	// so the SPK recommendation for demo students has enough input. It runs
-	// unconditionally to backfill existing demo databases as well.
+	// Idempotent demo recovery data (missions, learning, education) so the SPK
+	// recommendation for demo students has enough input. The Niat Perubahan
+	// intention and daily check-in are intentionally left empty so the website's
+	// first-run modal collects them from the student. It runs unconditionally
+	// to backfill existing demo databases as well.
 	if err := SeedDemoRecoveryData(ctx, client, now); err != nil {
 		return err
 	}

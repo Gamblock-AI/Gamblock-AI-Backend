@@ -33,6 +33,26 @@ func (h *Handler) Login(c *gin.Context) {
 	h.respond(c, http.StatusOK, response)
 }
 
+// Reauthenticate verifies the caller's password and returns a fresh token pair
+// whose auth_time is now, so recent-auth-protected actions can proceed without
+// a full logout.
+func (h *Handler) Reauthenticate(c *gin.Context) {
+	var input struct {
+		Password string `json:"password"`
+	}
+	_ = c.ShouldBindJSON(&input)
+	if input.Password == "" {
+		h.respondCode(c, http.StatusBadRequest, "err_validation")
+		return
+	}
+	response, err := h.services.Auth.Reauthenticate(c.Request.Context(), h.currentUserID(c), input.Password)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusUnauthorized, "invalid_credentials", err)
+		return
+	}
+	h.respond(c, http.StatusOK, response)
+}
+
 func (h *Handler) Register(c *gin.Context) {
 	var input struct {
 		Email    string `json:"email"`

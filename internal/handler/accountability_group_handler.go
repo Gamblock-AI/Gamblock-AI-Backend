@@ -76,12 +76,12 @@ func (h *Handler) RotateAccountabilityGroupCode(c *gin.Context) {
 	h.respond(c, http.StatusOK, gin.H{"join_code": code})
 }
 
-func (h *Handler) ArchiveAccountabilityGroup(c *gin.Context) {
-	if err := h.services.AccountabilityGroups.ArchiveGroup(c.Request.Context(), h.currentUserID(c), c.Param("group_id")); err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "accountability_group_archive_failed", err)
+func (h *Handler) DeleteAccountabilityGroup(c *gin.Context) {
+	if err := h.services.AccountabilityGroups.DeleteGroup(c.Request.Context(), h.currentUserID(c), c.Param("group_id")); err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "accountability_group_delete_failed", err)
 		return
 	}
-	h.respond(c, http.StatusOK, gin.H{"archived": true})
+	h.respond(c, http.StatusOK, gin.H{"deleted": true})
 }
 
 func (h *Handler) UpdateAccountabilitySharing(c *gin.Context) {

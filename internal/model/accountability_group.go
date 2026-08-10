@@ -26,18 +26,19 @@ type SharingPreferences struct {
 }
 
 type AccountabilityMembership struct {
-	ID          string                 `json:"id"`
-	GroupID     string                 `json:"group_id"`
-	StudentID   string                 `json:"student_id"`
-	StudentName string                 `json:"student_name"`
-	StudentMail string                 `json:"student_email,omitempty"`
-	Status      string                 `json:"status"`
-	Sharing     SharingPreferences     `json:"sharing"`
-	Aggregate   MemberAggregateSummary `json:"aggregate"`
-	JoinedAt    time.Time              `json:"joined_at"`
-	EndedAt     *time.Time             `json:"ended_at,omitempty"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt   time.Time              `json:"updated_at"`
+	ID               string                 `json:"id"`
+	GroupID          string                 `json:"group_id"`
+	StudentID        string                 `json:"student_id"`
+	StudentName      string                 `json:"student_name"`
+	StudentMail      string                 `json:"student_email,omitempty"`
+	StudentAvatarURL *string                `json:"student_avatar_url,omitempty"`
+	Status           string                 `json:"status"`
+	Sharing          SharingPreferences     `json:"sharing"`
+	Aggregate        MemberAggregateSummary `json:"aggregate"`
+	JoinedAt         time.Time              `json:"joined_at"`
+	EndedAt          *time.Time             `json:"ended_at,omitempty"`
+	CreatedAt        time.Time              `json:"created_at"`
+	UpdatedAt        time.Time              `json:"updated_at"`
 }
 
 type MemberAggregateSummary struct {
@@ -65,19 +66,20 @@ type MembershipExitRequest struct {
 }
 
 type PartnerContactRequest struct {
-	ID             string     `json:"id"`
-	MembershipID   string     `json:"membership_id"`
-	StudentID      string     `json:"student_id"`
-	StudentName    string     `json:"student_name"`
-	PartnerID      string     `json:"partner_id"`
-	Category       string     `json:"category"`
-	Message        string     `json:"message,omitempty"`
-	Status         string     `json:"status"`
-	AcknowledgedAt *time.Time `json:"acknowledged_at,omitempty"`
-	ClosedAt       *time.Time `json:"closed_at,omitempty"`
-	EscalatedAt    *time.Time `json:"escalated_at,omitempty"`
-	CreatedAt      time.Time  `json:"created_at"`
-	UpdatedAt      time.Time  `json:"updated_at"`
+	ID               string     `json:"id"`
+	MembershipID     string     `json:"membership_id"`
+	StudentID        string     `json:"student_id"`
+	StudentName      string     `json:"student_name"`
+	StudentAvatarURL *string    `json:"student_avatar_url,omitempty"`
+	PartnerID        string     `json:"partner_id"`
+	Category         string     `json:"category"`
+	Message          string     `json:"message,omitempty"`
+	Status           string     `json:"status"`
+	AcknowledgedAt   *time.Time `json:"acknowledged_at,omitempty"`
+	ClosedAt         *time.Time `json:"closed_at,omitempty"`
+	EscalatedAt      *time.Time `json:"escalated_at,omitempty"`
+	CreatedAt        time.Time  `json:"created_at"`
+	UpdatedAt        time.Time  `json:"updated_at"`
 }
 
 type AccountabilityWorkspace struct {

@@ -88,7 +88,7 @@ var messages = map[string]string{
 	"accountability_code_invalid":          "Kode grup tidak valid atau sudah diganti.",
 	"accountability_join_failed":           "Belum dapat bergabung ke grup. Periksa konfirmasi dan keanggotaan aktif Anda.",
 	"accountability_code_rotate_failed":    "Kode grup belum dapat diganti.",
-	"accountability_group_archive_failed":  "Grup hanya dapat diarsipkan setelah tidak memiliki anggota aktif.",
+	"accountability_group_delete_failed":   "Grup hanya dapat dihapus setelah tidak memiliki anggota aktif.",
 	"accountability_sharing_update_failed": "Preferensi berbagi belum dapat diperbarui.",
 	"accountability_leave_failed":          "Permintaan keluar belum dapat diproses.",
 	"accountability_leave_cancel_failed":   "Permintaan keluar tidak dapat dibatalkan. Muat ulang status lalu coba lagi.",

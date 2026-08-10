@@ -32,20 +32,12 @@ func NewSeeded() *Store {
 		Partners: []Partner{{ID: "pl_active", UserID: "usr_gading", PartnerUserID: "usr_suci", Name: "Suci", Contact: "suci@gmail.com | +62 812-0000-0000", Status: "active", PartnerEmail: "suci@gmail.com", CreatedAt: now, UpdatedAt: now}},
 		AccountabilityGroups: []AccountabilityGroup{{
 			ID: "grp_demo", OwnerPartnerID: "usr_suci", OwnerName: "Suci",
-			Name: "Ruang dukungan Gading", Description: "Pendampingan pribadi yang berfokus pada dukungan dan keputusan proteksi.",
+			Name: "Kelas Informatika C", Description: "Kelas pendampingan mahasiswa Informatika yang berfokus pada dukungan dan keputusan proteksi.",
 			JoinCodeHint: "DEMO", Status: "active", MemberCount: 1, CodeRotatedAt: now, CreatedAt: now, UpdatedAt: now,
-		}, {
-			ID: "grp_demo_dery", OwnerPartnerID: "usr_suci", OwnerName: "Suci",
-			Name: "Ruang dukungan Dery", Description: "Pendampingan demo kedua untuk menguji filter grup dan batas izin berbagi.",
-			JoinCodeHint: "CK84", Status: "active", MemberCount: 1, CodeRotatedAt: now, CreatedAt: now, UpdatedAt: now,
 		}},
 		AccountabilityMemberships: []AccountabilityMembership{{
 			ID: "mbr_active", GroupID: "grp_demo", StudentID: "usr_gading", StudentName: "Gading", StudentMail: "gading@gmail.com",
 			Status: "active", Sharing: SharingPreferences{ProtectionHealth: true, ProtectionActivity: true, RecoveryEngagement: true, EducationProgress: true},
-			JoinedAt: now, CreatedAt: now, UpdatedAt: now,
-		}, {
-			ID: "mbr_dery_active", GroupID: "grp_demo_dery", StudentID: "usr_dery", StudentName: "Dery", StudentMail: "dery@gmail.com",
-			Status: "active", Sharing: SharingPreferences{ProtectionHealth: true, ProtectionActivity: true, RecoveryEngagement: false, EducationProgress: false},
 			JoinedAt: now, CreatedAt: now, UpdatedAt: now,
 		}},
 		AggregateEvents: []AggregateEvent{
@@ -65,7 +57,7 @@ func NewSeeded() *Store {
 		EducationMedia: seed.DemoEducationMedia(now),
 		SupportCases: []SupportCase{
 			{ID: "CASE-1087", UserID: "usr_gading", Title: "Setup and permissions", Type: "device_recovery", Status: "waiting_user", Priority: "normal", Owner: "Gading", CreatedAt: now, UpdatedAt: now},
-			{ID: "CASE-1084", UserID: "usr_dery", Title: "Partner approval issue", Type: "stuck_approval", Status: "waiting_support", Priority: "high", Owner: "Suci", CreatedAt: now, UpdatedAt: now},
+			{ID: "CASE-1084", UserID: "usr_dery", Title: "Cannot finish app setup", Type: "device_recovery", Status: "waiting_user", Priority: "normal", Owner: "Dery", CreatedAt: now, UpdatedAt: now},
 		},
 		DataRequests: []DataRequest{
 			{ID: "DR-1042", UserID: "usr_gading", Title: "Export account data", Type: "export", Status: "completed", FailureCode: "result_unavailable", CreatedAt: now, UpdatedAt: now},
@@ -88,8 +80,6 @@ func NewSeeded() *Store {
 		RecoveryPracticeSessions: []RecoveryPracticeSession{
 			{ID: "practice_demo_001", UserID: "usr_gading", PracticeKind: "grounding_54321", DurationSeconds: 120, Feedback: "lighter", CompletedAt: now.Add(-30 * time.Minute), CreatedAt: now.Add(-30 * time.Minute)},
 		},
-		Intentions: []Intention{{ID: "int_1", UserID: "usr_gading", Text: "Saya ingin menyelesaikan kuliah dengan pikiran yang lebih tenang.", Status: "active", SchoolImpact: "happened", MoneySpent: "500k_5m", ScreenTime: "1h_3h", QuitAttempts: "multiple", QuitMotivation: "determined", CreatedAt: now, UpdatedAt: now}},
-		CheckIns:   []CheckIn{{ID: "chk_1", UserID: "usr_gading", Mood: 4, Urge: 2, Context: "Merasa cukup tenang pagi ini.", CreatedAt: now}},
 		LearningProgress: []LearningProgress{
 			{UserID: "usr_gading", ItemID: "learn_know_your_urges", State: "completed", CreatedAt: now.Add(-72 * time.Hour), UpdatedAt: now.Add(-24 * time.Hour)},
 			{UserID: "usr_gading", ItemID: "learn_pause_technique", State: "started", CreatedAt: now.Add(-4 * 24 * time.Hour), UpdatedAt: now.Add(-48 * time.Hour)},

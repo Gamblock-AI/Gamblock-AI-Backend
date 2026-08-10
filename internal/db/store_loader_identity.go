@@ -14,6 +14,7 @@ func loadIdentityStore(ctx context.Context, client *ent.Client, out *store.Store
 			ID:                 item.ID,
 			Email:              item.Email,
 			DisplayName:        item.DisplayName,
+			AvatarURL:          item.AvatarURL,
 			Role:               item.Role.String(),
 			MustChangePassword: item.MustChangePassword,
 			EmailVerifiedAt:    item.EmailVerifiedAt,
