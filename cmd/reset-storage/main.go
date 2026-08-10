@@ -17,8 +17,11 @@ import (
 
 const resetStorageConfirmation = "DELETE_DYNAMIC_STORAGE"
 
-// resetDir removes the directory contents and recreates the directory. It
-// refuses empty or filesystem-root paths to avoid wiping the wrong location.
+// resetDir removes the directory contents while preserving the directory
+// itself. Keeping the root is required when it is a Docker volume mount,
+// because mounted directories cannot be unlinked from inside the container.
+// It refuses empty or filesystem-root paths to avoid wiping the wrong
+// location.
 func resetDir(dir string) error {
 	trimmed := strings.TrimSpace(dir)
 	if trimmed == "" {
@@ -31,11 +34,17 @@ func resetDir(dir string) error {
 	if abs == "/" {
 		return fmt.Errorf("refusing to reset filesystem root")
 	}
-	if err := os.RemoveAll(abs); err != nil {
-		return err
-	}
 	if err := os.MkdirAll(abs, 0o750); err != nil {
 		return err
+	}
+	entries, err := os.ReadDir(abs)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if err := os.RemoveAll(filepath.Join(abs, entry.Name())); err != nil {
+			return err
+		}
 	}
 	log.Printf("reset-storage: cleared %s", abs)
 	return nil
