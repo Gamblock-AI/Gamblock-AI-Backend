@@ -18,7 +18,9 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/api ./cmd/api && \
     CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/migrate-up ./cmd/migrate && \
     CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/migrate-down ./cmd/migrate-down && \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/reset-storage ./cmd/reset-storage && \
     CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/seeder ./cmd/seeder && \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/demo-seeder ./cmd/demo-seeder && \
     CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/seed-learning-hub ./cmd/seed-learning-hub
 
 # ---- Runtime stage ----

@@ -34,8 +34,11 @@ PostgreSQL is unavailable. The default local URL is
 PostgreSQL seed data and the optional in-memory demo store use the shared dummy
 password `password` for `gading@gmail.com`, `dery@gmail.com`,
 `suci@gmail.com`, and `nasywa@gmail.com`. These
-credentials are development fixtures only and demo data is forbidden in
-production. The optional demo seed includes two active accountability groups
+credentials are public fixtures. Automatic production deploys never install
+them; an owner-authorized demo environment may invoke the separately guarded
+`/app/demo-seeder` with
+`CONFIRM_DEMO_SEED=CREATE_FOUR_DEMO_ACCOUNTS`. The optional demo seed includes
+two active accountability groups
 and privacy-safe daily aggregate fixtures for partner-dashboard testing; it
 contains no URL, domain, title, timestamped visit, or browsing-history fixture.
 The production-safe `make seeder` path never creates demo users or activity.
@@ -45,13 +48,14 @@ run `./bin/api` with `.env`), `make key-generate`,
 `make lint`, `make migrate-up`, `make seeder`, `make seed`,
 `make seed-education`, `make seed-learning-hub`, and opt-in `make verify`. The
 Docker image exposes the same operational commands as `/app/migrate-up`,
-`/app/migrate-down`, `/app/seeder`, and `/app/seed-learning-hub`; the seeders
-log only aggregate Learning Hub inserted/skipped counts.
+`/app/migrate-down`, `/app/reset-storage`, `/app/seeder`, `/app/demo-seeder`,
+and `/app/seed-learning-hub`; the automatic seeder logs only aggregate
+Learning Hub inserted/skipped counts.
 `migrate-down` and `make migrate-fresh` drop the database schema
 and must never be run against shared or production data; `migrate-down`
 additionally refuses to run without `CONFIRM_MIGRATE_DOWN=DROP_ALL_DATA`.
 Both commands also empty the runtime storage directories (media/avatars and
-encrypted exports) through `make reset-storage`, since
+encrypted exports) through the separately guarded reset-storage command, since
 every dynamic file is orphaned once the schema is dropped; run `make seed`
 afterwards to regenerate the bundled seed media.
 `make key-generate` refuses to replace a valid existing key; use
@@ -244,11 +248,12 @@ Fonnte is the production transactional delivery adapter. Production requires
 `FONNTE_TOKEN`; WhatsApp verification/reset/export notifications are unavailable
 without it rather than exposing demo codes. Email remains the login identity.
 Development login and
-contextual demo records remain separately opt-in and forbidden in production.
+runtime contextual demo records remain separately opt-in and forbidden in
+production; only the explicitly confirmed one-shot demo seeder is exempt.
 
 Production CI builds the private GHCR image on `main`, including the API,
-migrate-up, guarded migrate-down, production-safe seeder, and Learning Hub
-seeder binaries. Its
+migrate-up, guarded migrate-down/reset-storage, production-safe seeder,
+owner-confirmed demo seeder, and Learning Hub seeder binaries. Its
 deploy step is disabled until `ENABLE_VPS_DEPLOY=true`, then connects to the
 pinned VPS as root with password authentication on port 22 and runs the
 Ansible-installed `update.sh`, which backs up PostgreSQL, runs migrate-up and

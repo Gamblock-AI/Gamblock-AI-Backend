@@ -3,7 +3,7 @@ ifneq (,$(wildcard .env))
     export
 endif
 
-.PHONY: dev run build start generate key-generate migrate migrate-up migrate-down migrate-fresh reset-storage seed seeder seed-education seed-learning-hub lint test test-cover verify
+.PHONY: dev run build start generate key-generate migrate migrate-up migrate-down migrate-fresh reset-storage seed seeder demo-seeder seed-education seed-learning-hub lint test test-cover verify
 
 APP_NAME := api
 BUILD_DIR := ./bin
@@ -19,7 +19,9 @@ build:
 	go build -o $(BUILD_DIR)/$(APP_NAME) ./cmd/api
 	go build -o $(BUILD_DIR)/migrate-up ./cmd/migrate
 	go build -o $(BUILD_DIR)/migrate-down ./cmd/migrate-down
+	go build -o $(BUILD_DIR)/reset-storage ./cmd/reset-storage
 	go build -o $(BUILD_DIR)/seeder ./cmd/seeder
+	go build -o $(BUILD_DIR)/demo-seeder ./cmd/demo-seeder
 	go build -o $(BUILD_DIR)/seed-learning-hub ./cmd/seed-learning-hub
 
 generate:
@@ -66,26 +68,41 @@ migrate-down:
 		echo "Refusing destructive migration. Re-run with CONFIRM_MIGRATE_DOWN=DROP_ALL_DATA." >&2; \
 		exit 1; \
 	}
-	go run ./cmd/migrate-down
-	go run ./cmd/reset-storage
+	CONFIRM_MIGRATE_DOWN="$(CONFIRM_MIGRATE_DOWN)" go run ./cmd/migrate-down
+	CONFIRM_RESET_STORAGE=DELETE_DYNAMIC_STORAGE go run ./cmd/reset-storage
 
 migrate-fresh:
+	@test "$(CONFIRM_MIGRATE_DOWN)" = "DROP_ALL_DATA" || { \
+		echo "Refusing destructive migration. Re-run with CONFIRM_MIGRATE_DOWN=DROP_ALL_DATA." >&2; \
+		exit 1; \
+	}
 	@echo "Dropping and recreating database..."
-	psql "$(DATABASE_URL)" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" || true
+	CONFIRM_MIGRATE_DOWN="$(CONFIRM_MIGRATE_DOWN)" go run ./cmd/migrate-down
+	CONFIRM_RESET_STORAGE=DELETE_DYNAMIC_STORAGE go run ./cmd/reset-storage
 	go run ./cmd/migrate
-	go run ./cmd/reset-storage
 	@echo "Fresh migration complete."
 
 # Empties the runtime storage directories (media/avatars/exports).
 # Run after a destructive database reset; seed assets are recreated by `make seed`.
 reset-storage:
-	go run ./cmd/reset-storage
+	@test "$(CONFIRM_RESET_STORAGE)" = "DELETE_DYNAMIC_STORAGE" || { \
+		echo "Refusing storage reset. Re-run with CONFIRM_RESET_STORAGE=DELETE_DYNAMIC_STORAGE." >&2; \
+		exit 1; \
+	}
+	CONFIRM_RESET_STORAGE="$(CONFIRM_RESET_STORAGE)" go run ./cmd/reset-storage
 
 seed:
 	go run ./cmd/seed
 
 seeder:
 	go run ./cmd/seeder
+
+demo-seeder:
+	@test "$(CONFIRM_DEMO_SEED)" = "CREATE_FOUR_DEMO_ACCOUNTS" || { \
+		echo "Refusing demo seed. Re-run with CONFIRM_DEMO_SEED=CREATE_FOUR_DEMO_ACCOUNTS." >&2; \
+		exit 1; \
+	}
+	CONFIRM_DEMO_SEED="$(CONFIRM_DEMO_SEED)" go run ./cmd/demo-seeder
 
 seed-education:
 	go run ./cmd/seed-education

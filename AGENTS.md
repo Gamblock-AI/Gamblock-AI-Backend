@@ -128,10 +128,15 @@ single-use tokens. Do not put them behind session auth or expose their tokens.
   contract. Do not reintroduce deploy-user keys or store a GHCR pull PAT in the
   application repository.
 - The production image contains `/app/api`, `/app/migrate-up`,
-  `/app/migrate-down`, `/app/seeder`, and `/app/seed-learning-hub`. The production seeder installs only
+  `/app/migrate-down`, `/app/reset-storage`, `/app/seeder`,
+  `/app/demo-seeder`, and `/app/seed-learning-hub`. The production-safe seeder
+  installs only
   missing public baseline content; it must never create demo accounts or
-  overwrite administrator-managed content. `migrate-down` is destructive,
-  requires `CONFIRM_MIGRATE_DOWN=DROP_ALL_DATA`, and is never part of deploy.
+  overwrite administrator-managed content. The separate demo seeder is an
+  owner-authorized manual tool, requires
+  `CONFIRM_DEMO_SEED=CREATE_FOUR_DEMO_ACCOUNTS`, and refuses unrelated account
+  data. `migrate-down` and `reset-storage` are destructive, require their exact
+  confirmation variables, and are never part of deploy.
 
 ## Validation policy
 

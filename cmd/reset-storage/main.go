@@ -6,6 +6,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -14,19 +15,21 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
 )
 
+const resetStorageConfirmation = "DELETE_DYNAMIC_STORAGE"
+
 // resetDir removes the directory contents and recreates the directory. It
 // refuses empty or filesystem-root paths to avoid wiping the wrong location.
 func resetDir(dir string) error {
 	trimmed := strings.TrimSpace(dir)
 	if trimmed == "" {
-		return nil
+		return fmt.Errorf("storage path is empty")
 	}
 	abs, err := filepath.Abs(trimmed)
 	if err != nil {
 		return err
 	}
 	if abs == "/" {
-		return nil
+		return fmt.Errorf("refusing to reset filesystem root")
 	}
 	if err := os.RemoveAll(abs); err != nil {
 		return err
@@ -39,6 +42,9 @@ func resetDir(dir string) error {
 }
 
 func main() {
+	if os.Getenv("CONFIRM_RESET_STORAGE") != resetStorageConfirmation {
+		log.Fatalf("refusing storage reset: set CONFIRM_RESET_STORAGE=%s", resetStorageConfirmation)
+	}
 	cfg := config.Load()
 	for _, dir := range []string{
 		cfg.MediaStoragePath,
