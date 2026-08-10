@@ -338,32 +338,96 @@ func seedLearningItem(ctx context.Context, client *ent.Client, item learningSeed
 // that were seeded before media support existed (skip-if-exists keeps them out
 // of the create path), so existing databases converge to the same presentation.
 func fillLearningHubMedia(ctx context.Context, client *ent.Client) error {
-	items, err := client.LearningItem.Query().Where(learningitem.StatusNEQ(learningitem.StatusArchived)).All(ctx)
+	items, err := client.LearningItem.Query().Where(
+		learningitem.StatusNEQ(learningitem.StatusArchived),
+		learningitem.CreatedByEQ("seed"),
+		learningitem.UpdatedByEQ("seed"),
+	).All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, item := range items {
 		document := cloneSeedDocument(item.DocumentJSON)
-		logoID := learningProviderLogoID(seedDocumentString(document, "provider"))
-		if logoID != "" {
-			if _, exists := document["provider_logo_media_id"]; !exists {
-				document["provider_logo_media_id"] = logoID
+		if fillLearningHubMediaDocument(document, item.Slug) {
+			if _, err := client.LearningItem.UpdateOneID(item.ID).SetDocumentJSON(document).Save(ctx); err != nil {
+				return err
 			}
 		}
-		if _, exists := document["thumbnail_media_id"]; !exists {
-			document["thumbnail_media_id"] = thumbnailMediaIDFor(item.Slug)
-		}
-		if _, exists := document["provider_description_id"]; !exists {
-			if descID, descEN := learningProviderDescription(seedDocumentString(document, "provider")); descID != "" || descEN != "" {
-				document["provider_description_id"] = descID
-				document["provider_description_en"] = descEN
-			}
-		}
-		if _, err := client.LearningItem.UpdateOneID(item.ID).SetDocumentJSON(document).Save(ctx); err != nil {
+		if err := fillPublishedLearningHubMedia(ctx, client, item, document); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// fillPublishedLearningHubMedia keeps the immutable public snapshot of an
+// older seed-created item aligned with media added by a later seeder version.
+// Admin-published revisions are deliberately excluded: the seeder must never
+// overwrite editorial content managed through the control plane.
+func fillPublishedLearningHubMedia(ctx context.Context, client *ent.Client, item *ent.LearningItem, draftDocument map[string]any) error {
+	revision, err := client.LearningRevision.Query().Where(
+		learningrevision.ItemIDEQ(item.ID),
+		learningrevision.KindEQ(learningrevision.KindPublished),
+	).Order(ent.Desc(learningrevision.FieldRevision)).First(ctx)
+	if ent.IsNotFound(err) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if revision.CreatedBy != "seed" {
+		return nil
+	}
+
+	revisionDocument := cloneSeedDocument(revision.DocumentJSON)
+	publicDocument := revisionDocument
+	if rawSnapshot, ok := revisionDocument["_learning_item_snapshot"].(map[string]any); ok {
+		snapshot := cloneSeedDocument(rawSnapshot)
+		if rawDocument, ok := snapshot["document"].(map[string]any); ok {
+			publicDocument = cloneSeedDocument(rawDocument)
+			snapshot["document"] = publicDocument
+			revisionDocument["_learning_item_snapshot"] = snapshot
+		}
+	}
+
+	changed := false
+	for _, key := range []string{"provider_logo_media_id", "thumbnail_media_id", "provider_description_id", "provider_description_en"} {
+		if _, exists := publicDocument[key]; exists {
+			continue
+		}
+		if value, exists := draftDocument[key]; exists {
+			publicDocument[key] = value
+			changed = true
+		}
+	}
+	if !changed {
+		return nil
+	}
+	_, err = client.LearningRevision.UpdateOneID(revision.ID).SetDocumentJSON(revisionDocument).Save(ctx)
+	return err
+}
+
+func fillLearningHubMediaDocument(document map[string]any, slug string) bool {
+	changed := false
+	logoID := learningProviderLogoID(seedDocumentString(document, "provider"))
+	if logoID != "" {
+		if _, exists := document["provider_logo_media_id"]; !exists {
+			document["provider_logo_media_id"] = logoID
+			changed = true
+		}
+	}
+	if _, exists := document["thumbnail_media_id"]; !exists {
+		document["thumbnail_media_id"] = thumbnailMediaIDFor(slug)
+		changed = true
+	}
+	if _, exists := document["provider_description_id"]; !exists {
+		if descID, descEN := learningProviderDescription(seedDocumentString(document, "provider")); descID != "" || descEN != "" {
+			document["provider_description_id"] = descID
+			document["provider_description_en"] = descEN
+			changed = true
+		}
+	}
+	return changed
 }
 
 func cloneSeedDocument(document map[string]any) map[string]any {

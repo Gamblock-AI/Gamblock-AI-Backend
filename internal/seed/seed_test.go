@@ -10,6 +10,8 @@ import (
 
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningitem"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningrevision"
 	_ "modernc.org/sqlite" // registers the "sqlite" driver (CGO-free)
 )
 
@@ -68,4 +70,49 @@ func TestSeedProductionDefaults_DoesNotCreateDemoActivity(t *testing.T) {
 	require.NoError(t, err)
 	assert.Zero(t, users)
 	assert.Zero(t, aggregates)
+}
+
+func TestSeedLearningHubDefaults_RetrofitsPublishedMedia(t *testing.T) {
+	client := openSQLiteEnt(t)
+	defer client.Close()
+	ctx := context.Background()
+	mediaRoot := t.TempDir()
+
+	_, err := SeedLearningHubDefaultsWithReport(ctx, client, mediaRoot)
+	require.NoError(t, err)
+
+	item, err := client.LearningItem.Query().Where(learningitem.IDEQ("item_autodesk-autocad-design")).Only(ctx)
+	require.NoError(t, err)
+	draft := cloneSeedDocument(item.DocumentJSON)
+	delete(draft, "provider_logo_media_id")
+	delete(draft, "thumbnail_media_id")
+	_, err = client.LearningItem.UpdateOneID(item.ID).SetDocumentJSON(draft).Save(ctx)
+	require.NoError(t, err)
+
+	revision, err := client.LearningRevision.Query().Where(
+		learningrevision.ItemIDEQ(item.ID),
+		learningrevision.KindEQ(learningrevision.KindPublished),
+	).Only(ctx)
+	require.NoError(t, err)
+	revisionDocument := cloneSeedDocument(revision.DocumentJSON)
+	snapshot, ok := revisionDocument["_learning_item_snapshot"].(map[string]any)
+	require.True(t, ok)
+	publicDocument, ok := snapshot["document"].(map[string]any)
+	require.True(t, ok)
+	delete(publicDocument, "provider_logo_media_id")
+	delete(publicDocument, "thumbnail_media_id")
+	_, err = client.LearningRevision.UpdateOneID(revision.ID).SetDocumentJSON(revisionDocument).Save(ctx)
+	require.NoError(t, err)
+
+	_, err = SeedLearningHubDefaultsWithReport(ctx, client, mediaRoot)
+	require.NoError(t, err)
+
+	revision, err = client.LearningRevision.Get(ctx, revision.ID)
+	require.NoError(t, err)
+	snapshot, ok = revision.DocumentJSON["_learning_item_snapshot"].(map[string]any)
+	require.True(t, ok)
+	publicDocument, ok = snapshot["document"].(map[string]any)
+	require.True(t, ok)
+	assert.Equal(t, "med_seed_lh_logo_autodesk", publicDocument["provider_logo_media_id"])
+	assert.NotEmpty(t, publicDocument["thumbnail_media_id"])
 }
