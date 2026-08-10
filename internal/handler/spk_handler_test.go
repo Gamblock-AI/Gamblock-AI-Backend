@@ -70,7 +70,7 @@ func TestSpk_RecommendationEndpoint(t *testing.T) {
 	data := env.Data.(map[string]any)
 	assert.NotEmpty(t, data["recommendation_id"])
 	assert.NotEmpty(t, data["feature"])
-	assert.Equal(t, "partial", data["data_state"])
+	assert.Equal(t, "sufficient", data["data_state"])
 	feature := data["feature"].(map[string]any)
 	assert.NotEmpty(t, feature["feature_id"])
 }

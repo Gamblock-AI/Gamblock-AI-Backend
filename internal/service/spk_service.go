@@ -92,7 +92,7 @@ func (s *SpkService) Recommend(ctx context.Context, userID string) (model.SpkRec
 	message := ""
 	explanation := ""
 	if s.cfg.SPKLLMEnrichment && pref.LLMPersonalizationEnabled && pref.SpkUsePersonal && data.HasIntention {
-		llmUsed, message, explanation = s.personalize(ctx, result, dataState, data)
+		llmUsed, message, explanation = s.personalize(ctx, result, feature, dataState, data)
 	}
 
 	_, dayStart, dayEnd := jakartaDay(now)
@@ -291,19 +291,22 @@ func (s *SpkService) evaluatePendingEffectiveness(ctx context.Context, userID st
 // personalize sends only the SPK decision plus the user's self-reported context
 // to DeepSeek and returns the generated message/explanation. Any failure falls
 // back to a rule-based recommendation with no copy.
-func (s *SpkService) personalize(ctx context.Context, result spk.Result, dataState model.SpkDataState, data repository.SpkInputData) (bool, string, string) {
+func (s *SpkService) personalize(ctx context.Context, result spk.Result, feature model.SpkFeature, dataState model.SpkDataState, data repository.SpkInputData) (bool, string, string) {
 	if s.deepseek == nil {
 		return false, "", ""
 	}
+	featureName := featureDescription(feature)
 	systemPrompt := "You are a supportive recovery coach for an Indonesian university student using a gambling self-control app. " +
 		"The rule-based decision engine has already chosen the recommended activity category. " +
+		fmt.Sprintf("The chosen feature is: %s. Mention this feature by name in both your message and explanation so the student knows exactly what to do today. ", featureName) +
 		"Do NOT change or invent the category, do not mention gambling websites, URLs, or browsing data, and never diagnose or make medical claims. " +
 		"Keep the tone warm, concise, and encouraging. " +
-		"Respond ONLY with JSON: {\"message\":\"short headline, max 15 words, Bahasa Indonesia\",\"explanation\":\"why this fits today, max 2 sentences, Bahasa Indonesia\"}."
+		"Respond ONLY with JSON: {\"message\":\"short headline, max 15 words, Bahasa Indonesia, names the recommended feature\",\"explanation\":\"why this fits today, max 2 sentences, Bahasa Indonesia, names the recommended feature\"}."
 	userMessage := fmt.Sprintf(
-		"Recommendation (decided by the engine): intervention=%s, response_type=%s, support_level=%s, engagement_level=%s, needed=%t, data_state=%s.\n"+
+		"Recommendation (decided by the engine): intervention=%s, response_type=%s, feature=%s (%s), support_level=%s, engagement_level=%s, needed=%t, data_state=%s.\n"+
 			"Self-reported user context: intention=%q, education_impact=%q, financial_impact=%q, screen_time=%q, quit_attempts=%q",
-		result.InterventionKey, result.ResponseType, result.SupportLevel, result.EngagementLevel,
+		result.InterventionKey, result.ResponseType, feature.FeatureID, featureName,
+		result.SupportLevel, result.EngagementLevel,
 		result.InterventionNeeded, dataState,
 		data.PersonalIntention, data.SchoolImpact, data.MoneySpent, data.ScreenTime, data.QuitAttempts,
 	)
@@ -369,6 +372,29 @@ func mapSpkFeature(result spk.Result, cfg spk.Config) model.SpkFeature {
 		feature.FeatureID, feature.Category, feature.Action = "none", "maintain", "continue"
 	}
 	return feature
+}
+
+// featureDescription maps a feature to a short English description used in the
+// LLM prompt so the model can reference the actual feature by name.
+func featureDescription(feature model.SpkFeature) string {
+	switch feature.FeatureID {
+	case "education":
+		return "psychoeducation learning content (Education)"
+	case "recovery_practice":
+		return "a short recovery practice (Recovery practice)"
+	case "grounding":
+		return "a grounding exercise (Grounding)"
+	case "reflection":
+		return "writing a journal reflection (Journal reflection)"
+	case "alternative_activity":
+		return "an alternative activity from the learning hub (Skills)"
+	case "accountability":
+		return "connecting with your accountability partner (Accountability)"
+	case "none":
+		return "keeping your current rhythm (daily missions)"
+	default:
+		return "the recommended activity"
+	}
 }
 
 func toSpkTimeTrigger(trigger *spk.TimeTrigger) *model.SpkTimeTrigger {

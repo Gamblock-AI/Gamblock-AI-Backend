@@ -21,11 +21,17 @@ func Seed(ctx context.Context, client *ent.Client, mediaPath ...string) error {
 	if _, err := SeedLearningHubDefaultsWithReport(ctx, client, mediaPath...); err != nil {
 		return err
 	}
+	now := time.Now().UTC()
+	// Idempotent demo recovery data (Niat quiz, check-in, missions, learning)
+	// so the SPK recommendation for demo students has enough input. It runs
+	// unconditionally to backfill existing demo databases as well.
+	if err := SeedDemoRecoveryData(ctx, client, now); err != nil {
+		return err
+	}
 	if count > 0 {
 		return nil
 	}
 
-	now := time.Now().UTC()
 	if err := SeedUsers(ctx, client); err != nil {
 		return err
 	}

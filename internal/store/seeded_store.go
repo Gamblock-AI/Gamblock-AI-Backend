@@ -88,7 +88,15 @@ func NewSeeded() *Store {
 		RecoveryPracticeSessions: []RecoveryPracticeSession{
 			{ID: "practice_demo_001", UserID: "usr_gading", PracticeKind: "grounding_54321", DurationSeconds: 120, Feedback: "lighter", CompletedAt: now.Add(-30 * time.Minute), CreatedAt: now.Add(-30 * time.Minute)},
 		},
-		Intentions: []Intention{{ID: "int_1", UserID: "usr_gading", Text: "Saya ingin menyelesaikan kuliah dengan pikiran yang lebih tenang.", Status: "active", CreatedAt: now, UpdatedAt: now}},
+		Intentions: []Intention{{ID: "int_1", UserID: "usr_gading", Text: "Saya ingin menyelesaikan kuliah dengan pikiran yang lebih tenang.", Status: "active", SchoolImpact: "happened", MoneySpent: "500k_5m", ScreenTime: "1h_3h", QuitAttempts: "multiple", QuitMotivation: "determined", CreatedAt: now, UpdatedAt: now}},
 		CheckIns:   []CheckIn{{ID: "chk_1", UserID: "usr_gading", Mood: 4, Urge: 2, Context: "Merasa cukup tenang pagi ini.", CreatedAt: now}},
+		LearningProgress: []LearningProgress{
+			{UserID: "usr_gading", ItemID: "learn_know_your_urges", State: "completed", CreatedAt: now.Add(-72 * time.Hour), UpdatedAt: now.Add(-24 * time.Hour)},
+			{UserID: "usr_gading", ItemID: "learn_pause_technique", State: "started", CreatedAt: now.Add(-4 * 24 * time.Hour), UpdatedAt: now.Add(-48 * time.Hour)},
+			{UserID: "usr_gading", ItemID: "learn_financial_guardrails", State: "started", CreatedAt: now.Add(-6 * 24 * time.Hour), UpdatedAt: now.Add(-3 * 24 * time.Hour)},
+		},
+		EducationProgress: []EducationProgress{
+			{ID: "eduprog_impulse", UserID: "usr_gading", ModuleID: "mod_impulse_cycle", Revision: 1, CompletedSectionIDs: []string{"cycle-map", "choice-point"}, ProgressPercent: 66, CreatedAt: now.Add(-3 * 24 * time.Hour), UpdatedAt: now.Add(-2 * 24 * time.Hour)},
+		},
 	}
 }

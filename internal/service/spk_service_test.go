@@ -31,7 +31,7 @@ func TestSpkService_Recommend_SeededUser(t *testing.T) {
 	assert.Equal(t, "MEDIUM", first.EngagementLevel)
 	assert.True(t, first.InterventionNeeded)
 	assert.NotEmpty(t, first.RecommendationID)
-	assert.Equal(t, model.SpkDataPartial, first.DataState)
+	assert.Equal(t, model.SpkDataSufficient, first.DataState)
 	assert.Equal(t, "recovery_practice", first.Feature.FeatureID)
 	assert.Equal(t, "/recovery", first.Feature.Route)
 	assert.False(t, first.LLMUsed)
@@ -42,14 +42,9 @@ func TestSpkService_Recommend_SeededUser(t *testing.T) {
 	}
 	assert.Contains(t, reasonKeys, "blocked_active_days_7d")
 	assert.Contains(t, reasonKeys, "recovery_streak_days")
-	assert.NotContains(t, reasonKeys, "learning_activities_7d", "unavailable factor must be excluded")
-
-	gapActions := make([]string, 0, len(first.DataGaps))
-	for _, gap := range first.DataGaps {
-		gapActions = append(gapActions, gap.Action)
-	}
-	assert.Contains(t, gapActions, "learn", "seeded user has no learning history")
-	assert.NotContains(t, gapActions, "set_intention", "seeded user has an intention")
+	assert.Contains(t, reasonKeys, "learning_activities_7d", "seeded learning must be available")
+	assert.Contains(t, reasonKeys, "change_readiness", "seeded intention quiz must be available")
+	assert.Empty(t, first.DataGaps, "seeded user has enough data for the recommendation")
 
 	second, err := svc.Recommend(context.Background(), "usr_gading")
 	require.NoError(t, err)
@@ -160,8 +155,7 @@ func TestSpkService_Recommend_PrivacyGatesProtection(t *testing.T) {
 	recommendation, err := svc.Recommend(ctx, "usr_gading")
 	require.NoError(t, err)
 	assert.True(t, recommendation.RecommendationEnabled)
-	assert.NotEqual(t, float64(100), recommendation.AvailableWeightPercent)
-	assert.True(t, recommendation.AvailableWeightPercent < 60, "protection weight must be excluded")
+	assert.InDelta(t, float64(60), recommendation.AvailableWeightPercent, 0.01, "protection weight must be excluded from 100")
 	assert.Contains(t, recommendation.UnavailableFields, "blocked_attempts_today")
 }
 
