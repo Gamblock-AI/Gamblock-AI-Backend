@@ -172,7 +172,17 @@ var messages = map[string]string{
 
 	// admin / emergency
 	"fetch_admin_modules_failed":        "Gagal memuat modul admin.",
+	"fetch_admin_model_releases_failed": "Gagal memuat rilis model.",
+	"fetch_admin_releases_failed":       "Gagal memuat rilis.",
 	"fetch_admin_support_cases_failed":  "Gagal memuat tiket admin.",
+	"create_model_release_failed":       "Gagal merilis model.",
+	"create_ruleset_release_failed":     "Gagal merilis ruleset.",
+	"create_network_release_failed":     "Gagal merilis ruleset jaringan.",
+	"release_not_found":                 "Rilis tidak ditemukan.",
+	"release_validation_failed":         "Data rilis belum valid.",
+	"artifact_unavailable":              "Artefak rilis belum tersedia.",
+	"release_rollout_create_failed":     "Peluncuran rilis belum dapat dimulai.",
+	"release_rollout_transition_failed": "Status peluncuran rilis belum dapat diperbarui.",
 	"admin_overview_failed":             "Gagal memuat ringkasan operasional.",
 	"site_social_links_failed":          "Pengaturan sosial media belum dapat diproses.",
 	"audit_events_failed":               "Gagal memuat jejak audit.",
@@ -195,17 +205,17 @@ var messages = map[string]string{
 	"invalid_key":                       "Kunci darurat tidak valid.",
 
 	// translation (DeepSeek)
-	"translation_failed":         "Gagal menerjemahkan konten. Silakan coba lagi.",
-	"translation_invalid_input":  "Input translasi tidak valid.",
-	"translation_unavailable":    "Layanan AI penerjemahan sedang tidak tersedia.",
-	"translation_rate_limited":   "Penerjemahan AI sedang sibuk, coba lagi dalam beberapa saat.",
+	"translation_failed":        "Gagal menerjemahkan konten. Silakan coba lagi.",
+	"translation_invalid_input": "Input translasi tidak valid.",
+	"translation_unavailable":   "Layanan AI penerjemahan sedang tidak tersedia.",
+	"translation_rate_limited":  "Penerjemahan AI sedang sibuk, coba lagi dalam beberapa saat.",
 
 	// SPK decision support
-	"spk_recommendation_failed":     "Rekomendasi harian belum dapat dimuat.",
-	"spk_intervention_not_found":    "Rekomendasi tidak ditemukan atau bukan milik Anda.",
+	"spk_recommendation_failed":        "Rekomendasi harian belum dapat dimuat.",
+	"spk_intervention_not_found":       "Rekomendasi tidak ditemukan atau bukan milik Anda.",
 	"spk_intervention_complete_failed": "Rekomendasi belum dapat ditandai selesai.",
-	"blocked_events_rejected":       "Data waktu blokir perangkat tidak dapat diterima.",
-	"spk_preference_invalid":        "Preferensi belum valid.",
+	"blocked_events_rejected":          "Data waktu blokir perangkat tidak dapat diterima.",
+	"spk_preference_invalid":           "Preferensi belum valid.",
 }
 
 // Friendly returns the end-user-facing message for [code], or [Generic] when
