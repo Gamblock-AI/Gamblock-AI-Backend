@@ -86,6 +86,7 @@ func (r *Repository) GetApprovalByQuickToken(ctx context.Context, tokenHash stri
 			ResolvedAt:               item.ResolvedAt,
 			AppliedAt:                item.AppliedAt,
 			GrantExpiresAt:           item.GrantExpiresAt,
+			GrantJTI:                 value(item.GrantJti),
 			CreatedAt:                item.CreatedAt,
 			UpdatedAt:                item.UpdatedAt,
 			ExpiresAt:                item.ExpiresAt,

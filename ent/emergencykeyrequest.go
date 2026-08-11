@@ -39,6 +39,12 @@ type EmergencyKeyRequest struct {
 	ApprovedAt *time.Time `json:"approved_at,omitempty"`
 	// UsedAt holds the value of the "used_at" field.
 	UsedAt *time.Time `json:"used_at,omitempty"`
+	// GrantStartsAt holds the value of the "grant_starts_at" field.
+	GrantStartsAt *time.Time `json:"grant_starts_at,omitempty"`
+	// GrantExpiresAt holds the value of the "grant_expires_at" field.
+	GrantExpiresAt *time.Time `json:"grant_expires_at,omitempty"`
+	// GrantJti holds the value of the "grant_jti" field.
+	GrantJti *string `json:"grant_jti,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -51,9 +57,9 @@ func (*EmergencyKeyRequest) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case emergencykeyrequest.FieldID, emergencykeyrequest.FieldRequestedBy, emergencykeyrequest.FieldDeviceID, emergencykeyrequest.FieldReviewedBy, emergencykeyrequest.FieldApprovedBy, emergencykeyrequest.FieldStatus, emergencykeyrequest.FieldKeyHash:
+		case emergencykeyrequest.FieldID, emergencykeyrequest.FieldRequestedBy, emergencykeyrequest.FieldDeviceID, emergencykeyrequest.FieldReviewedBy, emergencykeyrequest.FieldApprovedBy, emergencykeyrequest.FieldStatus, emergencykeyrequest.FieldKeyHash, emergencykeyrequest.FieldGrantJti:
 			values[i] = new(sql.NullString)
-		case emergencykeyrequest.FieldRequestExpiresAt, emergencykeyrequest.FieldKeyExpiresAt, emergencykeyrequest.FieldReviewedAt, emergencykeyrequest.FieldApprovedAt, emergencykeyrequest.FieldUsedAt, emergencykeyrequest.FieldCreatedAt, emergencykeyrequest.FieldUpdatedAt:
+		case emergencykeyrequest.FieldRequestExpiresAt, emergencykeyrequest.FieldKeyExpiresAt, emergencykeyrequest.FieldReviewedAt, emergencykeyrequest.FieldApprovedAt, emergencykeyrequest.FieldUsedAt, emergencykeyrequest.FieldGrantStartsAt, emergencykeyrequest.FieldGrantExpiresAt, emergencykeyrequest.FieldCreatedAt, emergencykeyrequest.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -150,6 +156,27 @@ func (_m *EmergencyKeyRequest) assignValues(columns []string, values []any) erro
 				_m.UsedAt = new(time.Time)
 				*_m.UsedAt = value.Time
 			}
+		case emergencykeyrequest.FieldGrantStartsAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field grant_starts_at", values[i])
+			} else if value.Valid {
+				_m.GrantStartsAt = new(time.Time)
+				*_m.GrantStartsAt = value.Time
+			}
+		case emergencykeyrequest.FieldGrantExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field grant_expires_at", values[i])
+			} else if value.Valid {
+				_m.GrantExpiresAt = new(time.Time)
+				*_m.GrantExpiresAt = value.Time
+			}
+		case emergencykeyrequest.FieldGrantJti:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field grant_jti", values[i])
+			} else if value.Valid {
+				_m.GrantJti = new(string)
+				*_m.GrantJti = value.String
+			}
 		case emergencykeyrequest.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -242,6 +269,21 @@ func (_m *EmergencyKeyRequest) String() string {
 	if v := _m.UsedAt; v != nil {
 		builder.WriteString("used_at=")
 		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.GrantStartsAt; v != nil {
+		builder.WriteString("grant_starts_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.GrantExpiresAt; v != nil {
+		builder.WriteString("grant_expires_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.GrantJti; v != nil {
+		builder.WriteString("grant_jti=")
+		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")

@@ -158,6 +158,48 @@ func (_c *EmergencyKeyRequestCreate) SetNillableUsedAt(v *time.Time) *EmergencyK
 	return _c
 }
 
+// SetGrantStartsAt sets the "grant_starts_at" field.
+func (_c *EmergencyKeyRequestCreate) SetGrantStartsAt(v time.Time) *EmergencyKeyRequestCreate {
+	_c.mutation.SetGrantStartsAt(v)
+	return _c
+}
+
+// SetNillableGrantStartsAt sets the "grant_starts_at" field if the given value is not nil.
+func (_c *EmergencyKeyRequestCreate) SetNillableGrantStartsAt(v *time.Time) *EmergencyKeyRequestCreate {
+	if v != nil {
+		_c.SetGrantStartsAt(*v)
+	}
+	return _c
+}
+
+// SetGrantExpiresAt sets the "grant_expires_at" field.
+func (_c *EmergencyKeyRequestCreate) SetGrantExpiresAt(v time.Time) *EmergencyKeyRequestCreate {
+	_c.mutation.SetGrantExpiresAt(v)
+	return _c
+}
+
+// SetNillableGrantExpiresAt sets the "grant_expires_at" field if the given value is not nil.
+func (_c *EmergencyKeyRequestCreate) SetNillableGrantExpiresAt(v *time.Time) *EmergencyKeyRequestCreate {
+	if v != nil {
+		_c.SetGrantExpiresAt(*v)
+	}
+	return _c
+}
+
+// SetGrantJti sets the "grant_jti" field.
+func (_c *EmergencyKeyRequestCreate) SetGrantJti(v string) *EmergencyKeyRequestCreate {
+	_c.mutation.SetGrantJti(v)
+	return _c
+}
+
+// SetNillableGrantJti sets the "grant_jti" field if the given value is not nil.
+func (_c *EmergencyKeyRequestCreate) SetNillableGrantJti(v *string) *EmergencyKeyRequestCreate {
+	if v != nil {
+		_c.SetGrantJti(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *EmergencyKeyRequestCreate) SetCreatedAt(v time.Time) *EmergencyKeyRequestCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -353,6 +395,18 @@ func (_c *EmergencyKeyRequestCreate) createSpec() (*EmergencyKeyRequest, *sqlgra
 	if value, ok := _c.mutation.UsedAt(); ok {
 		_spec.SetField(emergencykeyrequest.FieldUsedAt, field.TypeTime, value)
 		_node.UsedAt = &value
+	}
+	if value, ok := _c.mutation.GrantStartsAt(); ok {
+		_spec.SetField(emergencykeyrequest.FieldGrantStartsAt, field.TypeTime, value)
+		_node.GrantStartsAt = &value
+	}
+	if value, ok := _c.mutation.GrantExpiresAt(); ok {
+		_spec.SetField(emergencykeyrequest.FieldGrantExpiresAt, field.TypeTime, value)
+		_node.GrantExpiresAt = &value
+	}
+	if value, ok := _c.mutation.GrantJti(); ok {
+		_spec.SetField(emergencykeyrequest.FieldGrantJti, field.TypeString, value)
+		_node.GrantJti = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(emergencykeyrequest.FieldCreatedAt, field.TypeTime, value)

@@ -117,6 +117,7 @@ var (
 		{Name: "resolved_at", Type: field.TypeTime, Nullable: true},
 		{Name: "applied_at", Type: field.TypeTime, Nullable: true},
 		{Name: "grant_expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "grant_jti", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -276,6 +277,8 @@ var (
 		{Name: "os_version", Type: field.TypeString, Default: ""},
 		{Name: "model_version", Type: field.TypeString, Nullable: true},
 		{Name: "ruleset_version", Type: field.TypeString, Nullable: true},
+		{Name: "grant_public_jwk", Type: field.TypeString, Nullable: true},
+		{Name: "grant_key_thumbprint", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "protection_status", Type: field.TypeEnum, Enums: []string{"active", "degraded", "paused", "inactive"}, Default: "inactive"},
 		{Name: "last_seen_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
@@ -357,6 +360,9 @@ var (
 		{Name: "reviewed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "approved_at", Type: field.TypeTime, Nullable: true},
 		{Name: "used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "grant_starts_at", Type: field.TypeTime, Nullable: true},
+		{Name: "grant_expires_at", Type: field.TypeTime, Nullable: true},
+		{Name: "grant_jti", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}

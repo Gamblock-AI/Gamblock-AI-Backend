@@ -42,6 +42,7 @@ func newFullRouter(t *testing.T, appEnv string) (*gin.Engine, string) {
 	v1.POST("/missions/custom", mid.AuthRequired(), h.CreateCustomMission)
 	v1.GET("/approval-requests", mid.AuthRequired(), h.GetApprovalRequests)
 	v1.POST("/approval-requests", mid.AuthRequired(), h.CreateApprovalRequest)
+	v1.PUT("/devices/:device_id/grant-key", mid.AuthRequired(), h.BindDeviceGrantKey)
 	v1.POST("/organizations", mid.AuthRequired(), h.CreateOrganization)
 	v1.POST("/organizations/join", mid.AuthRequired(), h.JoinOrganization)
 	v1.GET("/organizations/mine", mid.AuthRequired(), h.GetCurrentUserOrganization)
@@ -154,6 +155,19 @@ func TestHandler_CreateApprovalRequest(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusCreated, w.Code)
+}
+
+func TestHandler_BindDeviceGrantKeyRejectsUnknownFields(t *testing.T) {
+	r, token := newFullRouter(t, "development")
+	body := []byte(`{"challenge_token":"signed-challenge","public_jwk":{"kty":"EC","crv":"P-256","x":"x","y":"y"},"proof":"signature","url":"https://example.com"}`)
+	req := httptest.NewRequest(http.MethodPut, "/v1/devices/dev_android/grant-key", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "device_update_failed")
 }
 
 func TestHandler_CreateOrganization_NameRequired(t *testing.T) {

@@ -114,6 +114,21 @@ func UsedAt(v time.Time) predicate.EmergencyKeyRequest {
 	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldUsedAt, v))
 }
 
+// GrantStartsAt applies equality check predicate on the "grant_starts_at" field. It's identical to GrantStartsAtEQ.
+func GrantStartsAt(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldGrantStartsAt, v))
+}
+
+// GrantExpiresAt applies equality check predicate on the "grant_expires_at" field. It's identical to GrantExpiresAtEQ.
+func GrantExpiresAt(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldGrantExpiresAt, v))
+}
+
+// GrantJti applies equality check predicate on the "grant_jti" field. It's identical to GrantJtiEQ.
+func GrantJti(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldGrantJti, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.EmergencyKeyRequest {
 	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldCreatedAt, v))
@@ -747,6 +762,181 @@ func UsedAtIsNil() predicate.EmergencyKeyRequest {
 // UsedAtNotNil applies the NotNil predicate on the "used_at" field.
 func UsedAtNotNil() predicate.EmergencyKeyRequest {
 	return predicate.EmergencyKeyRequest(sql.FieldNotNull(FieldUsedAt))
+}
+
+// GrantStartsAtEQ applies the EQ predicate on the "grant_starts_at" field.
+func GrantStartsAtEQ(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldGrantStartsAt, v))
+}
+
+// GrantStartsAtNEQ applies the NEQ predicate on the "grant_starts_at" field.
+func GrantStartsAtNEQ(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNEQ(FieldGrantStartsAt, v))
+}
+
+// GrantStartsAtIn applies the In predicate on the "grant_starts_at" field.
+func GrantStartsAtIn(vs ...time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIn(FieldGrantStartsAt, vs...))
+}
+
+// GrantStartsAtNotIn applies the NotIn predicate on the "grant_starts_at" field.
+func GrantStartsAtNotIn(vs ...time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotIn(FieldGrantStartsAt, vs...))
+}
+
+// GrantStartsAtGT applies the GT predicate on the "grant_starts_at" field.
+func GrantStartsAtGT(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGT(FieldGrantStartsAt, v))
+}
+
+// GrantStartsAtGTE applies the GTE predicate on the "grant_starts_at" field.
+func GrantStartsAtGTE(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGTE(FieldGrantStartsAt, v))
+}
+
+// GrantStartsAtLT applies the LT predicate on the "grant_starts_at" field.
+func GrantStartsAtLT(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLT(FieldGrantStartsAt, v))
+}
+
+// GrantStartsAtLTE applies the LTE predicate on the "grant_starts_at" field.
+func GrantStartsAtLTE(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLTE(FieldGrantStartsAt, v))
+}
+
+// GrantStartsAtIsNil applies the IsNil predicate on the "grant_starts_at" field.
+func GrantStartsAtIsNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIsNull(FieldGrantStartsAt))
+}
+
+// GrantStartsAtNotNil applies the NotNil predicate on the "grant_starts_at" field.
+func GrantStartsAtNotNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotNull(FieldGrantStartsAt))
+}
+
+// GrantExpiresAtEQ applies the EQ predicate on the "grant_expires_at" field.
+func GrantExpiresAtEQ(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldGrantExpiresAt, v))
+}
+
+// GrantExpiresAtNEQ applies the NEQ predicate on the "grant_expires_at" field.
+func GrantExpiresAtNEQ(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNEQ(FieldGrantExpiresAt, v))
+}
+
+// GrantExpiresAtIn applies the In predicate on the "grant_expires_at" field.
+func GrantExpiresAtIn(vs ...time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIn(FieldGrantExpiresAt, vs...))
+}
+
+// GrantExpiresAtNotIn applies the NotIn predicate on the "grant_expires_at" field.
+func GrantExpiresAtNotIn(vs ...time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotIn(FieldGrantExpiresAt, vs...))
+}
+
+// GrantExpiresAtGT applies the GT predicate on the "grant_expires_at" field.
+func GrantExpiresAtGT(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGT(FieldGrantExpiresAt, v))
+}
+
+// GrantExpiresAtGTE applies the GTE predicate on the "grant_expires_at" field.
+func GrantExpiresAtGTE(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGTE(FieldGrantExpiresAt, v))
+}
+
+// GrantExpiresAtLT applies the LT predicate on the "grant_expires_at" field.
+func GrantExpiresAtLT(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLT(FieldGrantExpiresAt, v))
+}
+
+// GrantExpiresAtLTE applies the LTE predicate on the "grant_expires_at" field.
+func GrantExpiresAtLTE(v time.Time) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLTE(FieldGrantExpiresAt, v))
+}
+
+// GrantExpiresAtIsNil applies the IsNil predicate on the "grant_expires_at" field.
+func GrantExpiresAtIsNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIsNull(FieldGrantExpiresAt))
+}
+
+// GrantExpiresAtNotNil applies the NotNil predicate on the "grant_expires_at" field.
+func GrantExpiresAtNotNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotNull(FieldGrantExpiresAt))
+}
+
+// GrantJtiEQ applies the EQ predicate on the "grant_jti" field.
+func GrantJtiEQ(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEQ(FieldGrantJti, v))
+}
+
+// GrantJtiNEQ applies the NEQ predicate on the "grant_jti" field.
+func GrantJtiNEQ(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNEQ(FieldGrantJti, v))
+}
+
+// GrantJtiIn applies the In predicate on the "grant_jti" field.
+func GrantJtiIn(vs ...string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIn(FieldGrantJti, vs...))
+}
+
+// GrantJtiNotIn applies the NotIn predicate on the "grant_jti" field.
+func GrantJtiNotIn(vs ...string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotIn(FieldGrantJti, vs...))
+}
+
+// GrantJtiGT applies the GT predicate on the "grant_jti" field.
+func GrantJtiGT(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGT(FieldGrantJti, v))
+}
+
+// GrantJtiGTE applies the GTE predicate on the "grant_jti" field.
+func GrantJtiGTE(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldGTE(FieldGrantJti, v))
+}
+
+// GrantJtiLT applies the LT predicate on the "grant_jti" field.
+func GrantJtiLT(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLT(FieldGrantJti, v))
+}
+
+// GrantJtiLTE applies the LTE predicate on the "grant_jti" field.
+func GrantJtiLTE(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldLTE(FieldGrantJti, v))
+}
+
+// GrantJtiContains applies the Contains predicate on the "grant_jti" field.
+func GrantJtiContains(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldContains(FieldGrantJti, v))
+}
+
+// GrantJtiHasPrefix applies the HasPrefix predicate on the "grant_jti" field.
+func GrantJtiHasPrefix(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldHasPrefix(FieldGrantJti, v))
+}
+
+// GrantJtiHasSuffix applies the HasSuffix predicate on the "grant_jti" field.
+func GrantJtiHasSuffix(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldHasSuffix(FieldGrantJti, v))
+}
+
+// GrantJtiIsNil applies the IsNil predicate on the "grant_jti" field.
+func GrantJtiIsNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldIsNull(FieldGrantJti))
+}
+
+// GrantJtiNotNil applies the NotNil predicate on the "grant_jti" field.
+func GrantJtiNotNil() predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldNotNull(FieldGrantJti))
+}
+
+// GrantJtiEqualFold applies the EqualFold predicate on the "grant_jti" field.
+func GrantJtiEqualFold(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldEqualFold(FieldGrantJti, v))
+}
+
+// GrantJtiContainsFold applies the ContainsFold predicate on the "grant_jti" field.
+func GrantJtiContainsFold(v string) predicate.EmergencyKeyRequest {
+	return predicate.EmergencyKeyRequest(sql.FieldContainsFold(FieldGrantJti, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

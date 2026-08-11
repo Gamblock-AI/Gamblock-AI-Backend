@@ -15,14 +15,18 @@ import (
 )
 
 type AccountabilityService struct {
-	repo     *repository.Repository
-	cfg      config.Config
-	whatsapp *WhatsAppService
-	logger   *zap.Logger
+	repo        *repository.Repository
+	cfg         config.Config
+	whatsapp    *WhatsAppService
+	logger      *zap.Logger
+	grantSigner *ProtectionGrantSigner
 }
 
 func NewAccountabilityService(repo *repository.Repository, cfg config.Config, whatsapp *WhatsAppService, logger *zap.Logger) *AccountabilityService {
-	return &AccountabilityService{repo: repo, cfg: cfg, whatsapp: whatsapp, logger: logger}
+	return &AccountabilityService{
+		repo: repo, cfg: cfg, whatsapp: whatsapp, logger: logger,
+		grantSigner: NewProtectionGrantSigner(cfg),
+	}
 }
 
 func (s *AccountabilityService) GetPartners(ctx context.Context, userID string) (*model.Partner, []model.Partner, error) {
@@ -163,7 +167,34 @@ func (s *AccountabilityService) ApplyApprovedRequest(ctx context.Context, id, us
 	if deviceID == "" {
 		return model.ApprovalGrant{}, fmt.Errorf("device id is required")
 	}
-	return s.repo.ApplyApprovedRequest(ctx, id, userID, deviceID, time.Now().UTC())
+	if err := s.grantSigner.Ready(); err != nil {
+		return model.ApprovalGrant{}, err
+	}
+	thumbprint, err := s.repo.OwnedDeviceGrantKeyThumbprint(ctx, userID, deviceID)
+	if err != nil {
+		return model.ApprovalGrant{}, err
+	}
+	grantJTI, err := newProtectionGrantJTI()
+	if err != nil {
+		return model.ApprovalGrant{}, err
+	}
+	grant, err := s.repo.ApplyApprovedRequest(ctx, id, userID, deviceID, time.Now().UTC(), grantJTI)
+	if err != nil {
+		return model.ApprovalGrant{}, err
+	}
+	grant.GrantToken, err = s.grantSigner.Sign(
+		grant.RequestID,
+		grant.DeviceID,
+		grant.Action,
+		thumbprint,
+		grant.GrantJTI,
+		grant.GrantStartsAt,
+		grant.GrantExpiresAt,
+	)
+	if err != nil {
+		return model.ApprovalGrant{}, err
+	}
+	return grant, nil
 }
 
 func (s *AccountabilityService) VerifyQuickToken(ctx context.Context, token string) (map[string]any, error) {

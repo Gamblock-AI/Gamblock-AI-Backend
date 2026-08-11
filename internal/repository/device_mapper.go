@@ -13,18 +13,20 @@ func deviceFromEnt(item *ent.Device) model.Device {
 		lastSeen = *item.LastSeenAt
 	}
 	return model.Device{
-		ID:               item.ID,
-		UserID:           item.UserID,
-		ClientInstanceID: value(item.ClientInstanceID),
-		Platform:         item.Platform.String(),
-		Label:            item.Label,
-		AppVersion:       item.AppVersion,
-		OSVersion:        item.OsVersion,
-		ModelVersion:     value(item.ModelVersion),
-		RulesetVersion:   value(item.RulesetVersion),
-		ProtectionStatus: item.ProtectionStatus.String(),
-		LastSeenAt:       lastSeen,
-		CreatedAt:        item.CreatedAt,
-		UpdatedAt:        item.UpdatedAt,
+		ID:                 item.ID,
+		UserID:             item.UserID,
+		ClientInstanceID:   value(item.ClientInstanceID),
+		Platform:           item.Platform.String(),
+		Label:              item.Label,
+		AppVersion:         item.AppVersion,
+		OSVersion:          item.OsVersion,
+		ModelVersion:       value(item.ModelVersion),
+		RulesetVersion:     value(item.RulesetVersion),
+		GrantPublicJWK:     value(item.GrantPublicJwk),
+		GrantKeyThumbprint: value(item.GrantKeyThumbprint),
+		ProtectionStatus:   item.ProtectionStatus.String(),
+		LastSeenAt:         lastSeen,
+		CreatedAt:          item.CreatedAt,
+		UpdatedAt:          item.UpdatedAt,
 	}
 }

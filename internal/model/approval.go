@@ -21,6 +21,7 @@ type ApprovalRequest struct {
 	ResolvedAt               *time.Time `json:"resolved_at,omitempty"`
 	AppliedAt                *time.Time `json:"applied_at,omitempty"`
 	GrantExpiresAt           *time.Time `json:"grant_expires_at,omitempty"`
+	GrantJTI                 string     `json:"-"`
 	CreatedAt                time.Time  `json:"created_at"`
 	UpdatedAt                time.Time  `json:"updated_at"`
 	ExpiresAt                time.Time  `json:"expires_at"`
@@ -32,4 +33,6 @@ type ApprovalGrant struct {
 	Action         string    `json:"action"`
 	GrantStartsAt  time.Time `json:"grant_starts_at"`
 	GrantExpiresAt time.Time `json:"grant_expires_at"`
+	GrantJTI       string    `json:"-"`
+	GrantToken     string    `json:"grant_token"`
 }

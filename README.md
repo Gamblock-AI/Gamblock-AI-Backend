@@ -70,6 +70,8 @@ export data needs to be retained.
 - `POST /v1/auth/password-reset/request`
 - `POST /v1/auth/password-reset/confirm`
 - `POST /v1/devices`
+- `POST /v1/devices/:device_id/grant-key/challenge`
+- `PUT  /v1/devices/:device_id/grant-key`
 - `PATCH /v1/me/password`
 - `GET  /v1/client/dashboard-summary`
 - `GET  /v1/client/protection-status`
@@ -148,6 +150,9 @@ the standard envelope.
 - Approval responses keep stable `action`/`status` codes separate from
   localized labels. `POST /v1/approval-requests/:id/apply` is device-bound,
   idempotent after first use, and available for 30 minutes after resolution.
+  Applying requires the device grant key described below and returns a compact
+  ES256 JWS in `data.grant_token`; the legacy request/action/time fields remain
+  during client rollout.
 - Accountability roles are backend-authoritative. Verified students preview
   and confirm one live group membership; verified email+WhatsApp partners own
   multiple groups with hashed, rate-limited, rotatable codes. Partner decisions,
@@ -163,7 +168,8 @@ the standard envelope.
 - Emergency recovery is device-bound: the user creates a request, one platform
   admin reviews it, a different platform admin approves/issues it, and
   `/v1/devices/unlock` consumes the 24-hour single-use key for a ten-minute
-  grant.
+  `emergency_access` grant. A retry while that grant remains valid returns the
+  same persisted `jti`, `iat`, and `exp` claims.
 - `POST /v1/check-ins` persists the authenticated user's structured mood score
   and optional urge score (`0` means not disclosed); it accepts no browsing
   context. Partner visibility is not exposed by this endpoint.
@@ -219,6 +225,62 @@ the standard envelope.
 These endpoints reject ownership mismatches and never accept URL, domain, DOM,
 page title, browsing history, screenshot, feature-vector, or per-page score
 fields.
+
+### Signed native protection grants
+
+Before a native Android or Windows installation can apply an approved pause,
+uninstall, or emergency action, it enrolls a non-exportable device P-256 key:
+
+1. Authenticated owner calls
+   `POST /v1/devices/:device_id/grant-key/challenge`. The response data contains
+   `{"challenge_token":"<JWS>","expires_at":"<RFC3339>"}`. The challenge is
+   valid for five minutes and has JWS `typ=gamblock-device-key-challenge+jwt`.
+2. The client calls `PUT /v1/devices/:device_id/grant-key` with
+   `{"challenge_token":"<JWS>","public_jwk":<P-256-public-JWK>,"proof":"<base64url>"}`.
+   `proof` is the raw 64-byte ES256 `R || S` signature over the SHA-256 digest
+   of the exact UTF-8 bytes
+   `gamblock-device-key-v1\n<device_id>\n<challenge_token>`.
+3. The backend stores the canonical public JWK and its RFC 7638 thumbprint.
+   Enrollment is set-once: resubmitting the same key is idempotent and replacing
+   it with a different key is rejected.
+
+Both `POST /v1/approval-requests/:id/apply` and
+`POST /v1/devices/unlock` return `data.grant_token`. The compact JWS header is
+`alg=ES256`, `typ=gamblock-grant+jwt`, plus the configured `kid`. Its claims are
+`iss=gamblock-ai-backend`, `aud=gamblock-protection-native`,
+`grant_version=1`, `request_id`, `device_id`, `action`, `iat`, `nbf`, `exp`,
+`jti`, and `cnf.jkt`. Pause grants are exactly 15, 30, 60, or 120 minutes;
+uninstall and emergency grants are at most ten minutes. Native clients must
+verify the signature and every binding/time claim offline, compare `cnf.jkt`
+with their enrolled local key, and reject tokens whose `jti` is missing or
+malformed or whose `exp` has passed. Backend retries preserve the same `jti`,
+`iat`, and `exp` so a grant is a bounded maintenance window rather than a
+one-shot command.
+
+Production reads only the active private signing key and ID:
+
+```sh
+openssl ecparam -name prime256v1 -genkey -noout -out protection-grant-private.pem
+openssl pkcs8 -topk8 -nocrypt -in protection-grant-private.pem -outform DER -out protection-grant-private.der
+openssl pkey -in protection-grant-private.pem -pubout -outform DER -out protection-grant-public.der
+
+# Backend secret/config:
+base64 < protection-grant-private.der | tr -d '\n'
+GRANT_KEY_ID=grant-2026-01
+# Set PROTECTION_GRANT_SIGNING_KEY_ID to GRANT_KEY_ID.
+
+# Client public trust-store value:
+GRANT_PUBLIC_SPKI_BASE64="$(base64 < protection-grant-public.der | tr -d '\n')"
+printf '{"%s":"%s"}' "$GRANT_KEY_ID" "$GRANT_PUBLIC_SPKI_BASE64" | base64 | tr -d '\n'
+```
+
+The final command produces the public client environment value
+`PROTECTION_GRANT_TRUST_STORE_BASE64`: base64 of a JSON map
+`{kid: base64-DER-SPKI-P256}`. It is not a backend variable or a secret. Keep
+the PEM/DER private-key files out of source control. During rotation, publish
+both old and new public keys to clients before switching the backend's active
+`kid`, and retain the old public key until every previously issued grant and
+challenge has expired.
 
 ## Layering
 

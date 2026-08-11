@@ -1,8 +1,13 @@
 package config
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -10,38 +15,43 @@ import (
 )
 
 type Config struct {
-	HTTPAddr             string
-	AppEnv               string
-	DatabaseURL          string
-	PublicWebBaseURL     string
-	NotificationMode     string
-	JWTAccessSecret      string
-	JWTAccessTTL         time.Duration
-	JWTRefreshTTL        time.Duration
-	AllowedOrigins       []string
-	ExportStoragePath    string
-	MediaStoragePath     string
-	AvatarStoragePath    string
-	MediaEmbedHosts      []string
-	JournalEncryptionKey string
-	FonnteToken          string
-	FonnteBaseURL        string
-	FonnteCountryCode    string
-	EnableDevLogin       bool
-	EnableDemoData       bool
-	DeepSeekAPIKey       string
-	DeepSeekBaseURL      string
-	DeepSeekModel        string
-	SPKLLMEnrichment     bool
-	VAPIDPublicKey       string
-	VAPIDPrivateKey      string
-	VAPIDSubject         string
+	HTTPAddr                         string
+	AppEnv                           string
+	DatabaseURL                      string
+	PublicWebBaseURL                 string
+	NotificationMode                 string
+	JWTAccessSecret                  string
+	JWTAccessTTL                     time.Duration
+	JWTRefreshTTL                    time.Duration
+	ProtectionGrantSigningPrivateKey string
+	ProtectionGrantSigningKeyID      string
+	AllowedOrigins                   []string
+	ExportStoragePath                string
+	MediaStoragePath                 string
+	AvatarStoragePath                string
+	MediaEmbedHosts                  []string
+	JournalEncryptionKey             string
+	FonnteToken                      string
+	FonnteBaseURL                    string
+	FonnteCountryCode                string
+	EnableDevLogin                   bool
+	EnableDemoData                   bool
+	DeepSeekAPIKey                   string
+	DeepSeekBaseURL                  string
+	DeepSeekModel                    string
+	SPKLLMEnrichment                 bool
+	VAPIDPublicKey                   string
+	VAPIDPrivateKey                  string
+	VAPIDSubject                     string
 }
 
 func (c Config) Validate() error {
 	key, err := hex.DecodeString(c.JournalEncryptionKey)
 	if err != nil || len(key) != 32 {
 		return fmt.Errorf("JOURNAL_ENCRYPTION_KEY must be a 64-character AES-256 hex key")
+	}
+	if err := c.validateProtectionGrantSigningKey(); err != nil {
+		return err
 	}
 	if !c.IsProduction() {
 		return nil
@@ -73,6 +83,8 @@ func Load() Config {
 	viper.SetDefault("JWT_ACCESS_SECRET", "dev-only-change-me")
 	viper.SetDefault("JWT_ACCESS_TTL", "24h")
 	viper.SetDefault("JWT_REFRESH_TTL", "720h")
+	viper.SetDefault("PROTECTION_GRANT_SIGNING_PRIVATE_KEY", "")
+	viper.SetDefault("PROTECTION_GRANT_SIGNING_KEY_ID", "")
 	viper.SetDefault("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8099,http://127.0.0.1:8099")
 	viper.SetDefault("EXPORT_STORAGE_PATH", "./var/exports")
 	viper.SetDefault("MEDIA_STORAGE_PATH", "./var/media")
@@ -103,33 +115,66 @@ func Load() Config {
 	}
 
 	return Config{
-		HTTPAddr:             viper.GetString("HTTP_ADDR"),
-		AppEnv:               viper.GetString("APP_ENV"),
-		DatabaseURL:          viper.GetString("DATABASE_URL"),
-		PublicWebBaseURL:     strings.TrimRight(viper.GetString("PUBLIC_WEB_BASE_URL"), "/"),
-		NotificationMode:     viper.GetString("NOTIFICATION_MODE"),
-		JWTAccessSecret:      viper.GetString("JWT_ACCESS_SECRET"),
-		JWTAccessTTL:         ttl,
-		JWTRefreshTTL:        refreshTTL,
-		AllowedOrigins:       splitCSV(viper.GetString("CORS_ALLOWED_ORIGINS")),
-		ExportStoragePath:    viper.GetString("EXPORT_STORAGE_PATH"),
-		MediaStoragePath:     viper.GetString("MEDIA_STORAGE_PATH"),
-		AvatarStoragePath:    viper.GetString("AVATAR_STORAGE_PATH"),
-		MediaEmbedHosts:      splitCSV(viper.GetString("MEDIA_EMBED_ALLOWED_HOSTS")),
-		JournalEncryptionKey: viper.GetString("JOURNAL_ENCRYPTION_KEY"),
-		FonnteToken:          viper.GetString("FONNTE_TOKEN"),
-		FonnteBaseURL:        strings.TrimRight(viper.GetString("FONNTE_BASE_URL"), "/"),
-		FonnteCountryCode:    viper.GetString("FONNTE_COUNTRY_CODE"),
-		EnableDevLogin:       viper.GetBool("ENABLE_DEV_LOGIN"),
-		EnableDemoData:       viper.GetBool("ENABLE_DEMO_DATA"),
-		DeepSeekAPIKey:       viper.GetString("DEEPSEEK_API_KEY"),
-		DeepSeekBaseURL:      strings.TrimRight(viper.GetString("DEEPSEEK_BASE_URL"), "/"),
-		DeepSeekModel:        viper.GetString("DEEPSEEK_MODEL"),
-		SPKLLMEnrichment:     viper.GetBool("SPK_LLM_ENRICHMENT"),
-		VAPIDPublicKey:       viper.GetString("VAPID_PUBLIC_KEY"),
-		VAPIDPrivateKey:      viper.GetString("VAPID_PRIVATE_KEY"),
-		VAPIDSubject:         viper.GetString("VAPID_SUBJECT"),
+		HTTPAddr:                         viper.GetString("HTTP_ADDR"),
+		AppEnv:                           viper.GetString("APP_ENV"),
+		DatabaseURL:                      viper.GetString("DATABASE_URL"),
+		PublicWebBaseURL:                 strings.TrimRight(viper.GetString("PUBLIC_WEB_BASE_URL"), "/"),
+		NotificationMode:                 viper.GetString("NOTIFICATION_MODE"),
+		JWTAccessSecret:                  viper.GetString("JWT_ACCESS_SECRET"),
+		JWTAccessTTL:                     ttl,
+		JWTRefreshTTL:                    refreshTTL,
+		ProtectionGrantSigningPrivateKey: strings.TrimSpace(viper.GetString("PROTECTION_GRANT_SIGNING_PRIVATE_KEY")),
+		ProtectionGrantSigningKeyID:      strings.TrimSpace(viper.GetString("PROTECTION_GRANT_SIGNING_KEY_ID")),
+		AllowedOrigins:                   splitCSV(viper.GetString("CORS_ALLOWED_ORIGINS")),
+		ExportStoragePath:                viper.GetString("EXPORT_STORAGE_PATH"),
+		MediaStoragePath:                 viper.GetString("MEDIA_STORAGE_PATH"),
+		AvatarStoragePath:                viper.GetString("AVATAR_STORAGE_PATH"),
+		MediaEmbedHosts:                  splitCSV(viper.GetString("MEDIA_EMBED_ALLOWED_HOSTS")),
+		JournalEncryptionKey:             viper.GetString("JOURNAL_ENCRYPTION_KEY"),
+		FonnteToken:                      viper.GetString("FONNTE_TOKEN"),
+		FonnteBaseURL:                    strings.TrimRight(viper.GetString("FONNTE_BASE_URL"), "/"),
+		FonnteCountryCode:                viper.GetString("FONNTE_COUNTRY_CODE"),
+		EnableDevLogin:                   viper.GetBool("ENABLE_DEV_LOGIN"),
+		EnableDemoData:                   viper.GetBool("ENABLE_DEMO_DATA"),
+		DeepSeekAPIKey:                   viper.GetString("DEEPSEEK_API_KEY"),
+		DeepSeekBaseURL:                  strings.TrimRight(viper.GetString("DEEPSEEK_BASE_URL"), "/"),
+		DeepSeekModel:                    viper.GetString("DEEPSEEK_MODEL"),
+		SPKLLMEnrichment:                 viper.GetBool("SPK_LLM_ENRICHMENT"),
+		VAPIDPublicKey:                   viper.GetString("VAPID_PUBLIC_KEY"),
+		VAPIDPrivateKey:                  viper.GetString("VAPID_PRIVATE_KEY"),
+		VAPIDSubject:                     viper.GetString("VAPID_SUBJECT"),
 	}
+}
+
+var protectionGrantKeyIDPattern = regexp.MustCompile(`^[A-Za-z0-9._-]{1,64}$`)
+
+func (c Config) validateProtectionGrantSigningKey() error {
+	encoded := strings.TrimSpace(c.ProtectionGrantSigningPrivateKey)
+	keyID := strings.TrimSpace(c.ProtectionGrantSigningKeyID)
+	if encoded == "" && keyID == "" && !c.IsProduction() {
+		return nil
+	}
+	if encoded == "" || keyID == "" {
+		return fmt.Errorf("PROTECTION_GRANT_SIGNING_PRIVATE_KEY and PROTECTION_GRANT_SIGNING_KEY_ID are required together")
+	}
+	if !protectionGrantKeyIDPattern.MatchString(keyID) {
+		return fmt.Errorf("PROTECTION_GRANT_SIGNING_KEY_ID must contain 1-64 letters, numbers, dots, underscores, or hyphens")
+	}
+	der, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		return fmt.Errorf("PROTECTION_GRANT_SIGNING_PRIVATE_KEY must be base64-encoded PKCS#8 DER")
+	}
+	parsed, err := x509.ParsePKCS8PrivateKey(der)
+	if err != nil {
+		return fmt.Errorf("PROTECTION_GRANT_SIGNING_PRIVATE_KEY must contain a PKCS#8 private key")
+	}
+	privateKey, ok := parsed.(*ecdsa.PrivateKey)
+	if !ok || privateKey.Curve == nil ||
+		privateKey.Curve.Params().Name != elliptic.P256().Params().Name ||
+		privateKey.Curve.Params().BitSize != elliptic.P256().Params().BitSize {
+		return fmt.Errorf("PROTECTION_GRANT_SIGNING_PRIVATE_KEY must be an ECDSA P-256 key")
+	}
+	return nil
 }
 
 func splitCSV(value string) []string {

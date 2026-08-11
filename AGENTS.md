@@ -71,10 +71,10 @@ browsing content.
 `PrivacyGuard` currently enforces this by rejecting forbidden JSON/query field
 names on non-GET, non-OPTIONS, non-auth requests. It intentionally does not
 censor string values: journal text may legitimately mention a URL. Quick
-approval token routes and the purpose-specific password-change
-routes are explicitly exempt because their handlers own narrow credential
-schemas. CORS wraps the guard so browser clients can read safe rejection
-envelopes. Keep these regression behaviors covered in
+approval token routes, the purpose-specific password-change routes, and the
+owner-authenticated device grant-key binding route are explicitly exempt
+because their handlers own narrow credential schemas. CORS wraps the guard so
+browser clients can read safe rejection envelopes. Keep these regression behaviors covered in
 `internal/middleware/middleware_test.go`; do not reintroduce the old URL/length
 value censorship.
 
@@ -120,6 +120,10 @@ single-use tokens. Do not put them behind session auth or expose their tokens.
 - Partner/operator invitation, deletion-confirmation, quick-approval, and
   emergency tokens are secrets. Persist only hashes, never log raw links, and
   preserve relationship/email/expiry checks.
+- Native pause, uninstall, and emergency grants are dedicated ES256 JWS values,
+  never access JWTs or unsigned JSON. Production keeps only the active PKCS#8
+  private signing key; every grant requires a set-once P-256 device-key binding
+  and carries its RFC 7638 thumbprint in `cnf.jkt` for offline native checks.
 - Fonnte-backed WhatsApp is the transactional delivery adapter. Phone
   verification is the primary account gate; email remains the login identity.
 - Production requires `FONNTE_TOKEN`; demo previews are disabled in production.

@@ -206,6 +206,20 @@ func (_c *ApprovalRequestCreate) SetNillableGrantExpiresAt(v *time.Time) *Approv
 	return _c
 }
 
+// SetGrantJti sets the "grant_jti" field.
+func (_c *ApprovalRequestCreate) SetGrantJti(v string) *ApprovalRequestCreate {
+	_c.mutation.SetGrantJti(v)
+	return _c
+}
+
+// SetNillableGrantJti sets the "grant_jti" field if the given value is not nil.
+func (_c *ApprovalRequestCreate) SetNillableGrantJti(v *string) *ApprovalRequestCreate {
+	if v != nil {
+		_c.SetGrantJti(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *ApprovalRequestCreate) SetCreatedAt(v time.Time) *ApprovalRequestCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -425,6 +439,10 @@ func (_c *ApprovalRequestCreate) createSpec() (*ApprovalRequest, *sqlgraph.Creat
 	if value, ok := _c.mutation.GrantExpiresAt(); ok {
 		_spec.SetField(approvalrequest.FieldGrantExpiresAt, field.TypeTime, value)
 		_node.GrantExpiresAt = &value
+	}
+	if value, ok := _c.mutation.GrantJti(); ok {
+		_spec.SetField(approvalrequest.FieldGrantJti, field.TypeString, value)
+		_node.GrantJti = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(approvalrequest.FieldCreatedAt, field.TypeTime, value)

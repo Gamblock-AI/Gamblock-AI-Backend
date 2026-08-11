@@ -33,6 +33,10 @@ type Device struct {
 	ModelVersion *string `json:"model_version,omitempty"`
 	// RulesetVersion holds the value of the "ruleset_version" field.
 	RulesetVersion *string `json:"ruleset_version,omitempty"`
+	// GrantPublicJwk holds the value of the "grant_public_jwk" field.
+	GrantPublicJwk *string `json:"grant_public_jwk,omitempty"`
+	// GrantKeyThumbprint holds the value of the "grant_key_thumbprint" field.
+	GrantKeyThumbprint *string `json:"grant_key_thumbprint,omitempty"`
 	// ProtectionStatus holds the value of the "protection_status" field.
 	ProtectionStatus device.ProtectionStatus `json:"protection_status,omitempty"`
 	// LastSeenAt holds the value of the "last_seen_at" field.
@@ -49,7 +53,7 @@ func (*Device) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case device.FieldID, device.FieldUserID, device.FieldClientInstanceID, device.FieldPlatform, device.FieldLabel, device.FieldAppVersion, device.FieldOsVersion, device.FieldModelVersion, device.FieldRulesetVersion, device.FieldProtectionStatus:
+		case device.FieldID, device.FieldUserID, device.FieldClientInstanceID, device.FieldPlatform, device.FieldLabel, device.FieldAppVersion, device.FieldOsVersion, device.FieldModelVersion, device.FieldRulesetVersion, device.FieldGrantPublicJwk, device.FieldGrantKeyThumbprint, device.FieldProtectionStatus:
 			values[i] = new(sql.NullString)
 		case device.FieldLastSeenAt, device.FieldCreatedAt, device.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -124,6 +128,20 @@ func (_m *Device) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.RulesetVersion = new(string)
 				*_m.RulesetVersion = value.String
+			}
+		case device.FieldGrantPublicJwk:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field grant_public_jwk", values[i])
+			} else if value.Valid {
+				_m.GrantPublicJwk = new(string)
+				*_m.GrantPublicJwk = value.String
+			}
+		case device.FieldGrantKeyThumbprint:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field grant_key_thumbprint", values[i])
+			} else if value.Valid {
+				_m.GrantKeyThumbprint = new(string)
+				*_m.GrantKeyThumbprint = value.String
 			}
 		case device.FieldProtectionStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -213,6 +231,16 @@ func (_m *Device) String() string {
 	builder.WriteString(", ")
 	if v := _m.RulesetVersion; v != nil {
 		builder.WriteString("ruleset_version=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.GrantPublicJwk; v != nil {
+		builder.WriteString("grant_public_jwk=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.GrantKeyThumbprint; v != nil {
+		builder.WriteString("grant_key_thumbprint=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

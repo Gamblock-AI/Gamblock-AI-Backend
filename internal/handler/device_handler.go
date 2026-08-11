@@ -1,9 +1,14 @@
 package handler
 
 import (
+	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/service"
 )
 
 func (h *Handler) CreateDevice(c *gin.Context) {
@@ -81,4 +86,57 @@ func (h *Handler) DeviceHeartbeat(c *gin.Context) {
 		return
 	}
 	h.respond(c, http.StatusOK, gin.H{"heartbeat": "ok", "device_id": deviceID})
+}
+
+func (h *Handler) DeviceGrantKeyChallenge(c *gin.Context) {
+	challenge, err := h.services.Device.IssueGrantKeyChallenge(
+		c.Request.Context(),
+		h.currentUserID(c),
+		c.Param("device_id"),
+	)
+	if err != nil {
+		status := http.StatusBadRequest
+		if errors.Is(err, service.ErrProtectionGrantSigningUnavailable) {
+			status = http.StatusInternalServerError
+		}
+		h.respondErrorErr(c, status, "device_update_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, challenge)
+}
+
+func (h *Handler) BindDeviceGrantKey(c *gin.Context) {
+	var input struct {
+		ChallengeToken string          `json:"challenge_token"`
+		PublicJWK      json.RawMessage `json:"public_jwk"`
+		Proof          string          `json:"proof"`
+	}
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 16<<10)
+	decoder := json.NewDecoder(c.Request.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&input); err != nil || input.ChallengeToken == "" || len(input.PublicJWK) == 0 || input.Proof == "" {
+		h.respondCode(c, http.StatusBadRequest, "device_update_failed")
+		return
+	}
+	if err := decoder.Decode(&struct{}{}); err != io.EOF {
+		h.respondCode(c, http.StatusBadRequest, "device_update_failed")
+		return
+	}
+	binding, err := h.services.Device.BindGrantKey(
+		c.Request.Context(),
+		h.currentUserID(c),
+		c.Param("device_id"),
+		input.ChallengeToken,
+		input.PublicJWK,
+		input.Proof,
+	)
+	if err != nil {
+		status := http.StatusBadRequest
+		if errors.Is(err, service.ErrProtectionGrantSigningUnavailable) {
+			status = http.StatusInternalServerError
+		}
+		h.respondErrorErr(c, status, "device_update_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, binding)
 }

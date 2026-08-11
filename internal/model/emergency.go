@@ -14,6 +14,9 @@ type EmergencyKeyRequest struct {
 	ReviewedAt       *time.Time `json:"reviewed_at,omitempty"`
 	ApprovedAt       *time.Time `json:"approved_at,omitempty"`
 	UsedAt           *time.Time `json:"used_at,omitempty"`
+	GrantStartsAt    *time.Time `json:"-"`
+	GrantExpiresAt   *time.Time `json:"-"`
+	GrantJTI         string     `json:"-"`
 	CreatedAt        time.Time  `json:"created_at"`
 	UpdatedAt        time.Time  `json:"updated_at"`
 	KeyHash          string     `json:"-"`
@@ -22,6 +25,9 @@ type EmergencyKeyRequest struct {
 type EmergencyGrant struct {
 	RequestID      string    `json:"request_id"`
 	DeviceID       string    `json:"device_id"`
+	Action         string    `json:"action"`
 	GrantStartsAt  time.Time `json:"grant_starts_at"`
 	GrantExpiresAt time.Time `json:"grant_expires_at"`
+	GrantJTI       string    `json:"-"`
+	GrantToken     string    `json:"grant_token"`
 }

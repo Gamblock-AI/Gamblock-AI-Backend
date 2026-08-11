@@ -158,6 +158,46 @@ func (_u *DeviceUpdate) ClearRulesetVersion() *DeviceUpdate {
 	return _u
 }
 
+// SetGrantPublicJwk sets the "grant_public_jwk" field.
+func (_u *DeviceUpdate) SetGrantPublicJwk(v string) *DeviceUpdate {
+	_u.mutation.SetGrantPublicJwk(v)
+	return _u
+}
+
+// SetNillableGrantPublicJwk sets the "grant_public_jwk" field if the given value is not nil.
+func (_u *DeviceUpdate) SetNillableGrantPublicJwk(v *string) *DeviceUpdate {
+	if v != nil {
+		_u.SetGrantPublicJwk(*v)
+	}
+	return _u
+}
+
+// ClearGrantPublicJwk clears the value of the "grant_public_jwk" field.
+func (_u *DeviceUpdate) ClearGrantPublicJwk() *DeviceUpdate {
+	_u.mutation.ClearGrantPublicJwk()
+	return _u
+}
+
+// SetGrantKeyThumbprint sets the "grant_key_thumbprint" field.
+func (_u *DeviceUpdate) SetGrantKeyThumbprint(v string) *DeviceUpdate {
+	_u.mutation.SetGrantKeyThumbprint(v)
+	return _u
+}
+
+// SetNillableGrantKeyThumbprint sets the "grant_key_thumbprint" field if the given value is not nil.
+func (_u *DeviceUpdate) SetNillableGrantKeyThumbprint(v *string) *DeviceUpdate {
+	if v != nil {
+		_u.SetGrantKeyThumbprint(*v)
+	}
+	return _u
+}
+
+// ClearGrantKeyThumbprint clears the value of the "grant_key_thumbprint" field.
+func (_u *DeviceUpdate) ClearGrantKeyThumbprint() *DeviceUpdate {
+	_u.mutation.ClearGrantKeyThumbprint()
+	return _u
+}
+
 // SetProtectionStatus sets the "protection_status" field.
 func (_u *DeviceUpdate) SetProtectionStatus(v device.ProtectionStatus) *DeviceUpdate {
 	_u.mutation.SetProtectionStatus(v)
@@ -298,6 +338,18 @@ func (_u *DeviceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.RulesetVersionCleared() {
 		_spec.ClearField(device.FieldRulesetVersion, field.TypeString)
+	}
+	if value, ok := _u.mutation.GrantPublicJwk(); ok {
+		_spec.SetField(device.FieldGrantPublicJwk, field.TypeString, value)
+	}
+	if _u.mutation.GrantPublicJwkCleared() {
+		_spec.ClearField(device.FieldGrantPublicJwk, field.TypeString)
+	}
+	if value, ok := _u.mutation.GrantKeyThumbprint(); ok {
+		_spec.SetField(device.FieldGrantKeyThumbprint, field.TypeString, value)
+	}
+	if _u.mutation.GrantKeyThumbprintCleared() {
+		_spec.ClearField(device.FieldGrantKeyThumbprint, field.TypeString)
 	}
 	if value, ok := _u.mutation.ProtectionStatus(); ok {
 		_spec.SetField(device.FieldProtectionStatus, field.TypeEnum, value)
@@ -458,6 +510,46 @@ func (_u *DeviceUpdateOne) SetNillableRulesetVersion(v *string) *DeviceUpdateOne
 // ClearRulesetVersion clears the value of the "ruleset_version" field.
 func (_u *DeviceUpdateOne) ClearRulesetVersion() *DeviceUpdateOne {
 	_u.mutation.ClearRulesetVersion()
+	return _u
+}
+
+// SetGrantPublicJwk sets the "grant_public_jwk" field.
+func (_u *DeviceUpdateOne) SetGrantPublicJwk(v string) *DeviceUpdateOne {
+	_u.mutation.SetGrantPublicJwk(v)
+	return _u
+}
+
+// SetNillableGrantPublicJwk sets the "grant_public_jwk" field if the given value is not nil.
+func (_u *DeviceUpdateOne) SetNillableGrantPublicJwk(v *string) *DeviceUpdateOne {
+	if v != nil {
+		_u.SetGrantPublicJwk(*v)
+	}
+	return _u
+}
+
+// ClearGrantPublicJwk clears the value of the "grant_public_jwk" field.
+func (_u *DeviceUpdateOne) ClearGrantPublicJwk() *DeviceUpdateOne {
+	_u.mutation.ClearGrantPublicJwk()
+	return _u
+}
+
+// SetGrantKeyThumbprint sets the "grant_key_thumbprint" field.
+func (_u *DeviceUpdateOne) SetGrantKeyThumbprint(v string) *DeviceUpdateOne {
+	_u.mutation.SetGrantKeyThumbprint(v)
+	return _u
+}
+
+// SetNillableGrantKeyThumbprint sets the "grant_key_thumbprint" field if the given value is not nil.
+func (_u *DeviceUpdateOne) SetNillableGrantKeyThumbprint(v *string) *DeviceUpdateOne {
+	if v != nil {
+		_u.SetGrantKeyThumbprint(*v)
+	}
+	return _u
+}
+
+// ClearGrantKeyThumbprint clears the value of the "grant_key_thumbprint" field.
+func (_u *DeviceUpdateOne) ClearGrantKeyThumbprint() *DeviceUpdateOne {
+	_u.mutation.ClearGrantKeyThumbprint()
 	return _u
 }
 
@@ -631,6 +723,18 @@ func (_u *DeviceUpdateOne) sqlSave(ctx context.Context) (_node *Device, err erro
 	}
 	if _u.mutation.RulesetVersionCleared() {
 		_spec.ClearField(device.FieldRulesetVersion, field.TypeString)
+	}
+	if value, ok := _u.mutation.GrantPublicJwk(); ok {
+		_spec.SetField(device.FieldGrantPublicJwk, field.TypeString, value)
+	}
+	if _u.mutation.GrantPublicJwkCleared() {
+		_spec.ClearField(device.FieldGrantPublicJwk, field.TypeString)
+	}
+	if value, ok := _u.mutation.GrantKeyThumbprint(); ok {
+		_spec.SetField(device.FieldGrantKeyThumbprint, field.TypeString, value)
+	}
+	if _u.mutation.GrantKeyThumbprintCleared() {
+		_spec.ClearField(device.FieldGrantKeyThumbprint, field.TypeString)
 	}
 	if value, ok := _u.mutation.ProtectionStatus(); ok {
 		_spec.SetField(device.FieldProtectionStatus, field.TypeEnum, value)

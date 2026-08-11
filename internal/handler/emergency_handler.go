@@ -1,9 +1,12 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/service"
 )
 
 type emergencyUnlockInput struct {
@@ -93,7 +96,11 @@ func (h *Handler) EmergencyUnlock(c *gin.Context) {
 	}
 	grant, err := h.services.Admin.ValidateEmergencyKey(c.Request.Context(), input.EmergencyKey, input.DeviceID)
 	if err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "invalid_key", err)
+		status := http.StatusBadRequest
+		if errors.Is(err, service.ErrProtectionGrantSigningUnavailable) {
+			status = http.StatusInternalServerError
+		}
+		h.respondErrorErr(c, status, "invalid_key", err)
 		return
 	}
 	h.respond(c, http.StatusOK, grant)

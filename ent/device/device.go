@@ -30,6 +30,10 @@ const (
 	FieldModelVersion = "model_version"
 	// FieldRulesetVersion holds the string denoting the ruleset_version field in the database.
 	FieldRulesetVersion = "ruleset_version"
+	// FieldGrantPublicJwk holds the string denoting the grant_public_jwk field in the database.
+	FieldGrantPublicJwk = "grant_public_jwk"
+	// FieldGrantKeyThumbprint holds the string denoting the grant_key_thumbprint field in the database.
+	FieldGrantKeyThumbprint = "grant_key_thumbprint"
 	// FieldProtectionStatus holds the string denoting the protection_status field in the database.
 	FieldProtectionStatus = "protection_status"
 	// FieldLastSeenAt holds the string denoting the last_seen_at field in the database.
@@ -53,6 +57,8 @@ var Columns = []string{
 	FieldOsVersion,
 	FieldModelVersion,
 	FieldRulesetVersion,
+	FieldGrantPublicJwk,
+	FieldGrantKeyThumbprint,
 	FieldProtectionStatus,
 	FieldLastSeenAt,
 	FieldCreatedAt,
@@ -184,6 +190,16 @@ func ByModelVersion(opts ...sql.OrderTermOption) OrderOption {
 // ByRulesetVersion orders the results by the ruleset_version field.
 func ByRulesetVersion(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRulesetVersion, opts...).ToFunc()
+}
+
+// ByGrantPublicJwk orders the results by the grant_public_jwk field.
+func ByGrantPublicJwk(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGrantPublicJwk, opts...).ToFunc()
+}
+
+// ByGrantKeyThumbprint orders the results by the grant_key_thumbprint field.
+func ByGrantKeyThumbprint(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGrantKeyThumbprint, opts...).ToFunc()
 }
 
 // ByProtectionStatus orders the results by the protection_status field.

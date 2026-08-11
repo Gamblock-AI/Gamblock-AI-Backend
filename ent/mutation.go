@@ -3410,6 +3410,7 @@ type ApprovalRequestMutation struct {
 	resolved_at                   *time.Time
 	applied_at                    *time.Time
 	grant_expires_at              *time.Time
+	grant_jti                     *string
 	created_at                    *time.Time
 	updated_at                    *time.Time
 	clearedFields                 map[string]struct{}
@@ -4226,6 +4227,55 @@ func (m *ApprovalRequestMutation) ResetGrantExpiresAt() {
 	delete(m.clearedFields, approvalrequest.FieldGrantExpiresAt)
 }
 
+// SetGrantJti sets the "grant_jti" field.
+func (m *ApprovalRequestMutation) SetGrantJti(s string) {
+	m.grant_jti = &s
+}
+
+// GrantJti returns the value of the "grant_jti" field in the mutation.
+func (m *ApprovalRequestMutation) GrantJti() (r string, exists bool) {
+	v := m.grant_jti
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGrantJti returns the old "grant_jti" field's value of the ApprovalRequest entity.
+// If the ApprovalRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ApprovalRequestMutation) OldGrantJti(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGrantJti is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGrantJti requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGrantJti: %w", err)
+	}
+	return oldValue.GrantJti, nil
+}
+
+// ClearGrantJti clears the value of the "grant_jti" field.
+func (m *ApprovalRequestMutation) ClearGrantJti() {
+	m.grant_jti = nil
+	m.clearedFields[approvalrequest.FieldGrantJti] = struct{}{}
+}
+
+// GrantJtiCleared returns if the "grant_jti" field was cleared in this mutation.
+func (m *ApprovalRequestMutation) GrantJtiCleared() bool {
+	_, ok := m.clearedFields[approvalrequest.FieldGrantJti]
+	return ok
+}
+
+// ResetGrantJti resets all changes to the "grant_jti" field.
+func (m *ApprovalRequestMutation) ResetGrantJti() {
+	m.grant_jti = nil
+	delete(m.clearedFields, approvalrequest.FieldGrantJti)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *ApprovalRequestMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -4332,7 +4382,7 @@ func (m *ApprovalRequestMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ApprovalRequestMutation) Fields() []string {
-	fields := make([]string, 0, 17)
+	fields := make([]string, 0, 18)
 	if m.user_id != nil {
 		fields = append(fields, approvalrequest.FieldUserID)
 	}
@@ -4378,6 +4428,9 @@ func (m *ApprovalRequestMutation) Fields() []string {
 	if m.grant_expires_at != nil {
 		fields = append(fields, approvalrequest.FieldGrantExpiresAt)
 	}
+	if m.grant_jti != nil {
+		fields = append(fields, approvalrequest.FieldGrantJti)
+	}
 	if m.created_at != nil {
 		fields = append(fields, approvalrequest.FieldCreatedAt)
 	}
@@ -4422,6 +4475,8 @@ func (m *ApprovalRequestMutation) Field(name string) (ent.Value, bool) {
 		return m.AppliedAt()
 	case approvalrequest.FieldGrantExpiresAt:
 		return m.GrantExpiresAt()
+	case approvalrequest.FieldGrantJti:
+		return m.GrantJti()
 	case approvalrequest.FieldCreatedAt:
 		return m.CreatedAt()
 	case approvalrequest.FieldUpdatedAt:
@@ -4465,6 +4520,8 @@ func (m *ApprovalRequestMutation) OldField(ctx context.Context, name string) (en
 		return m.OldAppliedAt(ctx)
 	case approvalrequest.FieldGrantExpiresAt:
 		return m.OldGrantExpiresAt(ctx)
+	case approvalrequest.FieldGrantJti:
+		return m.OldGrantJti(ctx)
 	case approvalrequest.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case approvalrequest.FieldUpdatedAt:
@@ -4583,6 +4640,13 @@ func (m *ApprovalRequestMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetGrantExpiresAt(v)
 		return nil
+	case approvalrequest.FieldGrantJti:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGrantJti(v)
+		return nil
 	case approvalrequest.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -4675,6 +4739,9 @@ func (m *ApprovalRequestMutation) ClearedFields() []string {
 	if m.FieldCleared(approvalrequest.FieldGrantExpiresAt) {
 		fields = append(fields, approvalrequest.FieldGrantExpiresAt)
 	}
+	if m.FieldCleared(approvalrequest.FieldGrantJti) {
+		fields = append(fields, approvalrequest.FieldGrantJti)
+	}
 	return fields
 }
 
@@ -4721,6 +4788,9 @@ func (m *ApprovalRequestMutation) ClearField(name string) error {
 		return nil
 	case approvalrequest.FieldGrantExpiresAt:
 		m.ClearGrantExpiresAt()
+		return nil
+	case approvalrequest.FieldGrantJti:
+		m.ClearGrantJti()
 		return nil
 	}
 	return fmt.Errorf("unknown ApprovalRequest nullable field %s", name)
@@ -4774,6 +4844,9 @@ func (m *ApprovalRequestMutation) ResetField(name string) error {
 		return nil
 	case approvalrequest.FieldGrantExpiresAt:
 		m.ResetGrantExpiresAt()
+		return nil
+	case approvalrequest.FieldGrantJti:
+		m.ResetGrantJti()
 		return nil
 	case approvalrequest.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -10309,25 +10382,27 @@ func (m *DataRequestMutation) ResetEdge(name string) error {
 // DeviceMutation represents an operation that mutates the Device nodes in the graph.
 type DeviceMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *string
-	user_id            *string
-	client_instance_id *string
-	platform           *device.Platform
-	label              *string
-	app_version        *string
-	os_version         *string
-	model_version      *string
-	ruleset_version    *string
-	protection_status  *device.ProtectionStatus
-	last_seen_at       *time.Time
-	created_at         *time.Time
-	updated_at         *time.Time
-	clearedFields      map[string]struct{}
-	done               bool
-	oldValue           func(context.Context) (*Device, error)
-	predicates         []predicate.Device
+	op                   Op
+	typ                  string
+	id                   *string
+	user_id              *string
+	client_instance_id   *string
+	platform             *device.Platform
+	label                *string
+	app_version          *string
+	os_version           *string
+	model_version        *string
+	ruleset_version      *string
+	grant_public_jwk     *string
+	grant_key_thumbprint *string
+	protection_status    *device.ProtectionStatus
+	last_seen_at         *time.Time
+	created_at           *time.Time
+	updated_at           *time.Time
+	clearedFields        map[string]struct{}
+	done                 bool
+	oldValue             func(context.Context) (*Device, error)
+	predicates           []predicate.Device
 }
 
 var _ ent.Mutation = (*DeviceMutation)(nil)
@@ -10761,6 +10836,104 @@ func (m *DeviceMutation) ResetRulesetVersion() {
 	delete(m.clearedFields, device.FieldRulesetVersion)
 }
 
+// SetGrantPublicJwk sets the "grant_public_jwk" field.
+func (m *DeviceMutation) SetGrantPublicJwk(s string) {
+	m.grant_public_jwk = &s
+}
+
+// GrantPublicJwk returns the value of the "grant_public_jwk" field in the mutation.
+func (m *DeviceMutation) GrantPublicJwk() (r string, exists bool) {
+	v := m.grant_public_jwk
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGrantPublicJwk returns the old "grant_public_jwk" field's value of the Device entity.
+// If the Device object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceMutation) OldGrantPublicJwk(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGrantPublicJwk is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGrantPublicJwk requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGrantPublicJwk: %w", err)
+	}
+	return oldValue.GrantPublicJwk, nil
+}
+
+// ClearGrantPublicJwk clears the value of the "grant_public_jwk" field.
+func (m *DeviceMutation) ClearGrantPublicJwk() {
+	m.grant_public_jwk = nil
+	m.clearedFields[device.FieldGrantPublicJwk] = struct{}{}
+}
+
+// GrantPublicJwkCleared returns if the "grant_public_jwk" field was cleared in this mutation.
+func (m *DeviceMutation) GrantPublicJwkCleared() bool {
+	_, ok := m.clearedFields[device.FieldGrantPublicJwk]
+	return ok
+}
+
+// ResetGrantPublicJwk resets all changes to the "grant_public_jwk" field.
+func (m *DeviceMutation) ResetGrantPublicJwk() {
+	m.grant_public_jwk = nil
+	delete(m.clearedFields, device.FieldGrantPublicJwk)
+}
+
+// SetGrantKeyThumbprint sets the "grant_key_thumbprint" field.
+func (m *DeviceMutation) SetGrantKeyThumbprint(s string) {
+	m.grant_key_thumbprint = &s
+}
+
+// GrantKeyThumbprint returns the value of the "grant_key_thumbprint" field in the mutation.
+func (m *DeviceMutation) GrantKeyThumbprint() (r string, exists bool) {
+	v := m.grant_key_thumbprint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGrantKeyThumbprint returns the old "grant_key_thumbprint" field's value of the Device entity.
+// If the Device object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeviceMutation) OldGrantKeyThumbprint(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGrantKeyThumbprint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGrantKeyThumbprint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGrantKeyThumbprint: %w", err)
+	}
+	return oldValue.GrantKeyThumbprint, nil
+}
+
+// ClearGrantKeyThumbprint clears the value of the "grant_key_thumbprint" field.
+func (m *DeviceMutation) ClearGrantKeyThumbprint() {
+	m.grant_key_thumbprint = nil
+	m.clearedFields[device.FieldGrantKeyThumbprint] = struct{}{}
+}
+
+// GrantKeyThumbprintCleared returns if the "grant_key_thumbprint" field was cleared in this mutation.
+func (m *DeviceMutation) GrantKeyThumbprintCleared() bool {
+	_, ok := m.clearedFields[device.FieldGrantKeyThumbprint]
+	return ok
+}
+
+// ResetGrantKeyThumbprint resets all changes to the "grant_key_thumbprint" field.
+func (m *DeviceMutation) ResetGrantKeyThumbprint() {
+	m.grant_key_thumbprint = nil
+	delete(m.clearedFields, device.FieldGrantKeyThumbprint)
+}
+
 // SetProtectionStatus sets the "protection_status" field.
 func (m *DeviceMutation) SetProtectionStatus(ds device.ProtectionStatus) {
 	m.protection_status = &ds
@@ -10952,7 +11125,7 @@ func (m *DeviceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DeviceMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 14)
 	if m.user_id != nil {
 		fields = append(fields, device.FieldUserID)
 	}
@@ -10976,6 +11149,12 @@ func (m *DeviceMutation) Fields() []string {
 	}
 	if m.ruleset_version != nil {
 		fields = append(fields, device.FieldRulesetVersion)
+	}
+	if m.grant_public_jwk != nil {
+		fields = append(fields, device.FieldGrantPublicJwk)
+	}
+	if m.grant_key_thumbprint != nil {
+		fields = append(fields, device.FieldGrantKeyThumbprint)
 	}
 	if m.protection_status != nil {
 		fields = append(fields, device.FieldProtectionStatus)
@@ -11013,6 +11192,10 @@ func (m *DeviceMutation) Field(name string) (ent.Value, bool) {
 		return m.ModelVersion()
 	case device.FieldRulesetVersion:
 		return m.RulesetVersion()
+	case device.FieldGrantPublicJwk:
+		return m.GrantPublicJwk()
+	case device.FieldGrantKeyThumbprint:
+		return m.GrantKeyThumbprint()
 	case device.FieldProtectionStatus:
 		return m.ProtectionStatus()
 	case device.FieldLastSeenAt:
@@ -11046,6 +11229,10 @@ func (m *DeviceMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldModelVersion(ctx)
 	case device.FieldRulesetVersion:
 		return m.OldRulesetVersion(ctx)
+	case device.FieldGrantPublicJwk:
+		return m.OldGrantPublicJwk(ctx)
+	case device.FieldGrantKeyThumbprint:
+		return m.OldGrantKeyThumbprint(ctx)
 	case device.FieldProtectionStatus:
 		return m.OldProtectionStatus(ctx)
 	case device.FieldLastSeenAt:
@@ -11119,6 +11306,20 @@ func (m *DeviceMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetRulesetVersion(v)
 		return nil
+	case device.FieldGrantPublicJwk:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGrantPublicJwk(v)
+		return nil
+	case device.FieldGrantKeyThumbprint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGrantKeyThumbprint(v)
+		return nil
 	case device.FieldProtectionStatus:
 		v, ok := value.(device.ProtectionStatus)
 		if !ok {
@@ -11186,6 +11387,12 @@ func (m *DeviceMutation) ClearedFields() []string {
 	if m.FieldCleared(device.FieldRulesetVersion) {
 		fields = append(fields, device.FieldRulesetVersion)
 	}
+	if m.FieldCleared(device.FieldGrantPublicJwk) {
+		fields = append(fields, device.FieldGrantPublicJwk)
+	}
+	if m.FieldCleared(device.FieldGrantKeyThumbprint) {
+		fields = append(fields, device.FieldGrantKeyThumbprint)
+	}
 	if m.FieldCleared(device.FieldLastSeenAt) {
 		fields = append(fields, device.FieldLastSeenAt)
 	}
@@ -11211,6 +11418,12 @@ func (m *DeviceMutation) ClearField(name string) error {
 		return nil
 	case device.FieldRulesetVersion:
 		m.ClearRulesetVersion()
+		return nil
+	case device.FieldGrantPublicJwk:
+		m.ClearGrantPublicJwk()
+		return nil
+	case device.FieldGrantKeyThumbprint:
+		m.ClearGrantKeyThumbprint()
 		return nil
 	case device.FieldLastSeenAt:
 		m.ClearLastSeenAt()
@@ -11246,6 +11459,12 @@ func (m *DeviceMutation) ResetField(name string) error {
 		return nil
 	case device.FieldRulesetVersion:
 		m.ResetRulesetVersion()
+		return nil
+	case device.FieldGrantPublicJwk:
+		m.ResetGrantPublicJwk()
+		return nil
+	case device.FieldGrantKeyThumbprint:
+		m.ResetGrantKeyThumbprint()
 		return nil
 	case device.FieldProtectionStatus:
 		m.ResetProtectionStatus()
@@ -13308,6 +13527,9 @@ type EmergencyKeyRequestMutation struct {
 	reviewed_at        *time.Time
 	approved_at        *time.Time
 	used_at            *time.Time
+	grant_starts_at    *time.Time
+	grant_expires_at   *time.Time
+	grant_jti          *string
 	created_at         *time.Time
 	updated_at         *time.Time
 	clearedFields      map[string]struct{}
@@ -13920,6 +14142,153 @@ func (m *EmergencyKeyRequestMutation) ResetUsedAt() {
 	delete(m.clearedFields, emergencykeyrequest.FieldUsedAt)
 }
 
+// SetGrantStartsAt sets the "grant_starts_at" field.
+func (m *EmergencyKeyRequestMutation) SetGrantStartsAt(t time.Time) {
+	m.grant_starts_at = &t
+}
+
+// GrantStartsAt returns the value of the "grant_starts_at" field in the mutation.
+func (m *EmergencyKeyRequestMutation) GrantStartsAt() (r time.Time, exists bool) {
+	v := m.grant_starts_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGrantStartsAt returns the old "grant_starts_at" field's value of the EmergencyKeyRequest entity.
+// If the EmergencyKeyRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmergencyKeyRequestMutation) OldGrantStartsAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGrantStartsAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGrantStartsAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGrantStartsAt: %w", err)
+	}
+	return oldValue.GrantStartsAt, nil
+}
+
+// ClearGrantStartsAt clears the value of the "grant_starts_at" field.
+func (m *EmergencyKeyRequestMutation) ClearGrantStartsAt() {
+	m.grant_starts_at = nil
+	m.clearedFields[emergencykeyrequest.FieldGrantStartsAt] = struct{}{}
+}
+
+// GrantStartsAtCleared returns if the "grant_starts_at" field was cleared in this mutation.
+func (m *EmergencyKeyRequestMutation) GrantStartsAtCleared() bool {
+	_, ok := m.clearedFields[emergencykeyrequest.FieldGrantStartsAt]
+	return ok
+}
+
+// ResetGrantStartsAt resets all changes to the "grant_starts_at" field.
+func (m *EmergencyKeyRequestMutation) ResetGrantStartsAt() {
+	m.grant_starts_at = nil
+	delete(m.clearedFields, emergencykeyrequest.FieldGrantStartsAt)
+}
+
+// SetGrantExpiresAt sets the "grant_expires_at" field.
+func (m *EmergencyKeyRequestMutation) SetGrantExpiresAt(t time.Time) {
+	m.grant_expires_at = &t
+}
+
+// GrantExpiresAt returns the value of the "grant_expires_at" field in the mutation.
+func (m *EmergencyKeyRequestMutation) GrantExpiresAt() (r time.Time, exists bool) {
+	v := m.grant_expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGrantExpiresAt returns the old "grant_expires_at" field's value of the EmergencyKeyRequest entity.
+// If the EmergencyKeyRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmergencyKeyRequestMutation) OldGrantExpiresAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGrantExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGrantExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGrantExpiresAt: %w", err)
+	}
+	return oldValue.GrantExpiresAt, nil
+}
+
+// ClearGrantExpiresAt clears the value of the "grant_expires_at" field.
+func (m *EmergencyKeyRequestMutation) ClearGrantExpiresAt() {
+	m.grant_expires_at = nil
+	m.clearedFields[emergencykeyrequest.FieldGrantExpiresAt] = struct{}{}
+}
+
+// GrantExpiresAtCleared returns if the "grant_expires_at" field was cleared in this mutation.
+func (m *EmergencyKeyRequestMutation) GrantExpiresAtCleared() bool {
+	_, ok := m.clearedFields[emergencykeyrequest.FieldGrantExpiresAt]
+	return ok
+}
+
+// ResetGrantExpiresAt resets all changes to the "grant_expires_at" field.
+func (m *EmergencyKeyRequestMutation) ResetGrantExpiresAt() {
+	m.grant_expires_at = nil
+	delete(m.clearedFields, emergencykeyrequest.FieldGrantExpiresAt)
+}
+
+// SetGrantJti sets the "grant_jti" field.
+func (m *EmergencyKeyRequestMutation) SetGrantJti(s string) {
+	m.grant_jti = &s
+}
+
+// GrantJti returns the value of the "grant_jti" field in the mutation.
+func (m *EmergencyKeyRequestMutation) GrantJti() (r string, exists bool) {
+	v := m.grant_jti
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGrantJti returns the old "grant_jti" field's value of the EmergencyKeyRequest entity.
+// If the EmergencyKeyRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmergencyKeyRequestMutation) OldGrantJti(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGrantJti is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGrantJti requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGrantJti: %w", err)
+	}
+	return oldValue.GrantJti, nil
+}
+
+// ClearGrantJti clears the value of the "grant_jti" field.
+func (m *EmergencyKeyRequestMutation) ClearGrantJti() {
+	m.grant_jti = nil
+	m.clearedFields[emergencykeyrequest.FieldGrantJti] = struct{}{}
+}
+
+// GrantJtiCleared returns if the "grant_jti" field was cleared in this mutation.
+func (m *EmergencyKeyRequestMutation) GrantJtiCleared() bool {
+	_, ok := m.clearedFields[emergencykeyrequest.FieldGrantJti]
+	return ok
+}
+
+// ResetGrantJti resets all changes to the "grant_jti" field.
+func (m *EmergencyKeyRequestMutation) ResetGrantJti() {
+	m.grant_jti = nil
+	delete(m.clearedFields, emergencykeyrequest.FieldGrantJti)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *EmergencyKeyRequestMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -14026,7 +14395,7 @@ func (m *EmergencyKeyRequestMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EmergencyKeyRequestMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 16)
 	if m.requested_by != nil {
 		fields = append(fields, emergencykeyrequest.FieldRequestedBy)
 	}
@@ -14059,6 +14428,15 @@ func (m *EmergencyKeyRequestMutation) Fields() []string {
 	}
 	if m.used_at != nil {
 		fields = append(fields, emergencykeyrequest.FieldUsedAt)
+	}
+	if m.grant_starts_at != nil {
+		fields = append(fields, emergencykeyrequest.FieldGrantStartsAt)
+	}
+	if m.grant_expires_at != nil {
+		fields = append(fields, emergencykeyrequest.FieldGrantExpiresAt)
+	}
+	if m.grant_jti != nil {
+		fields = append(fields, emergencykeyrequest.FieldGrantJti)
 	}
 	if m.created_at != nil {
 		fields = append(fields, emergencykeyrequest.FieldCreatedAt)
@@ -14096,6 +14474,12 @@ func (m *EmergencyKeyRequestMutation) Field(name string) (ent.Value, bool) {
 		return m.ApprovedAt()
 	case emergencykeyrequest.FieldUsedAt:
 		return m.UsedAt()
+	case emergencykeyrequest.FieldGrantStartsAt:
+		return m.GrantStartsAt()
+	case emergencykeyrequest.FieldGrantExpiresAt:
+		return m.GrantExpiresAt()
+	case emergencykeyrequest.FieldGrantJti:
+		return m.GrantJti()
 	case emergencykeyrequest.FieldCreatedAt:
 		return m.CreatedAt()
 	case emergencykeyrequest.FieldUpdatedAt:
@@ -14131,6 +14515,12 @@ func (m *EmergencyKeyRequestMutation) OldField(ctx context.Context, name string)
 		return m.OldApprovedAt(ctx)
 	case emergencykeyrequest.FieldUsedAt:
 		return m.OldUsedAt(ctx)
+	case emergencykeyrequest.FieldGrantStartsAt:
+		return m.OldGrantStartsAt(ctx)
+	case emergencykeyrequest.FieldGrantExpiresAt:
+		return m.OldGrantExpiresAt(ctx)
+	case emergencykeyrequest.FieldGrantJti:
+		return m.OldGrantJti(ctx)
 	case emergencykeyrequest.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case emergencykeyrequest.FieldUpdatedAt:
@@ -14221,6 +14611,27 @@ func (m *EmergencyKeyRequestMutation) SetField(name string, value ent.Value) err
 		}
 		m.SetUsedAt(v)
 		return nil
+	case emergencykeyrequest.FieldGrantStartsAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGrantStartsAt(v)
+		return nil
+	case emergencykeyrequest.FieldGrantExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGrantExpiresAt(v)
+		return nil
+	case emergencykeyrequest.FieldGrantJti:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGrantJti(v)
+		return nil
 	case emergencykeyrequest.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -14289,6 +14700,15 @@ func (m *EmergencyKeyRequestMutation) ClearedFields() []string {
 	if m.FieldCleared(emergencykeyrequest.FieldUsedAt) {
 		fields = append(fields, emergencykeyrequest.FieldUsedAt)
 	}
+	if m.FieldCleared(emergencykeyrequest.FieldGrantStartsAt) {
+		fields = append(fields, emergencykeyrequest.FieldGrantStartsAt)
+	}
+	if m.FieldCleared(emergencykeyrequest.FieldGrantExpiresAt) {
+		fields = append(fields, emergencykeyrequest.FieldGrantExpiresAt)
+	}
+	if m.FieldCleared(emergencykeyrequest.FieldGrantJti) {
+		fields = append(fields, emergencykeyrequest.FieldGrantJti)
+	}
 	return fields
 }
 
@@ -14326,6 +14746,15 @@ func (m *EmergencyKeyRequestMutation) ClearField(name string) error {
 		return nil
 	case emergencykeyrequest.FieldUsedAt:
 		m.ClearUsedAt()
+		return nil
+	case emergencykeyrequest.FieldGrantStartsAt:
+		m.ClearGrantStartsAt()
+		return nil
+	case emergencykeyrequest.FieldGrantExpiresAt:
+		m.ClearGrantExpiresAt()
+		return nil
+	case emergencykeyrequest.FieldGrantJti:
+		m.ClearGrantJti()
 		return nil
 	}
 	return fmt.Errorf("unknown EmergencyKeyRequest nullable field %s", name)
@@ -14367,6 +14796,15 @@ func (m *EmergencyKeyRequestMutation) ResetField(name string) error {
 		return nil
 	case emergencykeyrequest.FieldUsedAt:
 		m.ResetUsedAt()
+		return nil
+	case emergencykeyrequest.FieldGrantStartsAt:
+		m.ResetGrantStartsAt()
+		return nil
+	case emergencykeyrequest.FieldGrantExpiresAt:
+		m.ResetGrantExpiresAt()
+		return nil
+	case emergencykeyrequest.FieldGrantJti:
+		m.ResetGrantJti()
 		return nil
 	case emergencykeyrequest.FieldCreatedAt:
 		m.ResetCreatedAt()

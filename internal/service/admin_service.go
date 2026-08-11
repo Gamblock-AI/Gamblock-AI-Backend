@@ -15,17 +15,19 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/authn"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/repository"
 )
 
 type AdminService struct {
-	repo   *repository.Repository
-	logger *zap.Logger
+	repo        *repository.Repository
+	logger      *zap.Logger
+	grantSigner *ProtectionGrantSigner
 }
 
-func NewAdminService(repo *repository.Repository, logger *zap.Logger) *AdminService {
-	return &AdminService{repo: repo, logger: logger}
+func NewAdminService(repo *repository.Repository, cfg config.Config, logger *zap.Logger) *AdminService {
+	return &AdminService{repo: repo, logger: logger, grantSigner: NewProtectionGrantSigner(cfg)}
 }
 
 // PlatformAnalytics returns platform-wide aggregate analytics for admin
@@ -345,8 +347,39 @@ func (s *AdminService) ApproveEmergencyKeyRequest(ctx context.Context, requestID
 }
 
 func (s *AdminService) ValidateEmergencyKey(ctx context.Context, key, deviceID string) (model.EmergencyGrant, error) {
+	if err := s.grantSigner.Ready(); err != nil {
+		return model.EmergencyGrant{}, err
+	}
 	now := time.Now().UTC()
-	request, err := s.repo.UseEmergencyKey(ctx, HashRefreshToken(key), deviceID, now)
+	keyHash := HashRefreshToken(key)
+	request, err := s.repo.GetUsableEmergencyKeyRequest(ctx, keyHash, deviceID, now)
+	if err != nil {
+		return model.EmergencyGrant{}, err
+	}
+	thumbprint, err := s.repo.OwnedDeviceGrantKeyThumbprint(ctx, request.RequestedBy, deviceID)
+	if err != nil {
+		return model.EmergencyGrant{}, err
+	}
+	grantJTI, err := newProtectionGrantJTI()
+	if err != nil {
+		return model.EmergencyGrant{}, err
+	}
+	request, err = s.repo.UseEmergencyKey(ctx, keyHash, deviceID, now, now.Add(10*time.Minute), grantJTI)
+	if err != nil {
+		return model.EmergencyGrant{}, err
+	}
+	if request.GrantStartsAt == nil || request.GrantExpiresAt == nil || request.GrantJTI == "" {
+		return model.EmergencyGrant{}, fmt.Errorf("emergency grant metadata is incomplete")
+	}
+	grantToken, err := s.grantSigner.Sign(
+		request.ID,
+		deviceID,
+		"emergency_access",
+		thumbprint,
+		request.GrantJTI,
+		*request.GrantStartsAt,
+		*request.GrantExpiresAt,
+	)
 	if err != nil {
 		return model.EmergencyGrant{}, err
 	}
@@ -357,8 +390,9 @@ func (s *AdminService) ValidateEmergencyKey(ctx context.Context, key, deviceID s
 		zap.String("approved_by", request.ApprovedBy),
 	)
 	return model.EmergencyGrant{
-		RequestID: request.ID, DeviceID: deviceID,
-		GrantStartsAt: now, GrantExpiresAt: now.Add(10 * time.Minute),
+		RequestID: request.ID, DeviceID: deviceID, Action: "emergency_access",
+		GrantStartsAt: *request.GrantStartsAt, GrantExpiresAt: *request.GrantExpiresAt,
+		GrantJTI: request.GrantJTI, GrantToken: grantToken,
 	}, nil
 }
 

@@ -230,6 +230,66 @@ func (_u *EmergencyKeyRequestUpdate) ClearUsedAt() *EmergencyKeyRequestUpdate {
 	return _u
 }
 
+// SetGrantStartsAt sets the "grant_starts_at" field.
+func (_u *EmergencyKeyRequestUpdate) SetGrantStartsAt(v time.Time) *EmergencyKeyRequestUpdate {
+	_u.mutation.SetGrantStartsAt(v)
+	return _u
+}
+
+// SetNillableGrantStartsAt sets the "grant_starts_at" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdate) SetNillableGrantStartsAt(v *time.Time) *EmergencyKeyRequestUpdate {
+	if v != nil {
+		_u.SetGrantStartsAt(*v)
+	}
+	return _u
+}
+
+// ClearGrantStartsAt clears the value of the "grant_starts_at" field.
+func (_u *EmergencyKeyRequestUpdate) ClearGrantStartsAt() *EmergencyKeyRequestUpdate {
+	_u.mutation.ClearGrantStartsAt()
+	return _u
+}
+
+// SetGrantExpiresAt sets the "grant_expires_at" field.
+func (_u *EmergencyKeyRequestUpdate) SetGrantExpiresAt(v time.Time) *EmergencyKeyRequestUpdate {
+	_u.mutation.SetGrantExpiresAt(v)
+	return _u
+}
+
+// SetNillableGrantExpiresAt sets the "grant_expires_at" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdate) SetNillableGrantExpiresAt(v *time.Time) *EmergencyKeyRequestUpdate {
+	if v != nil {
+		_u.SetGrantExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearGrantExpiresAt clears the value of the "grant_expires_at" field.
+func (_u *EmergencyKeyRequestUpdate) ClearGrantExpiresAt() *EmergencyKeyRequestUpdate {
+	_u.mutation.ClearGrantExpiresAt()
+	return _u
+}
+
+// SetGrantJti sets the "grant_jti" field.
+func (_u *EmergencyKeyRequestUpdate) SetGrantJti(v string) *EmergencyKeyRequestUpdate {
+	_u.mutation.SetGrantJti(v)
+	return _u
+}
+
+// SetNillableGrantJti sets the "grant_jti" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdate) SetNillableGrantJti(v *string) *EmergencyKeyRequestUpdate {
+	if v != nil {
+		_u.SetGrantJti(*v)
+	}
+	return _u
+}
+
+// ClearGrantJti clears the value of the "grant_jti" field.
+func (_u *EmergencyKeyRequestUpdate) ClearGrantJti() *EmergencyKeyRequestUpdate {
+	_u.mutation.ClearGrantJti()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *EmergencyKeyRequestUpdate) SetUpdatedAt(v time.Time) *EmergencyKeyRequestUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -355,6 +415,24 @@ func (_u *EmergencyKeyRequestUpdate) sqlSave(ctx context.Context) (_node int, er
 	}
 	if _u.mutation.UsedAtCleared() {
 		_spec.ClearField(emergencykeyrequest.FieldUsedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GrantStartsAt(); ok {
+		_spec.SetField(emergencykeyrequest.FieldGrantStartsAt, field.TypeTime, value)
+	}
+	if _u.mutation.GrantStartsAtCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldGrantStartsAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GrantExpiresAt(); ok {
+		_spec.SetField(emergencykeyrequest.FieldGrantExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.GrantExpiresAtCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldGrantExpiresAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GrantJti(); ok {
+		_spec.SetField(emergencykeyrequest.FieldGrantJti, field.TypeString, value)
+	}
+	if _u.mutation.GrantJtiCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldGrantJti, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(emergencykeyrequest.FieldUpdatedAt, field.TypeTime, value)
@@ -581,6 +659,66 @@ func (_u *EmergencyKeyRequestUpdateOne) ClearUsedAt() *EmergencyKeyRequestUpdate
 	return _u
 }
 
+// SetGrantStartsAt sets the "grant_starts_at" field.
+func (_u *EmergencyKeyRequestUpdateOne) SetGrantStartsAt(v time.Time) *EmergencyKeyRequestUpdateOne {
+	_u.mutation.SetGrantStartsAt(v)
+	return _u
+}
+
+// SetNillableGrantStartsAt sets the "grant_starts_at" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdateOne) SetNillableGrantStartsAt(v *time.Time) *EmergencyKeyRequestUpdateOne {
+	if v != nil {
+		_u.SetGrantStartsAt(*v)
+	}
+	return _u
+}
+
+// ClearGrantStartsAt clears the value of the "grant_starts_at" field.
+func (_u *EmergencyKeyRequestUpdateOne) ClearGrantStartsAt() *EmergencyKeyRequestUpdateOne {
+	_u.mutation.ClearGrantStartsAt()
+	return _u
+}
+
+// SetGrantExpiresAt sets the "grant_expires_at" field.
+func (_u *EmergencyKeyRequestUpdateOne) SetGrantExpiresAt(v time.Time) *EmergencyKeyRequestUpdateOne {
+	_u.mutation.SetGrantExpiresAt(v)
+	return _u
+}
+
+// SetNillableGrantExpiresAt sets the "grant_expires_at" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdateOne) SetNillableGrantExpiresAt(v *time.Time) *EmergencyKeyRequestUpdateOne {
+	if v != nil {
+		_u.SetGrantExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearGrantExpiresAt clears the value of the "grant_expires_at" field.
+func (_u *EmergencyKeyRequestUpdateOne) ClearGrantExpiresAt() *EmergencyKeyRequestUpdateOne {
+	_u.mutation.ClearGrantExpiresAt()
+	return _u
+}
+
+// SetGrantJti sets the "grant_jti" field.
+func (_u *EmergencyKeyRequestUpdateOne) SetGrantJti(v string) *EmergencyKeyRequestUpdateOne {
+	_u.mutation.SetGrantJti(v)
+	return _u
+}
+
+// SetNillableGrantJti sets the "grant_jti" field if the given value is not nil.
+func (_u *EmergencyKeyRequestUpdateOne) SetNillableGrantJti(v *string) *EmergencyKeyRequestUpdateOne {
+	if v != nil {
+		_u.SetGrantJti(*v)
+	}
+	return _u
+}
+
+// ClearGrantJti clears the value of the "grant_jti" field.
+func (_u *EmergencyKeyRequestUpdateOne) ClearGrantJti() *EmergencyKeyRequestUpdateOne {
+	_u.mutation.ClearGrantJti()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *EmergencyKeyRequestUpdateOne) SetUpdatedAt(v time.Time) *EmergencyKeyRequestUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -736,6 +874,24 @@ func (_u *EmergencyKeyRequestUpdateOne) sqlSave(ctx context.Context) (_node *Eme
 	}
 	if _u.mutation.UsedAtCleared() {
 		_spec.ClearField(emergencykeyrequest.FieldUsedAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GrantStartsAt(); ok {
+		_spec.SetField(emergencykeyrequest.FieldGrantStartsAt, field.TypeTime, value)
+	}
+	if _u.mutation.GrantStartsAtCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldGrantStartsAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GrantExpiresAt(); ok {
+		_spec.SetField(emergencykeyrequest.FieldGrantExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.GrantExpiresAtCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldGrantExpiresAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GrantJti(); ok {
+		_spec.SetField(emergencykeyrequest.FieldGrantJti, field.TypeString, value)
+	}
+	if _u.mutation.GrantJtiCleared() {
+		_spec.ClearField(emergencykeyrequest.FieldGrantJti, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(emergencykeyrequest.FieldUpdatedAt, field.TypeTime, value)

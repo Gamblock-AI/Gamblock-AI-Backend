@@ -1,9 +1,12 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/service"
 )
 
 func (h *Handler) GetPartners(c *gin.Context) {
@@ -150,7 +153,11 @@ func (h *Handler) ApplyApprovalRequest(c *gin.Context) {
 		input.DeviceID,
 	)
 	if err != nil {
-		h.respondErrorErr(c, http.StatusBadRequest, "approval_apply_failed", err)
+		status := http.StatusBadRequest
+		if errors.Is(err, service.ErrProtectionGrantSigningUnavailable) {
+			status = http.StatusInternalServerError
+		}
+		h.respondErrorErr(c, status, "approval_apply_failed", err)
 		return
 	}
 	h.respond(c, http.StatusOK, grant)

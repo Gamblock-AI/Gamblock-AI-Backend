@@ -92,7 +92,46 @@ func (r *Repository) ApproveEmergencyKeyRequest(ctx context.Context, id, approve
 	return emergencyRequestFromEnt(item), nil
 }
 
-func (r *Repository) UseEmergencyKey(ctx context.Context, keyHash, deviceID string, now time.Time) (model.EmergencyKeyRequest, error) {
+func (r *Repository) GetUsableEmergencyKeyRequest(ctx context.Context, keyHash, deviceID string, now time.Time) (model.EmergencyKeyRequest, error) {
+	if r.db == nil {
+		for _, item := range r.store.Snapshot().EmergencyKeyRequests {
+			if item.KeyHash != keyHash {
+				continue
+			}
+			if item.DeviceID != deviceID {
+				return model.EmergencyKeyRequest{}, fmt.Errorf("emergency key is not valid for this device")
+			}
+			if item.Status == "approved" && item.KeyExpiresAt != nil && now.Before(*item.KeyExpiresAt) {
+				return item, nil
+			}
+			if emergencyGrantRetryable(item, now) {
+				return item, nil
+			}
+			return model.EmergencyKeyRequest{}, fmt.Errorf("emergency key is invalid, used, or expired")
+		}
+		return model.EmergencyKeyRequest{}, fmt.Errorf("emergency key not found")
+	}
+	item, err := r.db.EmergencyKeyRequest.Query().Where(emergencykeyrequest.KeyHashEQ(keyHash)).Only(ctx)
+	if err != nil {
+		return model.EmergencyKeyRequest{}, fmt.Errorf("emergency key not found")
+	}
+	request := emergencyRequestFromEnt(item)
+	if request.DeviceID != deviceID {
+		return model.EmergencyKeyRequest{}, fmt.Errorf("emergency key is not valid for this device")
+	}
+	if request.Status == "approved" && request.KeyExpiresAt != nil && now.Before(*request.KeyExpiresAt) {
+		return request, nil
+	}
+	if emergencyGrantRetryable(request, now) {
+		return request, nil
+	}
+	return model.EmergencyKeyRequest{}, fmt.Errorf("emergency key is invalid, used, or expired")
+}
+
+func (r *Repository) UseEmergencyKey(ctx context.Context, keyHash, deviceID string, now, grantExpiresAt time.Time, grantJTI string) (model.EmergencyKeyRequest, error) {
+	if grantJTI == "" || grantExpiresAt.Sub(now) != 10*time.Minute {
+		return model.EmergencyKeyRequest{}, fmt.Errorf("invalid emergency grant metadata")
+	}
 	if r.db == nil {
 		r.store.Lock()
 		defer r.store.Unlock()
@@ -104,11 +143,17 @@ func (r *Repository) UseEmergencyKey(ctx context.Context, keyHash, deviceID stri
 			if item.DeviceID != deviceID {
 				return model.EmergencyKeyRequest{}, fmt.Errorf("emergency key is not valid for this device")
 			}
+			if emergencyGrantRetryable(*item, now) {
+				return *item, nil
+			}
 			if item.Status != "approved" || item.KeyExpiresAt == nil || !now.Before(*item.KeyExpiresAt) {
 				return model.EmergencyKeyRequest{}, fmt.Errorf("emergency key is invalid, used, or expired")
 			}
 			item.Status = "used"
 			item.UsedAt = &now
+			item.GrantStartsAt = &now
+			item.GrantExpiresAt = &grantExpiresAt
+			item.GrantJTI = grantJTI
 			item.UpdatedAt = now
 			return *item, nil
 		}
@@ -119,16 +164,30 @@ func (r *Repository) UseEmergencyKey(ctx context.Context, keyHash, deviceID stri
 		emergencykeyrequest.DeviceIDEQ(deviceID),
 		emergencykeyrequest.StatusEQ(emergencykeyrequest.StatusApproved),
 		emergencykeyrequest.KeyExpiresAtGT(now),
-	).SetStatus(emergencykeyrequest.StatusUsed).SetUsedAt(now).Save(ctx)
+	).SetStatus(emergencykeyrequest.StatusUsed).
+		SetUsedAt(now).
+		SetGrantStartsAt(now).
+		SetGrantExpiresAt(grantExpiresAt).
+		SetGrantJti(grantJTI).
+		Save(ctx)
 	if err != nil {
 		return model.EmergencyKeyRequest{}, err
-	}
-	if changed != 1 {
-		return model.EmergencyKeyRequest{}, fmt.Errorf("emergency key is invalid, used, or expired")
 	}
 	item, err := r.db.EmergencyKeyRequest.Query().Where(emergencykeyrequest.KeyHashEQ(keyHash)).Only(ctx)
 	if err != nil {
 		return model.EmergencyKeyRequest{}, err
 	}
-	return emergencyRequestFromEnt(item), nil
+	request := emergencyRequestFromEnt(item)
+	if changed == 1 || emergencyGrantRetryable(request, now) {
+		if changed == 1 {
+			r.RefreshStore(ctx)
+		}
+		return request, nil
+	}
+	return model.EmergencyKeyRequest{}, fmt.Errorf("emergency key is invalid, used, or expired")
+}
+
+func emergencyGrantRetryable(request model.EmergencyKeyRequest, now time.Time) bool {
+	return request.Status == "used" && request.GrantStartsAt != nil && request.GrantExpiresAt != nil &&
+		request.GrantJTI != "" && now.Before(*request.GrantExpiresAt)
 }

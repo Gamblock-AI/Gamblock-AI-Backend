@@ -94,6 +94,16 @@ func RulesetVersion(v string) predicate.Device {
 	return predicate.Device(sql.FieldEQ(FieldRulesetVersion, v))
 }
 
+// GrantPublicJwk applies equality check predicate on the "grant_public_jwk" field. It's identical to GrantPublicJwkEQ.
+func GrantPublicJwk(v string) predicate.Device {
+	return predicate.Device(sql.FieldEQ(FieldGrantPublicJwk, v))
+}
+
+// GrantKeyThumbprint applies equality check predicate on the "grant_key_thumbprint" field. It's identical to GrantKeyThumbprintEQ.
+func GrantKeyThumbprint(v string) predicate.Device {
+	return predicate.Device(sql.FieldEQ(FieldGrantKeyThumbprint, v))
+}
+
 // LastSeenAt applies equality check predicate on the "last_seen_at" field. It's identical to LastSeenAtEQ.
 func LastSeenAt(v time.Time) predicate.Device {
 	return predicate.Device(sql.FieldEQ(FieldLastSeenAt, v))
@@ -612,6 +622,156 @@ func RulesetVersionEqualFold(v string) predicate.Device {
 // RulesetVersionContainsFold applies the ContainsFold predicate on the "ruleset_version" field.
 func RulesetVersionContainsFold(v string) predicate.Device {
 	return predicate.Device(sql.FieldContainsFold(FieldRulesetVersion, v))
+}
+
+// GrantPublicJwkEQ applies the EQ predicate on the "grant_public_jwk" field.
+func GrantPublicJwkEQ(v string) predicate.Device {
+	return predicate.Device(sql.FieldEQ(FieldGrantPublicJwk, v))
+}
+
+// GrantPublicJwkNEQ applies the NEQ predicate on the "grant_public_jwk" field.
+func GrantPublicJwkNEQ(v string) predicate.Device {
+	return predicate.Device(sql.FieldNEQ(FieldGrantPublicJwk, v))
+}
+
+// GrantPublicJwkIn applies the In predicate on the "grant_public_jwk" field.
+func GrantPublicJwkIn(vs ...string) predicate.Device {
+	return predicate.Device(sql.FieldIn(FieldGrantPublicJwk, vs...))
+}
+
+// GrantPublicJwkNotIn applies the NotIn predicate on the "grant_public_jwk" field.
+func GrantPublicJwkNotIn(vs ...string) predicate.Device {
+	return predicate.Device(sql.FieldNotIn(FieldGrantPublicJwk, vs...))
+}
+
+// GrantPublicJwkGT applies the GT predicate on the "grant_public_jwk" field.
+func GrantPublicJwkGT(v string) predicate.Device {
+	return predicate.Device(sql.FieldGT(FieldGrantPublicJwk, v))
+}
+
+// GrantPublicJwkGTE applies the GTE predicate on the "grant_public_jwk" field.
+func GrantPublicJwkGTE(v string) predicate.Device {
+	return predicate.Device(sql.FieldGTE(FieldGrantPublicJwk, v))
+}
+
+// GrantPublicJwkLT applies the LT predicate on the "grant_public_jwk" field.
+func GrantPublicJwkLT(v string) predicate.Device {
+	return predicate.Device(sql.FieldLT(FieldGrantPublicJwk, v))
+}
+
+// GrantPublicJwkLTE applies the LTE predicate on the "grant_public_jwk" field.
+func GrantPublicJwkLTE(v string) predicate.Device {
+	return predicate.Device(sql.FieldLTE(FieldGrantPublicJwk, v))
+}
+
+// GrantPublicJwkContains applies the Contains predicate on the "grant_public_jwk" field.
+func GrantPublicJwkContains(v string) predicate.Device {
+	return predicate.Device(sql.FieldContains(FieldGrantPublicJwk, v))
+}
+
+// GrantPublicJwkHasPrefix applies the HasPrefix predicate on the "grant_public_jwk" field.
+func GrantPublicJwkHasPrefix(v string) predicate.Device {
+	return predicate.Device(sql.FieldHasPrefix(FieldGrantPublicJwk, v))
+}
+
+// GrantPublicJwkHasSuffix applies the HasSuffix predicate on the "grant_public_jwk" field.
+func GrantPublicJwkHasSuffix(v string) predicate.Device {
+	return predicate.Device(sql.FieldHasSuffix(FieldGrantPublicJwk, v))
+}
+
+// GrantPublicJwkIsNil applies the IsNil predicate on the "grant_public_jwk" field.
+func GrantPublicJwkIsNil() predicate.Device {
+	return predicate.Device(sql.FieldIsNull(FieldGrantPublicJwk))
+}
+
+// GrantPublicJwkNotNil applies the NotNil predicate on the "grant_public_jwk" field.
+func GrantPublicJwkNotNil() predicate.Device {
+	return predicate.Device(sql.FieldNotNull(FieldGrantPublicJwk))
+}
+
+// GrantPublicJwkEqualFold applies the EqualFold predicate on the "grant_public_jwk" field.
+func GrantPublicJwkEqualFold(v string) predicate.Device {
+	return predicate.Device(sql.FieldEqualFold(FieldGrantPublicJwk, v))
+}
+
+// GrantPublicJwkContainsFold applies the ContainsFold predicate on the "grant_public_jwk" field.
+func GrantPublicJwkContainsFold(v string) predicate.Device {
+	return predicate.Device(sql.FieldContainsFold(FieldGrantPublicJwk, v))
+}
+
+// GrantKeyThumbprintEQ applies the EQ predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintEQ(v string) predicate.Device {
+	return predicate.Device(sql.FieldEQ(FieldGrantKeyThumbprint, v))
+}
+
+// GrantKeyThumbprintNEQ applies the NEQ predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintNEQ(v string) predicate.Device {
+	return predicate.Device(sql.FieldNEQ(FieldGrantKeyThumbprint, v))
+}
+
+// GrantKeyThumbprintIn applies the In predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintIn(vs ...string) predicate.Device {
+	return predicate.Device(sql.FieldIn(FieldGrantKeyThumbprint, vs...))
+}
+
+// GrantKeyThumbprintNotIn applies the NotIn predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintNotIn(vs ...string) predicate.Device {
+	return predicate.Device(sql.FieldNotIn(FieldGrantKeyThumbprint, vs...))
+}
+
+// GrantKeyThumbprintGT applies the GT predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintGT(v string) predicate.Device {
+	return predicate.Device(sql.FieldGT(FieldGrantKeyThumbprint, v))
+}
+
+// GrantKeyThumbprintGTE applies the GTE predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintGTE(v string) predicate.Device {
+	return predicate.Device(sql.FieldGTE(FieldGrantKeyThumbprint, v))
+}
+
+// GrantKeyThumbprintLT applies the LT predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintLT(v string) predicate.Device {
+	return predicate.Device(sql.FieldLT(FieldGrantKeyThumbprint, v))
+}
+
+// GrantKeyThumbprintLTE applies the LTE predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintLTE(v string) predicate.Device {
+	return predicate.Device(sql.FieldLTE(FieldGrantKeyThumbprint, v))
+}
+
+// GrantKeyThumbprintContains applies the Contains predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintContains(v string) predicate.Device {
+	return predicate.Device(sql.FieldContains(FieldGrantKeyThumbprint, v))
+}
+
+// GrantKeyThumbprintHasPrefix applies the HasPrefix predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintHasPrefix(v string) predicate.Device {
+	return predicate.Device(sql.FieldHasPrefix(FieldGrantKeyThumbprint, v))
+}
+
+// GrantKeyThumbprintHasSuffix applies the HasSuffix predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintHasSuffix(v string) predicate.Device {
+	return predicate.Device(sql.FieldHasSuffix(FieldGrantKeyThumbprint, v))
+}
+
+// GrantKeyThumbprintIsNil applies the IsNil predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintIsNil() predicate.Device {
+	return predicate.Device(sql.FieldIsNull(FieldGrantKeyThumbprint))
+}
+
+// GrantKeyThumbprintNotNil applies the NotNil predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintNotNil() predicate.Device {
+	return predicate.Device(sql.FieldNotNull(FieldGrantKeyThumbprint))
+}
+
+// GrantKeyThumbprintEqualFold applies the EqualFold predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintEqualFold(v string) predicate.Device {
+	return predicate.Device(sql.FieldEqualFold(FieldGrantKeyThumbprint, v))
+}
+
+// GrantKeyThumbprintContainsFold applies the ContainsFold predicate on the "grant_key_thumbprint" field.
+func GrantKeyThumbprintContainsFold(v string) predicate.Device {
+	return predicate.Device(sql.FieldContainsFold(FieldGrantKeyThumbprint, v))
 }
 
 // ProtectionStatusEQ applies the EQ predicate on the "protection_status" field.

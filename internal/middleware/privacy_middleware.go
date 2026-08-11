@@ -59,6 +59,14 @@ func privacyExemptPath(path string) bool {
 	if path == "/v1/me/password" {
 		return true
 	}
+	// Device grant-key enrollment carries a short-lived signed challenge_token
+	// and a public proof-of-possession JWK. The authenticated, owner-scoped
+	// handler accepts only that narrow cryptographic schema.
+	deviceGrantKeyPath := strings.TrimPrefix(path, "/v1/devices/")
+	deviceGrantKeyParts := strings.Split(deviceGrantKeyPath, "/")
+	if deviceGrantKeyPath != path && len(deviceGrantKeyParts) == 2 && deviceGrantKeyParts[0] != "" && deviceGrantKeyParts[1] == "grant-key" {
+		return true
+	}
 	// Public social-profile URLs and admin education content/media are D5
 	// operational data, not browsing data. These admin-only routes still require
 	// authentication and role authorization.

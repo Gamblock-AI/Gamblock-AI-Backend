@@ -311,6 +311,26 @@ func (_u *ApprovalRequestUpdate) ClearGrantExpiresAt() *ApprovalRequestUpdate {
 	return _u
 }
 
+// SetGrantJti sets the "grant_jti" field.
+func (_u *ApprovalRequestUpdate) SetGrantJti(v string) *ApprovalRequestUpdate {
+	_u.mutation.SetGrantJti(v)
+	return _u
+}
+
+// SetNillableGrantJti sets the "grant_jti" field if the given value is not nil.
+func (_u *ApprovalRequestUpdate) SetNillableGrantJti(v *string) *ApprovalRequestUpdate {
+	if v != nil {
+		_u.SetGrantJti(*v)
+	}
+	return _u
+}
+
+// ClearGrantJti clears the value of the "grant_jti" field.
+func (_u *ApprovalRequestUpdate) ClearGrantJti() *ApprovalRequestUpdate {
+	_u.mutation.ClearGrantJti()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *ApprovalRequestUpdate) SetUpdatedAt(v time.Time) *ApprovalRequestUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -465,6 +485,12 @@ func (_u *ApprovalRequestUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if _u.mutation.GrantExpiresAtCleared() {
 		_spec.ClearField(approvalrequest.FieldGrantExpiresAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GrantJti(); ok {
+		_spec.SetField(approvalrequest.FieldGrantJti, field.TypeString, value)
+	}
+	if _u.mutation.GrantJtiCleared() {
+		_spec.ClearField(approvalrequest.FieldGrantJti, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(approvalrequest.FieldUpdatedAt, field.TypeTime, value)
@@ -772,6 +798,26 @@ func (_u *ApprovalRequestUpdateOne) ClearGrantExpiresAt() *ApprovalRequestUpdate
 	return _u
 }
 
+// SetGrantJti sets the "grant_jti" field.
+func (_u *ApprovalRequestUpdateOne) SetGrantJti(v string) *ApprovalRequestUpdateOne {
+	_u.mutation.SetGrantJti(v)
+	return _u
+}
+
+// SetNillableGrantJti sets the "grant_jti" field if the given value is not nil.
+func (_u *ApprovalRequestUpdateOne) SetNillableGrantJti(v *string) *ApprovalRequestUpdateOne {
+	if v != nil {
+		_u.SetGrantJti(*v)
+	}
+	return _u
+}
+
+// ClearGrantJti clears the value of the "grant_jti" field.
+func (_u *ApprovalRequestUpdateOne) ClearGrantJti() *ApprovalRequestUpdateOne {
+	_u.mutation.ClearGrantJti()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *ApprovalRequestUpdateOne) SetUpdatedAt(v time.Time) *ApprovalRequestUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
@@ -956,6 +1002,12 @@ func (_u *ApprovalRequestUpdateOne) sqlSave(ctx context.Context) (_node *Approva
 	}
 	if _u.mutation.GrantExpiresAtCleared() {
 		_spec.ClearField(approvalrequest.FieldGrantExpiresAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.GrantJti(); ok {
+		_spec.SetField(approvalrequest.FieldGrantJti, field.TypeString, value)
+	}
+	if _u.mutation.GrantJtiCleared() {
+		_spec.ClearField(approvalrequest.FieldGrantJti, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(approvalrequest.FieldUpdatedAt, field.TypeTime, value)

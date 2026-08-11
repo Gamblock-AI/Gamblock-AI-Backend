@@ -112,6 +112,19 @@ func TestPrivacyGuard_PasswordChangePathExempt(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestPrivacyGuard_DeviceGrantKeyEnrollmentExempt(t *testing.T) {
+	m := newTestMiddleware(t)
+	r := setupRouter(m, "/v1/devices/:device_id/grant-key")
+
+	body := []byte(`{"challenge_token":"signed-challenge","public_jwk":{"kty":"EC","crv":"P-256","x":"x","y":"y"},"proof":"signature"}`)
+	req := httptest.NewRequest(http.MethodPut, "/v1/devices/dev_android/grant-key", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code, "device-key proof schema must reach its authenticated handler")
+}
+
 // Social profile URLs are public operational data. The route is authenticated
 // and the admin service applies its platform-specific HTTPS host allowlist.
 func TestPrivacyGuard_AdminSocialLinksURLAccepted(t *testing.T) {

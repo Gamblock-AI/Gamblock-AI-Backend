@@ -47,6 +47,8 @@ type ApprovalRequest struct {
 	AppliedAt *time.Time `json:"applied_at,omitempty"`
 	// GrantExpiresAt holds the value of the "grant_expires_at" field.
 	GrantExpiresAt *time.Time `json:"grant_expires_at,omitempty"`
+	// GrantJti holds the value of the "grant_jti" field.
+	GrantJti *string `json:"grant_jti,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -61,7 +63,7 @@ func (*ApprovalRequest) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case approvalrequest.FieldRequestedDurationMinutes:
 			values[i] = new(sql.NullInt64)
-		case approvalrequest.FieldID, approvalrequest.FieldUserID, approvalrequest.FieldDeviceID, approvalrequest.FieldPartnerLinkID, approvalrequest.FieldMembershipID, approvalrequest.FieldQuickTokenHash, approvalrequest.FieldAction, approvalrequest.FieldStatus, approvalrequest.FieldReason, approvalrequest.FieldSupportiveResponse, approvalrequest.FieldResolvedBy:
+		case approvalrequest.FieldID, approvalrequest.FieldUserID, approvalrequest.FieldDeviceID, approvalrequest.FieldPartnerLinkID, approvalrequest.FieldMembershipID, approvalrequest.FieldQuickTokenHash, approvalrequest.FieldAction, approvalrequest.FieldStatus, approvalrequest.FieldReason, approvalrequest.FieldSupportiveResponse, approvalrequest.FieldResolvedBy, approvalrequest.FieldGrantJti:
 			values[i] = new(sql.NullString)
 		case approvalrequest.FieldExpiresAt, approvalrequest.FieldResolvedAt, approvalrequest.FieldAppliedAt, approvalrequest.FieldGrantExpiresAt, approvalrequest.FieldCreatedAt, approvalrequest.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -187,6 +189,13 @@ func (_m *ApprovalRequest) assignValues(columns []string, values []any) error {
 				_m.GrantExpiresAt = new(time.Time)
 				*_m.GrantExpiresAt = value.Time
 			}
+		case approvalrequest.FieldGrantJti:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field grant_jti", values[i])
+			} else if value.Valid {
+				_m.GrantJti = new(string)
+				*_m.GrantJti = value.String
+			}
 		case approvalrequest.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -297,6 +306,11 @@ func (_m *ApprovalRequest) String() string {
 	if v := _m.GrantExpiresAt; v != nil {
 		builder.WriteString("grant_expires_at=")
 		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := _m.GrantJti; v != nil {
+		builder.WriteString("grant_jti=")
+		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")

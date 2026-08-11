@@ -1,10 +1,11 @@
 schema_version: 1
-context_version: 2026-08-11.1
+context_version: 2026-08-12.2
 component: backend
 contracts:
   proposal_authority: 1
   privacy_boundary: 1
   api_error_catalog: 1
+  protection_grant: 1
 canonical_instruction: AGENTS.md
 default_lint: make lint
 explicit_request_checks:

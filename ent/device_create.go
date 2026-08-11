@@ -108,6 +108,34 @@ func (_c *DeviceCreate) SetNillableRulesetVersion(v *string) *DeviceCreate {
 	return _c
 }
 
+// SetGrantPublicJwk sets the "grant_public_jwk" field.
+func (_c *DeviceCreate) SetGrantPublicJwk(v string) *DeviceCreate {
+	_c.mutation.SetGrantPublicJwk(v)
+	return _c
+}
+
+// SetNillableGrantPublicJwk sets the "grant_public_jwk" field if the given value is not nil.
+func (_c *DeviceCreate) SetNillableGrantPublicJwk(v *string) *DeviceCreate {
+	if v != nil {
+		_c.SetGrantPublicJwk(*v)
+	}
+	return _c
+}
+
+// SetGrantKeyThumbprint sets the "grant_key_thumbprint" field.
+func (_c *DeviceCreate) SetGrantKeyThumbprint(v string) *DeviceCreate {
+	_c.mutation.SetGrantKeyThumbprint(v)
+	return _c
+}
+
+// SetNillableGrantKeyThumbprint sets the "grant_key_thumbprint" field if the given value is not nil.
+func (_c *DeviceCreate) SetNillableGrantKeyThumbprint(v *string) *DeviceCreate {
+	if v != nil {
+		_c.SetGrantKeyThumbprint(*v)
+	}
+	return _c
+}
+
 // SetProtectionStatus sets the "protection_status" field.
 func (_c *DeviceCreate) SetProtectionStatus(v device.ProtectionStatus) *DeviceCreate {
 	_c.mutation.SetProtectionStatus(v)
@@ -341,6 +369,14 @@ func (_c *DeviceCreate) createSpec() (*Device, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.RulesetVersion(); ok {
 		_spec.SetField(device.FieldRulesetVersion, field.TypeString, value)
 		_node.RulesetVersion = &value
+	}
+	if value, ok := _c.mutation.GrantPublicJwk(); ok {
+		_spec.SetField(device.FieldGrantPublicJwk, field.TypeString, value)
+		_node.GrantPublicJwk = &value
+	}
+	if value, ok := _c.mutation.GrantKeyThumbprint(); ok {
+		_spec.SetField(device.FieldGrantKeyThumbprint, field.TypeString, value)
+		_node.GrantKeyThumbprint = &value
 	}
 	if value, ok := _c.mutation.ProtectionStatus(); ok {
 		_spec.SetField(device.FieldProtectionStatus, field.TypeEnum, value)

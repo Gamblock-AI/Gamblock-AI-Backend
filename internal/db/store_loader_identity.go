@@ -50,19 +50,21 @@ func loadIdentityStore(ctx context.Context, client *ent.Client, out *store.Store
 			lastSeen = *item.LastSeenAt
 		}
 		out.Devices = append(out.Devices, store.Device{
-			ID:               item.ID,
-			UserID:           item.UserID,
-			ClientInstanceID: value(item.ClientInstanceID),
-			Platform:         item.Platform.String(),
-			Label:            item.Label,
-			AppVersion:       item.AppVersion,
-			OSVersion:        item.OsVersion,
-			ModelVersion:     value(item.ModelVersion),
-			RulesetVersion:   value(item.RulesetVersion),
-			ProtectionStatus: item.ProtectionStatus.String(),
-			LastSeenAt:       lastSeen,
-			CreatedAt:        item.CreatedAt,
-			UpdatedAt:        item.UpdatedAt,
+			ID:                 item.ID,
+			UserID:             item.UserID,
+			ClientInstanceID:   value(item.ClientInstanceID),
+			Platform:           item.Platform.String(),
+			Label:              item.Label,
+			AppVersion:         item.AppVersion,
+			OSVersion:          item.OsVersion,
+			ModelVersion:       value(item.ModelVersion),
+			RulesetVersion:     value(item.RulesetVersion),
+			GrantPublicJWK:     value(item.GrantPublicJwk),
+			GrantKeyThumbprint: value(item.GrantKeyThumbprint),
+			ProtectionStatus:   item.ProtectionStatus.String(),
+			LastSeenAt:         lastSeen,
+			CreatedAt:          item.CreatedAt,
+			UpdatedAt:          item.UpdatedAt,
 		})
 	}
 
@@ -114,6 +116,7 @@ func loadIdentityStore(ctx context.Context, client *ent.Client, out *store.Store
 			ResolvedAt:               item.ResolvedAt,
 			AppliedAt:                item.AppliedAt,
 			GrantExpiresAt:           item.GrantExpiresAt,
+			GrantJTI:                 value(item.GrantJti),
 			CreatedAt:                item.CreatedAt,
 			UpdatedAt:                item.UpdatedAt,
 			ExpiresAt:                item.ExpiresAt,

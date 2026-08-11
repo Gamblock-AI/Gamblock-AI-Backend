@@ -36,6 +36,12 @@ const (
 	FieldApprovedAt = "approved_at"
 	// FieldUsedAt holds the string denoting the used_at field in the database.
 	FieldUsedAt = "used_at"
+	// FieldGrantStartsAt holds the string denoting the grant_starts_at field in the database.
+	FieldGrantStartsAt = "grant_starts_at"
+	// FieldGrantExpiresAt holds the string denoting the grant_expires_at field in the database.
+	FieldGrantExpiresAt = "grant_expires_at"
+	// FieldGrantJti holds the string denoting the grant_jti field in the database.
+	FieldGrantJti = "grant_jti"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -58,6 +64,9 @@ var Columns = []string{
 	FieldReviewedAt,
 	FieldApprovedAt,
 	FieldUsedAt,
+	FieldGrantStartsAt,
+	FieldGrantExpiresAt,
+	FieldGrantJti,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -173,6 +182,21 @@ func ByApprovedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUsedAt orders the results by the used_at field.
 func ByUsedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUsedAt, opts...).ToFunc()
+}
+
+// ByGrantStartsAt orders the results by the grant_starts_at field.
+func ByGrantStartsAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGrantStartsAt, opts...).ToFunc()
+}
+
+// ByGrantExpiresAt orders the results by the grant_expires_at field.
+func ByGrantExpiresAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGrantExpiresAt, opts...).ToFunc()
+}
+
+// ByGrantJti orders the results by the grant_jti field.
+func ByGrantJti(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGrantJti, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

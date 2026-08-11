@@ -2,8 +2,11 @@ package service
 
 import (
 	"context"
-
-	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/x509"
+	"encoding/base64"
+	"math/big"
 	"testing"
 	"time"
 
@@ -12,6 +15,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/repository"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
 )
@@ -26,13 +30,32 @@ func testCfg() config.Config {
 	return config.Config{
 		AppEnv: "test", JWTAccessSecret: "test-secret-very-long-please-32bytes!",
 		JWTAccessTTL: time.Hour, JWTRefreshTTL: 720 * time.Hour,
-		PublicWebBaseURL: "http://localhost:3000",
+		PublicWebBaseURL:                 "http://localhost:3000",
+		ProtectionGrantSigningPrivateKey: testProtectionGrantPrivateKey(),
+		ProtectionGrantSigningKeyID:      "test-grant-key",
 	}
+}
+
+func testProtectionGrantPrivateKey() string {
+	curve := elliptic.P256()
+	d := big.NewInt(1)
+	x, y := curve.ScalarBaseMult(d.Bytes())
+	privateKey := &ecdsa.PrivateKey{PublicKey: ecdsa.PublicKey{Curve: curve, X: x, Y: y}, D: d}
+	der, err := x509.MarshalPKCS8PrivateKey(privateKey)
+	if err != nil {
+		panic(err)
+	}
+	return base64.StdEncoding.EncodeToString(der)
+}
+
+func bindTestGrantKey(t *testing.T, repo *repository.Repository, userID, deviceID string) {
+	t.Helper()
+	require.NoError(t, repo.BindOwnedDeviceGrantKey(context.Background(), userID, deviceID, `{"kty":"EC","crv":"P-256","x":"test","y":"test"}`, "test-thumbprint-"+deviceID))
 }
 
 func TestAdminService_CreateAccountAndImmutableStatusUpdate(t *testing.T) {
 	repo, _ := newRepo(t)
-	svc := NewAdminService(repo, zap.NewNop())
+	svc := NewAdminService(repo, testCfg(), zap.NewNop())
 	created, temporaryPassword, err := svc.CreateAccount(context.Background(), "usr_nasywa", "new-admin@example.com", "+6281200000012", "New Admin", "admin", "approved staffing")
 	require.NoError(t, err)
 	assert.Equal(t, "admin", created.Role)
@@ -59,15 +82,21 @@ func TestAccountability_CreateApprovalRequestAndResolve(t *testing.T) {
 
 	err = svc.ResolveApprovalAsPartner(ctx, request.ID, "approved", "usr_suci")
 	assert.NoError(t, err)
+	bindTestGrantKey(t, repo, "usr_gading", "dev_android")
 
 	grant, err := svc.ApplyApprovedRequest(ctx, request.ID, "usr_gading", "dev_android")
 	require.NoError(t, err)
 	assert.Equal(t, "pause_protection", grant.Action)
 	assert.True(t, grant.GrantExpiresAt.After(grant.GrantStartsAt))
+	assert.NotEmpty(t, grant.GrantJTI)
+	assert.NotEmpty(t, grant.GrantToken)
 
 	repeated, err := svc.ApplyApprovedRequest(ctx, request.ID, "usr_gading", "dev_android")
 	require.NoError(t, err)
+	assert.Equal(t, grant.GrantStartsAt, repeated.GrantStartsAt)
 	assert.Equal(t, grant.GrantExpiresAt, repeated.GrantExpiresAt)
+	assert.Equal(t, grant.GrantJTI, repeated.GrantJTI)
+	assert.NotEmpty(t, repeated.GrantToken)
 }
 
 // --- MissionService ---
@@ -155,7 +184,7 @@ func TestOrganization_GetAnalytics(t *testing.T) {
 
 func TestAdmin_EducationModuleCRUD(t *testing.T) {
 	repo, _ := newRepo(t)
-	svc := NewAdminService(repo, zap.NewNop())
+	svc := NewAdminService(repo, testCfg(), zap.NewNop())
 	ctx := context.Background()
 
 	before, err := svc.GetEducationModules(ctx)
@@ -174,8 +203,9 @@ func TestAdmin_EducationModuleCRUD(t *testing.T) {
 
 func TestAdmin_EmergencyKeyGenerateAndValidate(t *testing.T) {
 	repo, _ := newRepo(t)
-	svc := NewAdminService(repo, zap.NewNop())
+	svc := NewAdminService(repo, testCfg(), zap.NewNop())
 	ctx := context.Background()
+	bindTestGrantKey(t, repo, "usr_gading", "dev_android")
 
 	request, err := svc.RequestEmergencyKey(ctx, "usr_gading", "dev_android")
 	require.NoError(t, err)
@@ -194,13 +224,22 @@ func TestAdmin_EmergencyKeyGenerateAndValidate(t *testing.T) {
 	grant, err := svc.ValidateEmergencyKey(ctx, key, "dev_android")
 	require.NoError(t, err)
 	assert.Equal(t, "dev_android", grant.DeviceID)
+	assert.Equal(t, "emergency_access", grant.Action)
+	assert.NotEmpty(t, grant.GrantJTI)
+	assert.NotEmpty(t, grant.GrantToken)
+
+	repeated, err := svc.ValidateEmergencyKey(ctx, key, "dev_android")
+	require.NoError(t, err)
+	assert.Equal(t, grant.GrantStartsAt, repeated.GrantStartsAt)
+	assert.Equal(t, grant.GrantExpiresAt, repeated.GrantExpiresAt)
+	assert.Equal(t, grant.GrantJTI, repeated.GrantJTI)
 }
 
 // --- DeviceService ---
 
 func TestDevice_CreateUpdateHeartbeat(t *testing.T) {
 	repo, _ := newRepo(t)
-	svc := NewDeviceService(repo, zap.NewNop())
+	svc := NewDeviceService(repo, testCfg(), zap.NewNop())
 	ctx := context.Background()
 
 	mv, rv := "artifact-v0.3.1", "ruleset-2026.05.1"
@@ -302,7 +341,7 @@ func TestOrganization_GetByUserID_None(t *testing.T) {
 
 func TestDevice_CreateMissingOptionalVersions(t *testing.T) {
 	repo, _ := newRepo(t)
-	svc := NewDeviceService(repo, zap.NewNop())
+	svc := NewDeviceService(repo, testCfg(), zap.NewNop())
 	d, err := svc.CreateDevice(context.Background(), "usr_gading", "instance-android-test", "android", "Phone", "1.0.0", "Android 15", nil, nil)
 	require.NoError(t, err)
 	assert.Equal(t, "android", d.Platform)

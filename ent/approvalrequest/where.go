@@ -129,6 +129,11 @@ func GrantExpiresAt(v time.Time) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldEQ(FieldGrantExpiresAt, v))
 }
 
+// GrantJti applies equality check predicate on the "grant_jti" field. It's identical to GrantJtiEQ.
+func GrantJti(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEQ(FieldGrantJti, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldEQ(FieldCreatedAt, v))
@@ -1007,6 +1012,81 @@ func GrantExpiresAtIsNil() predicate.ApprovalRequest {
 // GrantExpiresAtNotNil applies the NotNil predicate on the "grant_expires_at" field.
 func GrantExpiresAtNotNil() predicate.ApprovalRequest {
 	return predicate.ApprovalRequest(sql.FieldNotNull(FieldGrantExpiresAt))
+}
+
+// GrantJtiEQ applies the EQ predicate on the "grant_jti" field.
+func GrantJtiEQ(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEQ(FieldGrantJti, v))
+}
+
+// GrantJtiNEQ applies the NEQ predicate on the "grant_jti" field.
+func GrantJtiNEQ(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNEQ(FieldGrantJti, v))
+}
+
+// GrantJtiIn applies the In predicate on the "grant_jti" field.
+func GrantJtiIn(vs ...string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldIn(FieldGrantJti, vs...))
+}
+
+// GrantJtiNotIn applies the NotIn predicate on the "grant_jti" field.
+func GrantJtiNotIn(vs ...string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNotIn(FieldGrantJti, vs...))
+}
+
+// GrantJtiGT applies the GT predicate on the "grant_jti" field.
+func GrantJtiGT(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldGT(FieldGrantJti, v))
+}
+
+// GrantJtiGTE applies the GTE predicate on the "grant_jti" field.
+func GrantJtiGTE(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldGTE(FieldGrantJti, v))
+}
+
+// GrantJtiLT applies the LT predicate on the "grant_jti" field.
+func GrantJtiLT(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldLT(FieldGrantJti, v))
+}
+
+// GrantJtiLTE applies the LTE predicate on the "grant_jti" field.
+func GrantJtiLTE(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldLTE(FieldGrantJti, v))
+}
+
+// GrantJtiContains applies the Contains predicate on the "grant_jti" field.
+func GrantJtiContains(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldContains(FieldGrantJti, v))
+}
+
+// GrantJtiHasPrefix applies the HasPrefix predicate on the "grant_jti" field.
+func GrantJtiHasPrefix(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldHasPrefix(FieldGrantJti, v))
+}
+
+// GrantJtiHasSuffix applies the HasSuffix predicate on the "grant_jti" field.
+func GrantJtiHasSuffix(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldHasSuffix(FieldGrantJti, v))
+}
+
+// GrantJtiIsNil applies the IsNil predicate on the "grant_jti" field.
+func GrantJtiIsNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldIsNull(FieldGrantJti))
+}
+
+// GrantJtiNotNil applies the NotNil predicate on the "grant_jti" field.
+func GrantJtiNotNil() predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldNotNull(FieldGrantJti))
+}
+
+// GrantJtiEqualFold applies the EqualFold predicate on the "grant_jti" field.
+func GrantJtiEqualFold(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldEqualFold(FieldGrantJti, v))
+}
+
+// GrantJtiContainsFold applies the ContainsFold predicate on the "grant_jti" field.
+func GrantJtiContainsFold(v string) predicate.ApprovalRequest {
+	return predicate.ApprovalRequest(sql.FieldContainsFold(FieldGrantJti, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
