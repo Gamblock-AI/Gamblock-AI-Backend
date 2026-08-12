@@ -81,7 +81,8 @@ empty; it creates no demo users or activity. CI can deploy the private GHCR
 image to the pinned VPS as root over password SSH, where `update.sh` takes a
 pre-migration PostgreSQL backup and runs migrate-up plus the safe seeder before
 replacing the API container. The deploy step remains disabled by repository
-variable until intentionally enabled; Ansible rejects an application deploy
+variable because GitHub-hosted runners cannot reliably reach the SSH endpoint;
+the authorized infrastructure `make deploy` path is canonical. Ansible rejects an application deploy
 while the private-GHCR PAT or core database/JWT/AES/Fonnte secrets are missing.
 
 ## Default AI validation

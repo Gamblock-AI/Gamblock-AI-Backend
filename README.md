@@ -316,9 +316,13 @@ production; only the explicitly confirmed one-shot demo seeder is exempt.
 Production CI builds the private GHCR image on `main`, including the API,
 migrate-up, guarded migrate-down/reset-storage, production-safe seeder,
 owner-confirmed demo seeder, and Learning Hub seeder binaries. Its
-deploy step is disabled until `ENABLE_VPS_DEPLOY=true`, then connects to the
-pinned VPS as root with password authentication on port 22 and runs the
-Ansible-installed `update.sh`, which backs up PostgreSQL, runs migrate-up and
-the safe seeder, then replaces the API container. Infrastructure rejects
+deploy step is disabled until `ENABLE_VPS_DEPLOY=true`. The current production
+configuration keeps that gate false because GitHub-hosted runners cannot
+reliably reach the password-authenticated SSH endpoint; use the authorized
+infrastructure `make deploy` path instead. If the gate is enabled, the
+workflow connects to the pinned VPS as root with password authentication on
+port 22 and runs the Ansible-installed `update.sh`, which backs up PostgreSQL,
+runs migrate-up and the safe seeder, then replaces the API container.
+Infrastructure rejects
 application deployment until the private GHCR pull PAT and core
 database/JWT/AES secrets exist; delivery-provider credentials are optional.
