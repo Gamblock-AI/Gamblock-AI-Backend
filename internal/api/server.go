@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -38,14 +39,29 @@ func New(cfg config.Config, st *store.Store, logger *zap.Logger, clients ...*ent
 
 	r := gin.New()
 	r.Use(gin.Recovery(), mid.RequestID())
-	r.Use(cors.New(cors.Config{
+	corsConfig := cors.Config{
 		AllowOrigins:     cfg.AllowedOrigins,
 		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete, http.MethodOptions},
 		AllowHeaders:     []string{"Authorization", "Content-Type", "Accept", "X-Audit-Reason"},
 		ExposeHeaders:    []string{"X-Request-ID"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
-	}))
+	}
+	// Outside production, accept any localhost/127.0.0.1 origin regardless of
+	// port so local browser clients (e.g. `flutter run -d chrome --web-port
+	// 45051`) never need a `.env` CORS edit or a server restart. Production
+	// stays strict: only the explicit AllowedOrigins list is accepted.
+	if !cfg.IsProduction() {
+		corsConfig.AllowOriginFunc = func(origin string) bool {
+			u, err := url.Parse(origin)
+			if err != nil {
+				return false
+			}
+			host := u.Hostname()
+			return host == "localhost" || host == "127.0.0.1"
+		}
+	}
+	r.Use(cors.New(corsConfig))
 	// CORS must wrap PrivacyGuard so even a rejected request carries the
 	// appropriate browser-readable response headers.
 	r.Use(mid.PrivacyGuard())

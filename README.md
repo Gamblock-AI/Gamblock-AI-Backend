@@ -51,6 +51,9 @@ Docker image exposes the same operational commands as `/app/migrate-up`,
 `/app/migrate-down`, `/app/reset-storage`, `/app/seeder`, `/app/demo-seeder`,
 and `/app/seed-learning-hub`; the automatic seeder logs only aggregate
 Learning Hub inserted/skipped counts.
+Outside production, CORS accepts any `http://localhost:*`/`http://127.0.0.1:*`
+origin, so a local Flutter web run (`flutter run -d chrome --web-port 45051`)
+works without editing `CORS_ALLOWED_ORIGINS` or restarting the server.
 `migrate-down` and `make migrate-fresh` drop the database schema
 and must never be run against shared or production data; `migrate-down`
 additionally refuses to run without `CONFIRM_MIGRATE_DOWN=DROP_ALL_DATA`.
