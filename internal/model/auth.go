@@ -7,6 +7,7 @@ type AuthResponse struct {
 	ExpiresIn               int    `json:"expires_in,omitempty"`
 	User                    User   `json:"user,omitempty"`
 	VerificationRequired    bool   `json:"verification_required"`
+	VerificationToken       string `json:"verification_token,omitempty"`
 	VerificationPreviewCode string `json:"phone_verification_preview_code,omitempty"`
 	PasswordEnabled         bool   `json:"password_enabled"`
 	PasswordChangeRequired  bool   `json:"password_change_required,omitempty"`

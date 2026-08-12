@@ -206,3 +206,40 @@ func (h *Handler) ConfirmPhoneVerification(c *gin.Context) {
 	}
 	h.respond(c, http.StatusOK, gin.H{"verified": true})
 }
+
+// VerifyPhoneVerification completes the public WhatsApp OTP flow for a freshly
+// registered (or not yet verified) account using the verification token issued
+// at registration/sign-in, without requiring a bearer session.
+func (h *Handler) VerifyPhoneVerification(c *gin.Context) {
+	var input struct {
+		VerificationToken string `json:"verification_token"`
+		Code              string `json:"code"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil || input.VerificationToken == "" || input.Code == "" {
+		h.respondCode(c, http.StatusBadRequest, "err_validation")
+		return
+	}
+	if err := h.services.Auth.VerifyPhoneWithToken(c.Request.Context(), input.VerificationToken, input.Code); err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "phone_verification_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, gin.H{"verified": true})
+}
+
+// ResendPhoneVerification sends a fresh WhatsApp code for the verification
+// token's account. Public, so the OTP page can recover from an expired code.
+func (h *Handler) ResendPhoneVerification(c *gin.Context) {
+	var input struct {
+		VerificationToken string `json:"verification_token"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil || input.VerificationToken == "" {
+		h.respondCode(c, http.StatusBadRequest, "err_validation")
+		return
+	}
+	previewCode, err := h.services.Auth.ResendPhoneVerification(c.Request.Context(), input.VerificationToken)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "phone_verification_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, gin.H{"sent": true, "preview_code": previewCode})
+}

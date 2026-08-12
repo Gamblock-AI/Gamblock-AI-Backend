@@ -79,6 +79,35 @@ func (s *AuthService) ConfirmPhoneVerification(ctx context.Context, userID, code
 	return s.repo.MarkPhoneVerified(ctx, userID, verification.Destination, time.Now().UTC())
 }
 
+// VerifyPhoneWithToken completes phone verification for an unverified account
+// using the short-lived token issued at registration or sign-in, so no bearer
+// session is required. Reuses the same contact-code consumption as the
+// session-authenticated flow.
+func (s *AuthService) VerifyPhoneWithToken(ctx context.Context, verificationToken, code string) error {
+	userID, err := s.parsePhoneVerificationToken(verificationToken)
+	if err != nil {
+		return err
+	}
+	return s.ConfirmPhoneVerification(ctx, userID, code)
+}
+
+// ResendPhoneVerification issues a fresh WhatsApp code for the token's account,
+// extending the verification window without requiring a session.
+func (s *AuthService) ResendPhoneVerification(ctx context.Context, verificationToken string) (string, error) {
+	userID, err := s.parsePhoneVerificationToken(verificationToken)
+	if err != nil {
+		return "", err
+	}
+	user, ok := s.repo.UserByID(ctx, userID)
+	if !ok || user.DisabledAt != nil {
+		return "", fmt.Errorf("user not found")
+	}
+	if user.PhoneE164 == "" {
+		return "", fmt.Errorf("phone is not configured")
+	}
+	return s.BeginPhoneVerification(ctx, user.ID, user.PhoneE164)
+}
+
 func randomNumericCode(length int) (string, error) {
 	result := make([]byte, length)
 	for i := range result {

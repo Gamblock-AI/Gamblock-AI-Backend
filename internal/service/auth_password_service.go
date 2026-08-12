@@ -31,9 +31,39 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (model.
 		}
 		return model.AuthResponse{PasswordChangeRequired: true, PasswordChangeToken: token}, nil
 	}
-	response, err := s.authPair(ctx, user, nil)
-	response.VerificationRequired = user.PhoneVerifiedAt == nil
-	return response, err
+	if user.PhoneVerifiedAt == nil {
+		return s.verificationResponse(ctx, user)
+	}
+	return s.authPair(ctx, user, nil)
+}
+
+// verificationResponse sends a fresh WhatsApp code (when a phone is stored)
+// and returns a short-lived verification token so the caller can complete
+// phone verification without a session. No access/refresh tokens are issued,
+// which enforces that unverified accounts cannot reach the dashboard.
+func (s *AuthService) verificationResponse(ctx context.Context, user model.User) (model.AuthResponse, error) {
+	previewCode := ""
+	if user.PhoneE164 != "" {
+		if code, deliveryErr := s.BeginPhoneVerification(ctx, user.ID, user.PhoneE164); deliveryErr == nil {
+			previewCode = code
+		} else {
+			s.logger.Warn("phone verification delivery failed", zap.String("user_id", user.ID))
+		}
+	}
+	return s.verificationResponseWithCode(user, previewCode)
+}
+
+func (s *AuthService) verificationResponseWithCode(user model.User, previewCode string) (model.AuthResponse, error) {
+	token, err := s.issuePhoneVerificationToken(user)
+	if err != nil {
+		return model.AuthResponse{}, err
+	}
+	return model.AuthResponse{
+		User:                    user,
+		VerificationRequired:    true,
+		VerificationToken:       token,
+		VerificationPreviewCode: previewCode,
+	}, nil
 }
 
 // ActiveIdentity revalidates mutable account state for bearer-token requests.
@@ -72,6 +102,9 @@ func (s *AuthService) CompleteInitialPasswordChange(ctx context.Context, token, 
 		return model.AuthResponse{}, err
 	}
 	user.MustChangePassword = false
+	if user.PhoneE164 != "" && user.PhoneVerifiedAt == nil {
+		return s.verificationResponse(ctx, user)
+	}
 	return s.authPair(ctx, user, nil)
 }
 
@@ -103,17 +136,13 @@ func (s *AuthService) Register(ctx context.Context, email, password, name, phone
 	if err != nil {
 		return model.AuthResponse{}, err
 	}
-	response, err := s.authPair(ctx, user, nil)
-	if err != nil {
-		return model.AuthResponse{}, err
-	}
-	previewCode, deliveryErr := s.BeginPhoneVerification(ctx, user.ID, phone)
-	if deliveryErr != nil {
+	previewCode := ""
+	if code, deliveryErr := s.BeginPhoneVerification(ctx, user.ID, phone); deliveryErr == nil {
+		previewCode = code
+	} else {
 		s.logger.Warn("phone verification delivery failed", zap.String("user_id", user.ID))
 	}
-	response.VerificationRequired = true
-	response.VerificationPreviewCode = previewCode
-	return response, nil
+	return s.verificationResponseWithCode(user, previewCode)
 }
 
 func (s *AuthService) DevLogin(ctx context.Context, email, role, deviceID string) (model.AuthResponse, error) {

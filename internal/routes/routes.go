@@ -27,6 +27,11 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	v1.POST("/auth/logout", h.Logout)
 	v1.POST("/auth/phone-verification/start", mid.AuthRequired(), mid.RequireRoles("user", "partner", "admin"), mid.RateLimitMiddleware("3-M"), h.BeginPhoneVerification)
 	v1.POST("/auth/phone-verification/confirm", mid.AuthRequired(), mid.RequireRoles("user", "partner", "admin"), mid.RateLimitMiddleware("8-M"), h.ConfirmPhoneVerification)
+	// Public WhatsApp OTP flow for freshly registered / unverified accounts.
+	// Uses the short-lived verification token from register/sign-in instead of a
+	// bearer session.
+	v1.POST("/auth/phone-verification/verify", mid.RateLimitMiddleware("8-M"), h.VerifyPhoneVerification)
+	v1.POST("/auth/phone-verification/verify/resend", mid.RateLimitMiddleware("3-M"), h.ResendPhoneVerification)
 	v1.GET("/operator/invitations/:token", h.RetiredOperatorInvitation)
 	v1.GET("/public/site-social-links", h.PublicSiteSocialLinks)
 

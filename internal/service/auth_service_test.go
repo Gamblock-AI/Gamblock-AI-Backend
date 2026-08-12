@@ -39,7 +39,11 @@ func TestAuthService_ProvisionedUserMustChangePasswordBeforeSession(t *testing.T
 
 func newAuthSvc(t *testing.T) (*AuthService, *store.Store) {
 	t.Helper()
-	cfg := config.Config{AppEnv: "test", JWTAccessSecret: "test-secret-very-long-please-32bytes!", JWTAccessTTL: time.Hour, JWTRefreshTTL: 720 * time.Hour}
+	cfg := config.Config{
+		AppEnv: "test", NotificationMode: "demo",
+		JWTAccessSecret: "test-secret-very-long-please-32bytes!",
+		JWTAccessTTL: time.Hour, JWTRefreshTTL: 720 * time.Hour,
+	}
 	st := store.NewSeeded()
 	repo := repository.New(nil, st)
 	return NewAuthService(repo, cfg, zap.NewNop()), st
@@ -72,8 +76,72 @@ func TestAuthService_RegisterNewUser(t *testing.T) {
 	svc, _ := newAuthSvc(t)
 	resp, err := svc.Register(context.Background(), "newbie@example.com", "password2", "Newbie", "+6281200000011")
 	require.NoError(t, err)
-	assert.NotEmpty(t, resp.AccessToken)
+	assert.True(t, resp.VerificationRequired)
+	assert.Empty(t, resp.AccessToken)
+	assert.Empty(t, resp.RefreshToken)
+	assert.NotEmpty(t, resp.VerificationToken)
 	assert.Equal(t, "newbie@example.com", resp.User.Email)
+	assert.NotEmpty(t, resp.VerificationPreviewCode, "demo mode returns the code as preview")
+}
+
+func TestAuthService_LoginUnverifiedReturnsVerification(t *testing.T) {
+	svc, st := newAuthSvc(t)
+	repo := repository.New(nil, st)
+	hash, err := authn.HashPassword("password2")
+	require.NoError(t, err)
+	_, err = repo.CreateUserWithPasswordAndPhone(context.Background(), "usr_unverif", "unverif@example.com", "Unverified", "+6281200000099", hash, "user")
+	require.NoError(t, err)
+
+	resp, err := svc.Login(context.Background(), "unverif@example.com", "password2")
+	require.NoError(t, err)
+	assert.True(t, resp.VerificationRequired)
+	assert.Empty(t, resp.AccessToken)
+	assert.Empty(t, resp.RefreshToken)
+	assert.NotEmpty(t, resp.VerificationToken)
+	assert.NotEmpty(t, resp.VerificationPreviewCode)
+}
+
+func TestAuthService_VerifyPhoneWithToken(t *testing.T) {
+	svc, st := newAuthSvc(t)
+	repo := repository.New(nil, st)
+	hash, _ := authn.HashPassword("password2")
+	_, _ = repo.CreateUserWithPasswordAndPhone(context.Background(), "usr_unverif", "unverif@example.com", "Unverified", "+6281200000099", hash, "user")
+
+	resp, err := svc.Login(context.Background(), "unverif@example.com", "password2")
+	require.NoError(t, err)
+	require.NotEmpty(t, resp.VerificationPreviewCode)
+
+	require.NoError(t, svc.VerifyPhoneWithToken(context.Background(), resp.VerificationToken, resp.VerificationPreviewCode))
+
+	session, err := svc.Login(context.Background(), "unverif@example.com", "password2")
+	require.NoError(t, err)
+	assert.False(t, session.VerificationRequired)
+	assert.NotEmpty(t, session.AccessToken)
+}
+
+func TestAuthService_VerifyPhoneWithTokenWrongCode(t *testing.T) {
+	svc, st := newAuthSvc(t)
+	repo := repository.New(nil, st)
+	hash, _ := authn.HashPassword("password2")
+	_, _ = repo.CreateUserWithPasswordAndPhone(context.Background(), "usr_unverif", "unverif@example.com", "Unverified", "+6281200000099", hash, "user")
+	resp, _ := svc.Login(context.Background(), "unverif@example.com", "password2")
+
+	err := svc.VerifyPhoneWithToken(context.Background(), resp.VerificationToken, "000000")
+	require.Error(t, err)
+}
+
+func TestAuthService_ResendPhoneVerification(t *testing.T) {
+	svc, st := newAuthSvc(t)
+	repo := repository.New(nil, st)
+	hash, _ := authn.HashPassword("password2")
+	_, _ = repo.CreateUserWithPasswordAndPhone(context.Background(), "usr_unverif", "unverif@example.com", "Unverified", "+6281200000099", hash, "user")
+	resp, _ := svc.Login(context.Background(), "unverif@example.com", "password2")
+
+	code, err := svc.ResendPhoneVerification(context.Background(), resp.VerificationToken)
+	require.NoError(t, err)
+	assert.NotEmpty(t, code)
+
+	require.NoError(t, svc.VerifyPhoneWithToken(context.Background(), resp.VerificationToken, code))
 }
 
 func TestAuthService_DevLoginDefaultEmail(t *testing.T) {

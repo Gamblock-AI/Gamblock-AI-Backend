@@ -90,3 +90,25 @@ func TestRegister_ProtectedRequiresAuth(t *testing.T) {
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
 }
+
+// The WhatsApp OTP verify endpoint must be reachable without a bearer session.
+func TestRegister_PhoneVerificationVerifyIsPublic(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	cfg := config.Config{AppEnv: "test", JWTAccessSecret: "test-secret-very-long-please", AllowedOrigins: []string{"*"}}
+	st := store.NewSeeded()
+	repo := repository.New(nil, st)
+	services := service.NewContainer(repo, cfg, zap.NewNop())
+	mid := middleware.New(services.Auth, zap.NewNop())
+	h := handler.New(services, mid, cfg, zap.NewNop())
+
+	r := gin.New()
+	r.Use(mid.RequestID(), mid.AuthOptional())
+	Register(r, h, mid)
+
+	req := httptest.NewRequest(http.MethodPost, "/v1/auth/phone-verification/verify", bytes.NewBufferString(`{"verification_token":"","code":"123456"}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code, "public verify without a token should be a validation error, not 401")
+	assert.Contains(t, w.Body.String(), "err_validation")
+}
