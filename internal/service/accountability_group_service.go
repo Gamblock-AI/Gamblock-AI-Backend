@@ -50,7 +50,7 @@ func (s *AccountabilityGroupService) Workspace(ctx context.Context, userID strin
 				return workspace, groupErr
 			}
 			if owner, found := s.repo.UserByID(ctx, group.OwnerPartnerID); found {
-				group.OwnerName = owner.DisplayName
+				applyGroupOwner(&group, owner)
 			}
 			workspace.Groups = append(workspace.Groups, group)
 			workspace.ExitRequests, err = s.repo.ListExitRequests(ctx, []string{membership.ID})
@@ -62,6 +62,9 @@ func (s *AccountabilityGroupService) Workspace(ctx context.Context, userID strin
 		groups, err := s.repo.ListAccountabilityGroups(ctx, userID)
 		if err != nil {
 			return workspace, err
+		}
+		for i := range groups {
+			applyGroupOwner(&groups[i], user)
 		}
 		workspace.Groups = groups
 		membershipIDs := []string{}
@@ -131,7 +134,7 @@ func (s *AccountabilityGroupService) CreateGroup(ctx context.Context, partnerID,
 		return model.AccountabilityGroup{}, err
 	}
 	created.JoinCode = rawCode
-	created.OwnerName = partner.DisplayName
+	applyGroupOwner(&created, partner)
 	return created, nil
 }
 
@@ -145,10 +148,15 @@ func (s *AccountabilityGroupService) PreviewJoin(ctx context.Context, studentID,
 		return model.AccountabilityGroup{}, err
 	}
 	if owner, found := s.repo.UserByID(ctx, group.OwnerPartnerID); found {
-		group.OwnerName = owner.DisplayName
+		applyGroupOwner(&group, owner)
 	}
 	group.JoinCodeHash = ""
 	return group, nil
+}
+
+func applyGroupOwner(group *model.AccountabilityGroup, owner model.User) {
+	group.OwnerName = owner.DisplayName
+	group.OwnerAvatarURL = owner.AvatarURL
 }
 
 func (s *AccountabilityGroupService) Join(ctx context.Context, studentID, rawCode string, confirmed bool) (model.AccountabilityMembership, error) {

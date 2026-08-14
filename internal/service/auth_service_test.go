@@ -111,7 +111,13 @@ func TestAuthService_VerifyPhoneWithToken(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, resp.VerificationPreviewCode)
 
-	require.NoError(t, svc.VerifyPhoneWithToken(context.Background(), resp.VerificationToken, resp.VerificationPreviewCode))
+	// Verify issues a session (no re-login needed) once the phone is confirmed.
+	verified, err := svc.VerifyPhoneWithToken(context.Background(), resp.VerificationToken, resp.VerificationPreviewCode)
+	require.NoError(t, err)
+	assert.NotEmpty(t, verified.AccessToken)
+	assert.NotEmpty(t, verified.RefreshToken)
+	assert.False(t, verified.VerificationRequired)
+	assert.NotEmpty(t, verified.User.PhoneVerifiedAt)
 
 	session, err := svc.Login(context.Background(), "unverif@example.com", "password2")
 	require.NoError(t, err)
@@ -126,7 +132,7 @@ func TestAuthService_VerifyPhoneWithTokenWrongCode(t *testing.T) {
 	_, _ = repo.CreateUserWithPasswordAndPhone(context.Background(), "usr_unverif", "unverif@example.com", "Unverified", "+6281200000099", hash, "user")
 	resp, _ := svc.Login(context.Background(), "unverif@example.com", "password2")
 
-	err := svc.VerifyPhoneWithToken(context.Background(), resp.VerificationToken, "000000")
+	_, err := svc.VerifyPhoneWithToken(context.Background(), resp.VerificationToken, "000000")
 	require.Error(t, err)
 }
 
@@ -141,7 +147,8 @@ func TestAuthService_ResendPhoneVerification(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotEmpty(t, code)
 
-	require.NoError(t, svc.VerifyPhoneWithToken(context.Background(), resp.VerificationToken, code))
+	_, err = svc.VerifyPhoneWithToken(context.Background(), resp.VerificationToken, code)
+	require.NoError(t, err)
 }
 
 func TestAuthService_DevLoginDefaultEmail(t *testing.T) {

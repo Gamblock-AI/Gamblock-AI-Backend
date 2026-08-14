@@ -209,7 +209,9 @@ func (h *Handler) ConfirmPhoneVerification(c *gin.Context) {
 
 // VerifyPhoneVerification completes the public WhatsApp OTP flow for a freshly
 // registered (or not yet verified) account using the verification token issued
-// at registration/sign-in, without requiring a bearer session.
+// at registration/sign-in, without requiring a bearer session. On success it
+// issues a session so the client can continue to the dashboard without signing
+// in again.
 func (h *Handler) VerifyPhoneVerification(c *gin.Context) {
 	var input struct {
 		VerificationToken string `json:"verification_token"`
@@ -219,11 +221,12 @@ func (h *Handler) VerifyPhoneVerification(c *gin.Context) {
 		h.respondCode(c, http.StatusBadRequest, "err_validation")
 		return
 	}
-	if err := h.services.Auth.VerifyPhoneWithToken(c.Request.Context(), input.VerificationToken, input.Code); err != nil {
+	response, err := h.services.Auth.VerifyPhoneWithToken(c.Request.Context(), input.VerificationToken, input.Code)
+	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "phone_verification_failed", err)
 		return
 	}
-	h.respond(c, http.StatusOK, gin.H{"verified": true})
+	h.respond(c, http.StatusOK, response)
 }
 
 // ResendPhoneVerification sends a fresh WhatsApp code for the verification
