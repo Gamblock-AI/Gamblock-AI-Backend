@@ -29,10 +29,10 @@ func SeedUsers(ctx context.Context, client *ent.Client) error {
 		id, email, name, phone, avatarFile string
 		role                               user.Role
 	}{
-		{"usr_gading", "gading@gmail.com", "Gading", "+6281200000001", "gading.webp", user.RoleUser},
-		{"usr_dery", "dery@gmail.com", "Dery", "+6281200000002", "dery.webp", user.RoleUser},
-		{"usr_suci", "suci@gmail.com", "Suci", "+6281200000000", "suci.webp", user.RolePartner},
-		{"usr_nasywa", "nasywa@gmail.com", "Nasywa", "+6281200000003", "nasywa.webp", user.RoleAdmin},
+		{"usr_gading", "gading@gmail.com", "Gading", "+62895363116378", "gading.webp", user.RoleUser},
+		{"usr_dery", "dery@gmail.com", "Dery", "+6282377341268", "dery.webp", user.RoleUser},
+		{"usr_suci", "suci@gmail.com", "Suci", "+6282385822192", "suci.webp", user.RolePartner},
+		{"usr_nasywa", "nasywa@gmail.com", "Nasywa", "+6282328514811", "nasywa.webp", user.RoleAdmin},
 	}
 	for _, item := range users {
 		storageKey := "avatar/" + item.avatarFile
