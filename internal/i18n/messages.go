@@ -43,6 +43,7 @@ var messages = map[string]string{
 	"email_verification_delivery_failed": "Pengiriman verifikasi telah dipindahkan ke WhatsApp.",
 	"phone_required":                     "Nomor WhatsApp wajib diisi.",
 	"recent_auth_required":               "Silakan masuk kembali sebelum menyelesaikan keputusan sensitif ini.",
+	"student_only":                       "Aplikasi ini hanya untuk akun mahasiswa.",
 
 	// devices
 	"device_create_failed":        "Gagal mendaftarkan perangkat.",

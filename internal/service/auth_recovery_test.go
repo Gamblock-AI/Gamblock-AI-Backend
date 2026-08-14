@@ -46,7 +46,7 @@ func TestPasswordResetIsNonEnumeratingAndSingleUse(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, preview)
 
-	session, err := svc.Login(ctx, "gading@gmail.com", "password")
+	session, err := svc.Login(ctx, "gading@gmail.com", "password", "")
 	require.NoError(t, err)
 	preview, err = svc.RequestPasswordReset(ctx, "GADING@gmail.com")
 	require.NoError(t, err)
@@ -56,7 +56,7 @@ func TestPasswordResetIsNonEnumeratingAndSingleUse(t *testing.T) {
 	require.NoError(t, svc.ConfirmPasswordReset(ctx, "gading@gmail.com", email.resetCode, "safe-password-2"))
 	_, err = svc.Refresh(ctx, session.RefreshToken)
 	require.Error(t, err)
-	_, err = svc.Login(ctx, "gading@gmail.com", "safe-password-2")
+	_, err = svc.Login(ctx, "gading@gmail.com", "safe-password-2", "")
 	require.NoError(t, err)
 	assert.ErrorIs(t, svc.ConfirmPasswordReset(ctx, "gading@gmail.com", email.resetCode, "another-password"), ErrPasswordResetInvalid)
 }

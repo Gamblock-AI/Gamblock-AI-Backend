@@ -85,17 +85,20 @@ func (s *AuthService) ConfirmPhoneVerification(ctx context.Context, userID, code
 // session-authenticated flow. Once verified it issues a fresh auth pair so a
 // user who signed in while unverified lands on the dashboard directly without
 // signing in again.
-func (s *AuthService) VerifyPhoneWithToken(ctx context.Context, verificationToken, code string) (model.AuthResponse, error) {
+func (s *AuthService) VerifyPhoneWithToken(ctx context.Context, verificationToken, code, clientType string) (model.AuthResponse, error) {
 	userID, err := s.parsePhoneVerificationToken(verificationToken)
 	if err != nil {
-		return model.AuthResponse{}, err
-	}
-	if err := s.ConfirmPhoneVerification(ctx, userID, code); err != nil {
 		return model.AuthResponse{}, err
 	}
 	user, ok := s.repo.UserByID(ctx, userID)
 	if !ok || user.DisabledAt != nil {
 		return model.AuthResponse{}, fmt.Errorf("user not found")
+	}
+	if err := requireStudentRole(clientType, user.Role); err != nil {
+		return model.AuthResponse{}, err
+	}
+	if err := s.ConfirmPhoneVerification(ctx, userID, code); err != nil {
+		return model.AuthResponse{}, err
 	}
 	return s.authPair(ctx, user, nil)
 }

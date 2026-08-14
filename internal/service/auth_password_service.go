@@ -17,12 +17,30 @@ var (
 	ErrCurrentPasswordInvalid       = errors.New("current password is invalid")
 	ErrPasswordReuse                = errors.New("new password must be different")
 	ErrInitialPasswordChangeInvalid = errors.New("initial password token is invalid or expired")
+	// ErrStudentOnly rejects a native-client session for a non-student account.
+	ErrStudentOnly = errors.New("native client requires a student account")
 )
 
-func (s *AuthService) Login(ctx context.Context, email, password string) (model.AuthResponse, error) {
+// NativeClientType marks requests from the shipped Android/Windows client.
+// Session-issuing auth endpoints restrict such requests to student (`user`)
+// accounts; the web flow passes an empty client type and stays role-agnostic.
+const NativeClientType = "native"
+
+// requireStudentRole enforces the student-only rule for the native client.
+func requireStudentRole(clientType, role string) error {
+	if clientType == NativeClientType && role != model.RoleUser {
+		return ErrStudentOnly
+	}
+	return nil
+}
+
+func (s *AuthService) Login(ctx context.Context, email, password, clientType string) (model.AuthResponse, error) {
 	user, ok := s.repo.UserByEmail(ctx, strings.TrimSpace(email))
 	if !ok || user.DisabledAt != nil || !authn.VerifyPassword(password, user.PasswordHash) {
 		return model.AuthResponse{}, fmt.Errorf("user not found or invalid credentials")
+	}
+	if err := requireStudentRole(clientType, user.Role); err != nil {
+		return model.AuthResponse{}, err
 	}
 	if user.MustChangePassword {
 		token, err := s.issueInitialPasswordToken(user)
@@ -79,7 +97,7 @@ func (s *AuthService) HasVerifiedPhone(ctx context.Context, userID string) bool 
 	return ok && user.DisabledAt == nil && user.PhoneVerifiedAt != nil
 }
 
-func (s *AuthService) CompleteInitialPasswordChange(ctx context.Context, token, newPassword string) (model.AuthResponse, error) {
+func (s *AuthService) CompleteInitialPasswordChange(ctx context.Context, token, newPassword, clientType string) (model.AuthResponse, error) {
 	if len(newPassword) < 8 {
 		return model.AuthResponse{}, ErrInitialPasswordChangeInvalid
 	}
@@ -90,6 +108,9 @@ func (s *AuthService) CompleteInitialPasswordChange(ctx context.Context, token, 
 	user, ok := s.repo.UserByID(ctx, userID)
 	if !ok || user.DisabledAt != nil || !user.MustChangePassword || authn.VerifyPassword(newPassword, user.PasswordHash) {
 		return model.AuthResponse{}, ErrInitialPasswordChangeInvalid
+	}
+	if err := requireStudentRole(clientType, user.Role); err != nil {
+		return model.AuthResponse{}, err
 	}
 	passwordHash, err := authn.HashPassword(newPassword)
 	if err != nil {

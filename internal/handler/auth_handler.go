@@ -3,10 +3,24 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
+
+// clientTypeHeader identifies the shipped Android/Windows client, which is
+// restricted to student accounts at session issuance.
+const clientTypeHeader = "X-Client-Type"
+
+// nativeClient reports the native client type when the request carries the
+// matching header; the web flow returns an empty value and stays role-agnostic.
+func (h *Handler) nativeClient(c *gin.Context) string {
+	if strings.EqualFold(c.GetHeader(clientTypeHeader), service.NativeClientType) {
+		return service.NativeClientType
+	}
+	return ""
+}
 
 func (h *Handler) Login(c *gin.Context) {
 	var input struct {
@@ -18,8 +32,12 @@ func (h *Handler) Login(c *gin.Context) {
 		h.respondCode(c, http.StatusBadRequest, "email_required")
 		return
 	}
-	response, err := h.services.Auth.Login(c.Request.Context(), input.Email, input.Password)
+	response, err := h.services.Auth.Login(c.Request.Context(), input.Email, input.Password, h.nativeClient(c))
 	if err != nil {
+		if errors.Is(err, service.ErrStudentOnly) {
+			h.respondErrorErr(c, http.StatusForbidden, "student_only", err)
+			return
+		}
 		h.respondErrorErr(c, http.StatusUnauthorized, "invalid_credentials", err)
 		return
 	}
@@ -83,8 +101,12 @@ func (h *Handler) CompleteInitialPasswordChange(c *gin.Context) {
 		h.respondCode(c, http.StatusBadRequest, "initial_password_change_invalid")
 		return
 	}
-	response, err := h.services.Auth.CompleteInitialPasswordChange(c.Request.Context(), input.Token, input.NewPassword)
+	response, err := h.services.Auth.CompleteInitialPasswordChange(c.Request.Context(), input.Token, input.NewPassword, h.nativeClient(c))
 	if err != nil {
+		if errors.Is(err, service.ErrStudentOnly) {
+			h.respondErrorErr(c, http.StatusForbidden, "student_only", err)
+			return
+		}
 		h.respondErrorErr(c, http.StatusBadRequest, "initial_password_change_invalid", err)
 		return
 	}
@@ -221,8 +243,12 @@ func (h *Handler) VerifyPhoneVerification(c *gin.Context) {
 		h.respondCode(c, http.StatusBadRequest, "err_validation")
 		return
 	}
-	response, err := h.services.Auth.VerifyPhoneWithToken(c.Request.Context(), input.VerificationToken, input.Code)
+	response, err := h.services.Auth.VerifyPhoneWithToken(c.Request.Context(), input.VerificationToken, input.Code, h.nativeClient(c))
 	if err != nil {
+		if errors.Is(err, service.ErrStudentOnly) {
+			h.respondErrorErr(c, http.StatusForbidden, "student_only", err)
+			return
+		}
 		h.respondErrorErr(c, http.StatusBadRequest, "phone_verification_failed", err)
 		return
 	}

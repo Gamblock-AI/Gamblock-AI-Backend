@@ -103,6 +103,75 @@ func TestLoginError_MissingEmail(t *testing.T) {
 	assert.Equal(t, "Email wajib diisi.", env.Error.Message)
 }
 
+// The native Android/Windows client is restricted to student accounts: a
+// partner session must be refused at login even with valid credentials.
+func TestLogin_NativeClientRejectsPartner(t *testing.T) {
+	r, _ := newTestRouter(t, "development")
+	body := []byte(`{"email":"suci@gmail.com","password":"password"}`)
+	req := httptest.NewRequest(http.MethodPost, "/v1/auth/login", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Client-Type", "native")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusForbidden, w.Code)
+	var env envelopeShape
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &env))
+	assert.Equal(t, "student_only", env.Error.Code)
+}
+
+// The native client also refuses admin sessions.
+func TestLogin_NativeClientRejectsAdmin(t *testing.T) {
+	r, _ := newTestRouter(t, "development")
+	body := []byte(`{"email":"nasywa@gmail.com","password":"password"}`)
+	req := httptest.NewRequest(http.MethodPost, "/v1/auth/login", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Client-Type", "native")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusForbidden, w.Code)
+	var env envelopeShape
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &env))
+	assert.Equal(t, "student_only", env.Error.Code)
+}
+
+// The web flow (no native header) keeps accepting partner accounts.
+func TestLogin_WebAllowsPartner(t *testing.T) {
+	r, _ := newTestRouter(t, "development")
+	body := []byte(`{"email":"suci@gmail.com","password":"password"}`)
+	req := httptest.NewRequest(http.MethodPost, "/v1/auth/login", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusOK, w.Code)
+	var env envelopeShape
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &env))
+	data, ok := env.Data.(map[string]any)
+	require.True(t, ok, "login must return session data")
+	assert.NotEmpty(t, data["access_token"])
+	assert.Equal(t, "partner", data["user"].(map[string]any)["role"])
+}
+
+// The web flow (no native header) keeps accepting admin accounts.
+func TestLogin_WebAllowsAdmin(t *testing.T) {
+	r, _ := newTestRouter(t, "development")
+	body := []byte(`{"email":"nasywa@gmail.com","password":"password"}`)
+	req := httptest.NewRequest(http.MethodPost, "/v1/auth/login", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusOK, w.Code)
+	var env envelopeShape
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &env))
+	data, ok := env.Data.(map[string]any)
+	require.True(t, ok, "login must return session data")
+	assert.NotEmpty(t, data["access_token"])
+	assert.Equal(t, "admin", data["user"].(map[string]any)["role"])
+}
+
 // Reflection create succeeds with a token-authenticated dev login and returns
 // the created entry in the envelope data field.
 func TestReflection_CreateAndGet(t *testing.T) {
