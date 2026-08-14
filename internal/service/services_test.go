@@ -67,6 +67,34 @@ func TestAdminService_CreateAccountAndImmutableStatusUpdate(t *testing.T) {
 
 // --- AccountabilityService ---
 
+func TestAccountabilityGroupWorkspaceIncludesPartnerAvatarProjection(t *testing.T) {
+	st := store.NewSeeded()
+	avatarKey := "avatar/usr_suci.webp"
+	for i := range st.Users {
+		if st.Users[i].ID == "usr_suci" {
+			st.Users[i].AvatarURL = &avatarKey
+		}
+	}
+	repo := repository.New(nil, st)
+	svc := NewAccountabilityGroupService(repo, testCfg())
+
+	workspace, err := svc.Workspace(context.Background(), "usr_gading")
+	require.NoError(t, err)
+	require.Len(t, workspace.Groups, 1)
+	require.NotNil(t, workspace.Groups[0].OwnerAvatarURL)
+	assert.Equal(t, "/v1/users/usr_suci/avatar", *workspace.Groups[0].OwnerAvatarURL)
+}
+
+func TestAccountabilityGroupWorkspaceOmitsMissingPartnerAvatar(t *testing.T) {
+	repo, _ := newRepo(t)
+	svc := NewAccountabilityGroupService(repo, testCfg())
+
+	workspace, err := svc.Workspace(context.Background(), "usr_gading")
+	require.NoError(t, err)
+	require.Len(t, workspace.Groups, 1)
+	assert.Nil(t, workspace.Groups[0].OwnerAvatarURL)
+}
+
 func TestAccountability_CreateApprovalRequestAndResolve(t *testing.T) {
 	repo, _ := newRepo(t)
 	svc := NewAccountabilityService(repo, testCfg(), NewWhatsAppService(testCfg(), zap.NewNop()), zap.NewNop())

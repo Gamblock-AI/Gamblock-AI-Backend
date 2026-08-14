@@ -160,7 +160,9 @@ the standard envelope.
   and confirm one live group membership; verified email+WhatsApp partners own
   multiple groups with hashed, rate-limited, rotatable codes. Partner decisions,
   member removal, archive, and code rotation require a session authenticated
-  within 15 minutes.
+  within 15 minutes. Authenticated group projections include `owner_name` and
+  the optional auth-protected `owner_avatar_url`; storage paths are never
+  exposed.
 - Category-specific partner projections expose only protection health/activity,
   recovery engagement counts, and education progress bands. Unsafe student
   exit and partner removal stop sharing immediately. Protection activity is

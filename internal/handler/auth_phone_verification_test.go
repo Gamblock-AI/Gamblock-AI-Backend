@@ -80,9 +80,16 @@ func TestPhoneVerificationFlow_RegisterVerifyThenLogin(t *testing.T) {
 	assert.Equal(t, true, loginData["verification_required"])
 	assert.Empty(t, loginData["access_token"])
 
-	// Public verify completes the flow without a bearer session.
+	// Public verify completes the flow without a bearer session and issues a
+	// fresh auth pair so the client can go straight to the dashboard.
 	verify := postJSON(r, "/v1/auth/phone-verification/verify", []byte(`{"verification_token":"`+token+`","code":"`+code+`"}`))
 	require.Equal(t, http.StatusOK, verify.Code)
+	var verifyEnv envelopeShape
+	require.NoError(t, json.Unmarshal(verify.Body.Bytes(), &verifyEnv))
+	verifyData := verifyEnv.Data.(map[string]any)
+	assert.NotEmpty(t, verifyData["access_token"])
+	assert.NotEmpty(t, verifyData["refresh_token"])
+	assert.Equal(t, false, verifyData["verification_required"])
 
 	// Now login succeeds with a session.
 	login2 := postJSON(r, "/v1/auth/login", []byte(`{"email":"otp@example.com","password":"password2"}`))

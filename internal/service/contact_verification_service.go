@@ -82,13 +82,22 @@ func (s *AuthService) ConfirmPhoneVerification(ctx context.Context, userID, code
 // VerifyPhoneWithToken completes phone verification for an unverified account
 // using the short-lived token issued at registration or sign-in, so no bearer
 // session is required. Reuses the same contact-code consumption as the
-// session-authenticated flow.
-func (s *AuthService) VerifyPhoneWithToken(ctx context.Context, verificationToken, code string) error {
+// session-authenticated flow. Once verified it issues a fresh auth pair so a
+// user who signed in while unverified lands on the dashboard directly without
+// signing in again.
+func (s *AuthService) VerifyPhoneWithToken(ctx context.Context, verificationToken, code string) (model.AuthResponse, error) {
 	userID, err := s.parsePhoneVerificationToken(verificationToken)
 	if err != nil {
-		return err
+		return model.AuthResponse{}, err
 	}
-	return s.ConfirmPhoneVerification(ctx, userID, code)
+	if err := s.ConfirmPhoneVerification(ctx, userID, code); err != nil {
+		return model.AuthResponse{}, err
+	}
+	user, ok := s.repo.UserByID(ctx, userID)
+	if !ok || user.DisabledAt != nil {
+		return model.AuthResponse{}, fmt.Errorf("user not found")
+	}
+	return s.authPair(ctx, user, nil)
 }
 
 // ResendPhoneVerification issues a fresh WhatsApp code for the token's account,

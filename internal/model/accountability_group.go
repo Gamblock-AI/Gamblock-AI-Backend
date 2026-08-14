@@ -6,6 +6,7 @@ type AccountabilityGroup struct {
 	ID             string    `json:"id"`
 	OwnerPartnerID string    `json:"-"`
 	OwnerName      string    `json:"owner_name"`
+	OwnerAvatarURL *string   `json:"owner_avatar_url,omitempty"`
 	Name           string    `json:"name"`
 	Description    string    `json:"description"`
 	JoinCode       string    `json:"join_code,omitempty"`
