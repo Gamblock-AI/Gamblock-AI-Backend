@@ -3,7 +3,7 @@ ifneq (,$(wildcard .env))
     export
 endif
 
-.PHONY: dev run build start generate key-generate migrate migrate-up migrate-down migrate-fresh reset-storage seed seeder demo-seeder seed-education seed-learning-hub lint test test-cover verify
+.PHONY: dev run build start generate key-generate migrate migrate-up migrate-down migrate-fresh reset-storage seed seeder demo-seeder seed-accounts seed-education seed-learning-hub lint test test-cover verify
 
 APP_NAME := api
 BUILD_DIR := ./bin
@@ -22,6 +22,7 @@ build:
 	go build -o $(BUILD_DIR)/reset-storage ./cmd/reset-storage
 	go build -o $(BUILD_DIR)/seeder ./cmd/seeder
 	go build -o $(BUILD_DIR)/demo-seeder ./cmd/demo-seeder
+	go build -o $(BUILD_DIR)/seed-accounts ./cmd/seed-accounts
 	go build -o $(BUILD_DIR)/seed-learning-hub ./cmd/seed-learning-hub
 
 generate:
@@ -103,6 +104,13 @@ demo-seeder:
 		exit 1; \
 	}
 	CONFIRM_DEMO_SEED="$(CONFIRM_DEMO_SEED)" go run ./cmd/demo-seeder
+
+seed-accounts:
+	@test "$(CONFIRM_SEED_ACCOUNTS)" = "CREATE_FOUR_DEMO_ACCOUNTS" || { \
+		echo "Refusing account seed. Re-run with CONFIRM_SEED_ACCOUNTS=CREATE_FOUR_DEMO_ACCOUNTS." >&2; \
+		exit 1; \
+	}
+	CONFIRM_SEED_ACCOUNTS="$(CONFIRM_SEED_ACCOUNTS)" go run ./cmd/seed-accounts
 
 seed-education:
 	go run ./cmd/seed-education

@@ -72,6 +72,30 @@ func TestSeedProductionDefaults_DoesNotCreateDemoActivity(t *testing.T) {
 	assert.Zero(t, aggregates)
 }
 
+func TestSeedUsers_DoesNotCreateFixtureContent(t *testing.T) {
+	client := openSQLiteEnt(t)
+	defer client.Close()
+	ctx := context.Background()
+
+	require.NoError(t, SeedUsers(ctx, client))
+
+	users, err := client.User.Query().Count(ctx)
+	require.NoError(t, err)
+	assert.Equal(t, len(ExpectedDemoAccounts), users)
+
+	modules, err := client.PsychoeducationModule.Query().Count(ctx)
+	require.NoError(t, err)
+	assert.Zero(t, modules)
+
+	items, err := client.LearningItem.Query().Count(ctx)
+	require.NoError(t, err)
+	assert.Zero(t, items)
+
+	aggregates, err := client.AggregateEvent.Query().Count(ctx)
+	require.NoError(t, err)
+	assert.Zero(t, aggregates)
+}
+
 func TestSeedLearningHubDefaults_RetrofitsPublishedMedia(t *testing.T) {
 	client := openSQLiteEnt(t)
 	defer client.Close()

@@ -133,13 +133,21 @@ single-use tokens. Do not put them behind session auth or expose their tokens.
   application repository.
 - The production image contains `/app/api`, `/app/migrate-up`,
   `/app/migrate-down`, `/app/reset-storage`, `/app/seeder`,
-  `/app/demo-seeder`, and `/app/seed-learning-hub`. The production-safe seeder
+  `/app/demo-seeder`, `/app/seed-accounts`, and `/app/seed-learning-hub`. The
+  production-safe seeder
   installs only
   missing public baseline content; it must never create demo accounts or
-  overwrite administrator-managed content. The separate demo seeder is an
-  owner-authorized manual tool, requires
+  overwrite administrator-managed content. The users-only `seed-accounts`
+  binary is the automatic production path: it installs exactly the four
+  owner-approved demo accounts and never seeds education, Learning Hub, social,
+  activity, support, or operational fixtures, so production holds only the
+  accounts with no fixture content. The separate `demo-seeder` is a
+  staging-only owner-authorized tool, requires
   `CONFIRM_DEMO_SEED=CREATE_FOUR_DEMO_ACCOUNTS`, and refuses unrelated account
-  data. `migrate-down` and `reset-storage` are destructive, require their exact
+  data. `seed-accounts` requires
+  `CONFIRM_SEED_ACCOUNTS=CREATE_FOUR_DEMO_ACCOUNTS` and shares the same
+  fail-closed account-fixture validation. `migrate-down` and `reset-storage`
+  are destructive, require their exact
   confirmation variables, and are never part of deploy.
 
 ## Validation policy

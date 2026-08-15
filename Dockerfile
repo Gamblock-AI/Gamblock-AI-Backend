@@ -21,6 +21,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/api ./cmd/api && 
     CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/reset-storage ./cmd/reset-storage && \
     CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/seeder ./cmd/seeder && \
     CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/demo-seeder ./cmd/demo-seeder && \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/seed-accounts ./cmd/seed-accounts && \
     CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /out/seed-learning-hub ./cmd/seed-learning-hub
 
 # ---- Runtime stage ----

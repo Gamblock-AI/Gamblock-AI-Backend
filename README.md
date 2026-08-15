@@ -34,13 +34,17 @@ PostgreSQL is unavailable. The default local URL is
 PostgreSQL seed data and the optional in-memory demo store use the shared dummy
 password `password` for `gading@gmail.com`, `dery@gmail.com`,
 `suci@gmail.com`, and `nasywa@gmail.com`. These
-credentials are public fixtures. Automatic production deploys never install
-them; an owner-authorized demo environment may invoke the separately guarded
+credentials are public fixtures. Automatic production deploys install only the
+four accounts through the separately guarded `/app/seed-accounts` with
+`CONFIRM_SEED_ACCOUNTS=CREATE_FOUR_DEMO_ACCOUNTS`; that path never seeds
+education, Learning Hub, social, activity, support, or operational fixtures, so
+production holds exactly the four accounts with no fixture content. A
+staging-only owner-authorized demo environment may instead invoke
 `/app/demo-seeder` with
-`CONFIRM_DEMO_SEED=CREATE_FOUR_DEMO_ACCOUNTS`. The optional demo seed includes
-two active accountability groups
+`CONFIRM_DEMO_SEED=CREATE_FOUR_DEMO_ACCOUNTS`, which seeds the accounts plus
+their activity fixtures (two active accountability groups
 and privacy-safe daily aggregate fixtures for partner-dashboard testing; it
-contains no URL, domain, title, timestamped visit, or browsing-history fixture.
+contains no URL, domain, title, timestamped visit, or browsing-history fixture).
 The production-safe `make seeder` path never creates demo users or activity.
 
 Useful Makefile targets: `make dev` (air live-reload), `make start` (build +
@@ -49,8 +53,9 @@ run `./bin/api` with `.env`), `make key-generate`,
 `make seed-education`, `make seed-learning-hub`, and opt-in `make verify`. The
 Docker image exposes the same operational commands as `/app/migrate-up`,
 `/app/migrate-down`, `/app/reset-storage`, `/app/seeder`, `/app/demo-seeder`,
-and `/app/seed-learning-hub`; the automatic seeder logs only aggregate
-Learning Hub inserted/skipped counts.
+`/app/seed-accounts`, and `/app/seed-learning-hub`; the automatic production
+seeder installs the four accounts only, and the automatic seeder logs only
+aggregate Learning Hub inserted/skipped counts.
 Outside production, CORS accepts any `http://localhost:*`/`http://127.0.0.1:*`
 origin, so a local Flutter web run (`flutter run -d chrome --web-port 45051`)
 works without editing `CORS_ALLOWED_ORIGINS` or restarting the server.
