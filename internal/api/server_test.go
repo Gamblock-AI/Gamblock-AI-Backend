@@ -90,6 +90,26 @@ func TestNew_PasswordChangePreflightAllowsLocalhostPatch(t *testing.T) {
 	assert.Equal(t, origin, w.Header().Get("Access-Control-Allow-Origin"))
 }
 
+func TestNew_ClientTypeHeaderPreflightAllowed(t *testing.T) {
+	const origin = "http://localhost:3000"
+	cfg := config.Config{
+		AppEnv: "test", JWTAccessSecret: "test-secret-very-long-please",
+		JWTAccessTTL: 3600e9, JWTRefreshTTL: 720 * 3600e9,
+		AllowedOrigins: []string{origin},
+	}
+	r := New(cfg, store.NewSeeded(), zap.NewNop())
+	req := httptest.NewRequest(http.MethodOptions, "/v1/me", nil)
+	req.Header.Set("Origin", origin)
+	req.Header.Set("Access-Control-Request-Method", http.MethodGet)
+	req.Header.Set("Access-Control-Request-Headers", "x-client-type")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNoContent, w.Code)
+	assert.Equal(t, origin, w.Header().Get("Access-Control-Allow-Origin"))
+	assert.Contains(t, w.Header().Get("Access-Control-Allow-Headers"), "X-Client-Type")
+}
+
 // Outside production, any localhost/127.0.0.1 origin with any port is allowed,
 // so a dev Flutter web server on a random port needs no .env CORS edit.
 func TestNew_DevModeAllowsAnyLocalhostPortOrigin(t *testing.T) {

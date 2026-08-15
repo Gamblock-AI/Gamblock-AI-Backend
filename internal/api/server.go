@@ -42,7 +42,7 @@ func New(cfg config.Config, st *store.Store, logger *zap.Logger, clients ...*ent
 	corsConfig := cors.Config{
 		AllowOrigins:     cfg.AllowedOrigins,
 		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete, http.MethodOptions},
-		AllowHeaders:     []string{"Authorization", "Content-Type", "Accept", "X-Audit-Reason"},
+		AllowHeaders:     []string{"Authorization", "Content-Type", "Accept", "X-Audit-Reason", "X-Client-Type"},
 		ExposeHeaders:    []string{"X-Request-ID"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
