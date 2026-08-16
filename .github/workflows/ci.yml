@@ -85,5 +85,5 @@ jobs:
           port: 22
           fingerprint: ${{ vars.VPS_HOST_FINGERPRINT }}
           script: |
-            cd /opt/docker-stack/applications/gamblock-ai-backend
-            ./update.sh
+            cd /opt/docker-stack/applications/gamblock-ai-backend && ./update.sh
+            cd /opt/docker-stack/applications/gamblock-ai-backend-staging && ./update.sh

@@ -86,9 +86,9 @@ baseline content seeders run only in staging. CI can deploy the private GHCR
 image to the pinned VPS as root over password SSH, where `update.sh` takes a
 pre-migration PostgreSQL backup and runs migrate-up plus the environment's
 seeding plan before
-replacing the API container. The deploy step remains disabled by repository
-variable because GitHub-hosted runners cannot reliably reach the SSH endpoint;
-the authorized infrastructure `make deploy` path is canonical. Ansible rejects an application deploy
+replacing the API container. CI auto-deploy is enabled: a push to `main` runs
+`update.sh` for both production and staging. The authorized infrastructure
+`make deploy` path remains canonical for full deploys. Ansible rejects an application deploy
 while the private-GHCR PAT or core database/JWT/AES/Fonnte secrets are missing.
 
 ## Default AI validation
