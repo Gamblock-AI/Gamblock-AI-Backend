@@ -91,6 +91,15 @@ replacing the API container. CI auto-deploy is enabled: a push to `main` runs
 `make deploy` path remains canonical for full deploys. Ansible rejects an application deploy
 while the private-GHCR PAT or core database/JWT/AES/Fonnte secrets are missing.
 
+Runtime behavior is identical between staging and production: both run
+`APP_ENV=production`, `NOTIFICATION_MODE=production` (real Fonnte
+OTP/WhatsApp delivery, no demo preview codes), dev login disabled, and the
+same fail-closed configuration/DB/CORS validation. The only staging
+differences are the database (`gamblock_staging`), domains, and seeding data
+volume — staging keeps the four demo accounts plus the full fixture set for
+QA, while production holds only the four accounts. A single `FONNTE_TOKEN`
+is shared, so staging and production use the same WhatsApp device.
+
 ## Default AI validation
 
 Run `make lint`. When AI context changed, also run
