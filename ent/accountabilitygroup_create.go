@@ -58,6 +58,28 @@ func (_c *AccountabilityGroupCreate) SetJoinCodeHint(v string) *AccountabilityGr
 	return _c
 }
 
+// SetNillableJoinCodeHint sets the "join_code_hint" field if the given value is not nil.
+func (_c *AccountabilityGroupCreate) SetNillableJoinCodeHint(v *string) *AccountabilityGroupCreate {
+	if v != nil {
+		_c.SetJoinCodeHint(*v)
+	}
+	return _c
+}
+
+// SetJoinCodeEncrypted sets the "join_code_encrypted" field.
+func (_c *AccountabilityGroupCreate) SetJoinCodeEncrypted(v string) *AccountabilityGroupCreate {
+	_c.mutation.SetJoinCodeEncrypted(v)
+	return _c
+}
+
+// SetNillableJoinCodeEncrypted sets the "join_code_encrypted" field if the given value is not nil.
+func (_c *AccountabilityGroupCreate) SetNillableJoinCodeEncrypted(v *string) *AccountabilityGroupCreate {
+	if v != nil {
+		_c.SetJoinCodeEncrypted(*v)
+	}
+	return _c
+}
+
 // SetStatus sets the "status" field.
 func (_c *AccountabilityGroupCreate) SetStatus(v accountabilitygroup.Status) *AccountabilityGroupCreate {
 	_c.mutation.SetStatus(v)
@@ -159,6 +181,14 @@ func (_c *AccountabilityGroupCreate) defaults() {
 		v := accountabilitygroup.DefaultDescription
 		_c.mutation.SetDescription(v)
 	}
+	if _, ok := _c.mutation.JoinCodeHint(); !ok {
+		v := accountabilitygroup.DefaultJoinCodeHint
+		_c.mutation.SetJoinCodeHint(v)
+	}
+	if _, ok := _c.mutation.JoinCodeEncrypted(); !ok {
+		v := accountabilitygroup.DefaultJoinCodeEncrypted
+		_c.mutation.SetJoinCodeEncrypted(v)
+	}
 	if _, ok := _c.mutation.Status(); !ok {
 		v := accountabilitygroup.DefaultStatus
 		_c.mutation.SetStatus(v)
@@ -193,6 +223,9 @@ func (_c *AccountabilityGroupCreate) check() error {
 	}
 	if _, ok := _c.mutation.JoinCodeHint(); !ok {
 		return &ValidationError{Name: "join_code_hint", err: errors.New(`ent: missing required field "AccountabilityGroup.join_code_hint"`)}
+	}
+	if _, ok := _c.mutation.JoinCodeEncrypted(); !ok {
+		return &ValidationError{Name: "join_code_encrypted", err: errors.New(`ent: missing required field "AccountabilityGroup.join_code_encrypted"`)}
 	}
 	if _, ok := _c.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "AccountabilityGroup.status"`)}
@@ -265,6 +298,10 @@ func (_c *AccountabilityGroupCreate) createSpec() (*AccountabilityGroup, *sqlgra
 	if value, ok := _c.mutation.JoinCodeHint(); ok {
 		_spec.SetField(accountabilitygroup.FieldJoinCodeHint, field.TypeString, value)
 		_node.JoinCodeHint = value
+	}
+	if value, ok := _c.mutation.JoinCodeEncrypted(); ok {
+		_spec.SetField(accountabilitygroup.FieldJoinCodeEncrypted, field.TypeString, value)
+		_node.JoinCodeEncrypted = value
 	}
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(accountabilitygroup.FieldStatus, field.TypeEnum, value)

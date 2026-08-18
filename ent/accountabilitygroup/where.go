@@ -89,6 +89,11 @@ func JoinCodeHint(v string) predicate.AccountabilityGroup {
 	return predicate.AccountabilityGroup(sql.FieldEQ(FieldJoinCodeHint, v))
 }
 
+// JoinCodeEncrypted applies equality check predicate on the "join_code_encrypted" field. It's identical to JoinCodeEncryptedEQ.
+func JoinCodeEncrypted(v string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldEQ(FieldJoinCodeEncrypted, v))
+}
+
 // CodeRotatedAt applies equality check predicate on the "code_rotated_at" field. It's identical to CodeRotatedAtEQ.
 func CodeRotatedAt(v time.Time) predicate.AccountabilityGroup {
 	return predicate.AccountabilityGroup(sql.FieldEQ(FieldCodeRotatedAt, v))
@@ -427,6 +432,71 @@ func JoinCodeHintEqualFold(v string) predicate.AccountabilityGroup {
 // JoinCodeHintContainsFold applies the ContainsFold predicate on the "join_code_hint" field.
 func JoinCodeHintContainsFold(v string) predicate.AccountabilityGroup {
 	return predicate.AccountabilityGroup(sql.FieldContainsFold(FieldJoinCodeHint, v))
+}
+
+// JoinCodeEncryptedEQ applies the EQ predicate on the "join_code_encrypted" field.
+func JoinCodeEncryptedEQ(v string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldEQ(FieldJoinCodeEncrypted, v))
+}
+
+// JoinCodeEncryptedNEQ applies the NEQ predicate on the "join_code_encrypted" field.
+func JoinCodeEncryptedNEQ(v string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldNEQ(FieldJoinCodeEncrypted, v))
+}
+
+// JoinCodeEncryptedIn applies the In predicate on the "join_code_encrypted" field.
+func JoinCodeEncryptedIn(vs ...string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldIn(FieldJoinCodeEncrypted, vs...))
+}
+
+// JoinCodeEncryptedNotIn applies the NotIn predicate on the "join_code_encrypted" field.
+func JoinCodeEncryptedNotIn(vs ...string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldNotIn(FieldJoinCodeEncrypted, vs...))
+}
+
+// JoinCodeEncryptedGT applies the GT predicate on the "join_code_encrypted" field.
+func JoinCodeEncryptedGT(v string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldGT(FieldJoinCodeEncrypted, v))
+}
+
+// JoinCodeEncryptedGTE applies the GTE predicate on the "join_code_encrypted" field.
+func JoinCodeEncryptedGTE(v string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldGTE(FieldJoinCodeEncrypted, v))
+}
+
+// JoinCodeEncryptedLT applies the LT predicate on the "join_code_encrypted" field.
+func JoinCodeEncryptedLT(v string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldLT(FieldJoinCodeEncrypted, v))
+}
+
+// JoinCodeEncryptedLTE applies the LTE predicate on the "join_code_encrypted" field.
+func JoinCodeEncryptedLTE(v string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldLTE(FieldJoinCodeEncrypted, v))
+}
+
+// JoinCodeEncryptedContains applies the Contains predicate on the "join_code_encrypted" field.
+func JoinCodeEncryptedContains(v string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldContains(FieldJoinCodeEncrypted, v))
+}
+
+// JoinCodeEncryptedHasPrefix applies the HasPrefix predicate on the "join_code_encrypted" field.
+func JoinCodeEncryptedHasPrefix(v string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldHasPrefix(FieldJoinCodeEncrypted, v))
+}
+
+// JoinCodeEncryptedHasSuffix applies the HasSuffix predicate on the "join_code_encrypted" field.
+func JoinCodeEncryptedHasSuffix(v string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldHasSuffix(FieldJoinCodeEncrypted, v))
+}
+
+// JoinCodeEncryptedEqualFold applies the EqualFold predicate on the "join_code_encrypted" field.
+func JoinCodeEncryptedEqualFold(v string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldEqualFold(FieldJoinCodeEncrypted, v))
+}
+
+// JoinCodeEncryptedContainsFold applies the ContainsFold predicate on the "join_code_encrypted" field.
+func JoinCodeEncryptedContainsFold(v string) predicate.AccountabilityGroup {
+	return predicate.AccountabilityGroup(sql.FieldContainsFold(FieldJoinCodeEncrypted, v))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.

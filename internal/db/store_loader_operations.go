@@ -18,6 +18,7 @@ func loadOperationsStore(ctx context.Context, client *ent.Client, out *store.Sto
 		out.AccountabilityGroups = append(out.AccountabilityGroups, store.AccountabilityGroup{
 			ID: item.ID, OwnerPartnerID: item.OwnerPartnerID, Name: item.Name,
 			Description: item.Description, JoinCodeHash: item.JoinCodeHash, JoinCodeHint: item.JoinCodeHint,
+			JoinCodeEncrypted: item.JoinCodeEncrypted,
 			Status: item.Status.String(), CodeRotatedAt: item.CodeRotatedAt,
 			CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt,
 		})

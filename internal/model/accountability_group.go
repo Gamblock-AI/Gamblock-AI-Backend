@@ -9,9 +9,10 @@ type AccountabilityGroup struct {
 	OwnerAvatarURL *string   `json:"owner_avatar_url,omitempty"`
 	Name           string    `json:"name"`
 	Description    string    `json:"description"`
-	JoinCode       string    `json:"join_code,omitempty"`
-	JoinCodeHash   string    `json:"-"`
-	JoinCodeHint   string    `json:"join_code_hint"`
+	JoinCode          string    `json:"join_code,omitempty"`
+	JoinCodeHash      string    `json:"-"`
+	JoinCodeHint      string    `json:"join_code_hint,omitempty"`
+	JoinCodeEncrypted string    `json:"-"`
 	Status         string    `json:"status"`
 	MemberCount    int       `json:"member_count"`
 	CodeRotatedAt  time.Time `json:"code_rotated_at"`

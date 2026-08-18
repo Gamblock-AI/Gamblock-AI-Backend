@@ -35,6 +35,7 @@ func (r *Repository) CreateAccountabilityGroup(ctx context.Context, group model.
 		SetDescription(group.Description).
 		SetJoinCodeHash(group.JoinCodeHash).
 		SetJoinCodeHint(group.JoinCodeHint).
+		SetJoinCodeEncrypted(group.JoinCodeEncrypted).
 		SetCodeRotatedAt(group.CodeRotatedAt).
 		Save(ctx)
 	if err != nil {
@@ -48,7 +49,8 @@ func groupFromEnt(row *ent.AccountabilityGroup) model.AccountabilityGroup {
 	return model.AccountabilityGroup{
 		ID: row.ID, OwnerPartnerID: row.OwnerPartnerID, Name: row.Name,
 		Description: row.Description, JoinCodeHash: row.JoinCodeHash,
-		JoinCodeHint: row.JoinCodeHint, Status: row.Status.String(),
+		JoinCodeHint: row.JoinCodeHint, JoinCodeEncrypted: row.JoinCodeEncrypted,
+		Status: row.Status.String(),
 		CodeRotatedAt: row.CodeRotatedAt, CreatedAt: row.CreatedAt, UpdatedAt: row.UpdatedAt,
 	}
 }
@@ -135,7 +137,7 @@ func (r *Repository) AccountabilityGroupByCodeHash(ctx context.Context, codeHash
 	return groupFromEnt(row), nil
 }
 
-func (r *Repository) RotateAccountabilityGroupCode(ctx context.Context, groupID, partnerID, codeHash, hint string, rotatedAt time.Time) error {
+func (r *Repository) RotateAccountabilityGroupCode(ctx context.Context, groupID, partnerID, codeHash, hint, codeEncrypted string, rotatedAt time.Time) error {
 	group, err := r.AccountabilityGroupByID(ctx, groupID)
 	if err != nil || group.OwnerPartnerID != partnerID || group.Status != "active" {
 		return fmt.Errorf("partner is not authorized for this group")
@@ -147,6 +149,7 @@ func (r *Repository) RotateAccountabilityGroupCode(ctx context.Context, groupID,
 			if r.store.AccountabilityGroups[i].ID == groupID {
 				r.store.AccountabilityGroups[i].JoinCodeHash = codeHash
 				r.store.AccountabilityGroups[i].JoinCodeHint = hint
+				r.store.AccountabilityGroups[i].JoinCodeEncrypted = codeEncrypted
 				r.store.AccountabilityGroups[i].CodeRotatedAt = rotatedAt
 				r.store.AccountabilityGroups[i].UpdatedAt = rotatedAt
 				return nil
@@ -155,7 +158,7 @@ func (r *Repository) RotateAccountabilityGroupCode(ctx context.Context, groupID,
 		return fmt.Errorf("accountability group not found")
 	}
 	_, err = r.db.AccountabilityGroup.UpdateOneID(groupID).
-		SetJoinCodeHash(codeHash).SetJoinCodeHint(hint).SetCodeRotatedAt(rotatedAt).Save(ctx)
+		SetJoinCodeHash(codeHash).SetJoinCodeHint(hint).SetJoinCodeEncrypted(codeEncrypted).SetCodeRotatedAt(rotatedAt).Save(ctx)
 	if err == nil {
 		r.RefreshStore(ctx)
 	}

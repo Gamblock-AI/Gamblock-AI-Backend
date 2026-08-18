@@ -65,6 +65,11 @@ func (s *AccountabilityGroupService) Workspace(ctx context.Context, userID strin
 		}
 		for i := range groups {
 			applyGroupOwner(&groups[i], user)
+			if groups[i].JoinCodeEncrypted != "" && s.cfg.JournalEncryptionKey != "" {
+				if plain, decErr := appcrypto.Decrypt(groups[i].JoinCodeEncrypted, s.cfg.JournalEncryptionKey); decErr == nil {
+					groups[i].JoinCode = plain
+				}
+			}
 		}
 		workspace.Groups = groups
 		membershipIDs := []string{}
@@ -121,12 +126,18 @@ func (s *AccountabilityGroupService) CreateGroup(ctx context.Context, partnerID,
 	if err != nil {
 		return model.AccountabilityGroup{}, err
 	}
+	encryptedCode := ""
+	if s.cfg.JournalEncryptionKey != "" {
+		if enc, encErr := appcrypto.Encrypt(rawCode, s.cfg.JournalEncryptionKey); encErr == nil {
+			encryptedCode = enc
+		}
+	}
 	now := time.Now().UTC()
 	group := model.AccountabilityGroup{
 		ID: "grp_" + uuid.NewString()[:12], OwnerPartnerID: partnerID,
 		OwnerName: partner.DisplayName, Name: name, Description: description,
 		JoinCode: rawCode, JoinCodeHash: HashRefreshToken(rawCode),
-		JoinCodeHint: rawCode[len(rawCode)-4:], Status: "active", CodeRotatedAt: now,
+		JoinCodeHint: rawCode[len(rawCode)-4:], JoinCodeEncrypted: encryptedCode, Status: "active", CodeRotatedAt: now,
 		CreatedAt: now, UpdatedAt: now,
 	}
 	created, err := s.repo.CreateAccountabilityGroup(ctx, group)
@@ -190,7 +201,13 @@ func (s *AccountabilityGroupService) RotateCode(ctx context.Context, groupID, pa
 	if err != nil {
 		return "", err
 	}
-	if err := s.repo.RotateAccountabilityGroupCode(ctx, groupID, partnerID, HashRefreshToken(rawCode), rawCode[len(rawCode)-4:], time.Now().UTC()); err != nil {
+	encryptedCode := ""
+	if s.cfg.JournalEncryptionKey != "" {
+		if enc, encErr := appcrypto.Encrypt(rawCode, s.cfg.JournalEncryptionKey); encErr == nil {
+			encryptedCode = enc
+		}
+	}
+	if err := s.repo.RotateAccountabilityGroupCode(ctx, groupID, partnerID, HashRefreshToken(rawCode), rawCode[len(rawCode)-4:], encryptedCode, time.Now().UTC()); err != nil {
 		return "", err
 	}
 	return rawCode, nil

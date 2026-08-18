@@ -98,6 +98,20 @@ func (_u *AccountabilityGroupUpdate) SetNillableJoinCodeHint(v *string) *Account
 	return _u
 }
 
+// SetJoinCodeEncrypted sets the "join_code_encrypted" field.
+func (_u *AccountabilityGroupUpdate) SetJoinCodeEncrypted(v string) *AccountabilityGroupUpdate {
+	_u.mutation.SetJoinCodeEncrypted(v)
+	return _u
+}
+
+// SetNillableJoinCodeEncrypted sets the "join_code_encrypted" field if the given value is not nil.
+func (_u *AccountabilityGroupUpdate) SetNillableJoinCodeEncrypted(v *string) *AccountabilityGroupUpdate {
+	if v != nil {
+		_u.SetJoinCodeEncrypted(*v)
+	}
+	return _u
+}
+
 // SetStatus sets the "status" field.
 func (_u *AccountabilityGroupUpdate) SetStatus(v accountabilitygroup.Status) *AccountabilityGroupUpdate {
 	_u.mutation.SetStatus(v)
@@ -210,6 +224,9 @@ func (_u *AccountabilityGroupUpdate) sqlSave(ctx context.Context) (_node int, er
 	if value, ok := _u.mutation.JoinCodeHint(); ok {
 		_spec.SetField(accountabilitygroup.FieldJoinCodeHint, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.JoinCodeEncrypted(); ok {
+		_spec.SetField(accountabilitygroup.FieldJoinCodeEncrypted, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(accountabilitygroup.FieldStatus, field.TypeEnum, value)
 	}
@@ -305,6 +322,20 @@ func (_u *AccountabilityGroupUpdateOne) SetJoinCodeHint(v string) *Accountabilit
 func (_u *AccountabilityGroupUpdateOne) SetNillableJoinCodeHint(v *string) *AccountabilityGroupUpdateOne {
 	if v != nil {
 		_u.SetJoinCodeHint(*v)
+	}
+	return _u
+}
+
+// SetJoinCodeEncrypted sets the "join_code_encrypted" field.
+func (_u *AccountabilityGroupUpdateOne) SetJoinCodeEncrypted(v string) *AccountabilityGroupUpdateOne {
+	_u.mutation.SetJoinCodeEncrypted(v)
+	return _u
+}
+
+// SetNillableJoinCodeEncrypted sets the "join_code_encrypted" field if the given value is not nil.
+func (_u *AccountabilityGroupUpdateOne) SetNillableJoinCodeEncrypted(v *string) *AccountabilityGroupUpdateOne {
+	if v != nil {
+		_u.SetJoinCodeEncrypted(*v)
 	}
 	return _u
 }
@@ -450,6 +481,9 @@ func (_u *AccountabilityGroupUpdateOne) sqlSave(ctx context.Context) (_node *Acc
 	}
 	if value, ok := _u.mutation.JoinCodeHint(); ok {
 		_spec.SetField(accountabilitygroup.FieldJoinCodeHint, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.JoinCodeEncrypted(); ok {
+		_spec.SetField(accountabilitygroup.FieldJoinCodeEncrypted, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(accountabilitygroup.FieldStatus, field.TypeEnum, value)

@@ -33,7 +33,8 @@ func NewSeeded() *Store {
 		AccountabilityGroups: []AccountabilityGroup{{
 			ID: "grp_demo", OwnerPartnerID: "usr_suci", OwnerName: "Suci",
 			Name: "Kelas Informatika C", Description: "Kelas pendampingan mahasiswa Informatika yang berfokus pada dukungan dan keputusan proteksi.",
-			JoinCodeHint: "DEMO", Status: "active", MemberCount: 1, CodeRotatedAt: now, CreatedAt: now, UpdatedAt: now,
+			JoinCode: "GAMBLOCK42", JoinCodeHash: "cf555032cd87549c8369da3e5148f4fdcc6833a78c2f905b9944d2fa4cc04c45",
+			JoinCodeHint: "CK42", Status: "active", MemberCount: 1, CodeRotatedAt: now, CreatedAt: now, UpdatedAt: now,
 		}},
 		AccountabilityMemberships: []AccountabilityMembership{{
 			ID: "mbr_active", GroupID: "grp_demo", StudentID: "usr_gading", StudentName: "Gading", StudentMail: "gading@gmail.com",

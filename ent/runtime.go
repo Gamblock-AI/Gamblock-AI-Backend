@@ -95,12 +95,20 @@ func init() {
 	accountabilitygroupDescDescription := accountabilitygroupFields[3].Descriptor()
 	// accountabilitygroup.DefaultDescription holds the default value on creation for the description field.
 	accountabilitygroup.DefaultDescription = accountabilitygroupDescDescription.Default.(string)
+	// accountabilitygroupDescJoinCodeHint is the schema descriptor for join_code_hint field.
+	accountabilitygroupDescJoinCodeHint := accountabilitygroupFields[5].Descriptor()
+	// accountabilitygroup.DefaultJoinCodeHint holds the default value on creation for the join_code_hint field.
+	accountabilitygroup.DefaultJoinCodeHint = accountabilitygroupDescJoinCodeHint.Default.(string)
+	// accountabilitygroupDescJoinCodeEncrypted is the schema descriptor for join_code_encrypted field.
+	accountabilitygroupDescJoinCodeEncrypted := accountabilitygroupFields[6].Descriptor()
+	// accountabilitygroup.DefaultJoinCodeEncrypted holds the default value on creation for the join_code_encrypted field.
+	accountabilitygroup.DefaultJoinCodeEncrypted = accountabilitygroupDescJoinCodeEncrypted.Default.(string)
 	// accountabilitygroupDescCreatedAt is the schema descriptor for created_at field.
-	accountabilitygroupDescCreatedAt := accountabilitygroupFields[8].Descriptor()
+	accountabilitygroupDescCreatedAt := accountabilitygroupFields[9].Descriptor()
 	// accountabilitygroup.DefaultCreatedAt holds the default value on creation for the created_at field.
 	accountabilitygroup.DefaultCreatedAt = accountabilitygroupDescCreatedAt.Default.(func() time.Time)
 	// accountabilitygroupDescUpdatedAt is the schema descriptor for updated_at field.
-	accountabilitygroupDescUpdatedAt := accountabilitygroupFields[9].Descriptor()
+	accountabilitygroupDescUpdatedAt := accountabilitygroupFields[10].Descriptor()
 	// accountabilitygroup.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	accountabilitygroup.DefaultUpdatedAt = accountabilitygroupDescUpdatedAt.Default.(func() time.Time)
 	// accountabilitygroup.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

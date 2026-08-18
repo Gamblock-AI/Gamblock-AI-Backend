@@ -30,6 +30,7 @@ func testCfg() config.Config {
 	return config.Config{
 		AppEnv: "test", JWTAccessSecret: "test-secret-very-long-please-32bytes!",
 		JWTAccessTTL: time.Hour, JWTRefreshTTL: 720 * time.Hour,
+		JournalEncryptionKey:             "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
 		PublicWebBaseURL:                 "http://localhost:3000",
 		ProtectionGrantSigningPrivateKey: testProtectionGrantPrivateKey(),
 		ProtectionGrantSigningKeyID:      "test-grant-key",
@@ -93,6 +94,46 @@ func TestAccountabilityGroupWorkspaceOmitsMissingPartnerAvatar(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, workspace.Groups, 1)
 	assert.Nil(t, workspace.Groups[0].OwnerAvatarURL)
+}
+
+func TestAccountabilityGroup_EncryptedJoinCodeWorkflow(t *testing.T) {
+	repo, _ := newRepo(t)
+	svc := NewAccountabilityGroupService(repo, testCfg())
+	ctx := context.Background()
+
+	// Partner creates group
+	group, err := svc.CreateGroup(ctx, "usr_suci", "Test Group", "Group description")
+	require.NoError(t, err)
+	require.NotEmpty(t, group.JoinCode)
+	require.Len(t, group.JoinCode, 10)
+
+	// Partner checks workspace
+	workspace, err := svc.Workspace(ctx, "usr_suci")
+	require.NoError(t, err)
+	var found *model.AccountabilityGroup
+	for _, g := range workspace.Groups {
+		if g.ID == group.ID {
+			found = &g
+			break
+		}
+	}
+	require.NotNil(t, found)
+	assert.Equal(t, group.JoinCode, found.JoinCode)
+
+	// Rotate code
+	newCode, err := svc.RotateCode(ctx, group.ID, "usr_suci")
+	require.NoError(t, err)
+	require.NotEmpty(t, newCode)
+	require.NotEqual(t, group.JoinCode, newCode)
+
+	// Partner checks workspace again after rotate
+	workspaceAfterRotate, err := svc.Workspace(ctx, "usr_suci")
+	require.NoError(t, err)
+	for _, g := range workspaceAfterRotate.Groups {
+		if g.ID == group.ID {
+			assert.Equal(t, newCode, g.JoinCode)
+		}
+	}
 }
 
 func TestAccountability_CreateApprovalRequestAndResolve(t *testing.T) {

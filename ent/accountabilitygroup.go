@@ -27,6 +27,8 @@ type AccountabilityGroup struct {
 	JoinCodeHash string `json:"-"`
 	// JoinCodeHint holds the value of the "join_code_hint" field.
 	JoinCodeHint string `json:"join_code_hint,omitempty"`
+	// JoinCodeEncrypted holds the value of the "join_code_encrypted" field.
+	JoinCodeEncrypted string `json:"-"`
 	// Status holds the value of the "status" field.
 	Status accountabilitygroup.Status `json:"status,omitempty"`
 	// CodeRotatedAt holds the value of the "code_rotated_at" field.
@@ -43,7 +45,7 @@ func (*AccountabilityGroup) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case accountabilitygroup.FieldID, accountabilitygroup.FieldOwnerPartnerID, accountabilitygroup.FieldName, accountabilitygroup.FieldDescription, accountabilitygroup.FieldJoinCodeHash, accountabilitygroup.FieldJoinCodeHint, accountabilitygroup.FieldStatus:
+		case accountabilitygroup.FieldID, accountabilitygroup.FieldOwnerPartnerID, accountabilitygroup.FieldName, accountabilitygroup.FieldDescription, accountabilitygroup.FieldJoinCodeHash, accountabilitygroup.FieldJoinCodeHint, accountabilitygroup.FieldJoinCodeEncrypted, accountabilitygroup.FieldStatus:
 			values[i] = new(sql.NullString)
 		case accountabilitygroup.FieldCodeRotatedAt, accountabilitygroup.FieldCreatedAt, accountabilitygroup.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -97,6 +99,12 @@ func (_m *AccountabilityGroup) assignValues(columns []string, values []any) erro
 				return fmt.Errorf("unexpected type %T for field join_code_hint", values[i])
 			} else if value.Valid {
 				_m.JoinCodeHint = value.String
+			}
+		case accountabilitygroup.FieldJoinCodeEncrypted:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field join_code_encrypted", values[i])
+			} else if value.Valid {
+				_m.JoinCodeEncrypted = value.String
 			}
 		case accountabilitygroup.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -171,6 +179,8 @@ func (_m *AccountabilityGroup) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("join_code_hint=")
 	builder.WriteString(_m.JoinCodeHint)
+	builder.WriteString(", ")
+	builder.WriteString("join_code_encrypted=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))

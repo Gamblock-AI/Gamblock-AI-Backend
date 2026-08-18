@@ -24,6 +24,8 @@ const (
 	FieldJoinCodeHash = "join_code_hash"
 	// FieldJoinCodeHint holds the string denoting the join_code_hint field in the database.
 	FieldJoinCodeHint = "join_code_hint"
+	// FieldJoinCodeEncrypted holds the string denoting the join_code_encrypted field in the database.
+	FieldJoinCodeEncrypted = "join_code_encrypted"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldCodeRotatedAt holds the string denoting the code_rotated_at field in the database.
@@ -44,6 +46,7 @@ var Columns = []string{
 	FieldDescription,
 	FieldJoinCodeHash,
 	FieldJoinCodeHint,
+	FieldJoinCodeEncrypted,
 	FieldStatus,
 	FieldCodeRotatedAt,
 	FieldCreatedAt,
@@ -63,6 +66,10 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultDescription holds the default value on creation for the "description" field.
 	DefaultDescription string
+	// DefaultJoinCodeHint holds the default value on creation for the "join_code_hint" field.
+	DefaultJoinCodeHint string
+	// DefaultJoinCodeEncrypted holds the default value on creation for the "join_code_encrypted" field.
+	DefaultJoinCodeEncrypted string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -129,6 +136,11 @@ func ByJoinCodeHash(opts ...sql.OrderTermOption) OrderOption {
 // ByJoinCodeHint orders the results by the join_code_hint field.
 func ByJoinCodeHint(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldJoinCodeHint, opts...).ToFunc()
+}
+
+// ByJoinCodeEncrypted orders the results by the join_code_encrypted field.
+func ByJoinCodeEncrypted(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldJoinCodeEncrypted, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.

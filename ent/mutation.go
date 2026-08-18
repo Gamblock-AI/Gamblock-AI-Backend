@@ -927,22 +927,23 @@ func (m *AcademicProgramMutation) ResetEdge(name string) error {
 // AccountabilityGroupMutation represents an operation that mutates the AccountabilityGroup nodes in the graph.
 type AccountabilityGroupMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *string
-	owner_partner_id *string
-	name             *string
-	description      *string
-	join_code_hash   *string
-	join_code_hint   *string
-	status           *accountabilitygroup.Status
-	code_rotated_at  *time.Time
-	created_at       *time.Time
-	updated_at       *time.Time
-	clearedFields    map[string]struct{}
-	done             bool
-	oldValue         func(context.Context) (*AccountabilityGroup, error)
-	predicates       []predicate.AccountabilityGroup
+	op                  Op
+	typ                 string
+	id                  *string
+	owner_partner_id    *string
+	name                *string
+	description         *string
+	join_code_hash      *string
+	join_code_hint      *string
+	join_code_encrypted *string
+	status              *accountabilitygroup.Status
+	code_rotated_at     *time.Time
+	created_at          *time.Time
+	updated_at          *time.Time
+	clearedFields       map[string]struct{}
+	done                bool
+	oldValue            func(context.Context) (*AccountabilityGroup, error)
+	predicates          []predicate.AccountabilityGroup
 }
 
 var _ ent.Mutation = (*AccountabilityGroupMutation)(nil)
@@ -1229,6 +1230,42 @@ func (m *AccountabilityGroupMutation) ResetJoinCodeHint() {
 	m.join_code_hint = nil
 }
 
+// SetJoinCodeEncrypted sets the "join_code_encrypted" field.
+func (m *AccountabilityGroupMutation) SetJoinCodeEncrypted(s string) {
+	m.join_code_encrypted = &s
+}
+
+// JoinCodeEncrypted returns the value of the "join_code_encrypted" field in the mutation.
+func (m *AccountabilityGroupMutation) JoinCodeEncrypted() (r string, exists bool) {
+	v := m.join_code_encrypted
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldJoinCodeEncrypted returns the old "join_code_encrypted" field's value of the AccountabilityGroup entity.
+// If the AccountabilityGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountabilityGroupMutation) OldJoinCodeEncrypted(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldJoinCodeEncrypted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldJoinCodeEncrypted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldJoinCodeEncrypted: %w", err)
+	}
+	return oldValue.JoinCodeEncrypted, nil
+}
+
+// ResetJoinCodeEncrypted resets all changes to the "join_code_encrypted" field.
+func (m *AccountabilityGroupMutation) ResetJoinCodeEncrypted() {
+	m.join_code_encrypted = nil
+}
+
 // SetStatus sets the "status" field.
 func (m *AccountabilityGroupMutation) SetStatus(a accountabilitygroup.Status) {
 	m.status = &a
@@ -1407,7 +1444,7 @@ func (m *AccountabilityGroupMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AccountabilityGroupMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.owner_partner_id != nil {
 		fields = append(fields, accountabilitygroup.FieldOwnerPartnerID)
 	}
@@ -1422,6 +1459,9 @@ func (m *AccountabilityGroupMutation) Fields() []string {
 	}
 	if m.join_code_hint != nil {
 		fields = append(fields, accountabilitygroup.FieldJoinCodeHint)
+	}
+	if m.join_code_encrypted != nil {
+		fields = append(fields, accountabilitygroup.FieldJoinCodeEncrypted)
 	}
 	if m.status != nil {
 		fields = append(fields, accountabilitygroup.FieldStatus)
@@ -1453,6 +1493,8 @@ func (m *AccountabilityGroupMutation) Field(name string) (ent.Value, bool) {
 		return m.JoinCodeHash()
 	case accountabilitygroup.FieldJoinCodeHint:
 		return m.JoinCodeHint()
+	case accountabilitygroup.FieldJoinCodeEncrypted:
+		return m.JoinCodeEncrypted()
 	case accountabilitygroup.FieldStatus:
 		return m.Status()
 	case accountabilitygroup.FieldCodeRotatedAt:
@@ -1480,6 +1522,8 @@ func (m *AccountabilityGroupMutation) OldField(ctx context.Context, name string)
 		return m.OldJoinCodeHash(ctx)
 	case accountabilitygroup.FieldJoinCodeHint:
 		return m.OldJoinCodeHint(ctx)
+	case accountabilitygroup.FieldJoinCodeEncrypted:
+		return m.OldJoinCodeEncrypted(ctx)
 	case accountabilitygroup.FieldStatus:
 		return m.OldStatus(ctx)
 	case accountabilitygroup.FieldCodeRotatedAt:
@@ -1531,6 +1575,13 @@ func (m *AccountabilityGroupMutation) SetField(name string, value ent.Value) err
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetJoinCodeHint(v)
+		return nil
+	case accountabilitygroup.FieldJoinCodeEncrypted:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetJoinCodeEncrypted(v)
 		return nil
 	case accountabilitygroup.FieldStatus:
 		v, ok := value.(accountabilitygroup.Status)
@@ -1623,6 +1674,9 @@ func (m *AccountabilityGroupMutation) ResetField(name string) error {
 		return nil
 	case accountabilitygroup.FieldJoinCodeHint:
 		m.ResetJoinCodeHint()
+		return nil
+	case accountabilitygroup.FieldJoinCodeEncrypted:
+		m.ResetJoinCodeEncrypted()
 		return nil
 	case accountabilitygroup.FieldStatus:
 		m.ResetStatus()
