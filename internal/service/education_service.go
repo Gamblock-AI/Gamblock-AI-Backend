@@ -347,8 +347,8 @@ func (s *EducationService) Publish(ctx context.Context, actor, id string) (model
 	if err != nil {
 		return model.EducationModule{}, err
 	}
-	if module.Status != "in_review" {
-		return model.EducationModule{}, errors.New("module must be in review before publishing")
+	if module.Status == "archived" {
+		return model.EducationModule{}, errors.New("cannot publish an archived module")
 	}
 	if err = validateEducationDocument(module.DraftDocument); err != nil {
 		return model.EducationModule{}, err

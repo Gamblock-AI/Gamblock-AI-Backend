@@ -267,7 +267,7 @@ func (s *LearningHubService) PublishAdminItem(ctx context.Context, actor, id str
 	if err != nil {
 		return model.AdminLearningItem{}, ErrLearningHubAdminNotFound
 	}
-	if item.Status != "in_review" {
+	if item.Status == "archived" {
 		return model.AdminLearningItem{}, ErrLearningHubTransitionInvalid
 	}
 	draft := model.LearningItemDraft{Slug: item.Slug, Kind: item.Kind, TitleID: item.TitleID, TitleEN: item.TitleEN, SummaryID: item.SummaryID, SummaryEN: item.SummaryEN, Document: item.DraftDocument}

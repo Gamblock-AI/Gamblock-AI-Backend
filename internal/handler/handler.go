@@ -71,6 +71,7 @@ func (h *Handler) respondErrorErr(c *gin.Context, status int, code string, err e
 			zap.String("request_id", reqID),
 			zap.String("code", code),
 			zap.Int("status", status),
+			zap.NamedError("reason", err),
 		}
 		if status >= http.StatusInternalServerError {
 			h.logger.Error("request failed", append(fields, zap.Error(err))...)
