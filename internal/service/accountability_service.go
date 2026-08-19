@@ -197,6 +197,64 @@ func (s *AccountabilityService) ApplyApprovedRequest(ctx context.Context, id, us
 	return grant, nil
 }
 
+// IssueStandaloneRemovalGrant hands a short-lived, single-use removal grant to
+// a student who has NO active accountability partnership. This is the escape
+// hatch that prevents the anti-uninstall deadlock when device-admin protection
+// is active but no partner relationship exists (never paired, left the group,
+// or was removed). If the student still has a live membership they must use the
+// partner approval flow instead.
+func (s *AccountabilityService) IssueStandaloneRemovalGrant(ctx context.Context, userID, deviceID string) (model.ApprovalGrant, error) {
+	if deviceID == "" {
+		return model.ApprovalGrant{}, fmt.Errorf("device id is required")
+	}
+	if err := s.grantSigner.Ready(); err != nil {
+		return model.ApprovalGrant{}, err
+	}
+	if !s.repo.IsDeviceOwnedBy(ctx, deviceID, userID) {
+		return model.ApprovalGrant{}, fmt.Errorf("device does not belong to user")
+	}
+	membership, err := s.repo.ActiveMembershipForStudent(ctx, userID)
+	if err != nil {
+		return model.ApprovalGrant{}, err
+	}
+	if membership != nil {
+		return model.ApprovalGrant{}, fmt.Errorf("student has an active accountability partner")
+	}
+
+	now := time.Now().UTC()
+	grantJTI, err := newProtectionGrantJTI()
+	if err != nil {
+		return model.ApprovalGrant{}, err
+	}
+	thumbprint, err := s.repo.OwnedDeviceGrantKeyThumbprint(ctx, userID, deviceID)
+	if err != nil {
+		return model.ApprovalGrant{}, err
+	}
+	reqID := "SRL-" + uuid.NewString()[:8]
+	grant, err := s.repo.IssueStandaloneRemovalGrant(ctx, reqID, userID, deviceID, grantJTI, now)
+	if err != nil {
+		return model.ApprovalGrant{}, err
+	}
+	grant.GrantToken, err = s.grantSigner.Sign(
+		grant.RequestID,
+		grant.DeviceID,
+		grant.Action,
+		thumbprint,
+		grant.GrantJTI,
+		grant.GrantStartsAt,
+		grant.GrantExpiresAt,
+	)
+	if err != nil {
+		return model.ApprovalGrant{}, err
+	}
+	s.logger.Info("standalone removal grant issued",
+		zap.String("device_id", deviceID),
+		zap.String("user_id", userID),
+		zap.String("request_id", reqID),
+	)
+	return grant, nil
+}
+
 func (s *AccountabilityService) VerifyQuickToken(ctx context.Context, token string) (map[string]any, error) {
 	tokenHash := HashRefreshToken(token)
 	req, err := s.repo.GetApprovalByQuickToken(ctx, tokenHash)

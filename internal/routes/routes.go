@@ -41,6 +41,7 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	v1.POST("/devices/:device_id/heartbeat", mid.AuthRequired(), h.DeviceHeartbeat)
 	v1.POST("/devices/:device_id/grant-key/challenge", mid.AuthRequired(), mid.RequireRoles("user"), h.DeviceGrantKeyChallenge)
 	v1.PUT("/devices/:device_id/grant-key", mid.AuthRequired(), mid.RequireRoles("user"), h.BindDeviceGrantKey)
+	v1.POST("/devices/standalone-removal-grant", mid.AuthRequired(), mid.RequireRoles("user"), h.CreateStandaloneRemovalGrant)
 
 	// Accountability groups. Role gates protect data and actions server-side;
 	// website navigation visibility is only a presentation concern.

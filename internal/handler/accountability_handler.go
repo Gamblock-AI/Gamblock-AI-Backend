@@ -162,3 +162,40 @@ func (h *Handler) ApplyApprovalRequest(c *gin.Context) {
 	}
 	h.respond(c, http.StatusOK, grant)
 }
+
+func (h *Handler) CreateStandaloneRemovalGrant(c *gin.Context) {
+	var input struct {
+		DeviceID string `json:"device_id"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil || input.DeviceID == "" {
+		h.respondCode(c, http.StatusBadRequest, "device_id_required")
+		return
+	}
+	grant, err := h.services.Accountability.IssueStandaloneRemovalGrant(
+		c.Request.Context(),
+		h.currentUserID(c),
+		input.DeviceID,
+	)
+	if err != nil {
+		status := http.StatusBadRequest
+		code := "standalone_removal_failed"
+		switch err.Error() {
+		case "device does not belong to user":
+			status = http.StatusForbidden
+			code = "standalone_removal_device_not_owned"
+		case "student has an active accountability partner":
+			status = http.StatusConflict
+			code = "standalone_removal_partner_active"
+		case "a standalone removal grant is already active":
+			status = http.StatusTooManyRequests
+			code = "standalone_removal_already_active"
+		}
+		if errors.Is(err, service.ErrProtectionGrantSigningUnavailable) {
+			status = http.StatusInternalServerError
+			code = "standalone_removal_sign_unavailable"
+		}
+		h.respondErrorErr(c, status, code, err)
+		return
+	}
+	h.respond(c, http.StatusOK, grant)
+}
