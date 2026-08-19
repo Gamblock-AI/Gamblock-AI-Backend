@@ -274,6 +274,16 @@ func (s *LearningHubService) PublishAdminItem(ctx context.Context, actor, id str
 	if err := validateLearningDraft(draft, true); err != nil {
 		return model.AdminLearningItem{}, err
 	}
+	var mediaIDs []string
+	if logo := strings.TrimSpace(documentString(draft.Document, "provider_logo_media_id")); logo != "" {
+		mediaIDs = append(mediaIDs, logo)
+	}
+	if thumb := strings.TrimSpace(documentString(draft.Document, "thumbnail_media_id")); thumb != "" {
+		mediaIDs = append(mediaIDs, thumb)
+	}
+	if len(mediaIDs) > 0 {
+		_ = s.repo.PublishEducationMedia(ctx, mediaIDs)
+	}
 	updated, err := s.repo.SetAdminLearningStatus(ctx, actor, id, "published")
 	if err == nil {
 		s.recordLearningAudit(ctx, actor, "learning_hub_item_published", id, map[string]any{"revision": updated.PublishedRevision})
