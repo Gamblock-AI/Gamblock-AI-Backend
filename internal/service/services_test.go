@@ -367,7 +367,7 @@ func TestWhatsApp_DemoModeIsNoOp(t *testing.T) {
 	err = svc.SendEmergencyKey(context.Background(), "+628123456789", "EMERG-1234")
 	assert.NoError(t, err)
 
-	err = svc.SendEmergencyRequestNotificationToAdmin(context.Background(), "+628123456789", "Gading", "dev_android", "ekr_123")
+	err = svc.SendEmergencyRequestNotificationToAdmin(context.Background(), "+628123456789", "Gading", "dev_android", "ekr_123", "http://localhost:3000/admin/emergency")
 	assert.NoError(t, err)
 }
 

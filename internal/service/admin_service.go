@@ -22,6 +22,7 @@ import (
 
 type AdminService struct {
 	repo        *repository.Repository
+	cfg         config.Config
 	logger      *zap.Logger
 	grantSigner *ProtectionGrantSigner
 	whatsapp    *WhatsAppService
@@ -31,7 +32,7 @@ func NewAdminService(repo *repository.Repository, cfg config.Config, whatsapp *W
 	if whatsapp == nil {
 		whatsapp = NewWhatsAppService(cfg, logger)
 	}
-	return &AdminService{repo: repo, logger: logger, grantSigner: NewProtectionGrantSigner(cfg), whatsapp: whatsapp}
+	return &AdminService{repo: repo, cfg: cfg, logger: logger, grantSigner: NewProtectionGrantSigner(cfg), whatsapp: whatsapp}
 }
 
 // PlatformAnalytics returns platform-wide aggregate analytics for admin
@@ -308,8 +309,13 @@ func (s *AdminService) RequestEmergencyKey(ctx context.Context, requestedBy, dev
 			}
 		}
 		if adminPhones, err := s.repo.ListActiveAdminPhones(ctx); err == nil {
+			baseURL := strings.TrimRight(s.cfg.PublicWebBaseURL, "/")
+			if baseURL == "" {
+				baseURL = "http://localhost:3000"
+			}
+			adminURL := fmt.Sprintf("%s/admin/emergency", baseURL)
 			for _, phone := range adminPhones {
-				if err := s.whatsapp.SendEmergencyRequestNotificationToAdmin(ctx, phone, requesterName, deviceID, created.ID); err != nil {
+				if err := s.whatsapp.SendEmergencyRequestNotificationToAdmin(ctx, phone, requesterName, deviceID, created.ID, adminURL); err != nil {
 					s.logger.Warn("failed to notify admin of emergency request via whatsapp",
 						zap.String("request_id", created.ID),
 						zap.Error(err),

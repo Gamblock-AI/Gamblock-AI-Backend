@@ -88,8 +88,8 @@ func (s *WhatsAppService) SendEmergencyKey(ctx context.Context, phone, key strin
 	return s.sendText(ctx, phone, message)
 }
 
-func (s *WhatsAppService) SendEmergencyRequestNotificationToAdmin(ctx context.Context, phone, requesterName, deviceID, requestID string) error {
-	message := fmt.Sprintf("*Gamblock-AI - Permintaan Akses Darurat*\n\nAda permohonan akses darurat baru dari pengguna:\n- *Pengguna:* %s\n- *Perangkat:* %s\n- *ID Permintaan:* %s\n\nSilakan masuk ke panel admin (/admin/emergency) untuk meninjau dan menerbitkan kunci darurat.", requesterName, deviceID, requestID)
+func (s *WhatsAppService) SendEmergencyRequestNotificationToAdmin(ctx context.Context, phone, requesterName, deviceID, requestID, adminURL string) error {
+	message := fmt.Sprintf("*Gamblock-AI - Permintaan Akses Darurat*\n\nAda permohonan akses darurat baru dari pengguna:\n- *Pengguna:* %s\n- *Perangkat:* %s\n- *ID Permintaan:* %s\n\nBuka tautan berikut untuk meninjau dan menerbitkan kunci darurat:\n%s", requesterName, deviceID, requestID, adminURL)
 	return s.sendText(ctx, phone, message)
 }
 
