@@ -56,11 +56,12 @@ func (r *Repository) ApproveEmergencyKeyRequest(ctx context.Context, id, approve
 			if item.ID != id {
 				continue
 			}
-			if item.Status != "reviewed" || !now.Before(item.RequestExpiresAt) {
-				return model.EmergencyKeyRequest{}, fmt.Errorf("request is not reviewed or has expired")
+			if (item.Status != "pending" && item.Status != "reviewed") || !now.Before(item.RequestExpiresAt) {
+				return model.EmergencyKeyRequest{}, fmt.Errorf("request is not pending or reviewed or has expired")
 			}
-			if item.ReviewedBy == "" || item.ReviewedBy == approverID {
-				return model.EmergencyKeyRequest{}, fmt.Errorf("a second platform administrator must approve")
+			if item.ReviewedBy == "" {
+				item.ReviewedBy = approverID
+				item.ReviewedAt = &now
 			}
 			item.ApprovedBy = approverID
 			item.ApprovedAt = &now
@@ -72,24 +73,33 @@ func (r *Repository) ApproveEmergencyKeyRequest(ctx context.Context, id, approve
 		}
 		return model.EmergencyKeyRequest{}, fmt.Errorf("request not found")
 	}
-	changed, err := r.db.EmergencyKeyRequest.Update().Where(
-		emergencykeyrequest.IDEQ(id),
-		emergencykeyrequest.StatusEQ(emergencykeyrequest.StatusReviewed),
-		emergencykeyrequest.RequestExpiresAtGT(now),
-		emergencykeyrequest.ReviewedByNotNil(),
-		emergencykeyrequest.ReviewedByNEQ(approverID),
-	).SetApprovedBy(approverID).SetApprovedAt(now).SetKeyHash(keyHash).SetKeyExpiresAt(keyExpiresAt).SetStatus(emergencykeyrequest.StatusApproved).Save(ctx)
-	if err != nil {
-		return model.EmergencyKeyRequest{}, err
-	}
-	if changed != 1 {
-		return model.EmergencyKeyRequest{}, fmt.Errorf("request requires review and approval by two different platform administrators")
-	}
 	item, err := r.db.EmergencyKeyRequest.Get(ctx, id)
 	if err != nil {
 		return model.EmergencyKeyRequest{}, err
 	}
-	return emergencyRequestFromEnt(item), nil
+	if (item.Status != emergencykeyrequest.StatusPending && item.Status != emergencykeyrequest.StatusReviewed) || !now.Before(item.RequestExpiresAt) {
+		return model.EmergencyKeyRequest{}, fmt.Errorf("request is not pending or reviewed or has expired")
+	}
+	update := r.db.EmergencyKeyRequest.UpdateOneID(id).
+		Where(
+			emergencykeyrequest.StatusIn(emergencykeyrequest.StatusPending, emergencykeyrequest.StatusReviewed),
+			emergencykeyrequest.RequestExpiresAtGT(now),
+		).
+		SetApprovedBy(approverID).
+		SetApprovedAt(now).
+		SetKeyHash(keyHash).
+		SetKeyExpiresAt(keyExpiresAt).
+		SetStatus(emergencykeyrequest.StatusApproved)
+
+	if item.ReviewedBy == nil || *item.ReviewedBy == "" {
+		update = update.SetReviewedBy(approverID).SetReviewedAt(now)
+	}
+
+	updatedItem, err := update.Save(ctx)
+	if err != nil {
+		return model.EmergencyKeyRequest{}, err
+	}
+	return emergencyRequestFromEnt(updatedItem), nil
 }
 
 func (r *Repository) GetUsableEmergencyKeyRequest(ctx context.Context, keyHash, deviceID string, now time.Time) (model.EmergencyKeyRequest, error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
@@ -39,6 +40,37 @@ func (r *Repository) ListAdminAccounts(ctx context.Context) ([]model.AdminAccoun
 		items = append(items, adminAccountFromUser(userFromEnt(row)))
 	}
 	return items, nil
+}
+
+func (r *Repository) ListActiveAdminPhones(ctx context.Context) ([]string, error) {
+	if r.db == nil {
+		users := r.store.Snapshot().Users
+		var phones []string
+		for _, user := range users {
+			if user.Role == "admin" && user.DisabledAt == nil && strings.TrimSpace(user.PhoneE164) != "" {
+				phones = append(phones, user.PhoneE164)
+			}
+		}
+		return phones, nil
+	}
+	rows, err := r.db.User.Query().
+		Where(
+			entuser.RoleEQ(entuser.RoleAdmin),
+			entuser.DisabledAtIsNil(),
+			entuser.PhoneE164NotNil(),
+			entuser.PhoneE164NEQ(""),
+		).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	phones := make([]string, 0, len(rows))
+	for _, row := range rows {
+		phone := strings.TrimSpace(value(row.PhoneE164))
+		if phone != "" {
+			phones = append(phones, phone)
+		}
+	}
+	return phones, nil
 }
 
 func (r *Repository) SetAccountDisabled(ctx context.Context, id string, disabled bool, now time.Time) error {

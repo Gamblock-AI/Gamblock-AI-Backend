@@ -36,7 +36,7 @@ func NewContainer(repo *repository.Repository, cfg config.Config, logger *zap.Lo
 		Device:               NewDeviceService(repo, cfg, logger),
 		Accountability:       NewAccountabilityService(repo, cfg, whatsapp, logger),
 		AccountabilityGroups: NewAccountabilityGroupService(repo, cfg),
-		Admin:                NewAdminService(repo, cfg, logger),
+		Admin:                NewAdminService(repo, cfg, whatsapp, logger),
 		Support:              NewSupportServiceWithConfig(repo, cfg, logger),
 		Reflection:           NewReflectionService(repo, cfg, logger),
 		Organization:         NewOrganizationService(repo, logger),

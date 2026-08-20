@@ -83,6 +83,16 @@ func (s *WhatsAppService) SendDataExportReady(ctx context.Context, phone, accoun
 	return s.sendText(ctx, phone, "Ekspor data Gamblock-AI Anda sudah siap. Masuk ke akun untuk mengunduhnya:\n"+accountURL)
 }
 
+func (s *WhatsAppService) SendEmergencyKey(ctx context.Context, phone, key string) error {
+	message := fmt.Sprintf("*Gamblock-AI - Kunci Akses Darurat*\n\nKode pemulihan darurat Anda adalah:\n*%s*\n\n📌 *Ketentuan & Kegunaan:*\n1. Masukkan kode ini pada menu Pemulihan Darurat di aplikasi Gamblock-AI dalam 24 jam.\n2. Setelah diaktivasi di aplikasi, Anda mendapatkan *akses penuh selama 10 menit* untuk mematikan Admin Perangkat, Aksesibilitas, atau mencopot pemasangan (uninstall) aplikasi tanpa dicegat proteksi.", key)
+	return s.sendText(ctx, phone, message)
+}
+
+func (s *WhatsAppService) SendEmergencyRequestNotificationToAdmin(ctx context.Context, phone, requesterName, deviceID, requestID string) error {
+	message := fmt.Sprintf("*Gamblock-AI - Permintaan Akses Darurat*\n\nAda permohonan akses darurat baru dari pengguna:\n- *Pengguna:* %s\n- *Perangkat:* %s\n- *ID Permintaan:* %s\n\nSilakan masuk ke panel admin (/admin/emergency) untuk meninjau dan menerbitkan kunci darurat.", requesterName, deviceID, requestID)
+	return s.sendText(ctx, phone, message)
+}
+
 func (s *WhatsAppService) sendText(ctx context.Context, phone, message string) error {
 	if s.cfg.NotificationMode == "demo" {
 		return nil

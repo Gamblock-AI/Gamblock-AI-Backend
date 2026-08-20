@@ -56,7 +56,7 @@ func bindTestGrantKey(t *testing.T, repo *repository.Repository, userID, deviceI
 
 func TestAdminService_CreateAccountAndImmutableStatusUpdate(t *testing.T) {
 	repo, _ := newRepo(t)
-	svc := NewAdminService(repo, testCfg(), zap.NewNop())
+	svc := NewAdminService(repo, testCfg(), NewWhatsAppService(testCfg(), zap.NewNop()), zap.NewNop())
 	created, temporaryPassword, err := svc.CreateAccount(context.Background(), "usr_nasywa", "new-admin@example.com", "+6281200000012", "New Admin", "admin", "approved staffing")
 	require.NoError(t, err)
 	assert.Equal(t, "admin", created.Role)
@@ -253,7 +253,7 @@ func TestOrganization_GetAnalytics(t *testing.T) {
 
 func TestAdmin_EducationModuleCRUD(t *testing.T) {
 	repo, _ := newRepo(t)
-	svc := NewAdminService(repo, testCfg(), zap.NewNop())
+	svc := NewAdminService(repo, testCfg(), NewWhatsAppService(testCfg(), zap.NewNop()), zap.NewNop())
 	ctx := context.Background()
 
 	before, err := svc.GetEducationModules(ctx)
@@ -272,17 +272,13 @@ func TestAdmin_EducationModuleCRUD(t *testing.T) {
 
 func TestAdmin_EmergencyKeyGenerateAndValidate(t *testing.T) {
 	repo, _ := newRepo(t)
-	svc := NewAdminService(repo, testCfg(), zap.NewNop())
+	svc := NewAdminService(repo, testCfg(), NewWhatsAppService(testCfg(), zap.NewNop()), zap.NewNop())
 	ctx := context.Background()
 	bindTestGrantKey(t, repo, "usr_gading", "dev_android")
 
 	request, err := svc.RequestEmergencyKey(ctx, "usr_gading", "dev_android")
 	require.NoError(t, err)
-	_, err = svc.ReviewEmergencyKeyRequest(ctx, request.ID, "usr_suci")
-	require.NoError(t, err)
-	_, _, err = svc.ApproveEmergencyKeyRequest(ctx, request.ID, "usr_suci")
-	assert.Error(t, err)
-	_, key, err := svc.ApproveEmergencyKeyRequest(ctx, request.ID, "usr_nasywa")
+	_, key, err := svc.ApproveEmergencyKeyRequest(ctx, request.ID, "usr_suci")
 	require.NoError(t, err)
 	assert.NotEmpty(t, key)
 
@@ -366,6 +362,12 @@ func TestWhatsApp_DemoModeIsNoOp(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = svc.SendApprovalBatch(context.Background(), "", []ApprovalSummary{{}})
+	assert.NoError(t, err)
+
+	err = svc.SendEmergencyKey(context.Background(), "+628123456789", "EMERG-1234")
+	assert.NoError(t, err)
+
+	err = svc.SendEmergencyRequestNotificationToAdmin(context.Background(), "+628123456789", "Gading", "dev_android", "ekr_123")
 	assert.NoError(t, err)
 }
 

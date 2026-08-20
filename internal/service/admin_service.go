@@ -24,10 +24,14 @@ type AdminService struct {
 	repo        *repository.Repository
 	logger      *zap.Logger
 	grantSigner *ProtectionGrantSigner
+	whatsapp    *WhatsAppService
 }
 
-func NewAdminService(repo *repository.Repository, cfg config.Config, logger *zap.Logger) *AdminService {
-	return &AdminService{repo: repo, logger: logger, grantSigner: NewProtectionGrantSigner(cfg)}
+func NewAdminService(repo *repository.Repository, cfg config.Config, whatsapp *WhatsAppService, logger *zap.Logger) *AdminService {
+	if whatsapp == nil {
+		whatsapp = NewWhatsAppService(cfg, logger)
+	}
+	return &AdminService{repo: repo, logger: logger, grantSigner: NewProtectionGrantSigner(cfg), whatsapp: whatsapp}
 }
 
 // PlatformAnalytics returns platform-wide aggregate analytics for admin
@@ -293,6 +297,28 @@ func (s *AdminService) RequestEmergencyKey(ctx context.Context, requestedBy, dev
 		return model.EmergencyKeyRequest{}, err
 	}
 	s.logger.Info("emergency key requested", zap.String("requested_by", requestedBy), zap.String("request_id", created.ID))
+
+	if s.whatsapp != nil {
+		requesterName := requestedBy
+		if user, ok := s.repo.UserByID(ctx, requestedBy); ok {
+			if strings.TrimSpace(user.DisplayName) != "" {
+				requesterName = fmt.Sprintf("%s (%s)", user.DisplayName, user.Email)
+			} else if strings.TrimSpace(user.Email) != "" {
+				requesterName = user.Email
+			}
+		}
+		if adminPhones, err := s.repo.ListActiveAdminPhones(ctx); err == nil {
+			for _, phone := range adminPhones {
+				if err := s.whatsapp.SendEmergencyRequestNotificationToAdmin(ctx, phone, requesterName, deviceID, created.ID); err != nil {
+					s.logger.Warn("failed to notify admin of emergency request via whatsapp",
+						zap.String("request_id", created.ID),
+						zap.Error(err),
+					)
+				}
+			}
+		}
+	}
+
 	return created, nil
 }
 
@@ -343,6 +369,24 @@ func (s *AdminService) ApproveEmergencyKeyRequest(ctx context.Context, requestID
 		zap.String("reviewed_by", request.ReviewedBy),
 		zap.String("approved_by", approvedBy),
 	)
+
+	if s.whatsapp != nil {
+		if user, ok := s.repo.UserByID(ctx, request.RequestedBy); ok && strings.TrimSpace(user.PhoneE164) != "" {
+			if err := s.whatsapp.SendEmergencyKey(ctx, user.PhoneE164, key); err != nil {
+				s.logger.Warn("failed to deliver emergency key via whatsapp",
+					zap.String("request_id", request.ID),
+					zap.String("user_id", request.RequestedBy),
+					zap.Error(err),
+				)
+			} else {
+				s.logger.Info("emergency key delivered via whatsapp",
+					zap.String("request_id", request.ID),
+					zap.String("user_id", request.RequestedBy),
+				)
+			}
+		}
+	}
+
 	return request, key, nil
 }
 
