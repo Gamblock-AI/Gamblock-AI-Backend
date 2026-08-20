@@ -447,8 +447,37 @@ func (r *Repository) RollbackLearningItem(ctx context.Context, actor, itemID, re
 	return r.GetAdminLearningItem(ctx, itemID)
 }
 
+func (r *Repository) ensureUTYInstitution(ctx context.Context) (*ent.Institution, error) {
+	if r.db == nil {
+		return nil, nil
+	}
+	inst, err := r.db.Institution.Query().Where(institution.SlugEQ("uty")).Only(ctx)
+	if err == nil {
+		return inst, nil
+	}
+	if !ent.IsNotFound(err) {
+		return nil, err
+	}
+	created, createErr := r.db.Institution.Create().
+		SetID("inst_uty").
+		SetSlug("uty").
+		SetName("Universitas Teknologi Yogyakarta").
+		SetStatus(institution.StatusActive).
+		Save(ctx)
+	if createErr == nil {
+		return created, nil
+	}
+	if ent.IsConstraintError(createErr) {
+		return r.db.Institution.Query().Where(institution.SlugEQ("uty")).Only(ctx)
+	}
+	return nil, createErr
+}
+
 func (r *Repository) GetLearningHubTaxonomy(ctx context.Context) (model.LearningHubTaxonomy, error) {
 	if r.db == nil {
+		r.store.Lock()
+		ensureMemoryTaxonomy(r.store)
+		r.store.Unlock()
 		snapshot := r.store.Snapshot()
 		clusters := snapshot.AdminLearningClusters
 		programs := snapshot.AdminAcademicPrograms
@@ -470,10 +499,7 @@ func (r *Repository) GetLearningHubTaxonomy(ctx context.Context) (model.Learning
 		result.Programs = append(result.Programs, programs...)
 		return result, nil
 	}
-	inst, err := r.db.Institution.Query().Where(institution.SlugEQ("uty")).Only(ctx)
-	if ent.IsNotFound(err) {
-		return model.LearningHubTaxonomy{}, ErrLearningAdminNotFound
-	}
+	inst, err := r.ensureUTYInstitution(ctx)
 	if err != nil {
 		return model.LearningHubTaxonomy{}, err
 	}
@@ -678,10 +704,7 @@ func (r *Repository) CreateLearningProgram(ctx context.Context, input model.Acad
 		}
 		return row, nil
 	}
-	inst, err := r.db.Institution.Query().Where(institution.SlugEQ("uty")).Only(ctx)
-	if ent.IsNotFound(err) {
-		return model.AdminAcademicProgram{}, ErrLearningAdminNotFound
-	}
+	inst, err := r.ensureUTYInstitution(ctx)
 	if err != nil {
 		return model.AdminAcademicProgram{}, err
 	}
@@ -788,6 +811,14 @@ func (r *Repository) LearningClusterInUse(ctx context.Context, slug string) (boo
 }
 
 func ensureMemoryTaxonomy(st *store.Store) {
+	if len(st.Institutions) == 0 {
+		st.Institutions = []model.Institution{{
+			ID:     "inst_uty",
+			Slug:   "uty",
+			Name:   "Universitas Teknologi Yogyakarta",
+			Status: "active",
+		}}
+	}
 	if len(st.AdminLearningClusters) == 0 {
 		for _, cluster := range st.LearningClusters {
 			st.AdminLearningClusters = append(st.AdminLearningClusters, model.AdminLearningCluster{LearningCluster: cluster, TitleID: cluster.Title, DescriptionID: cluster.Description, Active: true})
