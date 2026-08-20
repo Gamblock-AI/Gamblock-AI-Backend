@@ -19,6 +19,8 @@ const (
 	FieldSlug = "slug"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldNameEn holds the string denoting the name_en field in the database.
+	FieldNameEn = "name_en"
 	// FieldDegree holds the string denoting the degree field in the database.
 	FieldDegree = "degree"
 	// FieldPrimaryClusterSlug holds the string denoting the primary_cluster_slug field in the database.
@@ -41,6 +43,7 @@ var Columns = []string{
 	FieldInstitutionID,
 	FieldSlug,
 	FieldName,
+	FieldNameEn,
 	FieldDegree,
 	FieldPrimaryClusterSlug,
 	FieldSortOrder,
@@ -60,6 +63,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultNameEn holds the default value on creation for the "name_en" field.
+	DefaultNameEn string
 	// DefaultDegree holds the default value on creation for the "degree" field.
 	DefaultDegree string
 	// DefaultSortOrder holds the default value on creation for the "sort_order" field.
@@ -97,6 +102,11 @@ func BySlug(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByNameEn orders the results by the name_en field.
+func ByNameEn(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNameEn, opts...).ToFunc()
 }
 
 // ByDegree orders the results by the degree field.

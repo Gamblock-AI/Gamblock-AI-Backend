@@ -14,6 +14,7 @@ var (
 		{Name: "institution_id", Type: field.TypeString},
 		{Name: "slug", Type: field.TypeString, Unique: true},
 		{Name: "name", Type: field.TypeString},
+		{Name: "name_en", Type: field.TypeString, Default: ""},
 		{Name: "degree", Type: field.TypeString, Default: ""},
 		{Name: "primary_cluster_slug", Type: field.TypeString},
 		{Name: "sort_order", Type: field.TypeInt, Default: 0},

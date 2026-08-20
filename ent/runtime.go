@@ -63,24 +63,28 @@ import (
 func init() {
 	academicprogramFields := schema.AcademicProgram{}.Fields()
 	_ = academicprogramFields
+	// academicprogramDescNameEn is the schema descriptor for name_en field.
+	academicprogramDescNameEn := academicprogramFields[4].Descriptor()
+	// academicprogram.DefaultNameEn holds the default value on creation for the name_en field.
+	academicprogram.DefaultNameEn = academicprogramDescNameEn.Default.(string)
 	// academicprogramDescDegree is the schema descriptor for degree field.
-	academicprogramDescDegree := academicprogramFields[4].Descriptor()
+	academicprogramDescDegree := academicprogramFields[5].Descriptor()
 	// academicprogram.DefaultDegree holds the default value on creation for the degree field.
 	academicprogram.DefaultDegree = academicprogramDescDegree.Default.(string)
 	// academicprogramDescSortOrder is the schema descriptor for sort_order field.
-	academicprogramDescSortOrder := academicprogramFields[6].Descriptor()
+	academicprogramDescSortOrder := academicprogramFields[7].Descriptor()
 	// academicprogram.DefaultSortOrder holds the default value on creation for the sort_order field.
 	academicprogram.DefaultSortOrder = academicprogramDescSortOrder.Default.(int)
 	// academicprogramDescActive is the schema descriptor for active field.
-	academicprogramDescActive := academicprogramFields[7].Descriptor()
+	academicprogramDescActive := academicprogramFields[8].Descriptor()
 	// academicprogram.DefaultActive holds the default value on creation for the active field.
 	academicprogram.DefaultActive = academicprogramDescActive.Default.(bool)
 	// academicprogramDescCreatedAt is the schema descriptor for created_at field.
-	academicprogramDescCreatedAt := academicprogramFields[8].Descriptor()
+	academicprogramDescCreatedAt := academicprogramFields[9].Descriptor()
 	// academicprogram.DefaultCreatedAt holds the default value on creation for the created_at field.
 	academicprogram.DefaultCreatedAt = academicprogramDescCreatedAt.Default.(func() time.Time)
 	// academicprogramDescUpdatedAt is the schema descriptor for updated_at field.
-	academicprogramDescUpdatedAt := academicprogramFields[9].Descriptor()
+	academicprogramDescUpdatedAt := academicprogramFields[10].Descriptor()
 	// academicprogram.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	academicprogram.DefaultUpdatedAt = academicprogramDescUpdatedAt.Default.(func() time.Time)
 	// academicprogram.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

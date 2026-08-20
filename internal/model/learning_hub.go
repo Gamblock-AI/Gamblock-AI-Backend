@@ -122,7 +122,9 @@ type AdminLearningCluster struct {
 
 type AdminAcademicProgram struct {
 	AcademicProgram
-	Active bool `json:"active"`
+	NameID string `json:"name_id"`
+	NameEN string `json:"name_en"`
+	Active bool   `json:"active"`
 }
 
 type LearningHubTaxonomy struct {
@@ -144,6 +146,8 @@ type LearningClusterInput struct {
 type AcademicProgramInput struct {
 	Slug               string `json:"slug"`
 	Name               string `json:"name"`
+	NameID             string `json:"name_id,omitempty"`
+	NameEN             string `json:"name_en,omitempty"`
 	Degree             string `json:"degree"`
 	PrimaryClusterSlug string `json:"primary_cluster_slug"`
 	SortOrder          int    `json:"sort_order"`

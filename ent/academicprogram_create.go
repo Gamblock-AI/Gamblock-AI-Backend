@@ -38,6 +38,20 @@ func (_c *AcademicProgramCreate) SetName(v string) *AcademicProgramCreate {
 	return _c
 }
 
+// SetNameEn sets the "name_en" field.
+func (_c *AcademicProgramCreate) SetNameEn(v string) *AcademicProgramCreate {
+	_c.mutation.SetNameEn(v)
+	return _c
+}
+
+// SetNillableNameEn sets the "name_en" field if the given value is not nil.
+func (_c *AcademicProgramCreate) SetNillableNameEn(v *string) *AcademicProgramCreate {
+	if v != nil {
+		_c.SetNameEn(*v)
+	}
+	return _c
+}
+
 // SetDegree sets the "degree" field.
 func (_c *AcademicProgramCreate) SetDegree(v string) *AcademicProgramCreate {
 	_c.mutation.SetDegree(v)
@@ -163,6 +177,10 @@ func (_c *AcademicProgramCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *AcademicProgramCreate) defaults() {
+	if _, ok := _c.mutation.NameEn(); !ok {
+		v := academicprogram.DefaultNameEn
+		_c.mutation.SetNameEn(v)
+	}
 	if _, ok := _c.mutation.Degree(); !ok {
 		v := academicprogram.DefaultDegree
 		_c.mutation.SetDegree(v)
@@ -199,6 +217,9 @@ func (_c *AcademicProgramCreate) check() error {
 	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "AcademicProgram.name"`)}
+	}
+	if _, ok := _c.mutation.NameEn(); !ok {
+		return &ValidationError{Name: "name_en", err: errors.New(`ent: missing required field "AcademicProgram.name_en"`)}
 	}
 	if _, ok := _c.mutation.Degree(); !ok {
 		return &ValidationError{Name: "degree", err: errors.New(`ent: missing required field "AcademicProgram.degree"`)}
@@ -264,6 +285,10 @@ func (_c *AcademicProgramCreate) createSpec() (*AcademicProgram, *sqlgraph.Creat
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(academicprogram.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := _c.mutation.NameEn(); ok {
+		_spec.SetField(academicprogram.FieldNameEn, field.TypeString, value)
+		_node.NameEn = value
 	}
 	if value, ok := _c.mutation.Degree(); ok {
 		_spec.SetField(academicprogram.FieldDegree, field.TypeString, value)

@@ -70,6 +70,20 @@ func (_u *AcademicProgramUpdate) SetNillableName(v *string) *AcademicProgramUpda
 	return _u
 }
 
+// SetNameEn sets the "name_en" field.
+func (_u *AcademicProgramUpdate) SetNameEn(v string) *AcademicProgramUpdate {
+	_u.mutation.SetNameEn(v)
+	return _u
+}
+
+// SetNillableNameEn sets the "name_en" field if the given value is not nil.
+func (_u *AcademicProgramUpdate) SetNillableNameEn(v *string) *AcademicProgramUpdate {
+	if v != nil {
+		_u.SetNameEn(*v)
+	}
+	return _u
+}
+
 // SetDegree sets the "degree" field.
 func (_u *AcademicProgramUpdate) SetDegree(v string) *AcademicProgramUpdate {
 	_u.mutation.SetDegree(v)
@@ -198,6 +212,9 @@ func (_u *AcademicProgramUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(academicprogram.FieldName, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.NameEn(); ok {
+		_spec.SetField(academicprogram.FieldNameEn, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.Degree(); ok {
 		_spec.SetField(academicprogram.FieldDegree, field.TypeString, value)
 	}
@@ -274,6 +291,20 @@ func (_u *AcademicProgramUpdateOne) SetName(v string) *AcademicProgramUpdateOne 
 func (_u *AcademicProgramUpdateOne) SetNillableName(v *string) *AcademicProgramUpdateOne {
 	if v != nil {
 		_u.SetName(*v)
+	}
+	return _u
+}
+
+// SetNameEn sets the "name_en" field.
+func (_u *AcademicProgramUpdateOne) SetNameEn(v string) *AcademicProgramUpdateOne {
+	_u.mutation.SetNameEn(v)
+	return _u
+}
+
+// SetNillableNameEn sets the "name_en" field if the given value is not nil.
+func (_u *AcademicProgramUpdateOne) SetNillableNameEn(v *string) *AcademicProgramUpdateOne {
+	if v != nil {
+		_u.SetNameEn(*v)
 	}
 	return _u
 }
@@ -435,6 +466,9 @@ func (_u *AcademicProgramUpdateOne) sqlSave(ctx context.Context) (_node *Academi
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(academicprogram.FieldName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.NameEn(); ok {
+		_spec.SetField(academicprogram.FieldNameEn, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Degree(); ok {
 		_spec.SetField(academicprogram.FieldDegree, field.TypeString, value)

@@ -133,6 +133,7 @@ type AcademicProgramMutation struct {
 	institution_id       *string
 	slug                 *string
 	name                 *string
+	name_en              *string
 	degree               *string
 	primary_cluster_slug *string
 	sort_order           *int
@@ -356,6 +357,42 @@ func (m *AcademicProgramMutation) OldName(ctx context.Context) (v string, err er
 // ResetName resets all changes to the "name" field.
 func (m *AcademicProgramMutation) ResetName() {
 	m.name = nil
+}
+
+// SetNameEn sets the "name_en" field.
+func (m *AcademicProgramMutation) SetNameEn(s string) {
+	m.name_en = &s
+}
+
+// NameEn returns the value of the "name_en" field in the mutation.
+func (m *AcademicProgramMutation) NameEn() (r string, exists bool) {
+	v := m.name_en
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNameEn returns the old "name_en" field's value of the AcademicProgram entity.
+// If the AcademicProgram object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AcademicProgramMutation) OldNameEn(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNameEn is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNameEn requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNameEn: %w", err)
+	}
+	return oldValue.NameEn, nil
+}
+
+// ResetNameEn resets all changes to the "name_en" field.
+func (m *AcademicProgramMutation) ResetNameEn() {
+	m.name_en = nil
 }
 
 // SetDegree sets the "degree" field.
@@ -628,7 +665,7 @@ func (m *AcademicProgramMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AcademicProgramMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.institution_id != nil {
 		fields = append(fields, academicprogram.FieldInstitutionID)
 	}
@@ -637,6 +674,9 @@ func (m *AcademicProgramMutation) Fields() []string {
 	}
 	if m.name != nil {
 		fields = append(fields, academicprogram.FieldName)
+	}
+	if m.name_en != nil {
+		fields = append(fields, academicprogram.FieldNameEn)
 	}
 	if m.degree != nil {
 		fields = append(fields, academicprogram.FieldDegree)
@@ -670,6 +710,8 @@ func (m *AcademicProgramMutation) Field(name string) (ent.Value, bool) {
 		return m.Slug()
 	case academicprogram.FieldName:
 		return m.Name()
+	case academicprogram.FieldNameEn:
+		return m.NameEn()
 	case academicprogram.FieldDegree:
 		return m.Degree()
 	case academicprogram.FieldPrimaryClusterSlug:
@@ -697,6 +739,8 @@ func (m *AcademicProgramMutation) OldField(ctx context.Context, name string) (en
 		return m.OldSlug(ctx)
 	case academicprogram.FieldName:
 		return m.OldName(ctx)
+	case academicprogram.FieldNameEn:
+		return m.OldNameEn(ctx)
 	case academicprogram.FieldDegree:
 		return m.OldDegree(ctx)
 	case academicprogram.FieldPrimaryClusterSlug:
@@ -738,6 +782,13 @@ func (m *AcademicProgramMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case academicprogram.FieldNameEn:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNameEn(v)
 		return nil
 	case academicprogram.FieldDegree:
 		v, ok := value.(string)
@@ -853,6 +904,9 @@ func (m *AcademicProgramMutation) ResetField(name string) error {
 		return nil
 	case academicprogram.FieldName:
 		m.ResetName()
+		return nil
+	case academicprogram.FieldNameEn:
+		m.ResetNameEn()
 		return nil
 	case academicprogram.FieldDegree:
 		m.ResetDegree()

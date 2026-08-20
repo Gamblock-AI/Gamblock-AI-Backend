@@ -360,16 +360,22 @@ func (s *LearningHubService) UpdateCluster(ctx context.Context, actor, id string
 }
 
 func (s *LearningHubService) DeleteCluster(ctx context.Context, actor, id string) error {
-	if err := s.repo.DeactivateLearningCluster(ctx, id); err != nil {
+	if err := s.repo.HardDeleteLearningCluster(ctx, id); err != nil {
 		return err
 	}
-	s.recordLearningAudit(ctx, actor, "learning_hub_cluster_archived", id, nil)
+	s.recordLearningAudit(ctx, actor, "learning_hub_cluster_deleted", id, nil)
 	return nil
 }
 
 func (s *LearningHubService) CreateProgram(ctx context.Context, actor string, input model.AcademicProgramInput) (model.AdminAcademicProgram, error) {
 	input.Slug = strings.ToLower(strings.TrimSpace(input.Slug))
 	input.PrimaryClusterSlug = strings.ToLower(strings.TrimSpace(input.PrimaryClusterSlug))
+	if strings.TrimSpace(input.Name) == "" && strings.TrimSpace(input.NameID) != "" {
+		input.Name = strings.TrimSpace(input.NameID)
+	}
+	if strings.TrimSpace(input.NameEN) == "" && strings.TrimSpace(input.Name) != "" {
+		input.NameEN = strings.TrimSpace(input.Name)
+	}
 	if err := validateTaxonomySlug(input.Slug); err != nil {
 		return model.AdminAcademicProgram{}, ErrLearningHubAdminInvalid
 	}
@@ -393,6 +399,12 @@ func (s *LearningHubService) CreateProgram(ctx context.Context, actor string, in
 func (s *LearningHubService) UpdateProgram(ctx context.Context, actor, id string, input model.AcademicProgramInput) (model.AdminAcademicProgram, error) {
 	input.Slug = strings.ToLower(strings.TrimSpace(input.Slug))
 	input.PrimaryClusterSlug = strings.ToLower(strings.TrimSpace(input.PrimaryClusterSlug))
+	if strings.TrimSpace(input.Name) == "" && strings.TrimSpace(input.NameID) != "" {
+		input.Name = strings.TrimSpace(input.NameID)
+	}
+	if strings.TrimSpace(input.NameEN) == "" && strings.TrimSpace(input.Name) != "" {
+		input.NameEN = strings.TrimSpace(input.Name)
+	}
 	if err := validateTaxonomySlug(input.Slug); err != nil {
 		return model.AdminAcademicProgram{}, ErrLearningHubAdminInvalid
 	}

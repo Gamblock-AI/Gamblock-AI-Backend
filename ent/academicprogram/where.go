@@ -79,6 +79,11 @@ func Name(v string) predicate.AcademicProgram {
 	return predicate.AcademicProgram(sql.FieldEQ(FieldName, v))
 }
 
+// NameEn applies equality check predicate on the "name_en" field. It's identical to NameEnEQ.
+func NameEn(v string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldEQ(FieldNameEn, v))
+}
+
 // Degree applies equality check predicate on the "degree" field. It's identical to DegreeEQ.
 func Degree(v string) predicate.AcademicProgram {
 	return predicate.AcademicProgram(sql.FieldEQ(FieldDegree, v))
@@ -302,6 +307,71 @@ func NameEqualFold(v string) predicate.AcademicProgram {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.AcademicProgram {
 	return predicate.AcademicProgram(sql.FieldContainsFold(FieldName, v))
+}
+
+// NameEnEQ applies the EQ predicate on the "name_en" field.
+func NameEnEQ(v string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldEQ(FieldNameEn, v))
+}
+
+// NameEnNEQ applies the NEQ predicate on the "name_en" field.
+func NameEnNEQ(v string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldNEQ(FieldNameEn, v))
+}
+
+// NameEnIn applies the In predicate on the "name_en" field.
+func NameEnIn(vs ...string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldIn(FieldNameEn, vs...))
+}
+
+// NameEnNotIn applies the NotIn predicate on the "name_en" field.
+func NameEnNotIn(vs ...string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldNotIn(FieldNameEn, vs...))
+}
+
+// NameEnGT applies the GT predicate on the "name_en" field.
+func NameEnGT(v string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldGT(FieldNameEn, v))
+}
+
+// NameEnGTE applies the GTE predicate on the "name_en" field.
+func NameEnGTE(v string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldGTE(FieldNameEn, v))
+}
+
+// NameEnLT applies the LT predicate on the "name_en" field.
+func NameEnLT(v string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldLT(FieldNameEn, v))
+}
+
+// NameEnLTE applies the LTE predicate on the "name_en" field.
+func NameEnLTE(v string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldLTE(FieldNameEn, v))
+}
+
+// NameEnContains applies the Contains predicate on the "name_en" field.
+func NameEnContains(v string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldContains(FieldNameEn, v))
+}
+
+// NameEnHasPrefix applies the HasPrefix predicate on the "name_en" field.
+func NameEnHasPrefix(v string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldHasPrefix(FieldNameEn, v))
+}
+
+// NameEnHasSuffix applies the HasSuffix predicate on the "name_en" field.
+func NameEnHasSuffix(v string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldHasSuffix(FieldNameEn, v))
+}
+
+// NameEnEqualFold applies the EqualFold predicate on the "name_en" field.
+func NameEnEqualFold(v string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldEqualFold(FieldNameEn, v))
+}
+
+// NameEnContainsFold applies the ContainsFold predicate on the "name_en" field.
+func NameEnContainsFold(v string) predicate.AcademicProgram {
+	return predicate.AcademicProgram(sql.FieldContainsFold(FieldNameEn, v))
 }
 
 // DegreeEQ applies the EQ predicate on the "degree" field.

@@ -278,6 +278,7 @@ func (AcademicProgram) Fields() []ent.Field {
 		field.String("institution_id"),
 		field.String("slug").Unique(),
 		field.String("name"),
+		field.String("name_en").Default(""),
 		field.String("degree").Default(""),
 		field.String("primary_cluster_slug"),
 		field.Int("sort_order").Default(0),

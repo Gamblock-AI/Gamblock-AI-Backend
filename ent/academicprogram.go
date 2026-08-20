@@ -23,6 +23,8 @@ type AcademicProgram struct {
 	Slug string `json:"slug,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// NameEn holds the value of the "name_en" field.
+	NameEn string `json:"name_en,omitempty"`
 	// Degree holds the value of the "degree" field.
 	Degree string `json:"degree,omitempty"`
 	// PrimaryClusterSlug holds the value of the "primary_cluster_slug" field.
@@ -47,7 +49,7 @@ func (*AcademicProgram) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case academicprogram.FieldSortOrder:
 			values[i] = new(sql.NullInt64)
-		case academicprogram.FieldID, academicprogram.FieldInstitutionID, academicprogram.FieldSlug, academicprogram.FieldName, academicprogram.FieldDegree, academicprogram.FieldPrimaryClusterSlug:
+		case academicprogram.FieldID, academicprogram.FieldInstitutionID, academicprogram.FieldSlug, academicprogram.FieldName, academicprogram.FieldNameEn, academicprogram.FieldDegree, academicprogram.FieldPrimaryClusterSlug:
 			values[i] = new(sql.NullString)
 		case academicprogram.FieldCreatedAt, academicprogram.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -89,6 +91,12 @@ func (_m *AcademicProgram) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
+			}
+		case academicprogram.FieldNameEn:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name_en", values[i])
+			} else if value.Valid {
+				_m.NameEn = value.String
 			}
 		case academicprogram.FieldDegree:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -170,6 +178,9 @@ func (_m *AcademicProgram) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
+	builder.WriteString(", ")
+	builder.WriteString("name_en=")
+	builder.WriteString(_m.NameEn)
 	builder.WriteString(", ")
 	builder.WriteString("degree=")
 	builder.WriteString(_m.Degree)

@@ -281,7 +281,11 @@ func (r *Repository) GetLearningCatalog(ctx context.Context, userID, locale stri
 		result.Clusters = append(result.Clusters, model.LearningCluster{ID: cluster.ID, Slug: cluster.Slug, Title: title, Description: description, SortOrder: cluster.SortOrder})
 	}
 	for _, program := range programs {
-		result.Programs = append(result.Programs, model.AcademicProgram{ID: program.ID, InstitutionID: program.InstitutionID, Slug: program.Slug, Name: program.Name, Degree: program.Degree, PrimaryClusterSlug: program.PrimaryClusterSlug, SortOrder: program.SortOrder})
+		name := program.Name
+		if locale == "en" && program.NameEn != "" {
+			name = program.NameEn
+		}
+		result.Programs = append(result.Programs, model.AcademicProgram{ID: program.ID, InstitutionID: program.InstitutionID, Slug: program.Slug, Name: name, Degree: program.Degree, PrimaryClusterSlug: program.PrimaryClusterSlug, SortOrder: program.SortOrder})
 	}
 	for _, row := range items {
 		document := publishedDocuments[row.ID]

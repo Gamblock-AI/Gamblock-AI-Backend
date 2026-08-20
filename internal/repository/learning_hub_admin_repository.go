@@ -35,6 +35,27 @@ func adminLearningClusterFromEnt(row *ent.LearningCluster) model.AdminLearningCl
 	return model.AdminLearningCluster{LearningCluster: model.LearningCluster{ID: row.ID, Slug: row.Slug, Title: row.TitleID, Description: row.DescriptionID, SortOrder: row.SortOrder}, TitleID: row.TitleID, TitleEN: row.TitleEn, DescriptionID: row.DescriptionID, DescriptionEN: row.DescriptionEn, Active: row.Active}
 }
 
+func adminAcademicProgramFromEnt(row *ent.AcademicProgram) model.AdminAcademicProgram {
+	nameEn := row.NameEn
+	if nameEn == "" {
+		nameEn = row.Name
+	}
+	return model.AdminAcademicProgram{
+		AcademicProgram: model.AcademicProgram{
+			ID:                 row.ID,
+			InstitutionID:      row.InstitutionID,
+			Slug:               row.Slug,
+			Name:               row.Name,
+			Degree:             row.Degree,
+			PrimaryClusterSlug: row.PrimaryClusterSlug,
+			SortOrder:          row.SortOrder,
+		},
+		NameID: row.Name,
+		NameEN: nameEn,
+		Active: row.Active,
+	}
+}
+
 func (r *Repository) publishedLearningDocument(ctx context.Context, itemID string) (map[string]any, error) {
 	if r.db == nil {
 		var latest *model.LearningRevision
@@ -516,7 +537,7 @@ func (r *Repository) GetLearningHubTaxonomy(ctx context.Context) (model.Learning
 		result.Clusters = append(result.Clusters, adminLearningClusterFromEnt(row))
 	}
 	for _, row := range programs {
-		result.Programs = append(result.Programs, model.AdminAcademicProgram{AcademicProgram: model.AcademicProgram{ID: row.ID, InstitutionID: row.InstitutionID, Slug: row.Slug, Name: row.Name, Degree: row.Degree, PrimaryClusterSlug: row.PrimaryClusterSlug, SortOrder: row.SortOrder}, Active: row.Active})
+		result.Programs = append(result.Programs, adminAcademicProgramFromEnt(row))
 	}
 	return result, nil
 }
@@ -630,22 +651,33 @@ func (r *Repository) UpdateLearningCluster(ctx context.Context, id string, input
 	return adminLearningClusterFromEnt(row), nil
 }
 
-func (r *Repository) DeactivateLearningCluster(ctx context.Context, id string) error {
+func (r *Repository) HardDeleteLearningCluster(ctx context.Context, id string) error {
 	if r.db == nil {
 		r.store.Lock()
 		defer r.store.Unlock()
 		ensureMemoryTaxonomy(r.store)
-		for index := range r.store.AdminLearningClusters {
-			if r.store.AdminLearningClusters[index].ID != id {
+		for index, row := range r.store.AdminLearningClusters {
+			if row.ID != id {
 				continue
 			}
-			if inUse, useErr := r.learningClusterInUseMemory(r.store.AdminLearningClusters[index].Slug); useErr != nil {
+			if inUse, useErr := r.learningClusterInUseMemory(row.Slug); useErr != nil {
 				return useErr
 			} else if inUse {
 				return ErrLearningTaxonomyConflict
 			}
-			r.store.AdminLearningClusters[index].Active = false
-			r.syncLearningClusterMemory(r.store.AdminLearningClusters[index])
+			// Remove from AdminLearningClusters
+			r.store.AdminLearningClusters = append(
+				r.store.AdminLearningClusters[:index],
+				r.store.AdminLearningClusters[index+1:]...,
+			)
+			// Remove from LearningClusters (published memory)
+			clusters := r.store.LearningClusters[:0]
+			for _, c := range r.store.LearningClusters {
+				if c.ID != id {
+					clusters = append(clusters, c)
+				}
+			}
+			r.store.LearningClusters = clusters
 			return nil
 		}
 		return ErrLearningAdminNotFound
@@ -664,7 +696,7 @@ func (r *Repository) DeactivateLearningCluster(ctx context.Context, id string) e
 	if inUse {
 		return ErrLearningTaxonomyConflict
 	}
-	if _, err := r.db.LearningCluster.UpdateOneID(id).SetActive(false).Save(ctx); ent.IsNotFound(err) {
+	if err := r.db.LearningCluster.DeleteOneID(id).Exec(ctx); ent.IsNotFound(err) {
 		return ErrLearningAdminNotFound
 	} else if err != nil {
 		return err
@@ -674,6 +706,14 @@ func (r *Repository) DeactivateLearningCluster(ctx context.Context, id string) e
 }
 
 func (r *Repository) CreateLearningProgram(ctx context.Context, input model.AcademicProgramInput) (model.AdminAcademicProgram, error) {
+	nameID := strings.TrimSpace(input.Name)
+	if nameID == "" {
+		nameID = strings.TrimSpace(input.NameID)
+	}
+	nameEN := strings.TrimSpace(input.NameEN)
+	if nameEN == "" {
+		nameEN = nameID
+	}
 	if r.db == nil {
 		r.store.Lock()
 		defer r.store.Unlock()
@@ -697,7 +737,20 @@ func (r *Repository) CreateLearningProgram(ctx context.Context, input model.Acad
 		if input.Active != nil {
 			activeValue = *input.Active
 		}
-		row := model.AdminAcademicProgram{AcademicProgram: model.AcademicProgram{ID: "program_" + uuid.NewString(), InstitutionID: institutionID, Slug: input.Slug, Name: input.Name, Degree: input.Degree, PrimaryClusterSlug: input.PrimaryClusterSlug, SortOrder: input.SortOrder}, Active: activeValue}
+		row := model.AdminAcademicProgram{
+			AcademicProgram: model.AcademicProgram{
+				ID:                 "program_" + uuid.NewString(),
+				InstitutionID:      institutionID,
+				Slug:               input.Slug,
+				Name:               nameID,
+				Degree:             input.Degree,
+				PrimaryClusterSlug: input.PrimaryClusterSlug,
+				SortOrder:          input.SortOrder,
+			},
+			NameID: nameID,
+			NameEN: nameEN,
+			Active: activeValue,
+		}
 		r.store.AdminAcademicPrograms = append(r.store.AdminAcademicPrograms, row)
 		if activeValue {
 			r.store.AcademicPrograms = append(r.store.AcademicPrograms, row.AcademicProgram)
@@ -712,7 +765,17 @@ func (r *Repository) CreateLearningProgram(ctx context.Context, input model.Acad
 	if input.Active != nil {
 		active = *input.Active
 	}
-	row, err := r.db.AcademicProgram.Create().SetID("program_" + uuid.NewString()).SetInstitutionID(inst.ID).SetSlug(input.Slug).SetName(input.Name).SetDegree(input.Degree).SetPrimaryClusterSlug(input.PrimaryClusterSlug).SetSortOrder(input.SortOrder).SetActive(active).Save(ctx)
+	row, err := r.db.AcademicProgram.Create().
+		SetID("program_" + uuid.NewString()).
+		SetInstitutionID(inst.ID).
+		SetSlug(input.Slug).
+		SetName(nameID).
+		SetNameEn(nameEN).
+		SetDegree(input.Degree).
+		SetPrimaryClusterSlug(input.PrimaryClusterSlug).
+		SetSortOrder(input.SortOrder).
+		SetActive(active).
+		Save(ctx)
 	if ent.IsConstraintError(err) {
 		return model.AdminAcademicProgram{}, ErrLearningAdminConflict
 	}
@@ -720,10 +783,18 @@ func (r *Repository) CreateLearningProgram(ctx context.Context, input model.Acad
 		return model.AdminAcademicProgram{}, err
 	}
 	r.RefreshStore(ctx)
-	return model.AdminAcademicProgram{AcademicProgram: model.AcademicProgram{ID: row.ID, InstitutionID: row.InstitutionID, Slug: row.Slug, Name: row.Name, Degree: row.Degree, PrimaryClusterSlug: row.PrimaryClusterSlug, SortOrder: row.SortOrder}, Active: row.Active}, nil
+	return adminAcademicProgramFromEnt(row), nil
 }
 
 func (r *Repository) UpdateLearningProgram(ctx context.Context, id string, input model.AcademicProgramInput) (model.AdminAcademicProgram, error) {
+	nameID := strings.TrimSpace(input.Name)
+	if nameID == "" {
+		nameID = strings.TrimSpace(input.NameID)
+	}
+	nameEN := strings.TrimSpace(input.NameEN)
+	if nameEN == "" {
+		nameEN = nameID
+	}
 	if r.db == nil {
 		r.store.Lock()
 		defer r.store.Unlock()
@@ -744,7 +815,8 @@ func (r *Repository) UpdateLearningProgram(ctx context.Context, id string, input
 			}
 		}
 		row := &r.store.AdminAcademicPrograms[index]
-		row.Slug, row.Name, row.Degree = input.Slug, input.Name, input.Degree
+		row.Slug, row.Name, row.Degree = input.Slug, nameID, input.Degree
+		row.NameID, row.NameEN = nameID, nameEN
 		row.PrimaryClusterSlug, row.SortOrder = input.PrimaryClusterSlug, input.SortOrder
 		if input.Active != nil {
 			row.Active = *input.Active
@@ -752,7 +824,13 @@ func (r *Repository) UpdateLearningProgram(ctx context.Context, id string, input
 		r.syncLearningProgramMemory(*row)
 		return *row, nil
 	}
-	update := r.db.AcademicProgram.UpdateOneID(id).SetSlug(input.Slug).SetName(input.Name).SetDegree(input.Degree).SetPrimaryClusterSlug(input.PrimaryClusterSlug).SetSortOrder(input.SortOrder)
+	update := r.db.AcademicProgram.UpdateOneID(id).
+		SetSlug(input.Slug).
+		SetName(nameID).
+		SetNameEn(nameEN).
+		SetDegree(input.Degree).
+		SetPrimaryClusterSlug(input.PrimaryClusterSlug).
+		SetSortOrder(input.SortOrder)
 	if input.Active != nil {
 		update.SetActive(*input.Active)
 	}
@@ -767,7 +845,7 @@ func (r *Repository) UpdateLearningProgram(ctx context.Context, id string, input
 		return model.AdminAcademicProgram{}, err
 	}
 	r.RefreshStore(ctx)
-	return model.AdminAcademicProgram{AcademicProgram: model.AcademicProgram{ID: row.ID, InstitutionID: row.InstitutionID, Slug: row.Slug, Name: row.Name, Degree: row.Degree, PrimaryClusterSlug: row.PrimaryClusterSlug, SortOrder: row.SortOrder}, Active: row.Active}, nil
+	return adminAcademicProgramFromEnt(row), nil
 }
 
 func (r *Repository) DeactivateLearningProgram(ctx context.Context, id string) error {

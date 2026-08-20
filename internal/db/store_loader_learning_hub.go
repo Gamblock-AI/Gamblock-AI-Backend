@@ -52,7 +52,11 @@ func loadLearningHubStore(ctx context.Context, client *ent.Client, out *store.St
 		}
 	}
 	for _, row := range programs {
-		program := model.AdminAcademicProgram{AcademicProgram: model.AcademicProgram{ID: row.ID, InstitutionID: row.InstitutionID, Slug: row.Slug, Name: row.Name, Degree: row.Degree, PrimaryClusterSlug: row.PrimaryClusterSlug, SortOrder: row.SortOrder}, Active: row.Active}
+		nameEn := row.NameEn
+		if nameEn == "" {
+			nameEn = row.Name
+		}
+		program := model.AdminAcademicProgram{AcademicProgram: model.AcademicProgram{ID: row.ID, InstitutionID: row.InstitutionID, Slug: row.Slug, Name: row.Name, Degree: row.Degree, PrimaryClusterSlug: row.PrimaryClusterSlug, SortOrder: row.SortOrder}, NameID: row.Name, NameEN: nameEn, Active: row.Active}
 		out.AdminAcademicPrograms = append(out.AdminAcademicPrograms, program)
 		if row.Active {
 			out.AcademicPrograms = append(out.AcademicPrograms, program.AcademicProgram)
