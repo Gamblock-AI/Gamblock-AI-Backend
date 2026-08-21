@@ -42,11 +42,13 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/supportmessage"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/user"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/authn"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/crypto"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 )
 
 type ScaleSeedOptions struct {
-	BaseCount int // Target number of rows per table (typically 500-1200)
+	BaseCount            int    // Target number of rows per table (typically 500-1200)
+	JournalEncryptionKey string // 64-character hex AES-256 key for encrypted recovery/support payloads
 }
 
 type TableReport struct {
@@ -60,6 +62,18 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 		opts.BaseCount = 600
 	} else if opts.BaseCount > 2000 {
 		opts.BaseCount = 2000
+	}
+
+	encKey := opts.JournalEncryptionKey
+	if encKey == "" {
+		encKey = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+	}
+	encryptText := func(plain string) string {
+		enc, err := crypto.Encrypt(plain, encKey)
+		if err != nil {
+			return plain
+		}
+		return enc
 	}
 
 	n := opts.BaseCount
@@ -242,7 +256,7 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 			SetDescription("Akuntabilitas dan pemulihan bersama").
 			SetJoinCodeHash(Sha256Hash(fmt.Sprintf("join_code_%04d", i+1))).
 			SetJoinCodeHint("12**").
-			SetJoinCodeEncrypted("encrypted_join_code").
+			SetJoinCodeEncrypted(encryptText(fmt.Sprintf("JOIN%04d", i+1))).
 			SetStatus(accountabilitygroup.StatusActive).
 			SetCodeRotatedAt(now))
 	}
@@ -303,7 +317,7 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 			SetStudentID(studentIDs[i%len(studentIDs)]).
 			SetPartnerID(partnerIDs[i%len(partnerIDs)]).
 			SetCategory(partnercontactrequest.CategoryCheckIn).
-			SetMessageEncrypted("encrypted_contact_message").
+			SetMessageEncrypted(encryptText(fmt.Sprintf("Pesan kontak mitra pendampingan %04d", i+1))).
 			SetStatus(partnercontactrequest.StatusPending))
 	}
 	if err := saveInBatches(ctx, 200, len(pcrBuilders), func(start, end int) error {
@@ -505,6 +519,7 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 			SetSlug(fmt.Sprintf("slug-prog-%04d", i+1)).
 			SetName(fmt.Sprintf("Program Studi %04d", i+1)).
 			SetPrimaryClusterSlug("technology").
+			SetSortOrder(i+1).
 			SetActive(true))
 	}
 	if err := saveInBatches(ctx, 200, len(acadBuilders), func(start, end int) error {
@@ -523,6 +538,7 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 			SetSlug(fmt.Sprintf("slug-cluster-%04d", i+1)).
 			SetTitleID(fmt.Sprintf("Kluster Belajar %04d", i+1)).
 			SetTitleEn(fmt.Sprintf("Learning Cluster %04d", i+1)).
+			SetSortOrder(i+1).
 			SetActive(true))
 	}
 	if err := saveInBatches(ctx, 200, len(clustBuilders), func(start, end int) error {
@@ -864,7 +880,7 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 			SetSupportCaseID(caseIDs[i%len(caseIDs)]).
 			SetAuthorID(userIDs[i%len(userIDs)]).
 			SetAuthorRole(supportmessage.AuthorRoleRequester).
-			SetContentEncrypted("encrypted_support_message_body"))
+			SetContentEncrypted(encryptText(fmt.Sprintf("Pesan dukungan resmi untuk tiket %s nomor %d. Tim kami siap membantu.", caseIDs[i%len(caseIDs)], i+1))))
 	}
 	if err := saveInBatches(ctx, 200, len(smsgBuilders), func(start, end int) error {
 		_, err := client.SupportMessage.CreateBulk(smsgBuilders[start:end]...).Save(ctx)
@@ -1155,7 +1171,7 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 		reflBuilders = append(reflBuilders, client.Reflection.Create().
 			SetID(fmt.Sprintf("refl_scale_%04d", i+1)).
 			SetUserID(userIDs[i%len(userIDs)]).
-			SetContentEncrypted("encrypted_reflection_journal_body").
+			SetContentEncrypted(encryptText(fmt.Sprintf("Jurnal refleksi pemulihan hari ke-%d: Merasa lebih tenang, fokus, dan produktif.", i+1))).
 			SetStatus(reflection.StatusActive).
 			SetIsFocus(false))
 	}
@@ -1212,7 +1228,7 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 			SetKind(recoveryrecord.KindCopingPlan).
 			SetRecordDate(today).
 			SetStatus(recoveryrecord.StatusActive).
-			SetContentEncrypted("encrypted_coping_plan_content"))
+			SetContentEncrypted(encryptText("Rencana koping: Ambil jeda 5 menit, lakukan latihan pernapasan terarah, dan hubungi kontak akuntabilitas.")))
 	}
 	if err := saveInBatches(ctx, 200, len(rrecBuilders), func(start, end int) error {
 		_, err := client.RecoveryRecord.CreateBulk(rrecBuilders[start:end]...).Save(ctx)

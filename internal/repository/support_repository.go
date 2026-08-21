@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
@@ -75,6 +76,108 @@ func (r *Repository) getSupportCases(ctx context.Context, userID string) ([]mode
 		})
 	}
 	return list, nil
+}
+
+func (r *Repository) GetAdminSupportCasesPaginated(ctx context.Context, adminID string, query model.PaginationQuery) (model.PaginatedList[model.SupportCase], error) {
+	page, limit, offset := query.Normalize(10)
+	status := strings.TrimSpace(query.Status)
+	priority := strings.TrimSpace(query.Priority)
+	search := strings.ToLower(strings.TrimSpace(query.Query))
+
+	if r.db == nil {
+		snapshot := r.store.Snapshot()
+		var filtered []model.SupportCase
+		for _, c := range snapshot.SupportCases {
+			if adminID != "" && c.UserID == adminID {
+				continue
+			}
+			if status != "" && c.Status != status {
+				continue
+			}
+			if priority != "" && c.Priority != priority {
+				continue
+			}
+			if search != "" {
+				titleMatch := strings.Contains(strings.ToLower(c.Title), search)
+				idMatch := strings.Contains(strings.ToLower(c.ID), search)
+				if !titleMatch && !idMatch {
+					continue
+				}
+			}
+			filtered = append(filtered, model.SupportCase{
+				ID:          c.ID,
+				UserID:      c.UserID,
+				Title:       c.Title,
+				Type:        c.Type,
+				Status:      c.Status,
+				Priority:    c.Priority,
+				Owner:       c.Owner,
+				Impact:      c.Impact,
+				UnreadCount: c.UnreadCount,
+				ResolvedAt:  c.ResolvedAt,
+				ClosedAt:    c.ClosedAt,
+				CreatedAt:   c.CreatedAt,
+				UpdatedAt:   c.UpdatedAt,
+			})
+		}
+		total := len(filtered)
+		start := offset
+		if start > total {
+			start = total
+		}
+		end := start + limit
+		if end > total {
+			end = total
+		}
+		paged := filtered[start:end]
+		return model.NewPaginatedList(paged, total, page, limit), nil
+	}
+
+	qb := r.db.SupportCase.Query()
+	if adminID != "" {
+		qb = qb.Where(supportcase.UserIDNEQ(adminID))
+	}
+	if status != "" {
+		qb = qb.Where(supportcase.StatusEQ(supportcase.Status(status)))
+	}
+	if priority != "" {
+		qb = qb.Where(supportcase.PriorityEQ(supportcase.Priority(priority)))
+	}
+	if search != "" {
+		qb = qb.Where(supportcase.Or(
+			supportcase.SummaryContainsFold(search),
+			supportcase.IDContainsFold(search),
+		))
+	}
+
+	total, err := qb.Count(ctx)
+	if err != nil {
+		return model.PaginatedList[model.SupportCase]{}, err
+	}
+
+	rows, err := qb.Order(ent.Desc(supportcase.FieldUpdatedAt)).Limit(limit).Offset(offset).All(ctx)
+	if err != nil {
+		return model.PaginatedList[model.SupportCase]{}, err
+	}
+
+	var list []model.SupportCase
+	for _, item := range rows {
+		list = append(list, model.SupportCase{
+			ID:         item.ID,
+			UserID:     item.UserID,
+			Title:      item.Summary,
+			Type:       item.Type.String(),
+			Status:     item.Status.String(),
+			Priority:   item.Priority.String(),
+			Owner:      value(item.AssignedOperatorID),
+			Impact:     item.Impact,
+			ResolvedAt: item.ResolvedAt,
+			ClosedAt:   item.ClosedAt,
+			CreatedAt:  item.CreatedAt,
+			UpdatedAt:  item.UpdatedAt,
+		})
+	}
+	return model.NewPaginatedList(list, total, page, limit), nil
 }
 
 func (r *Repository) ClaimSupportCase(ctx context.Context, caseID, operatorID, reason string, now time.Time) (model.SupportCase, error) {
@@ -374,6 +477,61 @@ func (r *Repository) GetAllDataRequests(ctx context.Context) ([]model.DataReques
 		items = append(items, dataRequestFromEnt(row))
 	}
 	return items, nil
+}
+
+func (r *Repository) GetAllDataRequestsPaginated(ctx context.Context, query model.PaginationQuery) (model.PaginatedList[model.DataRequest], error) {
+	page, limit, offset := query.Normalize(10)
+	status := strings.TrimSpace(query.Status)
+	reqType := strings.TrimSpace(query.Type)
+
+	if r.db == nil {
+		all := r.store.Snapshot().DataRequests
+		var filtered []model.DataRequest
+		for _, req := range all {
+			if status != "" && req.Status != status {
+				continue
+			}
+			if reqType != "" && req.Type != reqType {
+				continue
+			}
+			filtered = append(filtered, req)
+		}
+		total := len(filtered)
+		start := offset
+		if start > total {
+			start = total
+		}
+		end := start + limit
+		if end > total {
+			end = total
+		}
+		paged := filtered[start:end]
+		return model.NewPaginatedList(paged, total, page, limit), nil
+	}
+
+	qb := r.db.DataRequest.Query()
+	if status != "" {
+		qb = qb.Where(datarequest.StatusEQ(datarequest.Status(status)))
+	}
+	if reqType != "" {
+		qb = qb.Where(datarequest.TypeEQ(datarequest.Type(reqType)))
+	}
+
+	total, err := qb.Count(ctx)
+	if err != nil {
+		return model.PaginatedList[model.DataRequest]{}, err
+	}
+
+	rows, err := qb.Order(ent.Desc(datarequest.FieldRequestedAt)).Limit(limit).Offset(offset).All(ctx)
+	if err != nil {
+		return model.PaginatedList[model.DataRequest]{}, err
+	}
+
+	items := make([]model.DataRequest, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, dataRequestFromEnt(row))
+	}
+	return model.NewPaginatedList(items, total, page, limit), nil
 }
 
 func (r *Repository) DataRequestByID(ctx context.Context, id string) (model.DataRequest, error) {

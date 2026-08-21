@@ -44,7 +44,8 @@ func main() {
 	log.Printf("starting scale seeding (target: %d rows per table)...", *countFlag)
 
 	reports, err := seedscale.SeedScaleDatabase(ctx, client, seedscale.ScaleSeedOptions{
-		BaseCount: *countFlag,
+		BaseCount:            *countFlag,
+		JournalEncryptionKey: cfg.JournalEncryptionKey,
 	})
 	if err != nil {
 		log.Fatalf("scale seeding failed: %v", err)

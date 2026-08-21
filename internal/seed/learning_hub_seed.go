@@ -232,11 +232,11 @@ func seedLearningHubWithClient(ctx context.Context, client *ent.Client, mediaPat
 	}
 	reviewedAt := time.Date(2026, time.August, 2, 0, 0, 0, 0, time.UTC)
 	for clusterIndex, cluster := range learningSeedClusters {
-		if err := seedLearningCluster(ctx, client, cluster, clusterIndex); err != nil {
+		if err := seedLearningCluster(ctx, client, cluster, clusterIndex+1); err != nil {
 			return err
 		}
 		for programIndex, program := range cluster.programs {
-			if err := seedLearningProgram(ctx, client, uty.ID, program, cluster.slug, clusterIndex*10+programIndex); err != nil {
+			if err := seedLearningProgram(ctx, client, uty.ID, program, cluster.slug, (clusterIndex+1)*10+programIndex+1); err != nil {
 				return err
 			}
 		}

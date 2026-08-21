@@ -42,6 +42,72 @@ func (r *Repository) ListAdminAccounts(ctx context.Context) ([]model.AdminAccoun
 	return items, nil
 }
 
+func (r *Repository) ListAdminAccountsPaginated(ctx context.Context, query model.PaginationQuery) (model.PaginatedList[model.AdminAccount], error) {
+	page, limit, offset := query.Normalize(10)
+	role := strings.TrimSpace(query.Role)
+	search := strings.ToLower(strings.TrimSpace(query.Query))
+
+	if r.db == nil {
+		users := r.store.Snapshot().Users
+		var filtered []model.AdminAccount
+		for _, user := range users {
+			if !model.IsAccountRole(user.Role) {
+				continue
+			}
+			if role != "" && user.Role != role {
+				continue
+			}
+			if search != "" {
+				nameMatch := strings.Contains(strings.ToLower(user.DisplayName), search)
+				emailMatch := strings.Contains(strings.ToLower(user.Email), search)
+				if !nameMatch && !emailMatch {
+					continue
+				}
+			}
+			filtered = append(filtered, adminAccountFromUser(user))
+		}
+		sort.Slice(filtered, func(i, j int) bool { return filtered[i].Email < filtered[j].Email })
+		total := len(filtered)
+		start := offset
+		if start > total {
+			start = total
+		}
+		end := start + limit
+		if end > total {
+			end = total
+		}
+		paged := filtered[start:end]
+		return model.NewPaginatedList(paged, total, page, limit), nil
+	}
+
+	qb := r.db.User.Query().Where(entuser.RoleIn(entuser.RoleUser, entuser.RolePartner, entuser.RoleAdmin))
+	if role != "" {
+		qb = qb.Where(entuser.RoleEQ(entuser.Role(role)))
+	}
+	if search != "" {
+		qb = qb.Where(entuser.Or(
+			entuser.DisplayNameContainsFold(search),
+			entuser.EmailContainsFold(search),
+		))
+	}
+
+	total, err := qb.Count(ctx)
+	if err != nil {
+		return model.PaginatedList[model.AdminAccount]{}, err
+	}
+
+	rows, err := qb.Order(ent.Asc(entuser.FieldEmail)).Limit(limit).Offset(offset).All(ctx)
+	if err != nil {
+		return model.PaginatedList[model.AdminAccount]{}, err
+	}
+
+	items := make([]model.AdminAccount, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, adminAccountFromUser(userFromEnt(row)))
+	}
+	return model.NewPaginatedList(items, total, page, limit), nil
+}
+
 func (r *Repository) ListActiveAdminPhones(ctx context.Context) ([]string, error) {
 	if r.db == nil {
 		users := r.store.Snapshot().Users

@@ -77,7 +77,7 @@ func (r *Repository) GetEducationModules(ctx context.Context) ([]model.Education
 	if r.db == nil {
 		return r.store.Snapshot().Modules, nil
 	}
-	rows, err := r.db.PsychoeducationModule.Query().All(ctx)
+	rows, err := r.db.PsychoeducationModule.Query().Order(ent.Desc(psychoeducationmodule.FieldUpdatedAt)).All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +86,70 @@ func (r *Repository) GetEducationModules(ctx context.Context) ([]model.Education
 		list = append(list, moduleFromEnt(row))
 	}
 	return list, nil
+}
+
+func (r *Repository) GetAdminEducationModules(ctx context.Context, query model.PaginationQuery) (model.PaginatedList[model.EducationModule], error) {
+	page, limit, offset := query.Normalize(10)
+	status := strings.TrimSpace(query.Status)
+	search := strings.ToLower(strings.TrimSpace(query.Query))
+
+	if r.db == nil {
+		all := r.store.Snapshot().Modules
+		filtered := make([]model.EducationModule, 0, len(all))
+		for _, m := range all {
+			if status != "" && m.Status != status {
+				continue
+			}
+			if search != "" {
+				titleMatch := strings.Contains(strings.ToLower(m.Title), search)
+				slugMatch := strings.Contains(strings.ToLower(m.Slug), search)
+				summaryMatch := strings.Contains(strings.ToLower(m.Summary), search)
+				if !titleMatch && !slugMatch && !summaryMatch {
+					continue
+				}
+			}
+			filtered = append(filtered, m)
+		}
+		total := len(filtered)
+		start := offset
+		if start > total {
+			start = total
+		}
+		end := start + limit
+		if end > total {
+			end = total
+		}
+		paged := filtered[start:end]
+		return model.NewPaginatedList(paged, total, page, limit), nil
+	}
+
+	qb := r.db.PsychoeducationModule.Query()
+	if status != "" {
+		qb = qb.Where(psychoeducationmodule.StatusEQ(psychoeducationmodule.Status(status)))
+	}
+	if search != "" {
+		qb = qb.Where(psychoeducationmodule.Or(
+			psychoeducationmodule.TitleContainsFold(search),
+			psychoeducationmodule.SlugContainsFold(search),
+			psychoeducationmodule.SummaryContainsFold(search),
+		))
+	}
+
+	total, err := qb.Count(ctx)
+	if err != nil {
+		return model.PaginatedList[model.EducationModule]{}, err
+	}
+
+	rows, err := qb.Order(ent.Desc(psychoeducationmodule.FieldUpdatedAt)).Limit(limit).Offset(offset).All(ctx)
+	if err != nil {
+		return model.PaginatedList[model.EducationModule]{}, err
+	}
+
+	list := make([]model.EducationModule, 0, len(rows))
+	for _, row := range rows {
+		list = append(list, moduleFromEnt(row))
+	}
+	return model.NewPaginatedList(list, total, page, limit), nil
 }
 
 func (r *Repository) GetPublishedEducationModules(ctx context.Context) ([]model.EducationModule, error) {

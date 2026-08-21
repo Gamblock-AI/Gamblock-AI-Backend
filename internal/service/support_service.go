@@ -195,6 +195,18 @@ func (s *SupportService) Transition(ctx context.Context, actorID, actorMode, cas
 	return fmt.Errorf("requester cannot perform this support transition")
 }
 
+func isHexCiphertext(s string) bool {
+	if len(s) < 32 {
+		return false
+	}
+	for _, c := range s {
+		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
+			return false
+		}
+	}
+	return true
+}
+
 func (s *SupportService) decryptSupportMessages(items []model.SupportMessage) error {
 	if len(items) == 0 {
 		return nil
@@ -203,10 +215,15 @@ func (s *SupportService) decryptSupportMessages(items []model.SupportMessage) er
 		return fmt.Errorf("support message encryption key is unavailable")
 	}
 	for i := range items {
+		if !isHexCiphertext(items[i].Content) {
+			// Already plaintext (e.g. unencrypted seed or fallback string)
+			continue
+		}
 		plain, err := appcrypto.Decrypt(items[i].Content, s.cfg.JournalEncryptionKey)
 		if err != nil {
-			s.logger.Error("failed to decrypt support message", zap.String("message_id", items[i].ID))
-			return fmt.Errorf("support message decryption failed")
+			s.logger.Warn("failed to decrypt support message, using fallback", zap.String("message_id", items[i].ID), zap.Error(err))
+			items[i].Content = "[Pesan terenkripsi tidak dapat dimuat]"
+			continue
 		}
 		items[i].Content = plain
 	}
@@ -229,6 +246,10 @@ func (s *SupportService) GetSupportCasesForAdmin(ctx context.Context, adminID st
 		}
 	}
 	return filtered, nil
+}
+
+func (s *SupportService) GetSupportCasesForAdminPaginated(ctx context.Context, adminID string, query model.PaginationQuery) (model.PaginatedList[model.SupportCase], error) {
+	return s.repo.GetAdminSupportCasesPaginated(ctx, adminID, query)
 }
 
 func (s *SupportService) Claim(ctx context.Context, operatorID, caseID, reason string) (model.SupportCase, error) {
@@ -280,13 +301,18 @@ func (s *SupportService) CreateSupportCase(ctx context.Context, userID, title, c
 }
 
 func (s *SupportService) GetDataRequests(ctx context.Context, userID string) ([]model.DataRequest, error) {
-	s.purgeExpiredDataExports(ctx)
+	go s.purgeExpiredDataExports(context.Background())
 	return s.repo.GetDataRequests(ctx, userID)
 }
 
 func (s *SupportService) GetAllDataRequests(ctx context.Context) ([]model.DataRequest, error) {
-	s.purgeExpiredDataExports(ctx)
+	go s.purgeExpiredDataExports(context.Background())
 	return s.repo.GetAllDataRequests(ctx)
+}
+
+func (s *SupportService) GetAllDataRequestsPaginated(ctx context.Context, query model.PaginationQuery) (model.PaginatedList[model.DataRequest], error) {
+	go s.purgeExpiredDataExports(context.Background())
+	return s.repo.GetAllDataRequestsPaginated(ctx, query)
 }
 
 func (s *SupportService) purgeExpiredDataExports(ctx context.Context) {

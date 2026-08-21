@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/service"
 )
 
@@ -44,6 +45,19 @@ func (h *Handler) CurrentEmergencyKeyRequest(c *gin.Context) {
 }
 
 func (h *Handler) PendingEmergencyKeyRequests(c *gin.Context) {
+	var query model.PaginationQuery
+	_ = c.ShouldBindQuery(&query)
+
+	if c.Query("page") != "" || c.Query("limit") != "" || c.Query("status") != "" {
+		res, err := h.services.Admin.GetPendingEmergencyKeyRequestsPaginated(c.Request.Context(), query)
+		if err != nil {
+			h.respondErrorErr(c, http.StatusInternalServerError, "generate_key_failed", err)
+			return
+		}
+		h.respond(c, http.StatusOK, res)
+		return
+	}
+
 	requests, err := h.services.Admin.GetPendingEmergencyKeyRequests(c.Request.Context())
 	if err != nil {
 		h.respondErrorErr(c, http.StatusInternalServerError, "generate_key_failed", err)

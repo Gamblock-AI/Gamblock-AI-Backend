@@ -54,6 +54,19 @@ func (h *Handler) ReplaceAdminSiteSocialLinks(c *gin.Context) {
 }
 
 func (h *Handler) AdminAuditEvents(c *gin.Context) {
+	var query model.PaginationQuery
+	_ = c.ShouldBindQuery(&query)
+
+	if c.Query("page") != "" || c.Query("limit") != "" || c.Query("action") != "" || c.Query("actor") != "" || c.Query("q") != "" {
+		res, err := h.services.Admin.AuditEventsPaginated(c.Request.Context(), query)
+		if err != nil {
+			h.respondErrorErr(c, http.StatusInternalServerError, "audit_events_failed", err)
+			return
+		}
+		h.respond(c, http.StatusOK, res)
+		return
+	}
+
 	items, err := h.services.Admin.AuditEvents(c.Request.Context())
 	if err != nil {
 		h.respondErrorErr(c, http.StatusInternalServerError, "audit_events_failed", err)
@@ -63,6 +76,19 @@ func (h *Handler) AdminAuditEvents(c *gin.Context) {
 }
 
 func (h *Handler) AdminAccounts(c *gin.Context) {
+	var query model.PaginationQuery
+	_ = c.ShouldBindQuery(&query)
+
+	if c.Query("page") != "" || c.Query("limit") != "" || c.Query("role") != "" || c.Query("q") != "" {
+		res, err := h.services.Admin.AccountsPaginated(c.Request.Context(), query)
+		if err != nil {
+			h.respondErrorErr(c, http.StatusInternalServerError, "admin_accounts_fetch_failed", err)
+			return
+		}
+		h.respond(c, http.StatusOK, res)
+		return
+	}
+
 	accounts, err := h.services.Admin.Accounts(c.Request.Context())
 	if err != nil {
 		h.respondErrorErr(c, http.StatusInternalServerError, "admin_accounts_fetch_failed", err)
@@ -155,6 +181,19 @@ func (h *Handler) ReleaseAdminSupportCase(c *gin.Context) {
 }
 
 func (h *Handler) AdminDataRequests(c *gin.Context) {
+	var query model.PaginationQuery
+	_ = c.ShouldBindQuery(&query)
+
+	if c.Query("page") != "" || c.Query("limit") != "" || c.Query("status") != "" || c.Query("type") != "" {
+		res, err := h.services.Support.GetAllDataRequestsPaginated(c.Request.Context(), query)
+		if err != nil {
+			h.respondErrorErr(c, http.StatusInternalServerError, "fetch_data_requests_failed", err)
+			return
+		}
+		h.respond(c, http.StatusOK, res)
+		return
+	}
+
 	items, err := h.services.Support.GetAllDataRequests(c.Request.Context())
 	if err != nil {
 		h.respondErrorErr(c, http.StatusInternalServerError, "fetch_data_requests_failed", err)

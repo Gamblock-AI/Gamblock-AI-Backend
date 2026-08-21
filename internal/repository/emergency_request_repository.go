@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
@@ -88,6 +89,65 @@ func (r *Repository) GetPendingEmergencyKeyRequests(ctx context.Context, now tim
 		items = append(items, emergencyRequestFromEnt(row))
 	}
 	return items, nil
+}
+
+func (r *Repository) GetPendingEmergencyKeyRequestsPaginated(ctx context.Context, now time.Time, query model.PaginationQuery) (model.PaginatedList[model.EmergencyKeyRequest], error) {
+	page, limit, offset := query.Normalize(5)
+	status := strings.TrimSpace(query.Status)
+
+	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+		items := make([]model.EmergencyKeyRequest, 0)
+		for index := range r.store.EmergencyKeyRequests {
+			item := &r.store.EmergencyKeyRequests[index]
+			expireEmergencyRequest(item, now, false)
+			if status != "" {
+				if item.Status == status {
+					items = append(items, *item)
+				}
+			} else if item.Status == "pending" || item.Status == "reviewed" {
+				items = append(items, *item)
+			}
+		}
+		total := len(items)
+		start := offset
+		if start > total {
+			start = total
+		}
+		end := start + limit
+		if end > total {
+			end = total
+		}
+		paged := items[start:end]
+		return model.NewPaginatedList(paged, total, page, limit), nil
+	}
+
+	expireEmergencyRequests(ctx, r, now, "", "", false)
+	qb := r.db.EmergencyKeyRequest.Query().Where(
+		emergencykeyrequest.RequestExpiresAtGT(now),
+	)
+	if status != "" {
+		qb = qb.Where(emergencykeyrequest.StatusEQ(emergencykeyrequest.Status(status)))
+	} else {
+		qb = qb.Where(emergencykeyrequest.StatusIn(emergencykeyrequest.StatusPending, emergencykeyrequest.StatusReviewed))
+	}
+
+	total, err := qb.Count(ctx)
+	if err != nil {
+		return model.PaginatedList[model.EmergencyKeyRequest]{}, err
+	}
+
+	rows, err := qb.Order(emergencykeyrequest.ByCreatedAt()).Limit(limit).Offset(offset).All(ctx)
+	if err != nil {
+		return model.PaginatedList[model.EmergencyKeyRequest]{}, err
+	}
+
+	items := make([]model.EmergencyKeyRequest, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, emergencyRequestFromEnt(row))
+	}
+	return model.NewPaginatedList(items, total, page, limit), nil
 }
 
 func expireEmergencyRequest(item *model.EmergencyKeyRequest, now time.Time, expireApproved bool) {

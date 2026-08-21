@@ -47,7 +47,7 @@ func SeedSiteSocialLinks(ctx context.Context, client *ent.Client) error {
 			SetLabel(link.label).
 			SetURL(link.url).
 			SetEnabled(true).
-			SetSortOrder(index).
+			SetSortOrder(index + 1).
 			SetUpdatedBy("seed").
 			Save(ctx); err != nil {
 			return err

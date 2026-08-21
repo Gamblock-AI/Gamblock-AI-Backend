@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
@@ -126,6 +127,82 @@ func (r *Repository) ListAuditEvents(ctx context.Context, limit int) ([]model.Au
 			Metadata: row.MetadataJSON, CreatedAt: row.CreatedAt})
 	}
 	return items, nil
+}
+
+func (r *Repository) ListAuditEventsPaginated(ctx context.Context, query model.PaginationQuery) (model.PaginatedList[model.AuditEvent], error) {
+	page, limit, offset := query.Normalize(10)
+	action := strings.TrimSpace(query.Action)
+	actor := strings.ToLower(strings.TrimSpace(query.Actor))
+	search := strings.ToLower(strings.TrimSpace(query.Query))
+
+	if r.db == nil {
+		all := r.store.Snapshot().AuditEvents
+		var filtered []model.AuditEvent
+		for _, event := range all {
+			if action != "" && event.Action != action {
+				continue
+			}
+			if actor != "" && !strings.Contains(strings.ToLower(event.Actor), actor) {
+				continue
+			}
+			if search != "" {
+				actionMatch := strings.Contains(strings.ToLower(event.Action), search)
+				actorMatch := strings.Contains(strings.ToLower(event.Actor), search)
+				targetMatch := strings.Contains(strings.ToLower(event.Target), search)
+				reasonMatch := strings.Contains(strings.ToLower(event.Reason), search)
+				if !actionMatch && !actorMatch && !targetMatch && !reasonMatch {
+					continue
+				}
+			}
+			filtered = append(filtered, event)
+		}
+		sort.Slice(filtered, func(i, j int) bool { return filtered[i].CreatedAt.After(filtered[j].CreatedAt) })
+		total := len(filtered)
+		start := offset
+		if start > total {
+			start = total
+		}
+		end := start + limit
+		if end > total {
+			end = total
+		}
+		paged := filtered[start:end]
+		return model.NewPaginatedList(paged, total, page, limit), nil
+	}
+
+	qb := r.db.AuditLog.Query()
+	if action != "" {
+		qb = qb.Where(auditlog.ActionEQ(action))
+	}
+	if actor != "" {
+		qb = qb.Where(auditlog.ActorEmailContainsFold(actor))
+	}
+	if search != "" {
+		qb = qb.Where(auditlog.Or(
+			auditlog.ActionContainsFold(search),
+			auditlog.ActorEmailContainsFold(search),
+			auditlog.TargetIDContainsFold(search),
+			auditlog.ReasonContainsFold(search),
+		))
+	}
+
+	total, err := qb.Count(ctx)
+	if err != nil {
+		return model.PaginatedList[model.AuditEvent]{}, err
+	}
+
+	rows, err := qb.Order(ent.Desc(auditlog.FieldCreatedAt)).Limit(limit).Offset(offset).All(ctx)
+	if err != nil {
+		return model.PaginatedList[model.AuditEvent]{}, err
+	}
+
+	items := make([]model.AuditEvent, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, model.AuditEvent{ID: row.ID, ActorID: row.ActorID, Actor: row.ActorEmail,
+			Action: row.Action, TargetType: row.TargetType, Target: row.TargetID, Reason: row.Reason,
+			Metadata: row.MetadataJSON, CreatedAt: row.CreatedAt})
+	}
+	return model.NewPaginatedList(items, total, page, limit), nil
 }
 
 func (r *Repository) PurgeAuditEventsBefore(ctx context.Context, cutoff time.Time) error {

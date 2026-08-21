@@ -280,6 +280,10 @@ func (s *EducationService) AdminModules(ctx context.Context) ([]model.EducationM
 	return s.repo.GetEducationModules(ctx)
 }
 
+func (s *EducationService) AdminModulesPaginated(ctx context.Context, query model.PaginationQuery) (model.PaginatedList[model.EducationModule], error) {
+	return s.repo.GetAdminEducationModules(ctx, query)
+}
+
 func (s *EducationService) AdminModule(ctx context.Context, id string) (model.EducationModule, error) {
 	return s.repo.GetEducationModuleByID(ctx, id)
 }

@@ -134,6 +134,82 @@ func (r *Repository) ListAdminLearningItems(ctx context.Context, status string) 
 	return out, nil
 }
 
+func (r *Repository) ListAdminLearningItemsPaginated(ctx context.Context, query model.PaginationQuery) (model.PaginatedList[model.AdminLearningItem], error) {
+	page, limit, offset := query.Normalize(15)
+	status := strings.TrimSpace(query.Status)
+	search := strings.ToLower(strings.TrimSpace(query.Query))
+
+	if r.db == nil {
+		rows := append([]model.AdminLearningItem(nil), r.store.Snapshot().AdminLearningItems...)
+		if len(rows) == 0 {
+			for _, item := range r.store.Snapshot().LearningItems {
+				rows = append(rows, model.AdminLearningItem{LearningItem: item, Status: "published", DraftRevision: 1, PublishedRevision: 1, DraftDocument: map[string]any{}})
+			}
+		}
+		filtered := make([]model.AdminLearningItem, 0, len(rows))
+		for _, item := range rows {
+			if status != "" && item.Status != status {
+				continue
+			}
+			if search != "" {
+				titleIDMatch := strings.Contains(strings.ToLower(item.TitleID), search)
+				titleENMatch := strings.Contains(strings.ToLower(item.TitleEN), search)
+				slugMatch := strings.Contains(strings.ToLower(item.Slug), search)
+				summaryMatch := strings.Contains(strings.ToLower(item.SummaryID), search)
+				if !titleIDMatch && !titleENMatch && !slugMatch && !summaryMatch {
+					continue
+				}
+			}
+			filtered = append(filtered, item)
+		}
+		sort.Slice(filtered, func(i, j int) bool { return filtered[i].UpdatedAt.After(filtered[j].UpdatedAt) })
+		total := len(filtered)
+		start := offset
+		if start > total {
+			start = total
+		}
+		end := start + limit
+		if end > total {
+			end = total
+		}
+		paged := filtered[start:end]
+		return model.NewPaginatedList(paged, total, page, limit), nil
+	}
+
+	qb := r.db.LearningItem.Query()
+	if status != "" {
+		qb = qb.Where(learningitem.StatusEQ(learningitem.Status(status)))
+	}
+	if search != "" {
+		qb = qb.Where(learningitem.Or(
+			learningitem.TitleIDContainsFold(search),
+			learningitem.TitleEnContainsFold(search),
+			learningitem.SlugContainsFold(search),
+			learningitem.SummaryIDContainsFold(search),
+		))
+	}
+
+	total, err := qb.Count(ctx)
+	if err != nil {
+		return model.PaginatedList[model.AdminLearningItem]{}, err
+	}
+
+	rows, err := qb.Order(ent.Desc(learningitem.FieldUpdatedAt)).Limit(limit).Offset(offset).All(ctx)
+	if err != nil {
+		return model.PaginatedList[model.AdminLearningItem]{}, err
+	}
+
+	out := make([]model.AdminLearningItem, 0, len(rows))
+	for _, row := range rows {
+		published, err := r.publishedLearningDocument(ctx, row.ID)
+		if err != nil {
+			return model.PaginatedList[model.AdminLearningItem]{}, err
+		}
+		out = append(out, adminLearningItemFromEnt(row, published))
+	}
+	return model.NewPaginatedList(out, total, page, limit), nil
+}
+
 func slicesDeleteAdminItems(items []model.AdminLearningItem, status string) []model.AdminLearningItem {
 	out := items[:0]
 	for _, item := range items {

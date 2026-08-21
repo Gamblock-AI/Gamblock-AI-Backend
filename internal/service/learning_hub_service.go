@@ -206,6 +206,14 @@ func (s *LearningHubService) AdminItems(ctx context.Context, status string) ([]m
 	return s.repo.ListAdminLearningItems(ctx, status)
 }
 
+func (s *LearningHubService) AdminItemsPaginated(ctx context.Context, query model.PaginationQuery) (model.PaginatedList[model.AdminLearningItem], error) {
+	status := strings.TrimSpace(query.Status)
+	if status != "" && !learningItemStatuses[status] {
+		return model.PaginatedList[model.AdminLearningItem]{}, ErrLearningHubAdminInvalid
+	}
+	return s.repo.ListAdminLearningItemsPaginated(ctx, query)
+}
+
 func (s *LearningHubService) AdminItem(ctx context.Context, id string) (model.AdminLearningItem, error) {
 	return s.repo.GetAdminLearningItem(ctx, id)
 }

@@ -41,6 +41,7 @@ func NewSeeded() *Store {
 			Status: "active", Sharing: SharingPreferences{ProtectionHealth: true, ProtectionActivity: true, RecoveryEngagement: true, EducationProgress: true},
 			JoinedAt: now, CreatedAt: now, UpdatedAt: now,
 		}},
+		Organizations: []Organization{{ID: "org_uty", Slug: "uty", Name: "Universitas Teknologi Yogyakarta", Status: "active", CreatedAt: now, UpdatedAt: now}},
 		AggregateEvents: []AggregateEvent{
 			{ID: "agg_seed_gading_android_0", UserID: "usr_gading", DeviceID: "dev_android", IdempotencyKey: "seed:gading:android:0:block", EventType: "block_count_sync", EventDate: aggregateDate(0), Count: 3, CreatedAt: now},
 			{ID: "agg_seed_gading_windows_0", UserID: "usr_gading", DeviceID: "dev_windows", IdempotencyKey: "seed:gading:windows:0:block", EventType: "block_count_sync", EventDate: aggregateDate(0), Count: 1, CreatedAt: now},

@@ -99,6 +99,20 @@ func learningHubAdminError(err error) (int, string) {
 }
 
 func (h *Handler) AdminLearningHubItems(c *gin.Context) {
+	var query model.PaginationQuery
+	_ = c.ShouldBindQuery(&query)
+
+	if c.Query("page") != "" || c.Query("limit") != "" || c.Query("q") != "" {
+		res, err := h.services.LearningHub.AdminItemsPaginated(c.Request.Context(), query)
+		if err != nil {
+			status, code := learningHubAdminError(err)
+			h.respondErrorErr(c, status, code, err)
+			return
+		}
+		h.respond(c, http.StatusOK, res)
+		return
+	}
+
 	items, err := h.services.LearningHub.AdminItems(c.Request.Context(), c.Query("status"))
 	if err != nil {
 		status, code := learningHubAdminError(err)

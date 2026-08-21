@@ -124,8 +124,13 @@ func allowedSocialQuery(platform string, parsed *url.URL) bool {
 }
 
 func (s *AdminService) AuditEvents(ctx context.Context) ([]model.AuditEvent, error) {
-	_ = s.repo.PurgeAuditEventsBefore(ctx, time.Now().UTC().AddDate(-2, 0, 0))
+	go func() { _ = s.repo.PurgeAuditEventsBefore(context.Background(), time.Now().UTC().AddDate(-2, 0, 0)) }()
 	return s.repo.ListAuditEvents(ctx, 200)
+}
+
+func (s *AdminService) AuditEventsPaginated(ctx context.Context, query model.PaginationQuery) (model.PaginatedList[model.AuditEvent], error) {
+	go func() { _ = s.repo.PurgeAuditEventsBefore(context.Background(), time.Now().UTC().AddDate(-2, 0, 0)) }()
+	return s.repo.ListAuditEventsPaginated(ctx, query)
 }
 
 func (s *AdminService) audit(ctx context.Context, actorID, action, targetType, targetID, reason string, metadata map[string]any) error {
@@ -146,6 +151,10 @@ func (s *AdminService) RecordAudit(ctx context.Context, actorID, action, targetT
 
 func (s *AdminService) Accounts(ctx context.Context) ([]model.AdminAccount, error) {
 	return s.repo.ListAdminAccounts(ctx)
+}
+
+func (s *AdminService) AccountsPaginated(ctx context.Context, query model.PaginationQuery) (model.PaginatedList[model.AdminAccount], error) {
+	return s.repo.ListAdminAccountsPaginated(ctx, query)
 }
 
 func (s *AdminService) CreateAccount(ctx context.Context, actorID, email, phone, displayName, role, reason string) (model.User, string, error) {
@@ -337,6 +346,10 @@ func (s *AdminService) GetCurrentEmergencyKeyRequest(ctx context.Context, reques
 
 func (s *AdminService) GetPendingEmergencyKeyRequests(ctx context.Context) ([]model.EmergencyKeyRequest, error) {
 	return s.repo.GetPendingEmergencyKeyRequests(ctx, time.Now().UTC())
+}
+
+func (s *AdminService) GetPendingEmergencyKeyRequestsPaginated(ctx context.Context, query model.PaginationQuery) (model.PaginatedList[model.EmergencyKeyRequest], error) {
+	return s.repo.GetPendingEmergencyKeyRequestsPaginated(ctx, time.Now().UTC(), query)
 }
 
 func (s *AdminService) ReviewEmergencyKeyRequest(ctx context.Context, requestID, reviewedBy string) (model.EmergencyKeyRequest, error) {
