@@ -50,7 +50,8 @@ The production-safe `make seeder` path never creates demo users or activity.
 Useful Makefile targets: `make dev` (air live-reload), `make start` (build +
 run `./bin/api` with `.env`), `make key-generate`,
 `make lint`, `make migrate-up`, `make seeder`, `make seed`,
-`make seed-education`, `make seed-learning-hub`, and opt-in `make verify`. The
+`make seed-education`, `make seed-learning-hub`, `make seed-scale` (local 500-2000 rows/table),
+`make seed-local-accounts` (clean zero-data local accounts), and opt-in `make verify`. The
 Docker image exposes the same operational commands as `/app/migrate-up`,
 `/app/migrate-down`, `/app/reset-storage`, `/app/seeder`, `/app/demo-seeder`,
 `/app/seed-accounts`, and `/app/seed-learning-hub`; the automatic production

@@ -3,7 +3,7 @@ ifneq (,$(wildcard .env))
     export
 endif
 
-.PHONY: dev run build start generate key-generate migrate migrate-up migrate-down migrate-fresh reset-storage seed seeder demo-seeder seed-accounts seed-education seed-learning-hub lint test test-cover verify
+.PHONY: dev run build start generate key-generate migrate migrate-up migrate-down migrate-fresh reset-storage seed seeder demo-seeder seed-accounts seed-education seed-learning-hub seed-scale seed-local-accounts lint test test-cover verify
 
 APP_NAME := api
 BUILD_DIR := ./bin
@@ -24,6 +24,8 @@ build:
 	go build -o $(BUILD_DIR)/demo-seeder ./cmd/demo-seeder
 	go build -o $(BUILD_DIR)/seed-accounts ./cmd/seed-accounts
 	go build -o $(BUILD_DIR)/seed-learning-hub ./cmd/seed-learning-hub
+	go build -o $(BUILD_DIR)/seed-scale ./cmd/seed-scale
+	go build -o $(BUILD_DIR)/seed-local-accounts ./cmd/seed-local-accounts
 
 generate:
 	go run entgo.io/ent/cmd/ent generate ./ent/schema
@@ -117,6 +119,12 @@ seed-education:
 
 seed-learning-hub:
 	go run ./cmd/seed-learning-hub
+
+seed-scale:
+	go run ./cmd/seed-scale
+
+seed-local-accounts:
+	go run ./cmd/seed-local-accounts
 
 lint:
 	go vet ./...

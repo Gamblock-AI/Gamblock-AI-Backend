@@ -70,6 +70,13 @@ Operational deployment status: the Docker image creates persistent
 export/media/avatar paths and contains the API plus migrate-up,
 guarded migrate-down/reset-storage, production-safe seeder, owner-confirmed
 demo seeder, users-only `seed-accounts`, and Learning Hub seeder binaries.
+For local performance and load testing, dedicated isolated tools are available:
+`cmd/seed-scale` (`make seed-scale`) populates all 49 database tables with 500
+to 2,000 realistic records using chunked bulk operations (`internal/seedscale`),
+and `cmd/seed-local-accounts` (`make seed-local-accounts`) provisions a clean-slate
+local environment with core accounts only. Both are strictly isolated from
+staging and production deploy pipelines (`update.sh` / Ansible) and do not
+modify or interfere with `internal/seed/*`.
 `make migrate-fresh` and guarded
 `migrate-down` also run `cmd/reset-storage`, which empties the dynamic storage
 directories
