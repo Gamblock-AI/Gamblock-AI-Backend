@@ -346,16 +346,25 @@ func (s *AccountabilityGroupService) groupByRawCode(ctx context.Context, rawCode
 }
 
 func (s *AccountabilityGroupService) decryptContactMessages(items []model.PartnerContactRequest) error {
+	if len(items) == 0 {
+		return nil
+	}
 	for i := range items {
 		if items[i].Message == "" {
 			continue
 		}
+		if !appcrypto.IsHexCiphertext(items[i].Message) {
+			// Already plaintext (e.g. unencrypted seed or plain string)
+			continue
+		}
 		if s.cfg.JournalEncryptionKey == "" {
-			return fmt.Errorf("contact message encryption key is unavailable")
+			items[i].Message = "[Pesan terenkripsi tidak dapat dimuat]"
+			continue
 		}
 		plain, err := appcrypto.Decrypt(items[i].Message, s.cfg.JournalEncryptionKey)
 		if err != nil {
-			return fmt.Errorf("contact message decryption failed")
+			items[i].Message = "[Pesan terenkripsi tidak dapat dimuat]"
+			continue
 		}
 		items[i].Message = plain
 	}

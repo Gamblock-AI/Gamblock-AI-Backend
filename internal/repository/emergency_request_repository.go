@@ -94,6 +94,7 @@ func (r *Repository) GetPendingEmergencyKeyRequests(ctx context.Context, now tim
 func (r *Repository) GetPendingEmergencyKeyRequestsPaginated(ctx context.Context, now time.Time, query model.PaginationQuery) (model.PaginatedList[model.EmergencyKeyRequest], error) {
 	page, limit, offset := query.Normalize(5)
 	status := strings.TrimSpace(query.Status)
+	search := strings.ToLower(strings.TrimSpace(query.Query))
 
 	if r.db == nil {
 		r.store.Lock()
@@ -103,12 +104,21 @@ func (r *Repository) GetPendingEmergencyKeyRequestsPaginated(ctx context.Context
 			item := &r.store.EmergencyKeyRequests[index]
 			expireEmergencyRequest(item, now, false)
 			if status != "" {
-				if item.Status == status {
-					items = append(items, *item)
+				if item.Status != status {
+					continue
 				}
-			} else if item.Status == "pending" || item.Status == "reviewed" {
-				items = append(items, *item)
+			} else if item.Status != "pending" && item.Status != "reviewed" {
+				continue
 			}
+			if search != "" {
+				idMatch := strings.Contains(strings.ToLower(item.ID), search)
+				userMatch := strings.Contains(strings.ToLower(item.RequestedBy), search)
+				deviceMatch := strings.Contains(strings.ToLower(item.DeviceID), search)
+				if !idMatch && !userMatch && !deviceMatch {
+					continue
+				}
+			}
+			items = append(items, *item)
 		}
 		total := len(items)
 		start := offset
@@ -131,6 +141,13 @@ func (r *Repository) GetPendingEmergencyKeyRequestsPaginated(ctx context.Context
 		qb = qb.Where(emergencykeyrequest.StatusEQ(emergencykeyrequest.Status(status)))
 	} else {
 		qb = qb.Where(emergencykeyrequest.StatusIn(emergencykeyrequest.StatusPending, emergencykeyrequest.StatusReviewed))
+	}
+	if search != "" {
+		qb = qb.Where(emergencykeyrequest.Or(
+			emergencykeyrequest.IDEQ(search),
+			emergencykeyrequest.RequestedByContainsFold(search),
+			emergencykeyrequest.DeviceIDContainsFold(search),
+		))
 	}
 
 	total, err := qb.Count(ctx)

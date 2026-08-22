@@ -58,3 +58,17 @@ func Decrypt(cipherHex, hexKey string) (string, error) {
 	}
 	return string(plaintext), nil
 }
+
+// IsHexCiphertext checks if a string matches the AES-GCM hex ciphertext structure
+// (at least 12-byte nonce (24 hex) + 16-byte tag (32 hex) = 56 hex chars and even length).
+func IsHexCiphertext(s string) bool {
+	if len(s) < 56 || len(s)%2 != 0 {
+		return false
+	}
+	for _, c := range s {
+		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
+			return false
+		}
+	}
+	return true
+}

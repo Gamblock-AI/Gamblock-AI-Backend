@@ -57,3 +57,16 @@ func TestDecrypt_TruncatedCiphertext(t *testing.T) {
 	_, err := Decrypt("ab", newKey(t)) // shorter than nonce
 	assert.Error(t, err)
 }
+
+func TestIsHexCiphertext(t *testing.T) {
+	key := newKey(t)
+	enc, err := Encrypt("hello world", key)
+	require.NoError(t, err)
+	assert.True(t, IsHexCiphertext(enc))
+
+	assert.False(t, IsHexCiphertext(""))
+	assert.False(t, IsHexCiphertext("plain text message"))
+	assert.False(t, IsHexCiphertext("abcd"))
+	assert.False(t, IsHexCiphertext("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdeg"))
+}
+

@@ -10,11 +10,15 @@ import (
 
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitygroup"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/accountabilitymembership"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/aggregateevent"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/approvalrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/intention"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/partnercontactrequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/recoveryspace"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/spkpreference"
@@ -89,6 +93,42 @@ func TestSeedScaleDatabase_PopulatesAllTables(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 1, spkExists, "user %s must have an SPK preference", uid)
 	}
+
+	// Verify partner groups and members
+	suciGroups, err := client.AccountabilityGroup.Query().Where(accountabilitygroup.OwnerPartnerIDEQ("usr_suci")).All(ctx)
+	require.NoError(t, err)
+	assert.GreaterOrEqual(t, len(suciGroups), 3, "Suci must own at least 3 accountability groups")
+
+	suciGroupIDs := make([]string, len(suciGroups))
+	for i, g := range suciGroups {
+		suciGroupIDs[i] = g.ID
+	}
+	suciMembers, err := client.AccountabilityMembership.Query().Where(accountabilitymembership.GroupIDIn(suciGroupIDs...)).All(ctx)
+	require.NoError(t, err)
+	assert.GreaterOrEqual(t, len(suciMembers), 8, "Suci's groups must have multiple students")
+
+	// Verify time-series block events for Suci's students
+	gadingBlocks, err := client.AggregateEvent.Query().Where(
+		aggregateevent.UserIDEQ("usr_gading"),
+		aggregateevent.EventTypeEQ(aggregateevent.EventTypeBlockCountSync),
+	).Count(ctx)
+	require.NoError(t, err)
+	assert.GreaterOrEqual(t, gadingBlocks, 25, "Gading must have daily block events across past 30 days")
+
+	// Verify pending decisions for Suci
+	pendingAppr, err := client.ApprovalRequest.Query().Where(
+		approvalrequest.UserIDEQ("usr_gading"),
+		approvalrequest.StatusEQ(approvalrequest.StatusPending),
+	).Count(ctx)
+	require.NoError(t, err)
+	assert.Greater(t, pendingAppr, 0, "Gading must have a pending approval request")
+
+	pendingContacts, err := client.PartnerContactRequest.Query().Where(
+		partnercontactrequest.PartnerIDEQ("usr_suci"),
+		partnercontactrequest.StatusEQ(partnercontactrequest.StatusPending),
+	).Count(ctx)
+	require.NoError(t, err)
+	assert.Greater(t, pendingContacts, 0, "Suci must have pending contact requests")
 
 	// Verify realistic status variations exist for UI dashboards
 	reviewModules, err := client.PsychoeducationModule.Query().Where(psychoeducationmodule.StatusEQ(psychoeducationmodule.StatusInReview)).Count(ctx)

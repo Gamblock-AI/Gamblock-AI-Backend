@@ -195,18 +195,6 @@ func (s *SupportService) Transition(ctx context.Context, actorID, actorMode, cas
 	return fmt.Errorf("requester cannot perform this support transition")
 }
 
-func isHexCiphertext(s string) bool {
-	if len(s) < 32 {
-		return false
-	}
-	for _, c := range s {
-		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
-			return false
-		}
-	}
-	return true
-}
-
 func (s *SupportService) decryptSupportMessages(items []model.SupportMessage) error {
 	if len(items) == 0 {
 		return nil
@@ -215,7 +203,7 @@ func (s *SupportService) decryptSupportMessages(items []model.SupportMessage) er
 		return fmt.Errorf("support message encryption key is unavailable")
 	}
 	for i := range items {
-		if !isHexCiphertext(items[i].Content) {
+		if !appcrypto.IsHexCiphertext(items[i].Content) {
 			// Already plaintext (e.g. unencrypted seed or fallback string)
 			continue
 		}

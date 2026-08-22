@@ -15,6 +15,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
+	appcrypto "github.com/gamblock-ai/gamblock-ai-backend/internal/crypto"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/repository"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
@@ -134,6 +135,73 @@ func TestAccountabilityGroup_EncryptedJoinCodeWorkflow(t *testing.T) {
 			assert.Equal(t, newCode, g.JoinCode)
 		}
 	}
+}
+
+func TestAccountability_PartnerWorkspaceContactMessageDecryptionGracefulFallback(t *testing.T) {
+	st := store.NewSeeded()
+	key := testCfg().JournalEncryptionKey
+	encMessage, err := appcrypto.Encrypt("Pesan rahasia mahasiswa", key)
+	require.NoError(t, err)
+
+	now := time.Now().UTC()
+	st.PartnerContactRequests = append(st.PartnerContactRequests,
+		model.PartnerContactRequest{
+			ID:           "contact_plain",
+			MembershipID: "mbr_active",
+			StudentID:    "usr_gading",
+			PartnerID:    "usr_suci",
+			Message:      "Pesan teks polos dari seeder",
+			Status:       "pending",
+			CreatedAt:    now,
+			UpdatedAt:    now,
+		},
+		model.PartnerContactRequest{
+			ID:           "contact_encrypted",
+			MembershipID: "mbr_active",
+			StudentID:    "usr_gading",
+			PartnerID:    "usr_suci",
+			Message:      encMessage,
+			Status:       "pending",
+			CreatedAt:    now,
+			UpdatedAt:    now,
+		},
+		model.PartnerContactRequest{
+			ID:           "contact_invalid",
+			MembershipID: "mbr_active",
+			StudentID:    "usr_gading",
+			PartnerID:    "usr_suci",
+			Message:      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			Status:       "pending",
+			CreatedAt:    now,
+			UpdatedAt:    now,
+		},
+	)
+
+	repo := repository.New(nil, st)
+	svc := NewAccountabilityGroupService(repo, testCfg())
+
+	workspace, err := svc.Workspace(context.Background(), "usr_suci")
+	require.NoError(t, err, "Workspace must load without error even if some messages have invalid ciphertext")
+	require.Len(t, workspace.ContactRequests, 3)
+
+	var plainFound, encFound, invalidFound bool
+	for _, c := range workspace.ContactRequests {
+		if c.ID == "contact_plain" {
+			assert.Equal(t, "Pesan teks polos dari seeder", c.Message)
+			plainFound = true
+		}
+		if c.ID == "contact_encrypted" {
+			assert.Equal(t, "Pesan rahasia mahasiswa", c.Message)
+			encFound = true
+		}
+		if c.ID == "contact_invalid" {
+			assert.Equal(t, "[Pesan terenkripsi tidak dapat dimuat]", c.Message)
+			invalidFound = true
+		}
+	}
+	assert.True(t, plainFound)
+	assert.True(t, encFound)
+	assert.True(t, invalidFound)
 }
 
 func TestAccountability_CreateApprovalRequestAndResolve(t *testing.T) {

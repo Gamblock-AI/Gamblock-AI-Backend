@@ -226,9 +226,17 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 		pid := fmt.Sprintf("plink_scale_%04d", i+1)
 		plinkIDs[i] = pid
 		pUserID := partnerIDs[i%len(partnerIDs)]
+		sUserID := studentIDs[i%len(studentIDs)]
+		if i == 0 {
+			pUserID = "usr_suci"
+			sUserID = "usr_gading"
+		} else if i == 1 {
+			pUserID = "usr_suci"
+			sUserID = "usr_dery"
+		}
 		plBuilders = append(plBuilders, client.PartnerLink.Create().
 			SetID(pid).
-			SetUserID(studentIDs[i%len(studentIDs)]).
+			SetUserID(sUserID).
 			SetPartnerUserID(pUserID).
 			SetPartnerEmail(fmt.Sprintf("partner_%04d@test.local", i+1)).
 			SetPartnerPhone(fmt.Sprintf("+62821%08d", i+1)).
@@ -249,10 +257,22 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 	for i := 0; i < n; i++ {
 		gid := fmt.Sprintf("grp_scale_%04d", i+1)
 		groupIDs[i] = gid
+		owner := partnerIDs[i%len(partnerIDs)]
+		gName := fmt.Sprintf("Group Focus %04d", i+1)
+		if i == 0 {
+			owner = "usr_suci"
+			gName = "Kelompok Pemulihan Kampus A"
+		} else if i == 1 {
+			owner = "usr_suci"
+			gName = "Kelompok Fokus Belajar B"
+		} else if i == 2 {
+			owner = "usr_suci"
+			gName = "Kelompok Dukungan Sebaya C"
+		}
 		grpBuilders = append(grpBuilders, client.AccountabilityGroup.Create().
 			SetID(gid).
-			SetOwnerPartnerID(partnerIDs[i%len(partnerIDs)]).
-			SetName(fmt.Sprintf("Group Focus %04d", i+1)).
+			SetOwnerPartnerID(owner).
+			SetName(gName).
 			SetDescription("Akuntabilitas dan pemulihan bersama").
 			SetJoinCodeHash(Sha256Hash(fmt.Sprintf("join_code_%04d", i+1))).
 			SetJoinCodeHint("12**").
@@ -271,15 +291,56 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 	// 7. AccountabilityMembership (n)
 	membershipIDs := make([]string, n)
 	memBuilders := make([]*ent.AccountabilityMembershipCreate, 0, n)
+
+	suciAssignments := []struct {
+		groupID   string
+		studentID string
+	}{
+		{groupIDs[0], "usr_gading"},
+		{groupIDs[0], "usr_scale_0001"},
+		{groupIDs[0], "usr_scale_0002"},
+		{groupIDs[0], "usr_scale_0003"},
+		{groupIDs[1], "usr_dery"},
+		{groupIDs[1], "usr_scale_0004"},
+		{groupIDs[1], "usr_scale_0005"},
+		{groupIDs[2], "usr_scale_0006"},
+		{groupIDs[2], "usr_scale_0007"},
+		{groupIDs[2], "usr_scale_0008"},
+	}
+
 	for i := 0; i < n; i++ {
 		mid := fmt.Sprintf("mem_scale_%04d", i+1)
 		membershipIDs[i] = mid
+
+		var gID, sID string
+		if i < len(suciAssignments) {
+			gID = suciAssignments[i].groupID
+			sID = suciAssignments[i].studentID
+		} else {
+			// Offset to guarantee unique (group_id, student_id)
+			gIndex := (i % (len(groupIDs) - 3)) + 3
+			sIndex := (i + 5) % len(studentIDs)
+			gID = groupIDs[gIndex]
+			sID = studentIDs[sIndex]
+		}
+
+		mStatus := accountabilitymembership.StatusActive
+		if i%25 == 24 {
+			mStatus = accountabilitymembership.StatusLeavePending
+		} else if i%30 == 29 {
+			mStatus = accountabilitymembership.StatusSupportReview
+		}
+
 		memBuilders = append(memBuilders, client.AccountabilityMembership.Create().
 			SetID(mid).
-			SetGroupID(groupIDs[i%len(groupIDs)]).
-			SetStudentID(userIDs[i%len(userIDs)]).
-			SetStatus(accountabilitymembership.StatusActive).
-			SetJoinedAt(now.Add(-7*24*time.Hour)))
+			SetGroupID(gID).
+			SetStudentID(sID).
+			SetStatus(mStatus).
+			SetShareProtectionHealth(true).
+			SetShareProtectionActivity(true).
+			SetShareRecoveryEngagement(true).
+			SetShareEducationProgress(true).
+			SetJoinedAt(now.Add(-14*24*time.Hour)))
 	}
 	if err := saveInBatches(ctx, 200, len(memBuilders), func(start, end int) error {
 		_, err := client.AccountabilityMembership.CreateBulk(memBuilders[start:end]...).Save(ctx)
@@ -292,13 +353,33 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 	// 8. MembershipExitRequest (n)
 	merBuilders := make([]*ent.MembershipExitRequestCreate, 0, n)
 	for i := 0; i < n; i++ {
+		mID := membershipIDs[i%len(membershipIDs)]
+		reqBy := userIDs[i%len(userIDs)]
+		exitStatus := membershipexitrequest.StatusPending
+		if i == 0 {
+			mID = membershipIDs[0] // usr_gading in Suci's group
+			reqBy = "usr_gading"
+			exitStatus = membershipexitrequest.StatusPending
+		} else {
+			switch i % 5 {
+			case 0:
+				exitStatus = membershipexitrequest.StatusPending
+			case 1, 2:
+				exitStatus = membershipexitrequest.StatusApproved
+			case 3:
+				exitStatus = membershipexitrequest.StatusDenied
+			default:
+				exitStatus = membershipexitrequest.StatusCancelled
+			}
+		}
+
 		merBuilders = append(merBuilders, client.MembershipExitRequest.Create().
 			SetID(fmt.Sprintf("exit_scale_%04d", i+1)).
-			SetMembershipID(membershipIDs[i%len(membershipIDs)]).
-			SetRequestedBy(userIDs[i%len(userIDs)]).
+			SetMembershipID(mID).
+			SetRequestedBy(reqBy).
 			SetKind(membershipexitrequest.KindNormal).
-			SetStatus(membershipexitrequest.StatusPending).
-			SetReason("Selesai masa pendampingan"))
+			SetStatus(exitStatus).
+			SetReason("Selesai masa pendampingan mandiri"))
 	}
 	if err := saveInBatches(ctx, 200, len(merBuilders), func(start, end int) error {
 		_, err := client.MembershipExitRequest.CreateBulk(merBuilders[start:end]...).Save(ctx)
@@ -311,14 +392,42 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 	// 9. PartnerContactRequest (n)
 	pcrBuilders := make([]*ent.PartnerContactRequestCreate, 0, n)
 	for i := 0; i < n; i++ {
+		pID := partnerIDs[i%len(partnerIDs)]
+		sID := studentIDs[i%len(studentIDs)]
+		mID := membershipIDs[i%len(membershipIDs)]
+		pcrStatus := partnercontactrequest.StatusPending
+
+		if i == 0 {
+			pID = "usr_suci"
+			sID = "usr_gading"
+			mID = membershipIDs[0]
+			pcrStatus = partnercontactrequest.StatusPending
+		} else if i == 1 {
+			pID = "usr_suci"
+			sID = "usr_dery"
+			mID = membershipIDs[4]
+			pcrStatus = partnercontactrequest.StatusPending
+		} else {
+			switch i % 4 {
+			case 0:
+				pcrStatus = partnercontactrequest.StatusPending
+			case 1:
+				pcrStatus = partnercontactrequest.StatusAcknowledged
+			case 2:
+				pcrStatus = partnercontactrequest.StatusClosed
+			default:
+				pcrStatus = partnercontactrequest.StatusCancelled
+			}
+		}
+
 		pcrBuilders = append(pcrBuilders, client.PartnerContactRequest.Create().
 			SetID(fmt.Sprintf("pcr_scale_%04d", i+1)).
-			SetMembershipID(membershipIDs[i%len(membershipIDs)]).
-			SetStudentID(studentIDs[i%len(studentIDs)]).
-			SetPartnerID(partnerIDs[i%len(partnerIDs)]).
+			SetMembershipID(mID).
+			SetStudentID(sID).
+			SetPartnerID(pID).
 			SetCategory(partnercontactrequest.CategoryCheckIn).
-			SetMessageEncrypted(encryptText(fmt.Sprintf("Pesan kontak mitra pendampingan %04d", i+1))).
-			SetStatus(partnercontactrequest.StatusPending))
+			SetMessageEncrypted(encryptText(fmt.Sprintf("Pesan kontak konsultasi mitra pendampingan #%04d", i+1))).
+			SetStatus(pcrStatus))
 	}
 	if err := saveInBatches(ctx, 200, len(pcrBuilders), func(start, end int) error {
 		_, err := client.PartnerContactRequest.CreateBulk(pcrBuilders[start:end]...).Save(ctx)
@@ -334,25 +443,45 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 	for i := 0; i < n; i++ {
 		aid := fmt.Sprintf("appr_scale_%04d", i+1)
 		apprIDs[i] = aid
-		// Realistic distribution: 20% pending, 50% approved, 20% denied, 10% expired
-		apprStatus := approvalrequest.StatusPending
-		switch i % 10 {
-		case 0, 1:
+
+		uID := userIDs[i%len(userIDs)]
+		mID := membershipIDs[i%len(membershipIDs)]
+		apprStatus := approvalrequest.StatusApproved
+
+		if i == 0 {
+			uID = "usr_gading"
+			mID = membershipIDs[0]
 			apprStatus = approvalrequest.StatusPending
-		case 2, 3, 4, 5, 6:
+		} else if i == 1 {
+			uID = "usr_dery"
+			mID = membershipIDs[4]
+			apprStatus = approvalrequest.StatusPending
+		} else if i == 2 {
+			uID = "usr_scale_0001"
+			mID = membershipIDs[1]
 			apprStatus = approvalrequest.StatusApproved
-		case 7, 8:
-			apprStatus = approvalrequest.StatusDenied
-		default:
-			apprStatus = approvalrequest.StatusExpired
+		} else {
+			switch i % 10 {
+			case 0, 1:
+				apprStatus = approvalrequest.StatusPending
+			case 2, 3, 4, 5, 6:
+				apprStatus = approvalrequest.StatusApproved
+			case 7, 8:
+				apprStatus = approvalrequest.StatusDenied
+			default:
+				apprStatus = approvalrequest.StatusExpired
+			}
 		}
+
 		act := approvalrequest.ActionPauseProtection
 		if i%2 == 1 {
 			act = approvalrequest.ActionUninstallDetected
 		}
+
 		apprBuilders = append(apprBuilders, client.ApprovalRequest.Create().
 			SetID(aid).
-			SetUserID(userIDs[i%len(userIDs)]).
+			SetUserID(uID).
+			SetMembershipID(mID).
 			SetDeviceID(deviceIDs[i%len(deviceIDs)]).
 			SetQuickTokenHash(Sha256Hash(fmt.Sprintf("qtok_%04d", i+1))).
 			SetAction(act).
@@ -473,13 +602,26 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 	// 15. PsychoeducationProgress (n)
 	pprogBuilders := make([]*ent.PsychoeducationProgressCreate, 0, n)
 	for i := 0; i < n; i++ {
+		percent := 100
+		switch i % 5 {
+		case 0:
+			percent = 0
+		case 1:
+			percent = 25
+		case 2:
+			percent = 50
+		case 3:
+			percent = 75
+		default:
+			percent = 100
+		}
 		pprogBuilders = append(pprogBuilders, client.PsychoeducationProgress.Create().
 			SetID(fmt.Sprintf("pprog_scale_%04d", i+1)).
 			SetUserID(userIDs[i%len(userIDs)]).
 			SetModuleID(moduleIDs[i%len(moduleIDs)]).
 			SetRevision(1).
 			SetCompletedSectionIds([]string{"sec1"}).
-			SetProgressPercent(100).
+			SetProgressPercent(percent).
 			SetCompletedAt(now))
 	}
 	if err := saveInBatches(ctx, 200, len(pprogBuilders), func(start, end int) error {
@@ -643,62 +785,151 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 	reports = append(reports, TableReport{"ExperienceGrant", n})
 
 	// 23. AggregateEvent (n*2, e.g. 1200)
-	aggCount := n * 2
-	if aggCount > 2000 {
-		aggCount = 2000
+	aggTarget := n * 2
+	if aggTarget > 1800 {
+		aggTarget = 1800
+	} else if aggTarget < 600 {
+		aggTarget = 600
 	}
-	aggBuilders := make([]*ent.AggregateEventCreate, 0, aggCount)
-	for i := 0; i < aggCount; i++ {
-		// Event types: ~60% block_count_sync, ~25% intervention_shown, ~8% tamper_detected, ~7% permission_revoked
+
+	aggBuilders := make([]*ent.AggregateEventCreate, 0, aggTarget)
+	evIndex := 0
+
+	makeHourly := func() []any {
+		hourly := make([]any, 24)
+		for h := 0; h < 24; h++ {
+			hCount := 0
+			if (h >= 21 || h <= 2) && RandomInt(0, 1) == 1 {
+				hCount = RandomInt(1, 4)
+			} else if (h >= 13 && h <= 15) && RandomInt(0, 2) == 1 {
+				hCount = RandomInt(1, 2)
+			} else if RandomInt(0, 4) == 0 {
+				hCount = 1
+			}
+			hourly[h] = float64(hCount)
+		}
+		return hourly
+	}
+
+	suciStudents := []string{
+		"usr_gading", "usr_dery",
+		"usr_scale_0001", "usr_scale_0002", "usr_scale_0003",
+		"usr_scale_0004", "usr_scale_0005", "usr_scale_0006",
+		"usr_scale_0007", "usr_scale_0008",
+	}
+
+	// 1. Time-series events for Suci's accountability students across past 30 days
+	for _, sID := range suciStudents {
+		devID := deviceIDs[0]
+		for i, uid := range userIDs {
+			if uid == sID {
+				devID = deviceIDs[i]
+				break
+			}
+		}
+
+		for d := 0; d < 30; d++ {
+			evDate := now.AddDate(0, 0, -d)
+			evIndex++
+			// Daily block count sync with 24-hour histogram
+			aggBuilders = append(aggBuilders, client.AggregateEvent.Create().
+				SetID(fmt.Sprintf("aggev_scale_%04d", evIndex)).
+				SetUserID(sID).
+				SetDeviceID(devID).
+				SetIdempotencyKey(fmt.Sprintf("aggev_key_%04d", evIndex)).
+				SetEventType(aggregateevent.EventTypeBlockCountSync).
+				SetEventDate(evDate).
+				SetCount(RandomInt(2, 7)).
+				SetMetadataJSON(map[string]any{"hourly": makeHourly()}))
+
+			// Periodic interventions (every 3 days)
+			if d%3 == 0 {
+				evIndex++
+				aggBuilders = append(aggBuilders, client.AggregateEvent.Create().
+					SetID(fmt.Sprintf("aggev_scale_%04d", evIndex)).
+					SetUserID(sID).
+					SetDeviceID(devID).
+					SetIdempotencyKey(fmt.Sprintf("aggev_key_%04d", evIndex)).
+					SetEventType(aggregateevent.EventTypeInterventionShown).
+					SetEventDate(evDate).
+					SetCount(RandomInt(1, 4)).
+					SetMetadataJSON(map[string]any{}))
+			}
+
+			// Periodic tamper detections
+			if d == 2 || d == 9 || d == 17 || d == 24 {
+				evIndex++
+				aggBuilders = append(aggBuilders, client.AggregateEvent.Create().
+					SetID(fmt.Sprintf("aggev_scale_%04d", evIndex)).
+					SetUserID(sID).
+					SetDeviceID(devID).
+					SetIdempotencyKey(fmt.Sprintf("aggev_key_%04d", evIndex)).
+					SetEventType(aggregateevent.EventTypeTamperDetected).
+					SetEventDate(evDate).
+					SetCount(RandomInt(1, 3)).
+					SetMetadataJSON(map[string]any{}))
+			}
+
+			// Periodic permission revocations
+			if d == 5 || d == 20 {
+				evIndex++
+				aggBuilders = append(aggBuilders, client.AggregateEvent.Create().
+					SetID(fmt.Sprintf("aggev_scale_%04d", evIndex)).
+					SetUserID(sID).
+					SetDeviceID(devID).
+					SetIdempotencyKey(fmt.Sprintf("aggev_key_%04d", evIndex)).
+					SetEventType(aggregateevent.EventTypePermissionRevoked).
+					SetEventDate(evDate).
+					SetCount(1).
+					SetMetadataJSON(map[string]any{}))
+			}
+		}
+	}
+
+	// 2. Fill remaining events for scale students across the 30-day window
+	for evIndex < aggTarget {
+		evIndex++
+		uIdx := (evIndex + 10) % len(userIDs)
+		dIdx := evIndex % len(deviceIDs)
+		dayOffset := evIndex % 30
+
 		evType := aggregateevent.EventTypeBlockCountSync
 		metaJSON := map[string]any{}
-		evCount := RandomInt(1, 10)
+		evCount := RandomInt(1, 8)
 
-		switch i % 20 {
-		case 0, 1, 2, 3, 4:
+		switch evIndex % 10 {
+		case 0, 1:
 			evType = aggregateevent.EventTypeInterventionShown
-			evCount = RandomInt(1, 5)
-		case 5:
+			evCount = RandomInt(1, 4)
+		case 2:
 			evType = aggregateevent.EventTypeTamperDetected
-			evCount = RandomInt(1, 3)
-		case 6:
-			evType = aggregateevent.EventTypePermissionRevoked
 			evCount = RandomInt(1, 2)
+		case 3:
+			evType = aggregateevent.EventTypePermissionRevoked
+			evCount = 1
 		default:
 			evType = aggregateevent.EventTypeBlockCountSync
-			// Populate 24-hour histogram with realistic peak times (late night 21-02 and afternoon 13-15)
-			hourly := make([]any, 24)
-			for h := 0; h < 24; h++ {
-				hCount := 0
-				if (h >= 21 || h <= 2) && RandomInt(0, 1) == 1 {
-					hCount = RandomInt(1, 4)
-				} else if (h >= 13 && h <= 15) && RandomInt(0, 2) == 1 {
-					hCount = RandomInt(1, 2)
-				} else if RandomInt(0, 4) == 0 {
-					hCount = 1
-				}
-				hourly[h] = float64(hCount)
-			}
-			metaJSON["hourly"] = hourly
+			metaJSON["hourly"] = makeHourly()
 		}
 
 		aggBuilders = append(aggBuilders, client.AggregateEvent.Create().
-			SetID(fmt.Sprintf("aggev_scale_%04d", i+1)).
-			SetUserID(userIDs[i%len(userIDs)]).
-			SetDeviceID(deviceIDs[i%len(deviceIDs)]).
-			SetIdempotencyKey(fmt.Sprintf("aggev_key_%04d", i+1)).
+			SetID(fmt.Sprintf("aggev_scale_%04d", evIndex)).
+			SetUserID(userIDs[uIdx]).
+			SetDeviceID(deviceIDs[dIdx]).
+			SetIdempotencyKey(fmt.Sprintf("aggev_key_%04d", evIndex)).
 			SetEventType(evType).
-			SetEventDate(now.AddDate(0, 0, -i%30)).
+			SetEventDate(now.AddDate(0, 0, -dayOffset)).
 			SetCount(evCount).
 			SetMetadataJSON(metaJSON))
 	}
+
 	if err := saveInBatches(ctx, 200, len(aggBuilders), func(start, end int) error {
 		_, err := client.AggregateEvent.CreateBulk(aggBuilders[start:end]...).Save(ctx)
 		return err
 	}); err != nil {
 		return nil, fmt.Errorf("bulk seed AggregateEvent: %w", err)
 	}
-	reports = append(reports, TableReport{"AggregateEvent", aggCount})
+	reports = append(reports, TableReport{"AggregateEvent", len(aggBuilders)})
 
 	// 24. Organization (n)
 	orgIDs := make([]string, n)
@@ -852,7 +1083,7 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 			SetType(scType).
 			SetStatus(scStatus).
 			SetPriority(scPrio).
-			SetSummary(fmt.Sprintf("Tiket Bantuan %s #%04d", scType, i+1))
+			SetSummary(fmt.Sprintf("Tiket Bantuan %s #%04d", humanSupportTypeLabel(scType), i+1))
 
 		if scStatus != supportcase.StatusWaitingSupport || i%2 == 0 {
 			builder.SetAssignedOperatorID("usr_nasywa")
@@ -1123,12 +1354,16 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 	}
 	chkBuilders := make([]*ent.CheckInCreate, 0, checkCount)
 	for i := 0; i < checkCount; i++ {
+		uIndex := i % len(userIDs)
+		dayOffset := (i / len(userIDs)) % 30
+		chkDate := now.AddDate(0, 0, -dayOffset)
 		chkBuilders = append(chkBuilders, client.CheckIn.Create().
 			SetID(fmt.Sprintf("chk_scale_%04d", i+1)).
-			SetUserID(userIDs[i%len(userIDs)]).
+			SetUserID(userIDs[uIndex]).
 			SetMoodScore(RandomInt(1, 5)).
 			SetUrgeScore(RandomInt(0, 5)).
-			SetContextText("Kondisi emosi stabil."))
+			SetContextText("Kondisi emosi stabil.").
+			SetCreatedAt(chkDate))
 	}
 	if err := saveInBatches(ctx, 200, len(chkBuilders), func(start, end int) error {
 		_, err := client.CheckIn.CreateBulk(chkBuilders[start:end]...).Save(ctx)
@@ -1146,16 +1381,18 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 	dmsBuilders := make([]*ent.DailyMissionCreate, 0, missionCount)
 	for i := 0; i < missionCount; i++ {
 		uIndex := i % len(userIDs)
-		mKey := fmt.Sprintf("mission_slot_%d", i/len(userIDs)+1)
+		dayOffset := (i / len(userIDs)) % 14
+		mDate := FormatDate(now.AddDate(0, 0, -dayOffset))
+		mKey := fmt.Sprintf("mission_slot_%d", (i/len(userIDs))%3+1)
 		dmsBuilders = append(dmsBuilders, client.DailyMission.Create().
 			SetID(fmt.Sprintf("dms_scale_%04d", i+1)).
 			SetUserID(userIDs[uIndex]).
-			SetMissionDate(today).
+			SetMissionDate(mDate).
 			SetMissionKey(mKey).
 			SetSource(dailymission.SourceSystem).
 			SetStatus(dailymission.StatusCompleted).
 			SetExpReward(15).
-			SetCompletedAt(now))
+			SetCompletedAt(now.AddDate(0, 0, -dayOffset)))
 	}
 	if err := saveInBatches(ctx, 200, len(dmsBuilders), func(start, end int) error {
 		_, err := client.DailyMission.CreateBulk(dmsBuilders[start:end]...).Save(ctx)
@@ -1351,4 +1588,35 @@ func saveInBatches(ctx context.Context, batchSize, total int, saveFunc func(star
 		}
 	}
 	return nil
+}
+
+// humanSupportTypeLabel returns a human-readable Indonesian label for each
+// support case type, aligned with the dynamicLabels.supportType catalog in the
+// website frontend. Used so that seeded ticket summaries do not expose raw enum
+// values such as "partner_abuse".
+func humanSupportTypeLabel(t supportcase.Type) string {
+	switch t {
+	case supportcase.TypeTechnicalSupport:
+		return "Dukungan teknis"
+	case supportcase.TypeAccountRecovery:
+		return "Pemulihan akun"
+	case supportcase.TypePartnerAbuse:
+		return "Keamanan pendampingan"
+	case supportcase.TypeStuckApproval:
+		return "Kendala persetujuan"
+	case supportcase.TypeDeviceRecovery:
+		return "Pemulihan perangkat"
+	case supportcase.TypeNotificationFailure:
+		return "Kendala notifikasi"
+	case supportcase.TypeOrganizationDispute:
+		return "Kendala organisasi"
+	case supportcase.TypeAccountabilityGuidance:
+		return "Panduan pendampingan"
+	case supportcase.TypePrivacyRequest:
+		return "Permintaan privasi"
+	case supportcase.TypeSafetySupport:
+		return "Dukungan keamanan"
+	default:
+		return string(t)
+	}
 }

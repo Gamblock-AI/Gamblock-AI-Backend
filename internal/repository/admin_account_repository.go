@@ -45,6 +45,7 @@ func (r *Repository) ListAdminAccounts(ctx context.Context) ([]model.AdminAccoun
 func (r *Repository) ListAdminAccountsPaginated(ctx context.Context, query model.PaginationQuery) (model.PaginatedList[model.AdminAccount], error) {
 	page, limit, offset := query.Normalize(10)
 	role := strings.TrimSpace(query.Role)
+	status := strings.TrimSpace(query.Status)
 	search := strings.ToLower(strings.TrimSpace(query.Query))
 
 	if r.db == nil {
@@ -57,10 +58,17 @@ func (r *Repository) ListAdminAccountsPaginated(ctx context.Context, query model
 			if role != "" && user.Role != role {
 				continue
 			}
+			if status == "active" && user.DisabledAt != nil {
+				continue
+			}
+			if status == "disabled" && user.DisabledAt == nil {
+				continue
+			}
 			if search != "" {
 				nameMatch := strings.Contains(strings.ToLower(user.DisplayName), search)
 				emailMatch := strings.Contains(strings.ToLower(user.Email), search)
-				if !nameMatch && !emailMatch {
+				phoneMatch := strings.Contains(strings.ToLower(user.PhoneE164), search)
+				if !nameMatch && !emailMatch && !phoneMatch {
 					continue
 				}
 			}
@@ -83,6 +91,11 @@ func (r *Repository) ListAdminAccountsPaginated(ctx context.Context, query model
 	qb := r.db.User.Query().Where(entuser.RoleIn(entuser.RoleUser, entuser.RolePartner, entuser.RoleAdmin))
 	if role != "" {
 		qb = qb.Where(entuser.RoleEQ(entuser.Role(role)))
+	}
+	if status == "active" {
+		qb = qb.Where(entuser.DisabledAtIsNil())
+	} else if status == "disabled" {
+		qb = qb.Where(entuser.DisabledAtNotNil())
 	}
 	if search != "" {
 		qb = qb.Where(entuser.Or(
