@@ -275,9 +275,6 @@ func (s *LearningHubService) PublishAdminItem(ctx context.Context, actor, id str
 	if err != nil {
 		return model.AdminLearningItem{}, ErrLearningHubAdminNotFound
 	}
-	if item.Status == "archived" {
-		return model.AdminLearningItem{}, ErrLearningHubTransitionInvalid
-	}
 	draft := model.LearningItemDraft{Slug: item.Slug, Kind: item.Kind, TitleID: item.TitleID, TitleEN: item.TitleEN, SummaryID: item.SummaryID, SummaryEN: item.SummaryEN, Document: item.DraftDocument}
 	if err := validateLearningDraft(draft, true); err != nil {
 		return model.AdminLearningItem{}, err
@@ -299,19 +296,12 @@ func (s *LearningHubService) PublishAdminItem(ctx context.Context, actor, id str
 	return updated, err
 }
 
-func (s *LearningHubService) ArchiveAdminItem(ctx context.Context, actor, id string) (model.AdminLearningItem, error) {
-	item, err := s.repo.GetAdminLearningItem(ctx, id)
-	if err != nil {
-		return model.AdminLearningItem{}, ErrLearningHubAdminNotFound
+func (s *LearningHubService) DeleteAdminItem(ctx context.Context, actor, id string) error {
+	if err := s.repo.DeleteAdminLearningItem(ctx, id); err != nil {
+		return err
 	}
-	if item.Status != "published" && item.Status != "in_review" {
-		return model.AdminLearningItem{}, ErrLearningHubTransitionInvalid
-	}
-	updated, err := s.repo.SetAdminLearningStatus(ctx, actor, id, "archived")
-	if err == nil {
-		s.recordLearningAudit(ctx, actor, "learning_hub_item_archived", id, nil)
-	}
-	return updated, err
+	s.recordLearningAudit(ctx, actor, "learning_hub_item_deleted", id, nil)
+	return nil
 }
 
 func (s *LearningHubService) AdminRevisions(ctx context.Context, id string) ([]model.LearningRevision, error) {

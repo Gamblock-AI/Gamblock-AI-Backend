@@ -285,7 +285,11 @@ func (s *EducationService) AdminModulesPaginated(ctx context.Context, query mode
 }
 
 func (s *EducationService) AdminModule(ctx context.Context, id string) (model.EducationModule, error) {
-	return s.repo.GetEducationModuleByID(ctx, id)
+	module, err := s.repo.GetEducationModuleByID(ctx, id)
+	if err != nil && errors.Is(err, repository.ErrEducationNotFound) {
+		return s.repo.GetEducationModuleBySlug(ctx, id)
+	}
+	return module, err
 }
 
 func (s *EducationService) CreateModule(ctx context.Context, actor, slug string, document model.EducationDocument) (model.EducationModule, error) {
@@ -351,9 +355,6 @@ func (s *EducationService) Publish(ctx context.Context, actor, id string) (model
 	if err != nil {
 		return model.EducationModule{}, err
 	}
-	if module.Status == "archived" {
-		return model.EducationModule{}, errors.New("cannot publish an archived module")
-	}
 	if err = validateEducationDocument(module.DraftDocument); err != nil {
 		return model.EducationModule{}, err
 	}
@@ -375,13 +376,14 @@ func (s *EducationService) Publish(ctx context.Context, actor, id string) (model
 	return published, nil
 }
 
-func (s *EducationService) Archive(ctx context.Context, actor, id string) (model.EducationModule, error) {
-	archived, err := s.repo.SetEducationStatus(ctx, id, "archived", actor, false)
-	if err == nil {
-		s.recordEducationAudit(ctx, actor, "education_module_archived", id, nil)
+func (s *EducationService) DeleteModule(ctx context.Context, actor, id string) error {
+	if err := s.repo.DeleteEducationModule(ctx, id); err != nil {
+		return err
 	}
-	return archived, err
+	s.recordEducationAudit(ctx, actor, "education_module_deleted", id, nil)
+	return nil
 }
+
 
 func (s *EducationService) Revisions(ctx context.Context, moduleID string) ([]model.EducationRevision, error) {
 	if _, err := s.repo.GetEducationModuleByID(ctx, moduleID); err != nil {

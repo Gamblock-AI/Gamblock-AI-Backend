@@ -522,15 +522,13 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 	for i := 0; i < n; i++ {
 		mid := fmt.Sprintf("pmod_scale_%04d", i+1)
 		moduleIDs[i] = mid
-		// Realistic distribution: 75% published, 12% in_review (for review queue), 8% draft, 5% archived
+		// Realistic distribution: 80% published, 15% in_review (for review queue), 5% draft
 		modStatus := psychoeducationmodule.StatusPublished
 		switch i % 20 {
-		case 0, 1:
+		case 0, 1, 2:
 			modStatus = psychoeducationmodule.StatusInReview
-		case 2:
-			modStatus = psychoeducationmodule.StatusDraft
 		case 3:
-			modStatus = psychoeducationmodule.StatusArchived
+			modStatus = psychoeducationmodule.StatusDraft
 		default:
 			modStatus = psychoeducationmodule.StatusPublished
 		}
@@ -543,8 +541,63 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 			SetEstimatedMinutes(10).
 			SetStatus(modStatus).
 			SetDraftDocumentJSON(model.EducationDocument{
-				Category: "impulse",
-				Sections: []model.EducationSection{{ID: "sec1", SortOrder: 1, Required: true}},
+				Audience:         "all",
+				ExperienceType:   "article",
+				Category:         "impulse-awareness",
+				EstimatedMinutes: 10,
+				Translations: map[string]model.EducationTranslation{
+					"id": {
+						Title:             fmt.Sprintf("Psikoedukasi Modul %04d", i+1),
+						Summary:           "Ringkasan edukasi pola perilaku impulsif",
+						LearningObjective: "Memahami pola dorongan perilaku impulsif.",
+						Disclaimer:        "Materi ini bersifat psikoedukasi mandiri.",
+					},
+					"en": {
+						Title:             fmt.Sprintf("Psychoeducation Module %04d", i+1),
+						Summary:           "Summary of impulsive behavior patterns",
+						LearningObjective: "Understand impulsive urge patterns.",
+						Disclaimer:        "This material is for self-guided psychoeducation.",
+					},
+				},
+				Sections: []model.EducationSection{
+					{
+						ID:        "sec1",
+						SortOrder: 1,
+						Required:  true,
+						Translations: map[string]model.EducationSectionTranslation{
+							"id": {
+								Title: "Pengantar",
+								KnowledgeCheck: &model.EducationKnowledgeCheck{
+									ID:              "check-sec1",
+									Question:        "Apakah dorongan impulsif dapat dikendalikan?",
+									Choices:         []model.EducationChoice{{ID: "a", Text: "Ya"}, {ID: "b", Text: "Tidak"}},
+									CorrectChoiceID: "a",
+									Explanation:     "Dorongan dapat dikenali dan dikelola dengan jeda sadar.",
+									Required:        true,
+								},
+							},
+							"en": {
+								Title: "Introduction",
+								KnowledgeCheck: &model.EducationKnowledgeCheck{
+									ID:              "check-sec1",
+									Question:        "Can impulsive urges be managed?",
+									Choices:         []model.EducationChoice{{ID: "a", Text: "Yes"}, {ID: "b", Text: "No"}},
+									CorrectChoiceID: "a",
+									Explanation:     "Urges can be recognized and managed with mindful pauses.",
+									Required:        true,
+								},
+							},
+						},
+					},
+				},
+				Sources: []model.EducationSource{
+					{
+						Title:      "Panduan Psikoedukasi Perilaku",
+						Publisher:  "Gamblock AI",
+						URL:        "https://example.org/guide",
+						AccessedAt: now,
+					},
+				},
 			}).
 			SetDraftRevision(1).
 			SetPublishedRevision(1).

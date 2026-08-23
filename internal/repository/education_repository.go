@@ -10,6 +10,7 @@ import (
 
 	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationmodule"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/psychoeducationprogress"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
@@ -439,3 +440,55 @@ func (r *Repository) SaveEducationProgress(ctx context.Context, progress model.E
 	}
 	return progressFromEnt(updated), nil
 }
+
+func (r *Repository) DeleteEducationModule(ctx context.Context, id string) error {
+	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+		found := false
+		for i, m := range r.store.Modules {
+			if m.ID == id {
+				r.store.Modules = append(r.store.Modules[:i], r.store.Modules[i+1:]...)
+				found = true
+				break
+			}
+		}
+		if !found {
+			return ErrEducationNotFound
+		}
+		revisions := r.store.EducationRevisions[:0]
+		for _, rev := range r.store.EducationRevisions {
+			if rev.ModuleID != id {
+				revisions = append(revisions, rev)
+			}
+		}
+		r.store.EducationRevisions = revisions
+		progressList := r.store.EducationProgress[:0]
+		for _, p := range r.store.EducationProgress {
+			if p.ModuleID != id {
+				progressList = append(progressList, p)
+			}
+		}
+		r.store.EducationProgress = progressList
+		return nil
+	}
+	tx, err := r.db.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	_, _ = tx.PsychoeducationProgress.Delete().Where(psychoeducationprogress.ModuleIDEQ(id)).Exec(ctx)
+	_, _ = tx.EducationRevision.Delete().Where(educationrevision.ModuleIDEQ(id)).Exec(ctx)
+	if err := tx.PsychoeducationModule.DeleteOneID(id).Exec(ctx); ent.IsNotFound(err) {
+		_ = tx.Rollback()
+		return ErrEducationNotFound
+	} else if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	r.RefreshStore(ctx)
+	return nil
+}
+

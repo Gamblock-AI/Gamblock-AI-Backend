@@ -177,9 +177,15 @@ func (h *Handler) PublishAdminLearningHubItem(c *gin.Context) {
 	h.transitionAdminLearningHubItem(c, "publish")
 }
 
-func (h *Handler) ArchiveAdminLearningHubItem(c *gin.Context) {
-	h.transitionAdminLearningHubItem(c, "archive")
+func (h *Handler) DeleteAdminLearningHubItem(c *gin.Context) {
+	if err := h.services.LearningHub.DeleteAdminItem(c.Request.Context(), h.currentUserID(c), c.Param("id")); err != nil {
+		status, code := learningHubAdminError(err)
+		h.respondErrorErr(c, status, code, err)
+		return
+	}
+	h.respond(c, http.StatusOK, gin.H{"deleted": true})
 }
+
 
 func (h *Handler) transitionAdminLearningHubItem(c *gin.Context, action string) {
 	var (
@@ -192,8 +198,6 @@ func (h *Handler) transitionAdminLearningHubItem(c *gin.Context, action string) 
 		item, err = h.services.LearningHub.SubmitAdminItemReview(c.Request.Context(), actor, id)
 	case "publish":
 		item, err = h.services.LearningHub.PublishAdminItem(c.Request.Context(), actor, id)
-	case "archive":
-		item, err = h.services.LearningHub.ArchiveAdminItem(c.Request.Context(), actor, id)
 	default:
 		err = service.ErrLearningHubTransitionInvalid
 	}

@@ -71,15 +71,15 @@ func (h *Handler) PublishAdminModule(c *gin.Context) {
 	h.respond(c, http.StatusOK, module)
 }
 
-func (h *Handler) ArchiveAdminModule(c *gin.Context) {
-	module, err := h.services.Education.Archive(c.Request.Context(), h.currentUserID(c), c.Param("id"))
-	if err != nil {
+func (h *Handler) DeleteAdminModule(c *gin.Context) {
+	if err := h.services.Education.DeleteModule(c.Request.Context(), h.currentUserID(c), c.Param("id")); err != nil {
 		status, code := educationStatus(err)
 		h.respondErrorErr(c, status, code, err)
 		return
 	}
-	h.respond(c, http.StatusOK, module)
+	h.respond(c, http.StatusOK, gin.H{"deleted": true})
 }
+
 
 func (h *Handler) AdminModuleRevisions(c *gin.Context) {
 	items, err := h.services.Education.Revisions(c.Request.Context(), c.Param("id"))

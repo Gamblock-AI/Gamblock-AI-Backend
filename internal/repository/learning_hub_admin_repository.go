@@ -14,6 +14,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/institution"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningcluster"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningitem"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningprogress"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/learningrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
@@ -223,7 +224,7 @@ func slicesDeleteAdminItems(items []model.AdminLearningItem, status string) []mo
 func (r *Repository) GetAdminLearningItem(ctx context.Context, id string) (model.AdminLearningItem, error) {
 	if r.db == nil {
 		for _, item := range r.store.Snapshot().AdminLearningItems {
-			if item.ID == id {
+			if item.ID == id || strings.EqualFold(item.Slug, id) {
 				return adminLearningItemFromMemory(item), nil
 			}
 		}
@@ -231,12 +232,15 @@ func (r *Repository) GetAdminLearningItem(ctx context.Context, id string) (model
 	}
 	row, err := r.db.LearningItem.Get(ctx, id)
 	if ent.IsNotFound(err) {
+		row, err = r.db.LearningItem.Query().Where(learningitem.SlugEQ(id)).Only(ctx)
+	}
+	if ent.IsNotFound(err) {
 		return model.AdminLearningItem{}, ErrLearningAdminNotFound
 	}
 	if err != nil {
 		return model.AdminLearningItem{}, err
 	}
-	published, err := r.publishedLearningDocument(ctx, id)
+	published, err := r.publishedLearningDocument(ctx, row.ID)
 	if err != nil {
 		return model.AdminLearningItem{}, err
 	}
@@ -438,6 +442,59 @@ func removePublishedLearningMemory(items []model.LearningItem, itemID string) []
 	}
 	return out
 }
+
+func (r *Repository) DeleteAdminLearningItem(ctx context.Context, id string) error {
+	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+		found := false
+		for i, item := range r.store.AdminLearningItems {
+			if item.ID == id {
+				r.store.AdminLearningItems = append(r.store.AdminLearningItems[:i], r.store.AdminLearningItems[i+1:]...)
+				found = true
+				break
+			}
+		}
+		if !found {
+			return ErrLearningAdminNotFound
+		}
+		r.store.LearningItems = removePublishedLearningMemory(r.store.LearningItems, id)
+		revs := r.store.LearningRevisions[:0]
+		for _, rev := range r.store.LearningRevisions {
+			if rev.ItemID != id {
+				revs = append(revs, rev)
+			}
+		}
+		r.store.LearningRevisions = revs
+		progs := r.store.LearningProgress[:0]
+		for _, prog := range r.store.LearningProgress {
+			if prog.ItemID != id {
+				progs = append(progs, prog)
+			}
+		}
+		r.store.LearningProgress = progs
+		return nil
+	}
+	tx, err := r.db.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	_, _ = tx.LearningProgress.Delete().Where(learningprogress.ItemIDEQ(id)).Exec(ctx)
+	_, _ = tx.LearningRevision.Delete().Where(learningrevision.ItemIDEQ(id)).Exec(ctx)
+	if err := tx.LearningItem.DeleteOneID(id).Exec(ctx); ent.IsNotFound(err) {
+		_ = tx.Rollback()
+		return ErrLearningAdminNotFound
+	} else if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	r.RefreshStore(ctx)
+	return nil
+}
+
 
 func (r *Repository) ListLearningRevisions(ctx context.Context, itemID string) ([]model.LearningRevision, error) {
 	if r.db == nil {
