@@ -100,7 +100,7 @@ func (s *SupportService) GetSupportCaseDetail(ctx context.Context, actorID, acto
 	if item.UserID != actorID && !isOperator {
 		return model.SupportCase{}, fmt.Errorf("support case does not belong to actor")
 	}
-	if isOperator && item.Owner != actorID {
+	if isOperator && item.Owner != actorID && item.Status != "resolved" && item.Status != "closed" {
 		return model.SupportCase{}, fmt.Errorf("support case must be claimed before opening the thread")
 	}
 	if err := s.decryptSupportMessages(item.Messages); err != nil {
@@ -129,8 +129,8 @@ func (s *SupportService) Reply(ctx context.Context, actorID, actorMode, caseID, 
 	if isOperator && item.Owner != actorID {
 		return model.SupportMessage{}, fmt.Errorf("support case must be claimed before replying")
 	}
-	if item.Status == "closed" {
-		return model.SupportMessage{}, fmt.Errorf("closed support cases cannot receive replies")
+	if item.Status == "closed" || item.Status == "resolved" {
+		return model.SupportMessage{}, fmt.Errorf("closed or resolved support cases cannot receive replies")
 	}
 	content = strings.TrimSpace(content)
 	if content == "" || len(content) > 4000 {
@@ -181,6 +181,9 @@ func (s *SupportService) Transition(ctx context.Context, actorID, actorMode, cas
 		return fmt.Errorf("support case must be claimed before changing status")
 	}
 	if isOperator {
+		if item.Status == "resolved" || item.Status == "closed" {
+			return fmt.Errorf("cannot transition completed or closed support cases")
+		}
 		if status != "waiting_support" && status != "waiting_user" && status != "resolved" && status != "closed" {
 			return fmt.Errorf("invalid support status")
 		}
@@ -249,6 +252,9 @@ func (s *SupportService) Claim(ctx context.Context, operatorID, caseID, reason s
 	if err != nil {
 		return model.SupportCase{}, err
 	}
+	if item.Status == "resolved" || item.Status == "closed" {
+		return model.SupportCase{}, fmt.Errorf("cannot claim completed or closed support cases")
+	}
 	if item.UserID == operatorID {
 		return model.SupportCase{}, fmt.Errorf("administrators cannot claim their own support cases")
 	}
@@ -259,6 +265,13 @@ func (s *SupportService) ReleaseClaim(ctx context.Context, operatorID, caseID, r
 	reason = strings.TrimSpace(reason)
 	if reason == "" || len(reason) > 240 {
 		return fmt.Errorf("release reason is required")
+	}
+	item, err := s.repo.GetSupportCaseDetail(ctx, caseID)
+	if err != nil {
+		return err
+	}
+	if item.Status == "resolved" || item.Status == "closed" {
+		return fmt.Errorf("cannot release completed or closed support cases")
 	}
 	return s.repo.ReleaseSupportCase(ctx, caseID, operatorID, reason, time.Now().UTC())
 }
@@ -544,14 +557,30 @@ func (s *SupportService) ConfirmAccountDeletion(ctx context.Context, userID, raw
 
 func (s *SupportService) RetryDataRequest(ctx context.Context, requestID string) (model.DataRequest, error) {
 	item, err := s.repo.DataRequestByID(ctx, requestID)
-	if err != nil || item.Type != "export" || item.Status != "failed" || item.RetryCount >= 3 {
+	if err != nil || item.Status != "failed" || item.RetryCount >= 3 {
 		return model.DataRequest{}, fmt.Errorf("data request cannot be retried")
+	}
+	if item.Type == "delete" {
+		item.Status, item.FailureCode, item.UpdatedAt = "pending_confirmation", "", time.Now().UTC()
+		if err := s.repo.UpdateDataRequest(ctx, item); err != nil {
+			return model.DataRequest{}, err
+		}
+		return item, nil
 	}
 	item.Status, item.FailureCode, item.UpdatedAt = "queued", "", time.Now().UTC()
 	if err := s.repo.UpdateDataRequest(ctx, item); err != nil {
 		return model.DataRequest{}, err
 	}
-	return s.ProcessDataExport(ctx, requestID)
+	res, procErr := s.ProcessDataExport(ctx, requestID)
+	if procErr != nil {
+		s.logger.Warn("process data export failed on retry, but request status updated", zap.String("request_id", requestID), zap.Error(procErr))
+		// Return updated item (e.g. failed with updated retry count) so API handler can succeed
+		if updated, getErr := s.repo.DataRequestByID(ctx, requestID); getErr == nil {
+			return updated, nil
+		}
+		return res, nil
+	}
+	return res, nil
 }
 
 func (s *SupportService) RejectDataRequest(ctx context.Context, requestID, reason string) (model.DataRequest, error) {

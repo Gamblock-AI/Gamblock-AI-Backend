@@ -328,6 +328,12 @@ func (r *Repository) GetSupportCaseDetail(ctx context.Context, caseID string) (m
 			CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt,
 		}
 	}
+	if result.UserID != "" {
+		if user, ok := r.UserByID(ctx, result.UserID); ok {
+			result.UserName = user.DisplayName
+			result.UserAvatarURL = user.AvatarURL
+		}
+	}
 	messages, err := r.ListSupportMessages(ctx, caseID)
 	if err != nil {
 		return model.SupportCase{}, err
@@ -346,7 +352,14 @@ func (r *Repository) ListSupportMessages(ctx context.Context, caseID string) ([]
 	if r.db == nil {
 		for _, item := range r.store.Snapshot().SupportMessages {
 			if item.SupportCaseID == caseID {
-				result = append(result, item)
+				msg := item
+				if msg.AuthorID != "" {
+					if u, ok := r.UserByID(ctx, msg.AuthorID); ok {
+						msg.AuthorName = u.DisplayName
+						msg.AuthorAvatarURL = u.AvatarURL
+					}
+				}
+				result = append(result, msg)
 			}
 		}
 		return result, nil
@@ -357,11 +370,18 @@ func (r *Repository) ListSupportMessages(ctx context.Context, caseID string) ([]
 		return nil, err
 	}
 	for _, item := range rows {
-		result = append(result, model.SupportMessage{
+		msg := model.SupportMessage{
 			ID: item.ID, SupportCaseID: item.SupportCaseID, AuthorID: item.AuthorID,
 			AuthorRole: item.AuthorRole.String(), Content: item.ContentEncrypted,
 			ReadAt: item.ReadAt, CreatedAt: item.CreatedAt,
-		})
+		}
+		if item.AuthorID != "" {
+			if u, ok := r.UserByID(ctx, item.AuthorID); ok {
+				msg.AuthorName = u.DisplayName
+				msg.AuthorAvatarURL = u.AvatarURL
+			}
+		}
+		result = append(result, msg)
 	}
 	return result, nil
 }
@@ -390,11 +410,18 @@ func (r *Repository) AddSupportMessage(ctx context.Context, item model.SupportMe
 		return model.SupportMessage{}, err
 	}
 	r.RefreshStore(ctx)
-	return model.SupportMessage{
+	respMsg := model.SupportMessage{
 		ID: row.ID, SupportCaseID: row.SupportCaseID, AuthorID: row.AuthorID,
 		AuthorRole: row.AuthorRole.String(), Content: row.ContentEncrypted,
 		CreatedAt: row.CreatedAt,
-	}, nil
+	}
+	if row.AuthorID != "" {
+		if u, ok := r.UserByID(ctx, row.AuthorID); ok {
+			respMsg.AuthorName = u.DisplayName
+			respMsg.AuthorAvatarURL = u.AvatarURL
+		}
+	}
+	return respMsg, nil
 }
 
 func (r *Repository) TransitionSupportCase(ctx context.Context, caseID, status, operatorID string, now time.Time) error {

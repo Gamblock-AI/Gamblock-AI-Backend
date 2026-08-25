@@ -1159,12 +1159,32 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 	}
 	smsgBuilders := make([]*ent.SupportMessageCreate, 0, msgCount)
 	for i := 0; i < msgCount; i++ {
+		caseIdx := i % len(caseIDs)
+		cid := caseIDs[caseIdx]
+		ownerUserID := userIDs[caseIdx%len(userIDs)]
+
+		// Message 1 (i < n): initial message from the ticket requester
+		// Message 2 (i >= n): response from support operator/admin or requester follow-up
+		var authorID string
+		var authorRole supportmessage.AuthorRole
+		var msgText string
+
+		if i < len(caseIDs) {
+			authorID = ownerUserID
+			authorRole = supportmessage.AuthorRoleRequester
+			msgText = fmt.Sprintf("Pesan dukungan dari pengguna untuk tiket %s nomor %d. Mohon bantuan kendala ini.", cid, i+1)
+		} else {
+			authorID = "usr_nasywa"
+			authorRole = supportmessage.AuthorRoleAdmin
+			msgText = fmt.Sprintf("Tanggapan resmi dari tim dukungan untuk tiket %s. Kendala Anda sedang kami tindaklanjuti.", cid)
+		}
+
 		smsgBuilders = append(smsgBuilders, client.SupportMessage.Create().
 			SetID(fmt.Sprintf("smsg_scale_%04d", i+1)).
-			SetSupportCaseID(caseIDs[i%len(caseIDs)]).
-			SetAuthorID(userIDs[i%len(userIDs)]).
-			SetAuthorRole(supportmessage.AuthorRoleRequester).
-			SetContentEncrypted(encryptText(fmt.Sprintf("Pesan dukungan resmi untuk tiket %s nomor %d. Tim kami siap membantu.", caseIDs[i%len(caseIDs)], i+1))))
+			SetSupportCaseID(cid).
+			SetAuthorID(authorID).
+			SetAuthorRole(authorRole).
+			SetContentEncrypted(encryptText(msgText)))
 	}
 	if err := saveInBatches(ctx, 200, len(smsgBuilders), func(start, end int) error {
 		_, err := client.SupportMessage.CreateBulk(smsgBuilders[start:end]...).Save(ctx)
@@ -1303,8 +1323,21 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 		sitesociallink.PlatformThreads,
 		sitesociallink.PlatformGithub,
 	}
+	existing, err := client.SiteSocialLink.Query().Select(sitesociallink.FieldPlatform).Strings(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("query existing SiteSocialLink: %w", err)
+	}
+	existingPlatforms := make(map[string]struct{}, len(existing))
+	for _, p := range existing {
+		existingPlatforms[p] = struct{}{}
+	}
 	socBuilders := make([]*ent.SiteSocialLinkCreate, 0, len(platforms))
 	for i, plat := range platforms {
+		// The demo baseline seed already creates a subset of platforms; only
+		// fill the missing enum items so the sequence can run on top of it.
+		if _, ok := existingPlatforms[plat.String()]; ok {
+			continue
+		}
 		socBuilders = append(socBuilders, client.SiteSocialLink.Create().
 			SetID(fmt.Sprintf("soc_scale_%02d", i+1)).
 			SetPlatform(plat).
@@ -1314,11 +1347,13 @@ func SeedScaleDatabase(ctx context.Context, client *ent.Client, opts ScaleSeedOp
 			SetSortOrder(i+1).
 			SetUpdatedBy("usr_nasywa"))
 	}
-	if err := saveInBatches(ctx, 200, len(socBuilders), func(start, end int) error {
-		_, err := client.SiteSocialLink.CreateBulk(socBuilders[start:end]...).Save(ctx)
-		return err
-	}); err != nil {
-		return nil, fmt.Errorf("bulk seed SiteSocialLink: %w", err)
+	if len(socBuilders) > 0 {
+		if err := saveInBatches(ctx, 200, len(socBuilders), func(start, end int) error {
+			_, err := client.SiteSocialLink.CreateBulk(socBuilders[start:end]...).Save(ctx)
+			return err
+		}); err != nil {
+			return nil, fmt.Errorf("bulk seed SiteSocialLink: %w", err)
+		}
 	}
 	reports = append(reports, TableReport{"SiteSocialLink", len(platforms)})
 

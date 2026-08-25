@@ -65,6 +65,12 @@ func NewSeeded() *Store {
 			{ID: "DR-1042", UserID: "usr_gading", Title: "Export account data", Type: "export", Status: "completed", FailureCode: "result_unavailable", CreatedAt: now, UpdatedAt: now},
 			{ID: "DR-1035", UserID: "usr_dery", Title: "Delete archived support notes", Type: "delete", Status: "processing", CreatedAt: now, UpdatedAt: now},
 		},
+		EmergencyKeyRequests: []EmergencyKeyRequest{
+			{ID: "emk_req_0001", RequestedBy: "usr_gading", DeviceID: "dev_android", Status: "pending", GrantJTI: "emk_jti_0001", RequestExpiresAt: now.Add(24 * time.Hour), CreatedAt: now, UpdatedAt: now},
+			{ID: "emk_req_0002", RequestedBy: "usr_dery", DeviceID: "dev_dery_android", Status: "reviewed", ReviewedBy: "usr_nasywa", ReviewedAt: &verifiedAt, GrantJTI: "emk_jti_0002", RequestExpiresAt: now.Add(12 * time.Hour), CreatedAt: now, UpdatedAt: now},
+			{ID: "emk_req_0003", RequestedBy: "usr_gading", DeviceID: "dev_windows", Status: "approved", ReviewedBy: "usr_nasywa", ReviewedAt: &verifiedAt, ApprovedBy: "usr_nasywa", ApprovedAt: &verifiedAt, GrantJTI: "emk_jti_0003", RequestExpiresAt: now.Add(-24 * time.Hour), CreatedAt: now.Add(-48 * time.Hour), UpdatedAt: now.Add(-48 * time.Hour)},
+			{ID: "emk_req_0004", RequestedBy: "usr_dery", DeviceID: "dev_dery_android", Status: "expired", GrantJTI: "emk_jti_0004", RequestExpiresAt: now.Add(-48 * time.Hour), CreatedAt: now.Add(-72 * time.Hour), UpdatedAt: now.Add(-72 * time.Hour)},
+		},
 		AuditEvents: []AuditEvent{
 			{ID: "audit_1", Actor: "nasywa@gmail.com", Action: "education_module_published", TargetType: "education_module", Target: "mod_impulse_cycle", CreatedAt: now, UpdatedAt: now},
 		},
