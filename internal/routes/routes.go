@@ -49,7 +49,13 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	accountability.Use(mid.AuthRequired(), mid.RequireRoles("user", "partner"))
 	{
 		accountability.GET("/workspace", h.AccountabilityWorkspace)
+		accountability.GET("/summary", h.AccountabilitySummary)
 		accountability.GET("/analytics", h.AccountabilityAnalytics)
+		accountability.GET("/groups", h.AccountabilityGroups)
+		accountability.GET("/members", h.AccountabilityMembers)
+		accountability.GET("/analytics/members", h.AccountabilityAnalyticsMembers)
+		accountability.GET("/exit-requests", h.AccountabilityExitRequests)
+		accountability.GET("/contact-requests", h.AccountabilityContactRequests)
 		accountability.GET("/flagged-members", mid.RequireRoles("partner"), h.FlaggedAccountabilityMembers)
 		accountability.POST("/groups", mid.RequireRoles("partner"), h.CreateAccountabilityGroup)
 		accountability.POST("/groups/preview", mid.RequireRoles("user"), mid.RateLimitMiddleware("12-M"), h.PreviewAccountabilityGroup)
@@ -111,6 +117,8 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 
 	// Learning Hub (PKM-WEB-006 supporting catalog and checkpoints)
 	v1.GET("/learning-hub/catalog", mid.AuthRequired(), mid.RequireRoles("user"), h.LearningHubCatalog)
+	v1.GET("/learning-hub/providers", mid.AuthRequired(), mid.RequireRoles("user"), h.LearningHubProviders)
+	v1.GET("/learning-hub/items", mid.AuthRequired(), mid.RequireRoles("user"), h.LearningHubItemsByProvider)
 	v1.GET("/learning-hub/items/:slug", mid.AuthRequired(), mid.RequireRoles("user"), h.LearningHubItem)
 	v1.GET("/learning-hub/progress", mid.AuthRequired(), mid.RequireRoles("user"), h.LearningHubProgress)
 	v1.PUT("/learning-hub/items/:id/state", mid.AuthRequired(), mid.RequireRoles("user"), h.UpdateLearningHubState)

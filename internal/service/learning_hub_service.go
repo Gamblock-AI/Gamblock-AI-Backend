@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -56,6 +57,81 @@ func (s *LearningHubService) Catalog(ctx context.Context, userID, locale string)
 		locale = "id"
 	}
 	return s.repo.GetLearningCatalog(ctx, userID, locale)
+}
+
+func learningProviderSlug(value string) string {
+	value = strings.ToLower(strings.TrimSpace(value))
+	var b strings.Builder
+	lastDash := false
+	for _, r := range value {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			b.WriteRune(r)
+			lastDash = false
+		} else if b.Len() > 0 && !lastDash {
+			b.WriteByte('-')
+			lastDash = true
+		}
+	}
+	return strings.Trim(b.String(), "-")
+}
+
+func (s *LearningHubService) Providers(ctx context.Context, userID, locale string, query model.PaginationQuery) (model.LearningProviderPage, error) {
+	catalog, err := s.Catalog(ctx, userID, locale)
+	if err != nil {
+		return model.LearningProviderPage{}, err
+	}
+	providers := map[string]model.LearningProvider{}
+	for _, item := range catalog.Items {
+		if item.Provider == "" {
+			continue
+		}
+		slug := learningProviderSlug(item.Provider)
+		provider := providers[slug]
+		if provider.Slug == "" {
+			provider = model.LearningProvider{Slug: slug, Name: item.Provider, LogoURL: item.ProviderLogoURL, Description: item.ProviderDescription}
+		}
+		provider.Count++
+		if provider.LogoURL == "" {
+			provider.LogoURL = item.ProviderLogoURL
+		}
+		if provider.Description == "" {
+			provider.Description = item.ProviderDescription
+		}
+		providers[slug] = provider
+	}
+	items := make([]model.LearningProvider, 0, len(providers))
+	needle := strings.ToLower(strings.TrimSpace(query.Query))
+	for _, provider := range providers {
+		if needle != "" && !strings.Contains(strings.ToLower(provider.Name+" "+provider.Slug+" "+provider.Description), needle) {
+			continue
+		}
+		items = append(items, provider)
+	}
+	sort.Slice(items, func(i, j int) bool { return items[i].Count > items[j].Count })
+	page, _, _ := query.Normalize(9)
+	result := model.LearningProviderPage{PaginatedList: model.PaginateSlice(items, query, 9)}
+	result.Page = page
+	return result, nil
+}
+
+func (s *LearningHubService) ItemsByProvider(ctx context.Context, userID, locale, providerSlug string, query model.PaginationQuery) (model.LearningItemPage, error) {
+	catalog, err := s.Catalog(ctx, userID, locale)
+	if err != nil {
+		return model.LearningItemPage{}, err
+	}
+	items := make([]model.LearningItem, 0)
+	var provider *model.LearningProvider
+	for _, item := range catalog.Items {
+		if learningProviderSlug(item.Provider) != providerSlug {
+			continue
+		}
+		items = append(items, item)
+		if provider == nil {
+			provider = &model.LearningProvider{Slug: providerSlug, Name: item.Provider, LogoURL: item.ProviderLogoURL, Description: item.ProviderDescription}
+		}
+	}
+	result := model.LearningItemPage{PaginatedList: model.PaginateSlice(items, query, 9), Provider: provider, Experience: catalog.Experience}
+	return result, nil
 }
 
 func (s *LearningHubService) Item(ctx context.Context, userID, slug, locale string) (model.LearningItem, error) {

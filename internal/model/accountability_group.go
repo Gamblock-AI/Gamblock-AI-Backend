@@ -3,21 +3,21 @@ package model
 import "time"
 
 type AccountabilityGroup struct {
-	ID             string    `json:"id"`
-	OwnerPartnerID string    `json:"-"`
-	OwnerName      string    `json:"owner_name"`
-	OwnerAvatarURL *string   `json:"owner_avatar_url,omitempty"`
-	Name           string    `json:"name"`
-	Description    string    `json:"description"`
+	ID                string    `json:"id"`
+	OwnerPartnerID    string    `json:"-"`
+	OwnerName         string    `json:"owner_name"`
+	OwnerAvatarURL    *string   `json:"owner_avatar_url,omitempty"`
+	Name              string    `json:"name"`
+	Description       string    `json:"description"`
 	JoinCode          string    `json:"join_code,omitempty"`
 	JoinCodeHash      string    `json:"-"`
 	JoinCodeHint      string    `json:"join_code_hint,omitempty"`
 	JoinCodeEncrypted string    `json:"-"`
-	Status         string    `json:"status"`
-	MemberCount    int       `json:"member_count"`
-	CodeRotatedAt  time.Time `json:"code_rotated_at"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	Status            string    `json:"status"`
+	MemberCount       int       `json:"member_count"`
+	CodeRotatedAt     time.Time `json:"code_rotated_at"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
 }
 
 type SharingPreferences struct {
@@ -99,3 +99,23 @@ type FlaggedAccountabilityMember struct {
 	Flags  []string                 `json:"flags"`
 }
 
+type AccountabilitySummary struct {
+	Role                   string                    `json:"role"`
+	Groups                 []AccountabilityGroup     `json:"groups"`
+	Membership             *AccountabilityMembership `json:"membership,omitempty"`
+	ActiveGroups           int                       `json:"active_groups"`
+	LiveMembers            int                       `json:"live_members"`
+	PendingApprovals       int                       `json:"pending_approvals"`
+	PendingExitRequests    int                       `json:"pending_exit_requests"`
+	PendingContactRequests int                       `json:"pending_contact_requests"`
+}
+
+type AccountabilityAnalyticsPage struct {
+	PaginatedList[AccountabilityMembership]
+	TotalDetections       int `json:"total_detections"`
+	SharedActivityMembers int `json:"shared_activity_members"`
+	TotalMembers          int `json:"total_members"`
+	ReadyMembers          int `json:"ready_members"`
+	AttentionMembers      int `json:"attention_members"`
+	DetectionScaleMax     int `json:"detection_scale_max"`
+}

@@ -48,7 +48,7 @@ func (h *Handler) PendingEmergencyKeyRequests(c *gin.Context) {
 	var query model.PaginationQuery
 	_ = c.ShouldBindQuery(&query)
 
-	if c.Query("page") != "" || c.Query("limit") != "" || c.Query("status") != "" {
+	if hasPaginationQuery(c) || c.Query("status") != "" || c.Query("q") != "" {
 		res, err := h.services.Admin.GetPendingEmergencyKeyRequestsPaginated(c.Request.Context(), query)
 		if err != nil {
 			h.respondErrorErr(c, http.StatusInternalServerError, "generate_key_failed", err)

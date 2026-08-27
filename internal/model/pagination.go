@@ -1,16 +1,22 @@
 package model
 
 type PaginationQuery struct {
-	Page     int    `form:"page"`
-	PageSize int    `form:"page_size"`
-	Limit    int    `form:"limit"`
-	Status   string `form:"status"`
-	Priority string `form:"priority"`
-	Type     string `form:"type"`
-	Role     string `form:"role"`
-	Action   string `form:"action"`
-	Actor    string `form:"actor"`
-	Query    string `form:"q"`
+	Page       int    `form:"page"`
+	PageSize   int    `form:"page_size"`
+	Limit      int    `form:"limit"`
+	Status     string `form:"status"`
+	Priority   string `form:"priority"`
+	Type       string `form:"type"`
+	Category   string `form:"category"`
+	GroupID    string `form:"group_id"`
+	Protection string `form:"protection"`
+	Provider   string `form:"provider"`
+	Bucket     string `form:"bucket"`
+	Assignee   string `form:"assignee"`
+	Role       string `form:"role"`
+	Action     string `form:"action"`
+	Actor      string `form:"actor"`
+	Query      string `form:"q"`
 }
 
 func (p *PaginationQuery) Normalize(defaultPageSize int) (page, limit, offset int) {
@@ -60,4 +66,20 @@ func NewPaginatedList[T any](items []T, totalCount, page, pageSize int) Paginate
 		TotalPages: totalPages,
 		HasMore:    page < totalPages,
 	}
+}
+
+// PaginateSlice is used by service-level projections whose filterable fields
+// live in an already-authorized aggregate (for example published documents).
+// Database-backed repositories should prefer Count/Limit/Offset directly.
+func PaginateSlice[T any](items []T, query PaginationQuery, defaultPageSize int) PaginatedList[T] {
+	page, limit, offset := query.Normalize(defaultPageSize)
+	total := len(items)
+	if offset >= total {
+		return NewPaginatedList([]T{}, total, page, limit)
+	}
+	end := offset + limit
+	if end > total {
+		end = total
+	}
+	return NewPaginatedList(items[offset:end], total, page, limit)
 }

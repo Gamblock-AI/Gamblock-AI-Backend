@@ -94,6 +94,7 @@ func (r *Repository) GetPendingEmergencyKeyRequests(ctx context.Context, now tim
 func (r *Repository) GetPendingEmergencyKeyRequestsPaginated(ctx context.Context, now time.Time, query model.PaginationQuery) (model.PaginatedList[model.EmergencyKeyRequest], error) {
 	page, limit, offset := query.Normalize(5)
 	status := strings.TrimSpace(query.Status)
+	bucket := strings.TrimSpace(query.Bucket)
 	search := strings.ToLower(strings.TrimSpace(query.Query))
 
 	if r.db == nil {
@@ -103,12 +104,16 @@ func (r *Repository) GetPendingEmergencyKeyRequestsPaginated(ctx context.Context
 		for index := range r.store.EmergencyKeyRequests {
 			item := &r.store.EmergencyKeyRequests[index]
 			expireEmergencyRequest(item, now, false)
+			if bucket == "history" && item.Status != "approved" && item.Status != "used" && item.Status != "expired" {
+				continue
+			}
+			if bucket != "history" && status == "" && item.Status != "pending" && item.Status != "reviewed" {
+				continue
+			}
 			if status != "" {
 				if item.Status != status {
 					continue
 				}
-			} else if item.Status != "pending" && item.Status != "reviewed" {
-				continue
 			}
 			if search != "" {
 				idMatch := strings.Contains(strings.ToLower(item.ID), search)
@@ -134,10 +139,13 @@ func (r *Repository) GetPendingEmergencyKeyRequestsPaginated(ctx context.Context
 	}
 
 	expireEmergencyRequests(ctx, r, now, "", "", false)
-	qb := r.db.EmergencyKeyRequest.Query().Where(
-		emergencykeyrequest.RequestExpiresAtGT(now),
-	)
-	if status != "" {
+	qb := r.db.EmergencyKeyRequest.Query()
+	if bucket != "history" {
+		qb = qb.Where(emergencykeyrequest.RequestExpiresAtGT(now))
+	}
+	if bucket == "history" {
+		qb = qb.Where(emergencykeyrequest.StatusIn(emergencykeyrequest.StatusApproved, emergencykeyrequest.StatusUsed, emergencykeyrequest.StatusExpired))
+	} else if status != "" {
 		qb = qb.Where(emergencykeyrequest.StatusEQ(emergencykeyrequest.Status(status)))
 	} else {
 		qb = qb.Where(emergencykeyrequest.StatusIn(emergencykeyrequest.StatusPending, emergencykeyrequest.StatusReviewed))

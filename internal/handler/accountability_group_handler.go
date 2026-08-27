@@ -17,6 +17,70 @@ func (h *Handler) AccountabilityWorkspace(c *gin.Context) {
 	h.respond(c, http.StatusOK, workspace)
 }
 
+func (h *Handler) AccountabilitySummary(c *gin.Context) {
+	summary, err := h.services.AccountabilityGroups.Summary(c.Request.Context(), h.currentUserID(c))
+	if err != nil {
+		h.respondErrorErr(c, http.StatusForbidden, "accountability_workspace_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, summary)
+}
+
+func (h *Handler) AccountabilityGroups(c *gin.Context) {
+	var query model.PaginationQuery
+	_ = c.ShouldBindQuery(&query)
+	result, err := h.services.AccountabilityGroups.GroupsPaginated(c.Request.Context(), h.currentUserID(c), query)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusForbidden, "accountability_workspace_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, result)
+}
+
+func (h *Handler) AccountabilityMembers(c *gin.Context) {
+	var query model.PaginationQuery
+	_ = c.ShouldBindQuery(&query)
+	result, err := h.services.AccountabilityGroups.MembersPaginated(c.Request.Context(), h.currentUserID(c), query)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusForbidden, "accountability_workspace_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, result)
+}
+
+func (h *Handler) AccountabilityAnalyticsMembers(c *gin.Context) {
+	var query model.PaginationQuery
+	_ = c.ShouldBindQuery(&query)
+	result, err := h.services.AccountabilityGroups.AnalyticsMembersPaginated(c.Request.Context(), h.currentUserID(c), query)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusForbidden, "accountability_workspace_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, result)
+}
+
+func (h *Handler) AccountabilityExitRequests(c *gin.Context) {
+	var query model.PaginationQuery
+	_ = c.ShouldBindQuery(&query)
+	result, err := h.services.AccountabilityGroups.ExitRequestsPaginated(c.Request.Context(), h.currentUserID(c), query)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusForbidden, "accountability_workspace_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, result)
+}
+
+func (h *Handler) AccountabilityContactRequests(c *gin.Context) {
+	var query model.PaginationQuery
+	_ = c.ShouldBindQuery(&query)
+	result, err := h.services.AccountabilityGroups.ContactRequestsPaginated(c.Request.Context(), h.currentUserID(c), query)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusForbidden, "accountability_workspace_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, result)
+}
+
 func (h *Handler) FlaggedAccountabilityMembers(c *gin.Context) {
 	var query model.PaginationQuery
 	_ = c.ShouldBindQuery(&query)

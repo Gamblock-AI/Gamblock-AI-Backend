@@ -105,6 +105,12 @@ export data needs to be retained.
 - `GET/POST/PUT/DELETE /v1/admin/content/learning-hub/taxonomy[...]`
 - `POST /v1/admin/content/media`
 - `GET  /v1/accountability/workspace`
+- `GET  /v1/accountability/summary`
+- `GET  /v1/accountability/groups?page=&limit=&q=&status=`
+- `GET  /v1/accountability/members?page=&limit=&q=&group_id=&protection=`
+- `GET  /v1/accountability/analytics/members?page=&limit=&q=&group_id=`
+- `GET  /v1/accountability/exit-requests?page=&limit=&status=`
+- `GET  /v1/accountability/contact-requests?page=&limit=&bucket=&status=`
 - `GET  /v1/accountability/flagged-members?page=&limit=`
 - `GET  /v1/accountability/analytics?days=14|30&group_id=`
 - `GET  /v1/admin/analytics?days=14|30`
@@ -113,6 +119,8 @@ export data needs to be retained.
 - `POST /v1/accountability/memberships/:membership_id/leave`
 - `POST /v1/accountability/exit-requests/:request_id/cancel`
 - `GET  /v1/approval-requests`
+- `GET  /v1/learning-hub/providers?page=&limit=&q=&locale=`
+- `GET  /v1/learning-hub/items?page=&limit=&provider=&locale=`
 - `POST /v1/approval-requests/:id/apply`
 - `GET/POST /v1/emergency-key-requests`
 - `POST /v1/devices/unlock`

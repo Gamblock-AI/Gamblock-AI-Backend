@@ -110,6 +110,179 @@ func (s *AccountabilityGroupService) Workspace(ctx context.Context, userID strin
 	return workspace, nil
 }
 
+func (s *AccountabilityGroupService) Summary(ctx context.Context, userID string) (model.AccountabilitySummary, error) {
+	workspace, err := s.Workspace(ctx, userID)
+	if err != nil {
+		return model.AccountabilitySummary{}, err
+	}
+	summary := model.AccountabilitySummary{
+		Role:       workspace.Role,
+		Membership: workspace.Membership,
+		Groups:     make([]model.AccountabilityGroup, 0, len(workspace.Groups)),
+	}
+	for _, group := range workspace.Groups {
+		group.JoinCode = ""
+		summary.Groups = append(summary.Groups, group)
+		if group.Status == "active" {
+			summary.ActiveGroups++
+		}
+	}
+	for _, member := range workspace.Members {
+		if liveMembershipStatus(member.Status) {
+			summary.LiveMembers++
+		}
+	}
+	for _, request := range workspace.ExitRequests {
+		if request.Status == "pending" {
+			summary.PendingExitRequests++
+		}
+	}
+	for _, request := range workspace.ContactRequests {
+		if request.Status == "pending" {
+			summary.PendingContactRequests++
+		}
+	}
+	approvals, err := s.repo.GetApprovalRequests(ctx, userID)
+	if err != nil {
+		return model.AccountabilitySummary{}, err
+	}
+	for _, request := range approvals {
+		if request.Status == "pending" {
+			summary.PendingApprovals++
+		}
+	}
+	return summary, nil
+}
+
+func (s *AccountabilityGroupService) MembersPaginated(ctx context.Context, userID string, query model.PaginationQuery) (model.PaginatedList[model.AccountabilityMembership], error) {
+	workspace, err := s.Workspace(ctx, userID)
+	if err != nil {
+		return model.PaginatedList[model.AccountabilityMembership]{}, err
+	}
+	needle := strings.ToLower(strings.TrimSpace(query.Query))
+	filtered := make([]model.AccountabilityMembership, 0, len(workspace.Members))
+	for _, member := range workspace.Members {
+		if query.GroupID != "" && query.GroupID != "all" && member.GroupID != query.GroupID {
+			continue
+		}
+		if !liveMembershipStatus(member.Status) {
+			continue
+		}
+		if query.Protection != "" && query.Protection != "all" && member.Aggregate.ProtectionStatus != query.Protection {
+			continue
+		}
+		if needle != "" && !strings.Contains(strings.ToLower(member.StudentName), needle) {
+			continue
+		}
+		filtered = append(filtered, member)
+	}
+	return model.PaginateSlice(filtered, query, 5), nil
+}
+
+func (s *AccountabilityGroupService) AnalyticsMembersPaginated(ctx context.Context, userID string, query model.PaginationQuery) (model.AccountabilityAnalyticsPage, error) {
+	workspace, err := s.Workspace(ctx, userID)
+	if err != nil {
+		return model.AccountabilityAnalyticsPage{}, err
+	}
+	activeGroups := make(map[string]bool, len(workspace.Groups))
+	for _, group := range workspace.Groups {
+		activeGroups[group.ID] = group.Status == "active"
+	}
+	selected := make([]model.AccountabilityMembership, 0, len(workspace.Members))
+	for _, member := range workspace.Members {
+		if liveMembershipStatus(member.Status) && activeGroups[member.GroupID] &&
+			(query.GroupID == "" || query.GroupID == "all" || member.GroupID == query.GroupID) {
+			selected = append(selected, member)
+		}
+	}
+	sort.SliceStable(selected, func(i, j int) bool {
+		return strings.ToLower(selected[i].StudentName) < strings.ToLower(selected[j].StudentName)
+	})
+	pageItems := selected
+	needle := strings.ToLower(strings.TrimSpace(query.Query))
+	if needle != "" {
+		pageItems = make([]model.AccountabilityMembership, 0, len(selected))
+		for _, member := range selected {
+			if strings.Contains(strings.ToLower(member.StudentName), needle) {
+				pageItems = append(pageItems, member)
+			}
+		}
+	}
+	result := model.AccountabilityAnalyticsPage{PaginatedList: model.PaginateSlice(pageItems, query, 5)}
+	result.TotalMembers = len(selected)
+	for _, member := range selected {
+		if member.Sharing.ProtectionActivity {
+			result.SharedActivityMembers++
+			result.TotalDetections += member.Aggregate.WeeklyBlockCount
+			if member.Aggregate.WeeklyBlockCount > result.DetectionScaleMax {
+				result.DetectionScaleMax = member.Aggregate.WeeklyBlockCount
+			}
+		}
+		if member.Sharing.ProtectionHealth && member.Aggregate.ProtectionStatus == "ready" {
+			result.ReadyMembers++
+		}
+		if member.Sharing.ProtectionHealth && member.Aggregate.ProtectionStatus == "attention" {
+			result.AttentionMembers++
+		}
+	}
+	return result, nil
+}
+
+func (s *AccountabilityGroupService) GroupsPaginated(ctx context.Context, userID string, query model.PaginationQuery) (model.PaginatedList[model.AccountabilityGroup], error) {
+	workspace, err := s.Workspace(ctx, userID)
+	if err != nil {
+		return model.PaginatedList[model.AccountabilityGroup]{}, err
+	}
+	needle := strings.ToLower(strings.TrimSpace(query.Query))
+	filtered := make([]model.AccountabilityGroup, 0, len(workspace.Groups))
+	for _, group := range workspace.Groups {
+		if query.Status != "" && query.Status != "all" && group.Status != query.Status {
+			continue
+		}
+		if needle != "" && !strings.Contains(strings.ToLower(group.Name+" "+group.Description), needle) {
+			continue
+		}
+		filtered = append(filtered, group)
+	}
+	return model.PaginateSlice(filtered, query, 5), nil
+}
+
+func (s *AccountabilityGroupService) ExitRequestsPaginated(ctx context.Context, userID string, query model.PaginationQuery) (model.PaginatedList[model.MembershipExitRequest], error) {
+	workspace, err := s.Workspace(ctx, userID)
+	if err != nil {
+		return model.PaginatedList[model.MembershipExitRequest]{}, err
+	}
+	filtered := make([]model.MembershipExitRequest, 0, len(workspace.ExitRequests))
+	for _, request := range workspace.ExitRequests {
+		if query.Status != "" && query.Status != "all" && request.Status != query.Status {
+			continue
+		}
+		filtered = append(filtered, request)
+	}
+	return model.PaginateSlice(filtered, query, 5), nil
+}
+
+func (s *AccountabilityGroupService) ContactRequestsPaginated(ctx context.Context, userID string, query model.PaginationQuery) (model.PaginatedList[model.PartnerContactRequest], error) {
+	workspace, err := s.Workspace(ctx, userID)
+	if err != nil {
+		return model.PaginatedList[model.PartnerContactRequest]{}, err
+	}
+	filtered := make([]model.PartnerContactRequest, 0, len(workspace.ContactRequests))
+	for _, request := range workspace.ContactRequests {
+		if query.Bucket == "incoming" && request.Status != "pending" && request.Status != "acknowledged" && request.Status != "escalated" {
+			continue
+		}
+		if query.Bucket == "history" && request.Status != "closed" && request.Status != "cancelled" {
+			continue
+		}
+		if query.Status != "" && query.Status != "all" && request.Status != query.Status {
+			continue
+		}
+		filtered = append(filtered, request)
+	}
+	return model.PaginateSlice(filtered, query, 5), nil
+}
+
 func (s *AccountabilityGroupService) CreateGroup(ctx context.Context, partnerID, name, description string) (model.AccountabilityGroup, error) {
 	partner, ok := s.repo.UserByID(ctx, partnerID)
 	if !ok || partner.Role != "partner" {
@@ -483,4 +656,3 @@ func minMonitorSeverity(flags []string) int {
 	}
 	return minSev
 }
-

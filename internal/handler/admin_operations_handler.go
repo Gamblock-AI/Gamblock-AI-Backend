@@ -57,7 +57,7 @@ func (h *Handler) AdminAuditEvents(c *gin.Context) {
 	var query model.PaginationQuery
 	_ = c.ShouldBindQuery(&query)
 
-	if c.Query("page") != "" || c.Query("limit") != "" || c.Query("action") != "" || c.Query("actor") != "" || c.Query("q") != "" {
+	if hasPaginationQuery(c) || c.Query("action") != "" || c.Query("actor") != "" || c.Query("q") != "" {
 		res, err := h.services.Admin.AuditEventsPaginated(c.Request.Context(), query)
 		if err != nil {
 			h.respondErrorErr(c, http.StatusInternalServerError, "audit_events_failed", err)
@@ -79,7 +79,7 @@ func (h *Handler) AdminAccounts(c *gin.Context) {
 	var query model.PaginationQuery
 	_ = c.ShouldBindQuery(&query)
 
-	if c.Query("page") != "" || c.Query("limit") != "" || c.Query("role") != "" || c.Query("q") != "" {
+	if hasPaginationQuery(c) || c.Query("role") != "" || c.Query("status") != "" || c.Query("q") != "" {
 		res, err := h.services.Admin.AccountsPaginated(c.Request.Context(), query)
 		if err != nil {
 			h.respondErrorErr(c, http.StatusInternalServerError, "admin_accounts_fetch_failed", err)
@@ -184,7 +184,7 @@ func (h *Handler) AdminDataRequests(c *gin.Context) {
 	var query model.PaginationQuery
 	_ = c.ShouldBindQuery(&query)
 
-	if c.Query("page") != "" || c.Query("limit") != "" || c.Query("status") != "" || c.Query("type") != "" {
+	if hasPaginationQuery(c) || c.Query("status") != "" || c.Query("type") != "" || c.Query("bucket") != "" {
 		res, err := h.services.Support.GetAllDataRequestsPaginated(c.Request.Context(), query)
 		if err != nil {
 			h.respondErrorErr(c, http.StatusInternalServerError, "fetch_data_requests_failed", err)

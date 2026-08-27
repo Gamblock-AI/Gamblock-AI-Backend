@@ -82,6 +82,8 @@ func (r *Repository) GetAdminSupportCasesPaginated(ctx context.Context, adminID 
 	page, limit, offset := query.Normalize(10)
 	status := strings.TrimSpace(query.Status)
 	priority := strings.TrimSpace(query.Priority)
+	bucket := strings.TrimSpace(query.Bucket)
+	assignee := strings.TrimSpace(query.Assignee)
 	search := strings.ToLower(strings.TrimSpace(query.Query))
 
 	if r.db == nil {
@@ -95,6 +97,21 @@ func (r *Repository) GetAdminSupportCasesPaginated(ctx context.Context, adminID 
 				continue
 			}
 			if priority != "" && c.Priority != priority {
+				continue
+			}
+			if bucket == "active" && (c.Status == "resolved" || c.Status == "closed") {
+				continue
+			}
+			if bucket == "history" && c.Status != "resolved" && c.Status != "closed" {
+				continue
+			}
+			if assignee == "unassigned" && strings.TrimSpace(c.Owner) != "" {
+				continue
+			}
+			if assignee == "me" && c.Owner != adminID {
+				continue
+			}
+			if assignee == "others" && c.Owner == adminID {
 				continue
 			}
 			if search != "" {
@@ -142,6 +159,18 @@ func (r *Repository) GetAdminSupportCasesPaginated(ctx context.Context, adminID 
 	}
 	if priority != "" {
 		qb = qb.Where(supportcase.PriorityEQ(supportcase.Priority(priority)))
+	}
+	if bucket == "active" {
+		qb = qb.Where(supportcase.StatusNotIn(supportcase.StatusResolved, supportcase.StatusClosed))
+	} else if bucket == "history" {
+		qb = qb.Where(supportcase.StatusIn(supportcase.StatusResolved, supportcase.StatusClosed))
+	}
+	if assignee == "unassigned" {
+		qb = qb.Where(supportcase.AssignedOperatorIDIsNil())
+	} else if assignee == "me" {
+		qb = qb.Where(supportcase.AssignedOperatorIDEQ(adminID))
+	} else if assignee == "others" {
+		qb = qb.Where(supportcase.Or(supportcase.AssignedOperatorIDIsNil(), supportcase.AssignedOperatorIDNEQ(adminID)))
 	}
 	if search != "" {
 		qb = qb.Where(supportcase.Or(
@@ -510,11 +539,18 @@ func (r *Repository) GetAllDataRequestsPaginated(ctx context.Context, query mode
 	page, limit, offset := query.Normalize(10)
 	status := strings.TrimSpace(query.Status)
 	reqType := strings.TrimSpace(query.Type)
+	bucket := strings.TrimSpace(query.Bucket)
 
 	if r.db == nil {
 		all := r.store.Snapshot().DataRequests
 		var filtered []model.DataRequest
 		for _, req := range all {
+			if bucket == "active" && req.Status != "pending" && req.Status != "queued" && req.Status != "processing" && req.Status != "failed" {
+				continue
+			}
+			if bucket == "history" && req.Status != "completed" && req.Status != "rejected" && req.Status != "cancelled" {
+				continue
+			}
 			if status != "" && req.Status != status {
 				continue
 			}
@@ -537,6 +573,11 @@ func (r *Repository) GetAllDataRequestsPaginated(ctx context.Context, query mode
 	}
 
 	qb := r.db.DataRequest.Query()
+	if bucket == "active" {
+		qb = qb.Where(datarequest.StatusIn(datarequest.StatusPendingConfirmation, datarequest.StatusQueued, datarequest.StatusProcessing, datarequest.StatusFailed))
+	} else if bucket == "history" {
+		qb = qb.Where(datarequest.StatusIn(datarequest.StatusCompleted, datarequest.StatusRejected, datarequest.StatusCancelled))
+	}
 	if status != "" {
 		qb = qb.Where(datarequest.StatusEQ(datarequest.Status(status)))
 	}

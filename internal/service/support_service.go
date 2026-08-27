@@ -283,6 +283,37 @@ func (s *SupportService) GetSupportCasesForUser(ctx context.Context, userID stri
 	return s.repo.GetSupportCasesForUser(ctx, userID)
 }
 
+func (s *SupportService) GetSupportCasesForUserPaginated(ctx context.Context, userID string, query model.PaginationQuery) (model.PaginatedList[model.SupportCase], error) {
+	items, err := s.GetSupportCasesForUser(ctx, userID)
+	if err != nil {
+		return model.PaginatedList[model.SupportCase]{}, err
+	}
+	status := strings.TrimSpace(query.Status)
+	typ := strings.TrimSpace(query.Type)
+	bucket := strings.TrimSpace(query.Bucket)
+	needle := strings.ToLower(strings.TrimSpace(query.Query))
+	filtered := make([]model.SupportCase, 0, len(items))
+	for _, item := range items {
+		if status != "" && status != "all" && item.Status != status {
+			continue
+		}
+		if typ != "" && typ != "all" && item.Type != typ {
+			continue
+		}
+		if bucket == "active" && (item.Status == "resolved" || item.Status == "closed") {
+			continue
+		}
+		if bucket == "history" && item.Status != "resolved" && item.Status != "closed" {
+			continue
+		}
+		if needle != "" && !strings.Contains(strings.ToLower(item.ID+" "+item.Title), needle) {
+			continue
+		}
+		filtered = append(filtered, item)
+	}
+	return model.PaginateSlice(filtered, query, 5), nil
+}
+
 func (s *SupportService) CreateSupportCase(ctx context.Context, userID, title, cType, priority string) error {
 	if err := s.ensureRequesterRole(ctx, userID); err != nil {
 		return err

@@ -90,6 +90,17 @@ func (h *Handler) UpdateReflection(c *gin.Context) {
 }
 
 func (h *Handler) GetModules(c *gin.Context) {
+	if hasPaginationQuery(c) || c.Query("q") != "" || c.Query("category") != "" {
+		var query model.PaginationQuery
+		_ = c.ShouldBindQuery(&query)
+		modules, err := h.services.Education.PublishedModulesPaginated(c.Request.Context(), h.currentUserID(c), c.Query("locale"), query)
+		if err != nil {
+			h.respondErrorErr(c, http.StatusInternalServerError, "fetch_modules_failed", err)
+			return
+		}
+		h.respond(c, http.StatusOK, modules)
+		return
+	}
 	modules, err := h.services.Education.PublishedModules(c.Request.Context(), h.currentUserID(c), c.Query("locale"))
 	if err != nil {
 		h.respondErrorErr(c, http.StatusInternalServerError, "fetch_modules_failed", err)
@@ -109,6 +120,17 @@ func (h *Handler) GetModuleDetail(c *gin.Context) {
 }
 
 func (h *Handler) GetSupportCases(c *gin.Context) {
+	if hasPaginationQuery(c) || c.Query("q") != "" || c.Query("type") != "" || c.Query("status") != "" || c.Query("bucket") != "" {
+		var query model.PaginationQuery
+		_ = c.ShouldBindQuery(&query)
+		cases, err := h.services.Support.GetSupportCasesForUserPaginated(c.Request.Context(), h.currentUserID(c), query)
+		if err != nil {
+			h.respondErrorErr(c, http.StatusInternalServerError, "fetch_support_cases_failed", err)
+			return
+		}
+		h.respond(c, http.StatusOK, cases)
+		return
+	}
 	cases, err := h.services.Support.GetSupportCasesForUser(c.Request.Context(), h.currentUserID(c))
 	if err != nil {
 		h.respondErrorErr(c, http.StatusInternalServerError, "fetch_support_cases_failed", err)

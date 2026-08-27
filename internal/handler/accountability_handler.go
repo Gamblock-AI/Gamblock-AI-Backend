@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/service"
 )
 
@@ -65,6 +66,17 @@ func (h *Handler) RevokePartner(c *gin.Context) {
 }
 
 func (h *Handler) GetApprovalRequests(c *gin.Context) {
+	if hasPaginationQuery(c) || c.Query("status") != "" || c.Query("q") != "" {
+		var query model.PaginationQuery
+		_ = c.ShouldBindQuery(&query)
+		requests, err := h.services.Accountability.GetApprovalRequestsPaginated(c.Request.Context(), h.currentUserID(c), query)
+		if err != nil {
+			h.respondErrorErr(c, http.StatusInternalServerError, "fetch_approval_requests_failed", err)
+			return
+		}
+		h.respond(c, http.StatusOK, requests)
+		return
+	}
 	requests, err := h.services.Accountability.GetApprovalRequests(c.Request.Context(), h.currentUserID(c))
 	if err != nil {
 		h.respondErrorErr(c, http.StatusInternalServerError, "fetch_approval_requests_failed", err)

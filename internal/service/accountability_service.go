@@ -94,6 +94,26 @@ func (s *AccountabilityService) GetApprovalRequests(ctx context.Context, userID 
 	return s.repo.GetApprovalRequests(ctx, userID)
 }
 
+func (s *AccountabilityService) GetApprovalRequestsPaginated(ctx context.Context, userID string, query model.PaginationQuery) (model.PaginatedList[model.ApprovalRequest], error) {
+	items, err := s.GetApprovalRequests(ctx, userID)
+	if err != nil {
+		return model.PaginatedList[model.ApprovalRequest]{}, err
+	}
+	status := strings.TrimSpace(query.Status)
+	needle := strings.ToLower(strings.TrimSpace(query.Query))
+	filtered := make([]model.ApprovalRequest, 0, len(items))
+	for _, item := range items {
+		if status != "" && status != "all" && item.Status != status {
+			continue
+		}
+		if needle != "" && !strings.Contains(strings.ToLower(item.ID+" "+item.Reason), needle) {
+			continue
+		}
+		filtered = append(filtered, item)
+	}
+	return model.PaginateSlice(filtered, query, 5), nil
+}
+
 func (s *AccountabilityService) CreateApprovalRequest(ctx context.Context, userID, deviceID, membershipID, action, reason string, duration int) (model.ApprovalRequest, error) {
 	allowedActions := map[string]bool{
 		"uninstall_detected": true, "pause_protection": true,

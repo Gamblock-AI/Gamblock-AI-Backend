@@ -50,22 +50,22 @@ type LearningItem struct {
 	ProviderDescription string            `json:"provider_description,omitempty"`
 	URL                 string            `json:"url,omitempty"`
 	ProviderLogoURL     string            `json:"provider_logo_url,omitempty"`
-	ThumbnailURL    string            `json:"thumbnail_url,omitempty"`
-	Cost            string            `json:"cost,omitempty"`
-	Certificate     string            `json:"certificate,omitempty"`
-	Language        []string          `json:"language,omitempty"`
-	Difficulty      string            `json:"difficulty,omitempty"`
-	DurationMinutes int               `json:"duration_minutes,omitempty"`
-	Outcomes        []string          `json:"outcomes,omitempty"`
-	Prerequisites   string            `json:"prerequisites,omitempty"`
-	Clusters        []string          `json:"clusters,omitempty"`
-	Programs        []string          `json:"programs,omitempty"`
-	CareerSnapshot  string            `json:"career_snapshot,omitempty"`
-	ReviewedAt      string            `json:"reviewed_at,omitempty"`
-	ExpiresAt       *time.Time        `json:"expires_at,omitempty"`
-	Steps           []string          `json:"steps,omitempty"`
-	Projects        []string          `json:"projects,omitempty"`
-	Progress        *LearningProgress `json:"progress,omitempty"`
+	ThumbnailURL        string            `json:"thumbnail_url,omitempty"`
+	Cost                string            `json:"cost,omitempty"`
+	Certificate         string            `json:"certificate,omitempty"`
+	Language            []string          `json:"language,omitempty"`
+	Difficulty          string            `json:"difficulty,omitempty"`
+	DurationMinutes     int               `json:"duration_minutes,omitempty"`
+	Outcomes            []string          `json:"outcomes,omitempty"`
+	Prerequisites       string            `json:"prerequisites,omitempty"`
+	Clusters            []string          `json:"clusters,omitempty"`
+	Programs            []string          `json:"programs,omitempty"`
+	CareerSnapshot      string            `json:"career_snapshot,omitempty"`
+	ReviewedAt          string            `json:"reviewed_at,omitempty"`
+	ExpiresAt           *time.Time        `json:"expires_at,omitempty"`
+	Steps               []string          `json:"steps,omitempty"`
+	Projects            []string          `json:"projects,omitempty"`
+	Progress            *LearningProgress `json:"progress,omitempty"`
 }
 
 // LearningItemDraft is the editable CMS payload. The structured document
@@ -159,6 +159,24 @@ type LearningCatalog struct {
 	Programs   []AcademicProgram  `json:"programs"`
 	Items      []LearningItem     `json:"items"`
 	Progress   []LearningProgress `json:"progress"`
+	Experience ExperienceProgress `json:"experience"`
+}
+
+type LearningProvider struct {
+	Slug        string `json:"slug"`
+	Name        string `json:"name"`
+	LogoURL     string `json:"logo_url,omitempty"`
+	Description string `json:"description,omitempty"`
+	Count       int    `json:"count"`
+}
+
+type LearningProviderPage struct {
+	PaginatedList[LearningProvider]
+}
+
+type LearningItemPage struct {
+	PaginatedList[LearningItem]
+	Provider   *LearningProvider  `json:"provider,omitempty"`
 	Experience ExperienceProgress `json:"experience"`
 }
 

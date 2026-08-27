@@ -384,7 +384,6 @@ func (s *EducationService) DeleteModule(ctx context.Context, actor, id string) e
 	return nil
 }
 
-
 func (s *EducationService) Revisions(ctx context.Context, moduleID string) ([]model.EducationRevision, error) {
 	if _, err := s.repo.GetEducationModuleByID(ctx, moduleID); err != nil {
 		return nil, err
@@ -511,6 +510,26 @@ func (s *EducationService) PublishedModules(ctx context.Context, userID, locale 
 		localized = append(localized, item)
 	}
 	return localized, nil
+}
+
+func (s *EducationService) PublishedModulesPaginated(ctx context.Context, userID, locale string, query model.PaginationQuery) (model.PaginatedList[model.LocalizedEducationModule], error) {
+	items, err := s.PublishedModules(ctx, userID, locale)
+	if err != nil {
+		return model.PaginatedList[model.LocalizedEducationModule]{}, err
+	}
+	needle := strings.ToLower(strings.TrimSpace(query.Query))
+	category := strings.TrimSpace(query.Category)
+	filtered := make([]model.LocalizedEducationModule, 0, len(items))
+	for _, item := range items {
+		if category != "" && category != "all" && item.Category != category {
+			continue
+		}
+		if needle != "" && !strings.Contains(strings.ToLower(item.Title+" "+item.Summary), needle) {
+			continue
+		}
+		filtered = append(filtered, item)
+	}
+	return model.PaginateSlice(filtered, query, 6), nil
 }
 
 func (s *EducationService) PublishedModule(ctx context.Context, userID, slug, locale string) (model.LocalizedEducationModule, error) {

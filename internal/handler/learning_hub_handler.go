@@ -21,6 +21,28 @@ func (h *Handler) LearningHubCatalog(c *gin.Context) {
 	h.respond(c, http.StatusOK, data)
 }
 
+func (h *Handler) LearningHubProviders(c *gin.Context) {
+	var query model.PaginationQuery
+	_ = c.ShouldBindQuery(&query)
+	data, err := h.services.LearningHub.Providers(c.Request.Context(), h.currentUserID(c), c.Query("locale"), query)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusInternalServerError, "learning_hub_fetch_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, data)
+}
+
+func (h *Handler) LearningHubItemsByProvider(c *gin.Context) {
+	var query model.PaginationQuery
+	_ = c.ShouldBindQuery(&query)
+	data, err := h.services.LearningHub.ItemsByProvider(c.Request.Context(), h.currentUserID(c), c.Query("locale"), c.Query("provider"), query)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusInternalServerError, "learning_hub_fetch_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, data)
+}
+
 func (h *Handler) LearningHubItem(c *gin.Context) {
 	item, err := h.services.LearningHub.Item(c.Request.Context(), h.currentUserID(c), c.Param("slug"), c.Query("locale"))
 	if err != nil {
@@ -102,7 +124,7 @@ func (h *Handler) AdminLearningHubItems(c *gin.Context) {
 	var query model.PaginationQuery
 	_ = c.ShouldBindQuery(&query)
 
-	if c.Query("page") != "" || c.Query("limit") != "" || c.Query("q") != "" {
+	if hasPaginationQuery(c) || c.Query("q") != "" || c.Query("status") != "" {
 		res, err := h.services.LearningHub.AdminItemsPaginated(c.Request.Context(), query)
 		if err != nil {
 			status, code := learningHubAdminError(err)
@@ -185,7 +207,6 @@ func (h *Handler) DeleteAdminLearningHubItem(c *gin.Context) {
 	}
 	h.respond(c, http.StatusOK, gin.H{"deleted": true})
 }
-
 
 func (h *Handler) transitionAdminLearningHubItem(c *gin.Context, action string) {
 	var (

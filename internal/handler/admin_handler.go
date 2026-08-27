@@ -22,7 +22,7 @@ func (h *Handler) AdminModules(c *gin.Context) {
 	var query model.PaginationQuery
 	_ = c.ShouldBindQuery(&query)
 
-	if c.Query("page") != "" || c.Query("limit") != "" || c.Query("status") != "" || c.Query("q") != "" {
+	if hasPaginationQuery(c) || c.Query("status") != "" || c.Query("q") != "" {
 		res, err := h.services.Education.AdminModulesPaginated(c.Request.Context(), query)
 		if err != nil {
 			h.respondErrorErr(c, http.StatusInternalServerError, "fetch_admin_modules_failed", err)
@@ -65,7 +65,7 @@ func (h *Handler) AdminSupportCases(c *gin.Context) {
 	var query model.PaginationQuery
 	_ = c.ShouldBindQuery(&query)
 
-	if c.Query("page") != "" || c.Query("limit") != "" || c.Query("status") != "" || c.Query("priority") != "" || c.Query("q") != "" {
+	if hasPaginationQuery(c) || c.Query("status") != "" || c.Query("priority") != "" || c.Query("q") != "" || c.Query("bucket") != "" || c.Query("assignee") != "" {
 		res, err := h.services.Support.GetSupportCasesForAdminPaginated(c.Request.Context(), h.currentUserID(c), query)
 		if err != nil {
 			h.respondErrorErr(c, http.StatusInternalServerError, "fetch_admin_support_cases_failed", err)
