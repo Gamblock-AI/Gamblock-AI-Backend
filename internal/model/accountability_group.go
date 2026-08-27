@@ -93,3 +93,9 @@ type AccountabilityWorkspace struct {
 	ContactRequests []PartnerContactRequest    `json:"contact_requests"`
 	PendingActions  int                        `json:"pending_actions"`
 }
+
+type FlaggedAccountabilityMember struct {
+	Member AccountabilityMembership `json:"member"`
+	Flags  []string                 `json:"flags"`
+}
+

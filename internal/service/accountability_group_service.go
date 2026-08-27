@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -386,3 +387,100 @@ func generateAccountabilityCode(length int) (string, error) {
 func liveMembershipStatus(status string) bool {
 	return status == "active" || status == "leave_pending" || status == "support_review" || status == "safety_suspended"
 }
+
+func (s *AccountabilityGroupService) FlaggedMembers(ctx context.Context, partnerID string, query model.PaginationQuery) (model.PaginatedList[model.FlaggedAccountabilityMember], error) {
+	user, ok := s.repo.UserByID(ctx, partnerID)
+	if !ok || user.Role != "partner" {
+		return model.PaginatedList[model.FlaggedAccountabilityMember]{}, fmt.Errorf("only a partner can view flagged members")
+	}
+
+	groups, err := s.repo.ListAccountabilityGroups(ctx, partnerID)
+	if err != nil {
+		return model.PaginatedList[model.FlaggedAccountabilityMember]{}, err
+	}
+
+	var flagged []model.FlaggedAccountabilityMember
+	seenMembers := make(map[string]bool)
+
+	for _, group := range groups {
+		members, memberErr := s.repo.ListMembershipsForGroup(ctx, group.ID)
+		if memberErr != nil {
+			return model.PaginatedList[model.FlaggedAccountabilityMember]{}, memberErr
+		}
+		for _, member := range members {
+			if !liveMembershipStatus(member.Status) || seenMembers[member.ID] {
+				continue
+			}
+			seenMembers[member.ID] = true
+			flags := computeMonitorFlags(member)
+			if len(flags) > 0 {
+				flagged = append(flagged, model.FlaggedAccountabilityMember{
+					Member: member,
+					Flags:  flags,
+				})
+			}
+		}
+	}
+
+	sort.SliceStable(flagged, func(i, j int) bool {
+		sevI := minMonitorSeverity(flagged[i].Flags)
+		sevJ := minMonitorSeverity(flagged[j].Flags)
+		if sevI != sevJ {
+			return sevI < sevJ
+		}
+		return strings.ToLower(flagged[i].Member.StudentName) < strings.ToLower(flagged[j].Member.StudentName)
+	})
+
+	page, limit, offset := query.Normalize(3)
+	total := len(flagged)
+	if offset >= total {
+		return model.NewPaginatedList([]model.FlaggedAccountabilityMember{}, total, page, limit), nil
+	}
+	end := offset + limit
+	if end > total {
+		end = total
+	}
+	paged := flagged[offset:end]
+	return model.NewPaginatedList(paged, total, page, limit), nil
+}
+
+func computeMonitorFlags(member model.AccountabilityMembership) []string {
+	var flags []string
+	if member.Status != "active" {
+		flags = append(flags, "status")
+	}
+	if member.Aggregate.ProtectionStatus == "attention" {
+		flags = append(flags, "protection")
+	}
+	if member.Aggregate.LastHeartbeatBucket == "older" || member.Aggregate.LastHeartbeatBucket == "never" {
+		flags = append(flags, "inactive")
+	}
+	if member.Aggregate.CheckInDays == 0 {
+		flags = append(flags, "noCheckIn")
+	}
+	return flags
+}
+
+func minMonitorSeverity(flags []string) int {
+	minSev := 99
+	for _, f := range flags {
+		var sev int
+		switch f {
+		case "status":
+			sev = 0
+		case "protection":
+			sev = 1
+		case "inactive":
+			sev = 2
+		case "noCheckIn":
+			sev = 3
+		default:
+			sev = 4
+		}
+		if sev < minSev {
+			minSev = sev
+		}
+	}
+	return minSev
+}
+

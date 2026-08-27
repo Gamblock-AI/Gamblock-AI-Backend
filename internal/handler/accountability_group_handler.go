@@ -17,6 +17,17 @@ func (h *Handler) AccountabilityWorkspace(c *gin.Context) {
 	h.respond(c, http.StatusOK, workspace)
 }
 
+func (h *Handler) FlaggedAccountabilityMembers(c *gin.Context) {
+	var query model.PaginationQuery
+	_ = c.ShouldBindQuery(&query)
+	result, err := h.services.AccountabilityGroups.FlaggedMembers(c.Request.Context(), h.currentUserID(c), query)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "accountability_workspace_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, result)
+}
+
 func (h *Handler) CreateAccountabilityGroup(c *gin.Context) {
 	var input struct {
 		Name        string `json:"name"`

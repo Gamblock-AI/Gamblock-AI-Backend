@@ -50,6 +50,7 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	{
 		accountability.GET("/workspace", h.AccountabilityWorkspace)
 		accountability.GET("/analytics", h.AccountabilityAnalytics)
+		accountability.GET("/flagged-members", mid.RequireRoles("partner"), h.FlaggedAccountabilityMembers)
 		accountability.POST("/groups", mid.RequireRoles("partner"), h.CreateAccountabilityGroup)
 		accountability.POST("/groups/preview", mid.RequireRoles("user"), mid.RateLimitMiddleware("12-M"), h.PreviewAccountabilityGroup)
 		accountability.POST("/groups/join", mid.RequireRoles("user"), mid.RateLimitMiddleware("6-M"), h.JoinAccountabilityGroup)
