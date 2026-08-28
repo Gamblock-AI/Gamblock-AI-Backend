@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gamblock-ai/gamblock-ai-backend/ent"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/aggregateevent"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 )
@@ -40,6 +41,51 @@ func (r *Repository) SaveAggregateEvent(ctx context.Context, event model.Aggrega
 		return model.AggregateEvent{}, err
 	}
 	return model.AggregateEvent{ID: item.ID, UserID: item.UserID, DeviceID: value(item.DeviceID), IdempotencyKey: item.IdempotencyKey, EventType: item.EventType.String(), EventDate: item.EventDate, Count: item.Count, MetadataJSON: item.MetadataJSON, CreatedAt: item.CreatedAt}, nil
+}
+
+// SaveAggregateEventSnapshot upserts the current day's cumulative aggregate.
+// The device may retry the same snapshot as its local counter increases, so
+// idempotency is monotonic: a stale snapshot can never reduce a stored count.
+func (r *Repository) SaveAggregateEventSnapshot(ctx context.Context, event model.AggregateEvent) (model.AggregateEvent, error) {
+	if r.db == nil {
+		r.store.Lock()
+		defer r.store.Unlock()
+		for index := range r.store.AggregateEvents {
+			existing := &r.store.AggregateEvents[index]
+			if existing.UserID != event.UserID || existing.IdempotencyKey != event.IdempotencyKey {
+				continue
+			}
+			if event.Count > existing.Count {
+				existing.Count = event.Count
+				existing.MetadataJSON = event.MetadataJSON
+			}
+			return *existing, nil
+		}
+		event.CreatedAt = time.Now().UTC()
+		r.store.AggregateEvents = append(r.store.AggregateEvents, event)
+		return event, nil
+	}
+
+	existing, err := r.db.AggregateEvent.Query().Where(
+		aggregateevent.IdempotencyKeyEQ(event.IdempotencyKey),
+	).Only(ctx)
+	if err == nil {
+		if event.Count <= existing.Count {
+			return model.AggregateEvent{ID: existing.ID, UserID: existing.UserID, DeviceID: value(existing.DeviceID), IdempotencyKey: existing.IdempotencyKey, EventType: existing.EventType.String(), EventDate: existing.EventDate, Count: existing.Count, MetadataJSON: existing.MetadataJSON, CreatedAt: existing.CreatedAt}, nil
+		}
+		updated, updateErr := r.db.AggregateEvent.UpdateOneID(existing.ID).
+			SetCount(event.Count).
+			SetMetadataJSON(event.MetadataJSON).
+			Save(ctx)
+		if updateErr != nil {
+			return model.AggregateEvent{}, updateErr
+		}
+		return model.AggregateEvent{ID: updated.ID, UserID: updated.UserID, DeviceID: value(updated.DeviceID), IdempotencyKey: updated.IdempotencyKey, EventType: updated.EventType.String(), EventDate: updated.EventDate, Count: updated.Count, MetadataJSON: updated.MetadataJSON, CreatedAt: updated.CreatedAt}, nil
+	}
+	if !ent.IsNotFound(err) {
+		return model.AggregateEvent{}, err
+	}
+	return r.SaveAggregateEvent(ctx, event)
 }
 
 func (r *Repository) GetProtectionAnalytics(ctx context.Context, userID, deviceID string, days int, now time.Time) (model.ProtectionAnalytics, error) {

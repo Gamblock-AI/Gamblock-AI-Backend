@@ -17,7 +17,7 @@ type ClientService struct {
 	avatarStoragePath string
 }
 
-func (s *ClientService) RecordAggregate(ctx context.Context, userID, deviceID, eventType, date, idempotencyKey string, count int, metadataJSON map[string]any) (model.AggregateEvent, error) {
+func (s *ClientService) RecordAggregate(ctx context.Context, userID, deviceID, eventType, date, idempotencyKey string, count int, snapshot bool, metadataJSON map[string]any) (model.AggregateEvent, error) {
 	allowed := map[string]bool{
 		"intervention_shown": true, "block_count_sync": true, "tamper_detected": true,
 		"permission_revoked": true,
@@ -33,15 +33,22 @@ func (s *ClientService) RecordAggregate(ctx context.Context, userID, deviceID, e
 	if eventDate.After(now.Add(24*time.Hour)) || eventDate.Before(now.AddDate(0, 0, -90)) {
 		return model.AggregateEvent{}, fmt.Errorf("aggregate date is outside the accepted window")
 	}
+	if snapshot && eventDate.Format("2006-01-02") != now.Format("2006-01-02") {
+		return model.AggregateEvent{}, fmt.Errorf("aggregate snapshot must be for the current UTC date")
+	}
 	if !s.repo.IsDeviceOwnedBy(ctx, deviceID, userID) {
 		return model.AggregateEvent{}, fmt.Errorf("device does not belong to user")
 	}
-	return s.repo.SaveAggregateEvent(ctx, model.AggregateEvent{
+	event := model.AggregateEvent{
 		ID: "agg_" + uuid.NewString(), UserID: userID, DeviceID: deviceID,
 		IdempotencyKey: userID + ":" + idempotencyKey,
 		EventType:      eventType, EventDate: eventDate, Count: count,
 		MetadataJSON: metadataJSON,
-	})
+	}
+	if snapshot {
+		return s.repo.SaveAggregateEventSnapshot(ctx, event)
+	}
+	return s.repo.SaveAggregateEvent(ctx, event)
 }
 
 // validateHourlyMetadata accepts an optional 24-element hourly histogram whose
@@ -96,7 +103,8 @@ func (s *ClientService) SaveBlockedEvents(ctx context.Context, userID, deviceID 
 	return err
 }
 
-func (s *ClientService) GetProfile(ctx context.Context, userID string) (model.User, error) {	user, ok := s.repo.UserByID(ctx, userID)
+func (s *ClientService) GetProfile(ctx context.Context, userID string) (model.User, error) {
+	user, ok := s.repo.UserByID(ctx, userID)
 	if !ok {
 		return model.User{}, fmt.Errorf("user not found")
 	}

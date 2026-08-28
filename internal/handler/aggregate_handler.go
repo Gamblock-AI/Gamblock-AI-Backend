@@ -15,6 +15,7 @@ func (h *Handler) RecordAggregateEvent(c *gin.Context) {
 		EventDate         string         `json:"event_date"`
 		Count             int            `json:"count"`
 		IdempotencyKey    string         `json:"idempotency_key"`
+		Snapshot          bool           `json:"snapshot"`
 		MetadataJSON      map[string]any `json:"metadata_json"`
 		BlockedEventTimes []string       `json:"blocked_event_times"`
 	}
@@ -22,7 +23,7 @@ func (h *Handler) RecordAggregateEvent(c *gin.Context) {
 		h.respondCode(c, http.StatusBadRequest, "err_validation")
 		return
 	}
-	event, err := h.services.Client.RecordAggregate(c.Request.Context(), h.currentUserID(c), input.DeviceID, input.EventType, input.EventDate, input.IdempotencyKey, input.Count, input.MetadataJSON)
+	event, err := h.services.Client.RecordAggregate(c.Request.Context(), h.currentUserID(c), input.DeviceID, input.EventType, input.EventDate, input.IdempotencyKey, input.Count, input.Snapshot, input.MetadataJSON)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "aggregate_event_rejected", err)
 		return

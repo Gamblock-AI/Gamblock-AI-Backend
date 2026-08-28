@@ -85,7 +85,8 @@ export data needs to be retained.
 - `GET  /v1/client/dashboard-summary`
 - `GET  /v1/client/protection-status`
 - `GET  /v1/client/protection-analytics`
-- `POST /v1/client/aggregate-events` (may include `blocked_event_times`)
+- `POST /v1/client/aggregate-events` (may include `blocked_event_times`; the
+  current UTC day may be sent as a monotonic `snapshot`)
 - `GET  /v1/client/spk-recommendation`
 - `POST /v1/client/spk-interventions/:id/complete`
 - `GET/PUT /v1/client/spk-preference`
@@ -165,6 +166,9 @@ the standard envelope.
   path. `DELETE /v1/me/avatar` restores the initials fallback.
 - `GET /v1/client/protection-analytics?device_id=<id>&days=7|30` returns daily
   and total counters only.
+- `POST /v1/client/aggregate-events` accepts `snapshot: true` only for the
+  current UTC date; it monotonically updates the same idempotency key so a
+  live block can reach analytics before day rollover without double-counting.
 - Approval responses keep stable `action`/`status` codes separate from
   localized labels. `POST /v1/approval-requests/:id/apply` is device-bound,
   idempotent after first use, and available for 30 minutes after resolution.

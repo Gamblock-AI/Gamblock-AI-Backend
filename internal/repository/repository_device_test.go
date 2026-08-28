@@ -49,6 +49,39 @@ func TestProtectionAnalytics_AggregatesOwnedDeviceOnly(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestSaveAggregateEventSnapshotIsMonotonic(t *testing.T) {
+	repo, _ := newRepo(t)
+	today := time.Now().UTC().Truncate(24 * time.Hour)
+	base := model.AggregateEvent{
+		ID:             "agg_snapshot",
+		UserID:         "usr_gading",
+		DeviceID:       "dev_android",
+		IdempotencyKey: "usr_gading:daily:dev_android:" + today.Format("2006-01-02") + ":block_count_sync",
+		EventType:      "block_count_sync",
+		EventDate:      today,
+		Count:          2,
+	}
+
+	first, err := repo.SaveAggregateEventSnapshot(context.Background(), base)
+	require.NoError(t, err)
+	second, err := repo.SaveAggregateEventSnapshot(context.Background(), base)
+	require.NoError(t, err)
+	assert.Equal(t, 2, second.Count)
+
+	stale := base
+	stale.Count = 1
+	staleResult, err := repo.SaveAggregateEventSnapshot(context.Background(), stale)
+	require.NoError(t, err)
+	assert.Equal(t, 2, staleResult.Count)
+
+	fresh := base
+	fresh.Count = 5
+	freshResult, err := repo.SaveAggregateEventSnapshot(context.Background(), fresh)
+	require.NoError(t, err)
+	assert.Equal(t, 5, freshResult.Count)
+	assert.Equal(t, first.ID, freshResult.ID)
+}
+
 func TestDevice_UpdateNonexistent(t *testing.T) {
 	repo, _ := newRepo(t)
 	_, err := repo.UpdateDevice(context.Background(), "dev_nonexistent", "L", "1", "OS", "active", "m", "r")
