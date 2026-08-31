@@ -342,26 +342,38 @@ func TestAdmin_EmergencyKeyGenerateAndValidate(t *testing.T) {
 	repo, _ := newRepo(t)
 	svc := NewAdminService(repo, testCfg(), NewWhatsAppService(testCfg(), zap.NewNop()), zap.NewNop())
 	ctx := context.Background()
-	bindTestGrantKey(t, repo, "usr_gading", "dev_android")
+	device, err := NewDeviceService(repo, testCfg(), zap.NewNop()).CreateDevice(
+		ctx,
+		"usr_gading",
+		"instance-emergency-key-test",
+		"android",
+		"Emergency key test device",
+		"1.0.0",
+		"Android test",
+		nil,
+		nil,
+	)
+	require.NoError(t, err)
+	bindTestGrantKey(t, repo, "usr_gading", device.ID)
 
-	request, err := svc.RequestEmergencyKey(ctx, "usr_gading", "dev_android")
+	request, err := svc.RequestEmergencyKey(ctx, "usr_gading", device.ID)
 	require.NoError(t, err)
 	_, key, err := svc.ApproveEmergencyKeyRequest(ctx, request.ID, "usr_suci")
 	require.NoError(t, err)
 	assert.NotEmpty(t, key)
 
 	// Wrong key fails.
-	_, err = svc.ValidateEmergencyKey(ctx, "wrong-key", "dev_android")
+	_, err = svc.ValidateEmergencyKey(ctx, "wrong-key", device.ID)
 	assert.Error(t, err)
 
-	grant, err := svc.ValidateEmergencyKey(ctx, key, "dev_android")
+	grant, err := svc.ValidateEmergencyKey(ctx, key, device.ID)
 	require.NoError(t, err)
-	assert.Equal(t, "dev_android", grant.DeviceID)
+	assert.Equal(t, device.ID, grant.DeviceID)
 	assert.Equal(t, "emergency_access", grant.Action)
 	assert.NotEmpty(t, grant.GrantJTI)
 	assert.NotEmpty(t, grant.GrantToken)
 
-	repeated, err := svc.ValidateEmergencyKey(ctx, key, "dev_android")
+	repeated, err := svc.ValidateEmergencyKey(ctx, key, device.ID)
 	require.NoError(t, err)
 	assert.Equal(t, grant.GrantStartsAt, repeated.GrantStartsAt)
 	assert.Equal(t, grant.GrantExpiresAt, repeated.GrantExpiresAt)

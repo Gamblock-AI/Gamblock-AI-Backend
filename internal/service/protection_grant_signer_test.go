@@ -31,9 +31,9 @@ func TestProtectionGrantSigner_SignsDeviceBoundES256Grant(t *testing.T) {
 	assert.Equal(t, "pause_protection", claims.Action)
 	assert.Equal(t, "device-jwk-thumbprint", claims.Confirmation.JWKThumbprint)
 	assert.Equal(t, "grant-jti", claims.ID)
-	assert.Equal(t, startsAt, claims.IssuedAt.Time)
-	assert.Equal(t, startsAt, claims.NotBefore.Time)
-	assert.Equal(t, expiresAt, claims.ExpiresAt.Time)
+	assert.True(t, claims.IssuedAt.Time.Equal(startsAt))
+	assert.True(t, claims.NotBefore.Time.Equal(startsAt))
+	assert.True(t, claims.ExpiresAt.Time.Equal(expiresAt))
 }
 
 func TestProtectionGrantSigner_RejectsUnsupportedPauseDuration(t *testing.T) {
