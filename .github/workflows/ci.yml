@@ -84,6 +84,12 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: 22
           fingerprint: ${{ vars.VPS_HOST_FINGERPRINT }}
+          # VPS connections can take longer than the action's 30s default
+          # during provider-side maintenance; keep the deploy observable while
+          # allowing a normal transient delay to recover.
+          timeout: 120s
+          proxy_timeout: 120s
+          command_timeout: 15m
           script: |
             cd /opt/docker-stack/applications/gamblock-ai-backend && ./update.sh
             cd /opt/docker-stack/applications/gamblock-ai-backend-staging && ./update.sh
