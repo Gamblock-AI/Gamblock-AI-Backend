@@ -139,3 +139,10 @@ when an actual web page/access route changes.
 Update this file when backend architecture, commands, privacy enforcement, or
 capability state changes. Shared invariant changes require a context-version
 bump coordinated through the umbrella workspace.
+
+## Cross-repository testing
+
+Runtime and cross-repository evaluation evidence is owned by the public
+[Gamblock-AI-Testing repository](https://github.com/Gamblock-AI/Gamblock-AI-Testing).
+This backend snapshot records implementation status only; it must not duplicate
+the canonical testing summary.
