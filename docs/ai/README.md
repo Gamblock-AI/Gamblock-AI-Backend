@@ -145,4 +145,6 @@ bump coordinated through the umbrella workspace.
 Runtime and cross-repository evaluation evidence is owned by the public
 [Gamblock-AI-Testing repository](https://github.com/Gamblock-AI/Gamblock-AI-Testing).
 This backend snapshot records implementation status only; it must not duplicate
-the canonical testing summary.
+the canonical testing summary. When an explicit backend test is requested for
+project evidence, the agent must synchronize `golang/report.md` and provide a
+test receipt listing public and private/local data changes.

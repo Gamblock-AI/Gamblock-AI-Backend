@@ -166,6 +166,18 @@ Tests live beside code as `*_test.go`, but the AI does not run them by default.
 The explicitly seeded in-memory store supports integration tests without PostgreSQL. Do
 not hit production services from tests.
 
+## Cross-repository testing handoff
+
+When the user explicitly requests backend testing to be retained as project
+evidence, run the relevant backend command and then synchronize the canonical
+report through `../gamblock-ai-testing/docs/tools/run_evaluation.py` with
+`--run-code-tests`. A backend command run by itself is not a completed evidence
+handoff. Inspect both repositories and provide the test receipt required by
+the umbrella/testing context, including public report changes, private/local
+artifacts, validation, and commit/push status. If the testing checkout is
+unavailable, report the exact blocker and do not claim that `golang/report.md`
+was updated.
+
 ## Protected and external actions
 
 - Never hand-edit generated `ent/` output.
