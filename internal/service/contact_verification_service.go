@@ -100,6 +100,10 @@ func (s *AuthService) VerifyPhoneWithToken(ctx context.Context, verificationToke
 	if err := s.ConfirmPhoneVerification(ctx, userID, code); err != nil {
 		return model.AuthResponse{}, err
 	}
+	user, ok = s.repo.UserByID(ctx, userID)
+	if !ok || user.DisabledAt != nil {
+		return model.AuthResponse{}, fmt.Errorf("user not found")
+	}
 	return s.authPair(ctx, user, nil)
 }
 

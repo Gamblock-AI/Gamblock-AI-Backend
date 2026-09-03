@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -36,6 +37,7 @@ func newFullRouter(t *testing.T, appEnv string) (*gin.Engine, string) {
 	v1.POST("/auth/login", h.Login)
 	v1.GET("/client/protection-status", mid.AuthRequired(), h.ClientProtectionStatus)
 	v1.GET("/client/progress", mid.AuthRequired(), h.ClientProgressSnapshot)
+	v1.POST("/client/aggregate-events", mid.AuthRequired(), h.RecordAggregateEvent)
 	v1.GET("/portal/overview", mid.AuthRequired(), h.PortalOverview)
 	v1.GET("/missions/today", mid.AuthRequired(), h.GetTodayMission)
 	v1.POST("/missions/claim", mid.AuthRequired(), h.ClaimMission)
@@ -72,6 +74,88 @@ func TestHandler_ClientProgress(t *testing.T) {
 	r, token := newFullRouter(t, "development")
 	w := authedGet(r, "/v1/client/progress", token)
 	require.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestHandler_RecordAggregateEvent_AcceptsBlockedEventTimestamps(t *testing.T) {
+	r, token := newFullRouter(t, "development")
+	now := time.Now().UTC()
+	body, err := json.Marshal(map[string]any{
+		"device_id":           "dev_android",
+		"event_type":          "block_count_sync",
+		"event_date":          now.Format("2006-01-02"),
+		"count":               3,
+		"idempotency_key":     "handler-aggregate-1",
+		"blocked_event_times": []string{now.Add(-time.Minute).Format(time.RFC3339)},
+	})
+	require.NoError(t, err)
+	req := httptest.NewRequest(http.MethodPost, "/v1/client/aggregate-events", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusAccepted, w.Code)
+	var env envelopeShape
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &env))
+	assert.Nil(t, env.Error)
+	assert.NotNil(t, env.Data)
+	assert.NotEmpty(t, env.RequestID)
+}
+
+func TestHandler_RecordAggregateEvent_RejectsInvalidBlockedTimestamp(t *testing.T) {
+	r, token := newFullRouter(t, "development")
+	body, err := json.Marshal(map[string]any{
+		"device_id":           "dev_android",
+		"event_type":          "block_count_sync",
+		"event_date":          time.Now().UTC().Format("2006-01-02"),
+		"count":               1,
+		"idempotency_key":     "handler-aggregate-2",
+		"blocked_event_times": []string{"not-rfc3339"},
+	})
+	require.NoError(t, err)
+	req := httptest.NewRequest(http.MethodPost, "/v1/client/aggregate-events", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	var env envelopeShape
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &env))
+	require.NotNil(t, env.Error)
+	assert.Equal(t, "blocked_events_rejected", env.Error.Code)
+}
+
+func TestHandler_RecordAggregateEvent_RequiresAuthentication(t *testing.T) {
+	r, _ := newFullRouter(t, "development")
+	req := httptest.NewRequest(http.MethodPost, "/v1/client/aggregate-events", bytes.NewBufferString(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Contains(t, w.Body.String(), "auth_required")
+}
+
+func TestHandler_RecordAggregateEvent_RejectsRawBrowsingPayload(t *testing.T) {
+	r, token := newFullRouter(t, "development")
+	body, err := json.Marshal(map[string]any{
+		"device_id":       "dev_android",
+		"event_type":      "block_count_sync",
+		"event_date":      time.Now().UTC().Format("2006-01-02"),
+		"count":           1,
+		"idempotency_key": "handler-aggregate-3",
+		"url":             "https://example.com",
+	})
+	require.NoError(t, err)
+	req := httptest.NewRequest(http.MethodPost, "/v1/client/aggregate-events", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "privacy_payload_rejected")
 }
 
 func TestHandler_PortalOverview(t *testing.T) {

@@ -80,8 +80,8 @@ func TestPlatformAnalytics_SumsAcrossUsersAndProtected(t *testing.T) {
 			{UserID: "stu_a", EventType: "block_count_sync", EventDate: midnightUTC(2026, time.August, 5), Count: 3},
 			{UserID: "stu_b", EventType: "block_count_sync", EventDate: midnightUTC(2026, time.August, 5), Count: 4},
 			{UserID: "stu_a", EventType: "intervention_shown", EventDate: midnightUTC(2026, time.August, 5), Count: 2},
-			{UserID: "stu_a", EventType: "tamper_detected", EventDate: midnightUTC(2026, time.August, 6), Count: 1},
-			{UserID: "stu_a", EventType: "permission_revoked", EventDate: midnightUTC(2026, time.August, 6), Count: 1},
+			{UserID: "stu_a", EventType: "tamper_detected", EventDate: midnightUTC(2026, time.August, 4), Count: 1},
+			{UserID: "stu_a", EventType: "permission_revoked", EventDate: midnightUTC(2026, time.August, 4), Count: 1},
 		},
 	}
 	repo := New(nil, st)

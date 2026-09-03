@@ -23,18 +23,22 @@ func (h *Handler) RecordAggregateEvent(c *gin.Context) {
 		h.respondCode(c, http.StatusBadRequest, "err_validation")
 		return
 	}
+	var blockedEventTimes []time.Time
+	if len(input.BlockedEventTimes) > 0 {
+		var parseErr error
+		blockedEventTimes, parseErr = parseBlockedEventTimes(input.BlockedEventTimes)
+		if parseErr != nil {
+			h.respondErrorErr(c, http.StatusBadRequest, "blocked_events_rejected", parseErr)
+			return
+		}
+	}
 	event, err := h.services.Client.RecordAggregate(c.Request.Context(), h.currentUserID(c), input.DeviceID, input.EventType, input.EventDate, input.IdempotencyKey, input.Count, input.Snapshot, input.MetadataJSON)
 	if err != nil {
 		h.respondErrorErr(c, http.StatusBadRequest, "aggregate_event_rejected", err)
 		return
 	}
-	if len(input.BlockedEventTimes) > 0 {
-		times, parseErr := parseBlockedEventTimes(input.BlockedEventTimes)
-		if parseErr != nil {
-			h.respondErrorErr(c, http.StatusBadRequest, "blocked_events_rejected", parseErr)
-			return
-		}
-		if saveErr := h.services.Client.SaveBlockedEvents(c.Request.Context(), h.currentUserID(c), input.DeviceID, times); saveErr != nil {
+	if len(blockedEventTimes) > 0 {
+		if saveErr := h.services.Client.SaveBlockedEvents(c.Request.Context(), h.currentUserID(c), input.DeviceID, blockedEventTimes); saveErr != nil {
 			h.respondErrorErr(c, http.StatusBadRequest, "blocked_events_rejected", saveErr)
 			return
 		}

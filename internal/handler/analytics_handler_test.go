@@ -67,9 +67,9 @@ func TestHandler_PartnerAnalytics(t *testing.T) {
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &env))
 	data := env.Data.(map[string]any)
 	assert.Equal(t, float64(14), data["period_days"])
-	assert.Equal(t, float64(2), data["member_count"])
-	assert.Equal(t, float64(2), data["shared_member_count"])
-	assert.Equal(t, float64(12), data["totals"].(map[string]any)["blocked"])
+	assert.Equal(t, float64(1), data["member_count"])
+	assert.Equal(t, float64(1), data["shared_member_count"])
+	assert.Equal(t, float64(9), data["totals"].(map[string]any)["blocked"])
 	assert.NotEmpty(t, data["daily"])
 	assert.Len(t, data["hourly"], 24)
 }

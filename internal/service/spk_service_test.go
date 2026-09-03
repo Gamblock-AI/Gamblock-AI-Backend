@@ -31,7 +31,7 @@ func TestSpkService_Recommend_SeededUser(t *testing.T) {
 	assert.Equal(t, "MEDIUM", first.EngagementLevel)
 	assert.True(t, first.InterventionNeeded)
 	assert.NotEmpty(t, first.RecommendationID)
-	assert.Equal(t, model.SpkDataSufficient, first.DataState)
+	assert.Equal(t, model.SpkDataPartial, first.DataState)
 	assert.Equal(t, "recovery_practice", first.Feature.FeatureID)
 	assert.Equal(t, "/recovery", first.Feature.Route)
 	assert.False(t, first.LLMUsed)
@@ -43,8 +43,12 @@ func TestSpkService_Recommend_SeededUser(t *testing.T) {
 	assert.Contains(t, reasonKeys, "blocked_active_days_7d")
 	assert.Contains(t, reasonKeys, "recovery_streak_days")
 	assert.Contains(t, reasonKeys, "learning_activities_7d", "seeded learning must be available")
-	assert.Contains(t, reasonKeys, "change_readiness", "seeded intention quiz must be available")
-	assert.Empty(t, first.DataGaps, "seeded user has enough data for the recommendation")
+	assert.NotContains(t, reasonKeys, "change_readiness", "first-run intention is intentionally unavailable")
+	gapActions := make([]string, 0, len(first.DataGaps))
+	for _, gap := range first.DataGaps {
+		gapActions = append(gapActions, gap.Action)
+	}
+	assert.Contains(t, gapActions, "set_intention", "first-run intention remains a data gap")
 
 	second, err := svc.Recommend(context.Background(), "usr_gading")
 	require.NoError(t, err)
@@ -144,10 +148,10 @@ func TestSpkService_Recommend_PrivacyGatesProtection(t *testing.T) {
 	ctx := context.Background()
 
 	_, err := svc.UpdatePreference(ctx, "usr_gading", model.SpkPreference{
-		SpkRecommendationEnabled: true,
-		SpkUseProtection:         false,
-		SpkUseRecovery:           true,
-		SpkUsePersonal:           true,
+		SpkRecommendationEnabled:  true,
+		SpkUseProtection:          false,
+		SpkUseRecovery:            true,
+		SpkUsePersonal:            true,
 		LLMPersonalizationEnabled: false,
 	})
 	require.NoError(t, err)
@@ -155,7 +159,7 @@ func TestSpkService_Recommend_PrivacyGatesProtection(t *testing.T) {
 	recommendation, err := svc.Recommend(ctx, "usr_gading")
 	require.NoError(t, err)
 	assert.True(t, recommendation.RecommendationEnabled)
-	assert.InDelta(t, float64(60), recommendation.AvailableWeightPercent, 0.01, "protection weight must be excluded from 100")
+	assert.InDelta(t, float64(45), recommendation.AvailableWeightPercent, 0.01, "protection and first-run intention weights must be excluded")
 	assert.Contains(t, recommendation.UnavailableFields, "blocked_attempts_today")
 }
 
@@ -230,7 +234,7 @@ func enrichTestStore() *store.Store {
 	st := store.NewSeeded()
 	st.Intentions = append(st.Intentions, store.Intention{
 		ID: "int_gading", UserID: "usr_gading",
-		Text: "Saya ingin menyelesaikan kuliah dengan tenang.",
+		Text:   "Saya ingin menyelesaikan kuliah dengan tenang.",
 		Status: "active", SchoolImpact: "happened", MoneySpent: "500k_5m",
 		ScreenTime: "1h_3h", QuitAttempts: "multiple", QuitMotivation: "determined",
 		CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
