@@ -159,6 +159,7 @@ make lint              # default AI check: go vet ./...
 
 # Explicit user request only:
 make test
+make test-integration  # requires an isolated PostgreSQL database
 make verify            # build all packages, vet, and race-test
 ```
 

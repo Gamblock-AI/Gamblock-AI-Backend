@@ -63,6 +63,24 @@ func (s *Store) RevokeRefreshTokenByID(id string) bool {
 	return false
 }
 
+// ConsumeRefreshTokenByID atomically revokes an active, unexpired refresh
+// token. The check and update share one lock so concurrent refresh requests
+// cannot both rotate the same token.
+func (s *Store) ConsumeRefreshTokenByID(id string) bool {
+	refreshTokenMu.Lock()
+	defer refreshTokenMu.Unlock()
+	now := time.Now().UTC()
+	for hash, rec := range refreshTokenMap {
+		if rec.ID != id || rec.RevokedAt != nil || !rec.ExpiresAt.After(now) {
+			continue
+		}
+		rec.RevokedAt = &now
+		refreshTokenMap[hash] = rec
+		return true
+	}
+	return false
+}
+
 func (s *Store) RevokeRefreshTokensForUser(userID string) int {
 	refreshTokenMu.Lock()
 	defer refreshTokenMu.Unlock()

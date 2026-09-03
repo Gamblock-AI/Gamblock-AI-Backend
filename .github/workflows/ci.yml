@@ -26,16 +26,53 @@ jobs:
       - run: go vet ./...
       - run: go test -race -coverprofile=coverage.out ./...
         if: ${{ vars.ENABLE_CI_TESTS == 'true' }}
+      - name: Summarize coverage
+        if: ${{ vars.ENABLE_CI_TESTS == 'true' }}
+        run: go tool cover -func=coverage.out | tee coverage-summary.txt
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ vars.ENABLE_CI_TESTS == 'true' }}
         with:
           name: backend-coverage
-          path: coverage.out
+          path: |
+            coverage.out
+            coverage-summary.txt
+
+  integration:
+    if: ${{ vars.ENABLE_CI_TESTS == 'true' }}
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: bash scripts/verify-ai-context.sh
+      - run: go mod download
+      - name: Run PostgreSQL integration tests
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+        run: make test-integration
 
   build-push-deploy:
-    needs: verify
+    needs: [verify, integration]
     # Build & push on main + tags. PRs only run tests above.
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: >-
+      always() &&
+      needs.verify.result == 'success' &&
+      (needs.integration.result == 'success' || needs.integration.result == 'skipped') &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     permissions:
       contents: read

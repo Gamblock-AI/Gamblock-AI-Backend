@@ -107,6 +107,22 @@ volume — staging keeps the four demo accounts plus the full fixture set for
 QA, while production holds only the four accounts. A single `FONNTE_TOKEN`
 is shared, so staging and production use the same WhatsApp device.
 
+## Backend test matrix
+
+The backend has unit tests for handlers, services, repositories, middleware,
+cryptography, and the in-memory store. Explicit test runs also cover:
+
+- HTTP contracts for DeepSeek and Fonnte through local `httptest` servers;
+- representative public/authenticated/role/recent-auth route access;
+- concurrent SPK recommendation, refresh-token rotation, and aggregate snapshot
+  idempotency under the race detector;
+- PostgreSQL migration, transaction rollback, encrypted persistence, and
+  concurrent aggregate snapshot idempotency through `make test-integration`.
+
+`make test-cover` and the CI `ENABLE_CI_TESTS=true` gate measure coverage and
+retain only aggregate coverage artifacts. Integration tests require a dedicated
+PostgreSQL database and never call live notification or LLM providers.
+
 ## Default AI validation
 
 Run `make lint`. When AI context changed, also run

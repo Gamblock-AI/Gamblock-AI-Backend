@@ -25,7 +25,10 @@ func (r *Repository) SaveAggregateEvent(ctx context.Context, event model.Aggrega
 	}
 	existing, err := r.db.AggregateEvent.Query().Where(aggregateevent.IdempotencyKeyEQ(event.IdempotencyKey)).Only(ctx)
 	if err == nil {
-		return model.AggregateEvent{ID: existing.ID, UserID: existing.UserID, DeviceID: value(existing.DeviceID), IdempotencyKey: existing.IdempotencyKey, EventType: existing.EventType.String(), EventDate: existing.EventDate, Count: existing.Count, MetadataJSON: existing.MetadataJSON, CreatedAt: existing.CreatedAt}, nil
+		return aggregateEventFromEnt(existing), nil
+	}
+	if !ent.IsNotFound(err) {
+		return model.AggregateEvent{}, err
 	}
 	item, err := r.db.AggregateEvent.Create().
 		SetID(event.ID).
@@ -38,9 +41,18 @@ func (r *Repository) SaveAggregateEvent(ctx context.Context, event model.Aggrega
 		SetMetadataJSON(event.MetadataJSON).
 		Save(ctx)
 	if err != nil {
+		// Another request may have inserted the same idempotency key after the
+		// lookup above. Return that canonical row instead of surfacing a
+		// duplicate-key error to a safe retry.
+		if ent.IsConstraintError(err) {
+			existing, lookupErr := r.db.AggregateEvent.Query().Where(aggregateevent.IdempotencyKeyEQ(event.IdempotencyKey)).Only(ctx)
+			if lookupErr == nil {
+				return aggregateEventFromEnt(existing), nil
+			}
+		}
 		return model.AggregateEvent{}, err
 	}
-	return model.AggregateEvent{ID: item.ID, UserID: item.UserID, DeviceID: value(item.DeviceID), IdempotencyKey: item.IdempotencyKey, EventType: item.EventType.String(), EventDate: item.EventDate, Count: item.Count, MetadataJSON: item.MetadataJSON, CreatedAt: item.CreatedAt}, nil
+	return aggregateEventFromEnt(item), nil
 }
 
 // SaveAggregateEventSnapshot upserts the current day's cumulative aggregate.
@@ -66,26 +78,66 @@ func (r *Repository) SaveAggregateEventSnapshot(ctx context.Context, event model
 		return event, nil
 	}
 
-	existing, err := r.db.AggregateEvent.Query().Where(
-		aggregateevent.IdempotencyKeyEQ(event.IdempotencyKey),
-	).Only(ctx)
-	if err == nil {
-		if event.Count <= existing.Count {
-			return model.AggregateEvent{ID: existing.ID, UserID: existing.UserID, DeviceID: value(existing.DeviceID), IdempotencyKey: existing.IdempotencyKey, EventType: existing.EventType.String(), EventDate: existing.EventDate, Count: existing.Count, MetadataJSON: existing.MetadataJSON, CreatedAt: existing.CreatedAt}, nil
+	// The read/update/insert sequence can race across API instances. The
+	// conditional update and bounded duplicate-key retry make the persisted
+	// count monotonic without allowing a stale snapshot to win.
+	for attempt := 0; attempt < 8; attempt++ {
+		existing, err := r.db.AggregateEvent.Query().Where(
+			aggregateevent.IdempotencyKeyEQ(event.IdempotencyKey),
+		).Only(ctx)
+		if err == nil {
+			if event.Count <= existing.Count {
+				return aggregateEventFromEnt(existing), nil
+			}
+			updated, updateErr := r.db.AggregateEvent.Update().Where(
+				aggregateevent.IDEQ(existing.ID),
+				aggregateevent.CountLT(event.Count),
+			).
+				SetCount(event.Count).
+				SetMetadataJSON(event.MetadataJSON).
+				Save(ctx)
+			if updateErr != nil {
+				return model.AggregateEvent{}, updateErr
+			}
+			if updated == 0 {
+				continue
+			}
+			current, queryErr := r.db.AggregateEvent.Get(ctx, existing.ID)
+			if queryErr != nil {
+				return model.AggregateEvent{}, queryErr
+			}
+			return aggregateEventFromEnt(current), nil
 		}
-		updated, updateErr := r.db.AggregateEvent.UpdateOneID(existing.ID).
+		if !ent.IsNotFound(err) {
+			return model.AggregateEvent{}, err
+		}
+		item, createErr := r.db.AggregateEvent.Create().
+			SetID(event.ID).
+			SetUserID(event.UserID).
+			SetNillableDeviceID(optional(event.DeviceID)).
+			SetIdempotencyKey(event.IdempotencyKey).
+			SetEventType(aggregateevent.EventType(event.EventType)).
+			SetEventDate(event.EventDate).
 			SetCount(event.Count).
 			SetMetadataJSON(event.MetadataJSON).
 			Save(ctx)
-		if updateErr != nil {
-			return model.AggregateEvent{}, updateErr
+		if createErr == nil {
+			return aggregateEventFromEnt(item), nil
 		}
-		return model.AggregateEvent{ID: updated.ID, UserID: updated.UserID, DeviceID: value(updated.DeviceID), IdempotencyKey: updated.IdempotencyKey, EventType: updated.EventType.String(), EventDate: updated.EventDate, Count: updated.Count, MetadataJSON: updated.MetadataJSON, CreatedAt: updated.CreatedAt}, nil
+		if !ent.IsConstraintError(createErr) {
+			return model.AggregateEvent{}, createErr
+		}
 	}
-	if !ent.IsNotFound(err) {
-		return model.AggregateEvent{}, err
+	return model.AggregateEvent{}, fmt.Errorf("aggregate snapshot contention exceeded retry limit")
+}
+
+func aggregateEventFromEnt(item *ent.AggregateEvent) model.AggregateEvent {
+	return model.AggregateEvent{
+		ID: item.ID, UserID: item.UserID, DeviceID: value(item.DeviceID),
+		IdempotencyKey: item.IdempotencyKey, EventType: item.EventType.String(),
+		EventDate: item.EventDate, Count: item.Count, MetadataJSON: item.MetadataJSON,
+		CreatedAt: item.CreatedAt,
 	}
-	return r.SaveAggregateEvent(ctx, event)
 }
 
 func (r *Repository) GetProtectionAnalytics(ctx context.Context, userID, deviceID string, days int, now time.Time) (model.ProtectionAnalytics, error) {

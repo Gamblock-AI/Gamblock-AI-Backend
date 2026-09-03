@@ -20,8 +20,10 @@ func (s *AuthService) Refresh(ctx context.Context, rawRefresh string) (model.Aut
 	if !ok || user.DisabledAt != nil || user.MustChangePassword {
 		return model.AuthResponse{}, fmt.Errorf("refresh token user not found")
 	}
-	if err := s.repo.RevokeRefreshTokenByID(ctx, refreshTokenID); err != nil {
-		return model.AuthResponse{}, err
+	if err := s.repo.ConsumeRefreshTokenByID(ctx, refreshTokenID); err != nil {
+		// A concurrent request may have consumed the token after the lookup.
+		// Keep replay failures indistinguishable from any other invalid token.
+		return model.AuthResponse{}, fmt.Errorf("invalid refresh token")
 	}
 	return s.authPairAt(ctx, user, deviceID, authTime)
 }

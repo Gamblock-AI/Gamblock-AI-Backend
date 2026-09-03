@@ -96,6 +96,34 @@ func (r *Repository) RevokeRefreshTokenByID(ctx context.Context, id string) erro
 	return err
 }
 
+// ConsumeRefreshTokenByID atomically revokes an active refresh token. It is
+// deliberately separate from the legacy revoke helper: refresh rotation must
+// distinguish the one successful consumer from concurrent replay attempts.
+func (r *Repository) ConsumeRefreshTokenByID(ctx context.Context, id string) error {
+	now := time.Now().UTC()
+	if r.db == nil {
+		if !r.store.ConsumeRefreshTokenByID(id) {
+			return fmt.Errorf("refresh token already consumed or expired")
+		}
+		return nil
+	}
+	updated, err := r.db.RefreshToken.Update().
+		Where(
+			refreshtoken.IDEQ(id),
+			refreshtoken.RevokedAtIsNil(),
+			refreshtoken.ExpiresAtGT(now),
+		).
+		SetRevokedAt(now).
+		Save(ctx)
+	if err != nil {
+		return err
+	}
+	if updated != 1 {
+		return fmt.Errorf("refresh token already consumed or expired")
+	}
+	return nil
+}
+
 func (r *Repository) RevokeRefreshTokensForUser(ctx context.Context, userID string) error {
 	if r.db == nil {
 		r.store.RevokeRefreshTokensForUser(userID)

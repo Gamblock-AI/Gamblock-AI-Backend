@@ -49,7 +49,8 @@ The production-safe `make seeder` path never creates demo users or activity.
 
 Useful Makefile targets: `make dev` (air live-reload), `make start` (build +
 run `./bin/api` with `.env`), `make key-generate`,
-`make lint`, `make migrate-up`, `make seeder`, `make seed`,
+`make lint`, `make test`, `make test-cover`, `make test-integration` (requires
+an isolated PostgreSQL database), `make migrate-up`, `make seeder`, `make seed`,
 `make seed-education`, `make seed-learning-hub`, `make seed-scale` (local 500-2000 rows/table),
 `make seed-local-accounts` (clean zero-data local accounts), and opt-in `make verify`. The
 Docker image exposes the same operational commands as `/app/migrate-up`,
@@ -323,6 +324,8 @@ See `AGENTS.md` for conventions and the privacy/AES/RBAC invariants.
 - `make lint` (`go vet ./...`) is the default AI check.
 - `make test` and `make verify` (build/vet/race-test) run only on explicit user
   request. CI may retain its automatic gates.
+- `make test-integration` runs PostgreSQL-backed tests tagged with
+  `integration`; never point it at production or shared staging data.
 - `./scripts/verify-ai-context.sh` checks versioned agent context and adapters.
 
 Reflection/journal writes fail closed unless a valid AES-256-GCM key is

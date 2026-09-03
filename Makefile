@@ -3,7 +3,7 @@ ifneq (,$(wildcard .env))
     export
 endif
 
-.PHONY: dev run build start generate key-generate migrate migrate-up migrate-down migrate-fresh reset-storage seed seeder demo-seeder seed-accounts seed-education seed-learning-hub seed-scale seed-local-accounts lint test test-cover verify
+.PHONY: dev run build start generate key-generate migrate migrate-up migrate-down migrate-fresh reset-storage seed seeder demo-seeder seed-accounts seed-education seed-learning-hub seed-scale seed-local-accounts lint test test-cover test-integration verify
 
 APP_NAME := api
 BUILD_DIR := ./bin
@@ -134,6 +134,10 @@ test:
 
 test-cover:
 	go test -cover ./...
+
+test-integration:
+	@test -n "$(DATABASE_URL)" || { echo "DATABASE_URL is required for PostgreSQL integration tests." >&2; exit 2; }
+	go test -tags=integration ./internal/integration
 
 verify:
 	go build ./...
