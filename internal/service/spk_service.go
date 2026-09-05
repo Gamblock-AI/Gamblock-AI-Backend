@@ -10,7 +10,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
 
-	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/repository"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/spk"
@@ -22,26 +21,24 @@ const (
 	spkLLMTimeout   = 8 * time.Second
 )
 
-// SpkService wires the rule-based SPK engine to real user data and optionally
-// enriches the deterministic result with a consented DeepSeek LLM message. The
-// engine stays the decision authority; the LLM only writes copy.
+// SpkService wires the rule-based SPK engine to real user data and enriches the
+// deterministic result with a consented DeepSeek LLM message. The engine stays
+// the decision authority; the LLM only writes copy.
 type SpkService struct {
 	repo     *repository.Repository
 	engine   *spk.Engine
 	deepseek *DeepSeekService
-	cfg      config.Config
 	logger   *zap.Logger
 	// flight collapses concurrent recommendation requests for the same student
 	// (e.g., multiple dashboard tabs) so only one pipeline and one LLM call run.
 	flight singleflight.Group
 }
 
-func NewSpkService(repo *repository.Repository, cfg config.Config, logger *zap.Logger, deepseek *DeepSeekService) *SpkService {
+func NewSpkService(repo *repository.Repository, logger *zap.Logger, deepseek *DeepSeekService) *SpkService {
 	return &SpkService{
 		repo:     repo,
 		engine:   spk.NewEngine(spk.DefaultConfig()),
 		deepseek: deepseek,
-		cfg:      cfg,
 		logger:   logger,
 	}
 }
@@ -115,7 +112,7 @@ func (s *SpkService) recommend(ctx context.Context, userID string) (model.SpkRec
 	llmUsed := false
 	message := ""
 	explanation := ""
-	canPersonalize := s.cfg.SPKLLMEnrichment && pref.LLMPersonalizationEnabled && pref.SpkUsePersonal && data.HasIntention
+	canPersonalize := pref.LLMPersonalizationEnabled && pref.SpkUsePersonal && data.HasIntention
 	if canPersonalize && todayRecord != nil && todayRecord.LLMUsed &&
 		todayRecord.InterventionKey == string(result.InterventionKey) &&
 		todayRecord.PersonalizedMessage != "" {

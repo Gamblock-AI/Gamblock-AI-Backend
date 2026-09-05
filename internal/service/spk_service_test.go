@@ -9,14 +9,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
-	"github.com/gamblock-ai/gamblock-ai-backend/internal/config"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/repository"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/store"
 )
 
 func newSpkTestService(st *store.Store) *SpkService {
-	return NewSpkService(repository.New(nil, st), config.Config{}, zap.NewNop(), nil)
+	return NewSpkService(repository.New(nil, st), zap.NewNop(), nil)
 }
 
 // A seeded, active user produces a rule-based recommendation with a feature
@@ -243,7 +242,7 @@ func enrichTestStore() *store.Store {
 }
 
 func enrichTestService(st *store.Store) *SpkService {
-	return NewSpkService(repository.New(nil, st), config.Config{SPKLLMEnrichment: true}, zap.NewNop(), nil)
+	return NewSpkService(repository.New(nil, st), zap.NewNop(), nil)
 }
 
 // A personalized copy already persisted for today with the same decision must

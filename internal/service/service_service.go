@@ -48,6 +48,6 @@ func NewContainer(repo *repository.Repository, cfg config.Config, logger *zap.Lo
 		DeepSeek:             deepseek,
 		Reminder:             NewReminderService(repo),
 		Push:                 NewPushService(repo, cfg, logger),
-		Spk:                  NewSpkService(repo, cfg, logger, deepseek),
+		Spk:                  NewSpkService(repo, logger, deepseek),
 	}
 }

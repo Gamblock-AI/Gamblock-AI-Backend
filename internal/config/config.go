@@ -39,7 +39,6 @@ type Config struct {
 	DeepSeekAPIKey                   string
 	DeepSeekBaseURL                  string
 	DeepSeekModel                    string
-	SPKLLMEnrichment                 bool
 	VAPIDPublicKey                   string
 	VAPIDPrivateKey                  string
 	VAPIDSubject                     string
@@ -99,7 +98,6 @@ func Load() Config {
 	viper.SetDefault("DEEPSEEK_API_KEY", "")
 	viper.SetDefault("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
 	viper.SetDefault("DEEPSEEK_MODEL", "deepseek-chat")
-	viper.SetDefault("SPK_LLM_ENRICHMENT", false)
 	viper.SetDefault("VAPID_PUBLIC_KEY", "")
 	viper.SetDefault("VAPID_PRIVATE_KEY", "")
 	viper.SetDefault("VAPID_SUBJECT", "mailto:support@gamblock-ai.com")
@@ -139,7 +137,6 @@ func Load() Config {
 		DeepSeekAPIKey:                   viper.GetString("DEEPSEEK_API_KEY"),
 		DeepSeekBaseURL:                  strings.TrimRight(viper.GetString("DEEPSEEK_BASE_URL"), "/"),
 		DeepSeekModel:                    viper.GetString("DEEPSEEK_MODEL"),
-		SPKLLMEnrichment:                 viper.GetBool("SPK_LLM_ENRICHMENT"),
 		VAPIDPublicKey:                   viper.GetString("VAPID_PUBLIC_KEY"),
 		VAPIDPrivateKey:                  viper.GetString("VAPID_PRIVATE_KEY"),
 		VAPIDSubject:                     viper.GetString("VAPID_SUBJECT"),
