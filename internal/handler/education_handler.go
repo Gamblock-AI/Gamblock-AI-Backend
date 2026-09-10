@@ -10,6 +10,7 @@ import (
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/repository"
+	"github.com/gamblock-ai/gamblock-ai-backend/internal/service"
 )
 
 func educationStatus(err error) (int, string) {
@@ -20,6 +21,22 @@ func educationStatus(err error) (int, string) {
 		return http.StatusConflict, "education_conflict"
 	}
 	return http.StatusBadRequest, "education_validation_failed"
+}
+
+func educationTransitionStatus(err error) (int, string) {
+	if errors.Is(err, repository.ErrEducationNotFound) {
+		return http.StatusNotFound, "module_not_found"
+	}
+	if errors.Is(err, repository.ErrEducationConflict) {
+		return http.StatusConflict, "education_conflict"
+	}
+	if errors.Is(err, service.ErrEducationMediaInvalid) {
+		return http.StatusBadRequest, "education_media_invalid"
+	}
+	if errors.Is(err, service.ErrEducationValidation) {
+		return http.StatusBadRequest, "education_validation_failed"
+	}
+	return http.StatusInternalServerError, "err_internal"
 }
 
 func (h *Handler) AdminModuleDetail(c *gin.Context) {
@@ -54,7 +71,7 @@ func (h *Handler) UpdateAdminModule(c *gin.Context) {
 func (h *Handler) SubmitAdminModuleReview(c *gin.Context) {
 	module, err := h.services.Education.SubmitReview(c.Request.Context(), h.currentUserID(c), c.Param("id"))
 	if err != nil {
-		status, code := educationStatus(err)
+		status, code := educationTransitionStatus(err)
 		h.respondErrorErr(c, status, code, err)
 		return
 	}
@@ -64,7 +81,7 @@ func (h *Handler) SubmitAdminModuleReview(c *gin.Context) {
 func (h *Handler) PublishAdminModule(c *gin.Context) {
 	module, err := h.services.Education.Publish(c.Request.Context(), h.currentUserID(c), c.Param("id"))
 	if err != nil {
-		status, code := educationStatus(err)
+		status, code := educationTransitionStatus(err)
 		h.respondErrorErr(c, status, code, err)
 		return
 	}
@@ -79,7 +96,6 @@ func (h *Handler) DeleteAdminModule(c *gin.Context) {
 	}
 	h.respond(c, http.StatusOK, gin.H{"deleted": true})
 }
-
 
 func (h *Handler) AdminModuleRevisions(c *gin.Context) {
 	items, err := h.services.Education.Revisions(c.Request.Context(), c.Param("id"))

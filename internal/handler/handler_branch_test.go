@@ -85,6 +85,25 @@ func TestHandler_ErrorMappingTables(t *testing.T) {
 		}
 	})
 
+	t.Run("education transition", func(t *testing.T) {
+		for _, tc := range []struct {
+			name   string
+			err    error
+			status int
+			code   string
+		}{
+			{name: "validation", err: service.ErrEducationValidation, status: http.StatusBadRequest, code: "education_validation_failed"},
+			{name: "media", err: service.ErrEducationMediaInvalid, status: http.StatusBadRequest, code: "education_media_invalid"},
+			{name: "unexpected", err: errors.New("storage unavailable"), status: http.StatusInternalServerError, code: "err_internal"},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				status, code := educationTransitionStatus(tc.err)
+				assert.Equal(t, tc.status, status)
+				assert.Equal(t, tc.code, code)
+			})
+		}
+	})
+
 	t.Run("learning hub", func(t *testing.T) {
 		for _, tc := range []struct {
 			name   string

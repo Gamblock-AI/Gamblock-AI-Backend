@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/gamblock-ai/gamblock-ai-backend/internal/model"
@@ -65,6 +66,34 @@ func TestEducationValidationHelpers(t *testing.T) {
 	assert.Equal(t, 100, progress.ProgressPercent)
 	require.NotNil(t, progress.CompletedAt)
 	assert.Equal(t, []string{"one"}, filterAllowed([]string{"one", "one", "unknown"}, []string{"one"}))
+}
+
+func TestEducationPublishClassifiesValidationAndMediaFailures(t *testing.T) {
+	ctx := context.Background()
+	st := store.NewSeeded()
+	repo := repository.New(nil, st)
+	svc := NewEducationService(repo, testCfg())
+	cloneDocument := func(document model.EducationDocument) model.EducationDocument {
+		payload, err := json.Marshal(document)
+		require.NoError(t, err)
+		var cloned model.EducationDocument
+		require.NoError(t, json.Unmarshal(payload, &cloned))
+		return cloned
+	}
+
+	invalidDocument := cloneDocument(st.Modules[1].DraftDocument)
+	invalidDocument.Sources[0].URL = "https://"
+	invalidModule, err := svc.CreateModule(ctx, "usr_nasywa", "invalid-source", invalidDocument)
+	require.NoError(t, err)
+	_, err = svc.Publish(ctx, "usr_nasywa", invalidModule.ID)
+	require.ErrorIs(t, err, ErrEducationValidation)
+
+	missingMediaDocument := cloneDocument(st.Modules[1].DraftDocument)
+	missingMediaDocument.Thumbnails[0].MediaID = "missing-media"
+	missingMediaModule, err := svc.CreateModule(ctx, "usr_nasywa", "missing-media", missingMediaDocument)
+	require.NoError(t, err)
+	_, err = svc.Publish(ctx, "usr_nasywa", missingMediaModule.ID)
+	require.ErrorIs(t, err, ErrEducationMediaInvalid)
 }
 
 func TestEducationEditorialLifecycleAndProgress(t *testing.T) {

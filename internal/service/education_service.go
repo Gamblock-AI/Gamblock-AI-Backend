@@ -29,6 +29,15 @@ const (
 	maxEducationPDFBytes   = 25 << 20
 )
 
+var (
+	// ErrEducationValidation marks a document that cannot enter review or be
+	// published because its content or metadata is invalid.
+	ErrEducationValidation = errors.New("education document validation failed")
+	// ErrEducationMediaInvalid marks a document that references missing or
+	// incompatible education media.
+	ErrEducationMediaInvalid = errors.New("education media reference is invalid")
+)
+
 var allowedRichTextNodes = map[string]bool{
 	"doc": true, "paragraph": true, "text": true, "heading": true,
 	"bulletList": true, "orderedList": true, "listItem": true,
@@ -338,10 +347,10 @@ func (s *EducationService) SubmitReview(ctx context.Context, actor, id string) (
 		return model.EducationModule{}, err
 	}
 	if err = validateEducationDocument(module.DraftDocument); err != nil {
-		return model.EducationModule{}, err
+		return model.EducationModule{}, fmt.Errorf("%w: %v", ErrEducationValidation, err)
 	}
 	if _, err = s.ensureMedia(ctx, module.DraftDocument); err != nil {
-		return model.EducationModule{}, err
+		return model.EducationModule{}, fmt.Errorf("%w: %v", ErrEducationMediaInvalid, err)
 	}
 	updated, err := s.repo.SetEducationStatus(ctx, id, "in_review", actor, false)
 	if err == nil {
@@ -356,11 +365,11 @@ func (s *EducationService) Publish(ctx context.Context, actor, id string) (model
 		return model.EducationModule{}, err
 	}
 	if err = validateEducationDocument(module.DraftDocument); err != nil {
-		return model.EducationModule{}, err
+		return model.EducationModule{}, fmt.Errorf("%w: %v", ErrEducationValidation, err)
 	}
 	mediaIDs, err := s.ensureMedia(ctx, module.DraftDocument)
 	if err != nil {
-		return model.EducationModule{}, err
+		return model.EducationModule{}, fmt.Errorf("%w: %v", ErrEducationMediaInvalid, err)
 	}
 	if err = s.repo.PublishEducationMedia(ctx, mediaIDs); err != nil {
 		return model.EducationModule{}, err
