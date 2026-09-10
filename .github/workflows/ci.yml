@@ -128,5 +128,8 @@ jobs:
           proxy_timeout: 120s
           command_timeout: 15m
           script: |
-            cd /opt/docker-stack/applications/gamblock-ai-backend && ./update.sh
-            cd /opt/docker-stack/applications/gamblock-ai-backend-staging && ./update.sh
+            set -eu
+            cd /opt/docker-stack/applications/gamblock-ai-backend
+            ./update.sh
+            cd /opt/docker-stack/applications/gamblock-ai-backend-staging
+            ./update.sh
