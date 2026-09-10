@@ -94,7 +94,11 @@ func validateRichText(value any) error {
 				}
 			}
 		}
-		for _, child := range typed {
+		for key, child := range typed {
+			// Marks have their own allowlist above; they are not ProseMirror nodes.
+			if key == "marks" {
+				continue
+			}
 			if err := validateRichText(child); err != nil {
 				return err
 			}

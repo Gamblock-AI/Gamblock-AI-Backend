@@ -20,6 +20,14 @@ func TestEducationValidationHelpers(t *testing.T) {
 	assert.Empty(t, firstNonEmpty(" ", ""))
 
 	require.NoError(t, validateRichText(map[string]any{"type": "paragraph", "content": []any{"text", 1.0, true, nil}}))
+	require.NoError(t, validateRichText(map[string]any{
+		"type": "paragraph",
+		"content": []any{map[string]any{
+			"type":  "text",
+			"text":  "Italic",
+			"marks": []any{map[string]any{"type": "italic"}},
+		}},
+	}))
 	require.EqualError(t, validateRichText(map[string]any{"type": "iframe"}), `unsupported rich-text node "iframe"`)
 	require.EqualError(t, validateRichText(map[string]any{"marks": []any{"bad"}}), "invalid rich-text mark")
 	require.EqualError(t, validateRichText(map[string]any{"marks": []any{map[string]any{"type": "blink"}}}), `unsupported rich-text mark "blink"`)
