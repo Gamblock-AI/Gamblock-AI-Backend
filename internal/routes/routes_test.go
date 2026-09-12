@@ -45,6 +45,15 @@ func TestRegister_HealthAndReady(t *testing.T) {
 		require.Equalf(t, http.StatusOK, w.Code, "%s should be 200", tc.path)
 		assert.Contains(t, w.Body.String(), "status", "%s body should contain status", tc.path)
 	}
+
+	for _, route := range r.Routes() {
+		assert.NotEqual(
+			t,
+			"/v1/devices/standalone-removal-grant",
+			route.Path,
+			"partnerless removal must not be registered",
+		)
+	}
 }
 
 func TestRegister_PasswordResetRequestDoesNotEnumerateEmail(t *testing.T) {

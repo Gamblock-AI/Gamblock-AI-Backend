@@ -250,9 +250,8 @@ func TestRepositoryCoverageAccountabilityApproval_ApprovalVisibilityAndTokens(t 
 	assert.Equal(t, "uninstall_detected", uninstallGrant.Action)
 }
 
-func TestRepositoryCoverageAccountabilityApproval_InvitationAndStandaloneErrors(t *testing.T) {
+func TestRepositoryCoverageAccountabilityApproval_InvitationErrors(t *testing.T) {
 	ctx := t.Context()
-	now := time.Now().UTC()
 	st := &store.Store{Users: []model.User{
 		{ID: "cov-invitation-owner", Email: "owner@example.test", DisplayName: "Owner"},
 		{ID: "cov-invitation-partner", Email: "PARTNER@example.test", DisplayName: "Partner"},
@@ -272,24 +271,6 @@ func TestRepositoryCoverageAccountabilityApproval_InvitationAndStandaloneErrors(
 	assert.Equal(t, "revoked", repositoryCoverageAccountabilityApprovalPartner(st, "cov-invitation-link").Status)
 	assert.EqualError(t, repo.RevokePartner(ctx, "cov-missing-link", "cov-invitation-owner"), "partner link not found")
 
-	for _, claims := range [][4]string{
-		{"", "user", "device", "jti"},
-		{"request", "", "device", "jti"},
-		{"request", "user", "", "jti"},
-		{"request", "user", "device", ""},
-	} {
-		_, err = repo.IssueStandaloneRemovalGrant(ctx, claims[0], claims[1], claims[2], claims[3], now)
-		assert.EqualError(t, err, "standalone removal grant claims are incomplete")
-	}
-
-	first, err := repo.IssueStandaloneRemovalGrant(ctx, "cov-standalone-one", "cov-standalone-user", "cov-device-one", "cov-standalone-jti-one", now)
-	require.NoError(t, err)
-	assert.Equal(t, 10*time.Minute, first.GrantExpiresAt.Sub(first.GrantStartsAt))
-	second, err := repo.IssueStandaloneRemovalGrant(ctx, "cov-standalone-two", "cov-standalone-user", "cov-device-two", "cov-standalone-jti-two", now)
-	require.NoError(t, err)
-	assert.NotEqual(t, first.RequestID, second.RequestID)
-	_, err = repo.IssueStandaloneRemovalGrant(ctx, "cov-standalone-three", "cov-standalone-user", "cov-device-one", "cov-standalone-jti-three", now)
-	assert.EqualError(t, err, "a standalone removal grant is already active")
 }
 
 func repositoryCoverageAccountabilityApprovalRequest(st *store.Store, id string) model.ApprovalRequest {

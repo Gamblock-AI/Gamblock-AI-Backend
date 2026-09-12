@@ -165,14 +165,6 @@ func TestAccountabilityServiceInvitationsApprovalsQuickTokensAndStandaloneGrant(
 	err = svc.ResolveByToken(ctx, "invalid", "approved")
 	require.EqualError(t, err, "token tidak valid")
 
-	bindTestGrantKey(t, repo, "usr_dery", "dev_dery_android")
-	grant, err := svc.IssueStandaloneRemovalGrant(ctx, "usr_dery", "dev_dery_android")
-	require.NoError(t, err)
-	assert.Equal(t, "uninstall_detected", grant.Action)
-	_, err = svc.IssueStandaloneRemovalGrant(ctx, "usr_gading", "dev_android")
-	require.EqualError(t, err, "student has an active accountability partner")
-	_, err = svc.IssueStandaloneRemovalGrant(ctx, "usr_dery", "")
-	require.EqualError(t, err, "device id is required")
 }
 
 func TestAccountabilityPureHelpers(t *testing.T) {

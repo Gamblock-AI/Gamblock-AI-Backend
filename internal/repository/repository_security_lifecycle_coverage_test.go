@@ -84,33 +84,6 @@ func TestRepositorySecurityLifecycle_ApprovalGrantPaths(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestRepositorySecurityLifecycle_StandaloneRemovalClaims(t *testing.T) {
-	repo, _ := newRepo(t)
-	ctx := context.Background()
-	now := time.Now().UTC().Truncate(time.Second)
-
-	for _, values := range [][4]string{
-		{"", "usr_cov", "dev_cov", "jti"},
-		{"req", "", "dev_cov", "jti"},
-		{"req", "usr_cov", "", "jti"},
-		{"req", "usr_cov", "dev_cov", ""},
-	} {
-		_, err := repo.IssueStandaloneRemovalGrant(ctx, values[0], values[1], values[2], values[3], now)
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "incomplete")
-	}
-
-	grant, err := repo.IssueStandaloneRemovalGrant(ctx, "standalone-cov-1", "usr_standalone", "dev_standalone", "jti-1", now)
-	require.NoError(t, err)
-	assert.Equal(t, standaloneRemovalGrantWindow, grant.GrantExpiresAt.Sub(grant.GrantStartsAt))
-
-	_, err = repo.IssueStandaloneRemovalGrant(ctx, "standalone-cov-2", "usr_standalone", "dev_standalone", "jti-2", now.Add(time.Minute))
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "already active")
-	_, err = repo.IssueStandaloneRemovalGrant(ctx, "standalone-cov-3", "usr_standalone", "dev_other", "jti-3", now.Add(time.Minute))
-	require.NoError(t, err)
-}
-
 func TestRepositorySecurityLifecycle_EmergencyTransitions(t *testing.T) {
 	repo, st := newRepo(t)
 	ctx := context.Background()
