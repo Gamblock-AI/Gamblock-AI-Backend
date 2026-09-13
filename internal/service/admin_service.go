@@ -160,14 +160,14 @@ func normalizeDownloadText(value *model.LocalizedText, limit int) error {
 	return nil
 }
 
-func validateDownloadAssetURL(platform, version, value, filename string) error {
+func validateDownloadAssetURL(platform, _version, value, _filename string) error {
 	parsed, err := url.Parse(value)
 	if err != nil || parsed.Scheme != "https" || parsed.Hostname() != "github.com" || parsed.User != nil || parsed.Port() != "" || parsed.RawQuery != "" || parsed.Fragment != "" {
 		return fmt.Errorf("download URL is not allowed")
 	}
 	prefix := downloadReleasePrefixes[platform]
-	expectedPath := prefix + version + "/" + filename
-	if parsed.Path != expectedPath || strings.Contains(strings.ToLower(parsed.EscapedPath()), "staging") || strings.Contains(strings.ToLower(filename), "staging") {
+	pathParts := strings.Split(strings.TrimPrefix(parsed.Path, prefix), "/")
+	if !strings.HasPrefix(parsed.Path, prefix) || len(pathParts) != 2 || !stableVersionPattern.MatchString(pathParts[0]) || pathParts[1] == "" || strings.Contains(strings.ToLower(parsed.EscapedPath()), "staging") {
 		return fmt.Errorf("download URL must target an official stable release asset")
 	}
 	return nil

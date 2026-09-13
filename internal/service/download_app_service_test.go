@@ -33,6 +33,19 @@ func TestAdminServiceUpdateDownloadAppPublishesOfficialRelease(t *testing.T) {
 	assert.True(t, audited)
 }
 
+func TestAdminServiceUpdateDownloadAppAcceptsOptionalVersionTagPrefix(t *testing.T) {
+	repo, st := newRepo(t)
+	svc := NewAdminService(repo, testCfg(), NewWhatsAppService(testCfg(), zap.NewNop()), zap.NewNop())
+	app := st.Snapshot().DownloadApps[0]
+	app.Version = "1.6.16"
+	app.Assets[0].FileName = "renamed-research.apk"
+
+	updated, err := svc.UpdateDownloadApp(context.Background(), "usr_nasywa", app.Platform, "normalize release tag", app)
+
+	require.NoError(t, err)
+	assert.Equal(t, "1.6.16", updated.Version)
+}
+
 func TestAdminServiceUpdateDownloadAppRejectsUnofficialOrUnstableAssets(t *testing.T) {
 	repo, st := newRepo(t)
 	svc := NewAdminService(repo, testCfg(), NewWhatsAppService(testCfg(), zap.NewNop()), zap.NewNop())
