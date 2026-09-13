@@ -165,6 +165,18 @@ func (f DeviceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DeviceMutation", m)
 }
 
+// The DownloadAppFunc type is an adapter to allow the use of ordinary
+// function as DownloadApp mutator.
+type DownloadAppFunc func(context.Context, *ent.DownloadAppMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DownloadAppFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DownloadAppMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DownloadAppMutation", m)
+}
+
 // The EducationMediaFunc type is an adapter to allow the use of ordinary
 // function as EducationMedia mutator.
 type EducationMediaFunc func(context.Context, *ent.EducationMediaMutation) (ent.Value, error)

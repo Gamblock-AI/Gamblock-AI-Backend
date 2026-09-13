@@ -299,6 +299,36 @@ var (
 			},
 		},
 	}
+	// DownloadAppsColumns holds the columns for the "download_apps" table.
+	DownloadAppsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "platform", Type: field.TypeEnum, Enums: []string{"android", "windows", "browser_extension"}},
+		{Name: "eyebrow_json", Type: field.TypeJSON},
+		{Name: "title_json", Type: field.TypeJSON},
+		{Name: "description_json", Type: field.TypeJSON},
+		{Name: "requirements_json", Type: field.TypeJSON},
+		{Name: "architecture_json", Type: field.TypeJSON},
+		{Name: "features_json", Type: field.TypeJSON},
+		{Name: "version", Type: field.TypeString},
+		{Name: "assets_json", Type: field.TypeJSON},
+		{Name: "published", Type: field.TypeBool, Default: false},
+		{Name: "updated_by", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// DownloadAppsTable holds the schema information for the "download_apps" table.
+	DownloadAppsTable = &schema.Table{
+		Name:       "download_apps",
+		Columns:    DownloadAppsColumns,
+		PrimaryKey: []*schema.Column{DownloadAppsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "downloadapp_platform",
+				Unique:  true,
+				Columns: []*schema.Column{DownloadAppsColumns[1]},
+			},
+		},
+	}
 	// EducationMediaColumns holds the columns for the "education_media" table.
 	EducationMediaColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -1082,6 +1112,7 @@ var (
 		DailyMissionsTable,
 		DataRequestsTable,
 		DevicesTable,
+		DownloadAppsTable,
 		EducationMediaTable,
 		EducationRevisionsTable,
 		EmergencyKeyRequestsTable,

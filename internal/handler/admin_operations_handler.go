@@ -18,6 +18,15 @@ func (h *Handler) PublicSiteSocialLinks(c *gin.Context) {
 	h.respond(c, http.StatusOK, items)
 }
 
+func (h *Handler) PublicDownloadApps(c *gin.Context) {
+	items, err := h.services.Admin.PublicDownloadApps(c.Request.Context())
+	if err != nil {
+		h.respondErrorErr(c, http.StatusInternalServerError, "download_apps_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, items)
+}
+
 func (h *Handler) AdminOverview(c *gin.Context) {
 	item, err := h.services.Admin.Overview(c.Request.Context(), currentRole(c))
 	if err != nil {
@@ -34,6 +43,32 @@ func (h *Handler) AdminSiteSocialLinks(c *gin.Context) {
 		return
 	}
 	h.respond(c, http.StatusOK, items)
+}
+
+func (h *Handler) AdminDownloadApps(c *gin.Context) {
+	items, err := h.services.Admin.DownloadApps(c.Request.Context())
+	if err != nil {
+		h.respondErrorErr(c, http.StatusInternalServerError, "download_apps_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, items)
+}
+
+func (h *Handler) UpdateAdminDownloadApp(c *gin.Context) {
+	var input struct {
+		App    model.DownloadApp `json:"app"`
+		Reason string            `json:"reason"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil || strings.TrimSpace(input.Reason) == "" {
+		h.respondCode(c, http.StatusBadRequest, "err_validation")
+		return
+	}
+	item, err := h.services.Admin.UpdateDownloadApp(c.Request.Context(), h.currentUserID(c), c.Param("platform"), input.Reason, input.App)
+	if err != nil {
+		h.respondErrorErr(c, http.StatusBadRequest, "download_apps_failed", err)
+		return
+	}
+	h.respond(c, http.StatusOK, item)
 }
 
 func (h *Handler) ReplaceAdminSiteSocialLinks(c *gin.Context) {

@@ -67,10 +67,10 @@ func privacyExemptPath(path string) bool {
 	if deviceGrantKeyPath != path && len(deviceGrantKeyParts) == 2 && deviceGrantKeyParts[0] != "" && deviceGrantKeyParts[1] == "grant-key" {
 		return true
 	}
-	// Public social-profile URLs and admin education content/media are D5
-	// operational data, not browsing data. These admin-only routes still require
-	// authentication and role authorization.
-	if path == "/v1/admin/site-social-links" || strings.HasPrefix(path, "/v1/admin/content/") {
+	// Public social-profile URLs, public release metadata, and admin education
+	// content/media are D5 operational data, not browsing data. These admin-only
+	// routes still require authentication and role authorization.
+	if path == "/v1/admin/site-social-links" || path == "/v1/admin/download-apps" || strings.HasPrefix(path, "/v1/admin/download-apps/") || strings.HasPrefix(path, "/v1/admin/content/") {
 		return true
 	}
 	// Quick approvals use a single-use token in their body. The token is an

@@ -38,6 +38,8 @@ type Tx struct {
 	DataRequest *DataRequestClient
 	// Device is the client for interacting with the Device builders.
 	Device *DeviceClient
+	// DownloadApp is the client for interacting with the DownloadApp builders.
+	DownloadApp *DownloadAppClient
 	// EducationMedia is the client for interacting with the EducationMedia builders.
 	EducationMedia *EducationMediaClient
 	// EducationRevision is the client for interacting with the EducationRevision builders.
@@ -254,6 +256,7 @@ func (tx *Tx) init() {
 	tx.DailyMission = NewDailyMissionClient(tx.config)
 	tx.DataRequest = NewDataRequestClient(tx.config)
 	tx.Device = NewDeviceClient(tx.config)
+	tx.DownloadApp = NewDownloadAppClient(tx.config)
 	tx.EducationMedia = NewEducationMediaClient(tx.config)
 	tx.EducationRevision = NewEducationRevisionClient(tx.config)
 	tx.EmergencyKeyRequest = NewEmergencyKeyRequestClient(tx.config)

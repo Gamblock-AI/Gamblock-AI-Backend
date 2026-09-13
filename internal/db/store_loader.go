@@ -15,13 +15,11 @@ func LoadStore(ctx context.Context, client *ent.Client) (*store.Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(users) == 0 {
-		return store.New(), nil
-	}
-
 	out := store.New()
-	if err := loadIdentityStore(ctx, client, out, users); err != nil {
-		return nil, err
+	if len(users) > 0 {
+		if err := loadIdentityStore(ctx, client, out, users); err != nil {
+			return nil, err
+		}
 	}
 	if err := loadContentStore(ctx, client, out); err != nil {
 		return nil, err

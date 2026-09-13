@@ -24,6 +24,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/downloadapp"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
@@ -86,6 +87,7 @@ const (
 	TypeDailyMission             = "DailyMission"
 	TypeDataRequest              = "DataRequest"
 	TypeDevice                   = "Device"
+	TypeDownloadApp              = "DownloadApp"
 	TypeEducationMedia           = "EducationMedia"
 	TypeEducationRevision        = "EducationRevision"
 	TypeEmergencyKeyRequest      = "EmergencyKeyRequest"
@@ -11636,6 +11638,1018 @@ func (m *DeviceMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *DeviceMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Device edge %s", name)
+}
+
+// DownloadAppMutation represents an operation that mutates the DownloadApp nodes in the graph.
+type DownloadAppMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *string
+	platform            *downloadapp.Platform
+	eyebrow_json        *model.LocalizedText
+	title_json          *model.LocalizedText
+	description_json    *model.LocalizedText
+	requirements_json   *model.LocalizedText
+	architecture_json   *model.LocalizedText
+	features_json       *[]model.LocalizedText
+	appendfeatures_json []model.LocalizedText
+	version             *string
+	assets_json         *[]model.DownloadAsset
+	appendassets_json   []model.DownloadAsset
+	published           *bool
+	updated_by          *string
+	created_at          *time.Time
+	updated_at          *time.Time
+	clearedFields       map[string]struct{}
+	done                bool
+	oldValue            func(context.Context) (*DownloadApp, error)
+	predicates          []predicate.DownloadApp
+}
+
+var _ ent.Mutation = (*DownloadAppMutation)(nil)
+
+// downloadappOption allows management of the mutation configuration using functional options.
+type downloadappOption func(*DownloadAppMutation)
+
+// newDownloadAppMutation creates new mutation for the DownloadApp entity.
+func newDownloadAppMutation(c config, op Op, opts ...downloadappOption) *DownloadAppMutation {
+	m := &DownloadAppMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDownloadApp,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDownloadAppID sets the ID field of the mutation.
+func withDownloadAppID(id string) downloadappOption {
+	return func(m *DownloadAppMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DownloadApp
+		)
+		m.oldValue = func(ctx context.Context) (*DownloadApp, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DownloadApp.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDownloadApp sets the old DownloadApp of the mutation.
+func withDownloadApp(node *DownloadApp) downloadappOption {
+	return func(m *DownloadAppMutation) {
+		m.oldValue = func(context.Context) (*DownloadApp, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DownloadAppMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DownloadAppMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of DownloadApp entities.
+func (m *DownloadAppMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DownloadAppMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DownloadAppMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().DownloadApp.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetPlatform sets the "platform" field.
+func (m *DownloadAppMutation) SetPlatform(d downloadapp.Platform) {
+	m.platform = &d
+}
+
+// Platform returns the value of the "platform" field in the mutation.
+func (m *DownloadAppMutation) Platform() (r downloadapp.Platform, exists bool) {
+	v := m.platform
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPlatform returns the old "platform" field's value of the DownloadApp entity.
+// If the DownloadApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DownloadAppMutation) OldPlatform(ctx context.Context) (v downloadapp.Platform, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPlatform is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPlatform requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPlatform: %w", err)
+	}
+	return oldValue.Platform, nil
+}
+
+// ResetPlatform resets all changes to the "platform" field.
+func (m *DownloadAppMutation) ResetPlatform() {
+	m.platform = nil
+}
+
+// SetEyebrowJSON sets the "eyebrow_json" field.
+func (m *DownloadAppMutation) SetEyebrowJSON(mt model.LocalizedText) {
+	m.eyebrow_json = &mt
+}
+
+// EyebrowJSON returns the value of the "eyebrow_json" field in the mutation.
+func (m *DownloadAppMutation) EyebrowJSON() (r model.LocalizedText, exists bool) {
+	v := m.eyebrow_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEyebrowJSON returns the old "eyebrow_json" field's value of the DownloadApp entity.
+// If the DownloadApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DownloadAppMutation) OldEyebrowJSON(ctx context.Context) (v model.LocalizedText, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEyebrowJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEyebrowJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEyebrowJSON: %w", err)
+	}
+	return oldValue.EyebrowJSON, nil
+}
+
+// ResetEyebrowJSON resets all changes to the "eyebrow_json" field.
+func (m *DownloadAppMutation) ResetEyebrowJSON() {
+	m.eyebrow_json = nil
+}
+
+// SetTitleJSON sets the "title_json" field.
+func (m *DownloadAppMutation) SetTitleJSON(mt model.LocalizedText) {
+	m.title_json = &mt
+}
+
+// TitleJSON returns the value of the "title_json" field in the mutation.
+func (m *DownloadAppMutation) TitleJSON() (r model.LocalizedText, exists bool) {
+	v := m.title_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitleJSON returns the old "title_json" field's value of the DownloadApp entity.
+// If the DownloadApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DownloadAppMutation) OldTitleJSON(ctx context.Context) (v model.LocalizedText, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitleJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitleJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitleJSON: %w", err)
+	}
+	return oldValue.TitleJSON, nil
+}
+
+// ResetTitleJSON resets all changes to the "title_json" field.
+func (m *DownloadAppMutation) ResetTitleJSON() {
+	m.title_json = nil
+}
+
+// SetDescriptionJSON sets the "description_json" field.
+func (m *DownloadAppMutation) SetDescriptionJSON(mt model.LocalizedText) {
+	m.description_json = &mt
+}
+
+// DescriptionJSON returns the value of the "description_json" field in the mutation.
+func (m *DownloadAppMutation) DescriptionJSON() (r model.LocalizedText, exists bool) {
+	v := m.description_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescriptionJSON returns the old "description_json" field's value of the DownloadApp entity.
+// If the DownloadApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DownloadAppMutation) OldDescriptionJSON(ctx context.Context) (v model.LocalizedText, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescriptionJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescriptionJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescriptionJSON: %w", err)
+	}
+	return oldValue.DescriptionJSON, nil
+}
+
+// ResetDescriptionJSON resets all changes to the "description_json" field.
+func (m *DownloadAppMutation) ResetDescriptionJSON() {
+	m.description_json = nil
+}
+
+// SetRequirementsJSON sets the "requirements_json" field.
+func (m *DownloadAppMutation) SetRequirementsJSON(mt model.LocalizedText) {
+	m.requirements_json = &mt
+}
+
+// RequirementsJSON returns the value of the "requirements_json" field in the mutation.
+func (m *DownloadAppMutation) RequirementsJSON() (r model.LocalizedText, exists bool) {
+	v := m.requirements_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequirementsJSON returns the old "requirements_json" field's value of the DownloadApp entity.
+// If the DownloadApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DownloadAppMutation) OldRequirementsJSON(ctx context.Context) (v model.LocalizedText, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequirementsJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequirementsJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequirementsJSON: %w", err)
+	}
+	return oldValue.RequirementsJSON, nil
+}
+
+// ResetRequirementsJSON resets all changes to the "requirements_json" field.
+func (m *DownloadAppMutation) ResetRequirementsJSON() {
+	m.requirements_json = nil
+}
+
+// SetArchitectureJSON sets the "architecture_json" field.
+func (m *DownloadAppMutation) SetArchitectureJSON(mt model.LocalizedText) {
+	m.architecture_json = &mt
+}
+
+// ArchitectureJSON returns the value of the "architecture_json" field in the mutation.
+func (m *DownloadAppMutation) ArchitectureJSON() (r model.LocalizedText, exists bool) {
+	v := m.architecture_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldArchitectureJSON returns the old "architecture_json" field's value of the DownloadApp entity.
+// If the DownloadApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DownloadAppMutation) OldArchitectureJSON(ctx context.Context) (v model.LocalizedText, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldArchitectureJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldArchitectureJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldArchitectureJSON: %w", err)
+	}
+	return oldValue.ArchitectureJSON, nil
+}
+
+// ResetArchitectureJSON resets all changes to the "architecture_json" field.
+func (m *DownloadAppMutation) ResetArchitectureJSON() {
+	m.architecture_json = nil
+}
+
+// SetFeaturesJSON sets the "features_json" field.
+func (m *DownloadAppMutation) SetFeaturesJSON(mt []model.LocalizedText) {
+	m.features_json = &mt
+	m.appendfeatures_json = nil
+}
+
+// FeaturesJSON returns the value of the "features_json" field in the mutation.
+func (m *DownloadAppMutation) FeaturesJSON() (r []model.LocalizedText, exists bool) {
+	v := m.features_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFeaturesJSON returns the old "features_json" field's value of the DownloadApp entity.
+// If the DownloadApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DownloadAppMutation) OldFeaturesJSON(ctx context.Context) (v []model.LocalizedText, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFeaturesJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFeaturesJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFeaturesJSON: %w", err)
+	}
+	return oldValue.FeaturesJSON, nil
+}
+
+// AppendFeaturesJSON adds mt to the "features_json" field.
+func (m *DownloadAppMutation) AppendFeaturesJSON(mt []model.LocalizedText) {
+	m.appendfeatures_json = append(m.appendfeatures_json, mt...)
+}
+
+// AppendedFeaturesJSON returns the list of values that were appended to the "features_json" field in this mutation.
+func (m *DownloadAppMutation) AppendedFeaturesJSON() ([]model.LocalizedText, bool) {
+	if len(m.appendfeatures_json) == 0 {
+		return nil, false
+	}
+	return m.appendfeatures_json, true
+}
+
+// ResetFeaturesJSON resets all changes to the "features_json" field.
+func (m *DownloadAppMutation) ResetFeaturesJSON() {
+	m.features_json = nil
+	m.appendfeatures_json = nil
+}
+
+// SetVersion sets the "version" field.
+func (m *DownloadAppMutation) SetVersion(s string) {
+	m.version = &s
+}
+
+// Version returns the value of the "version" field in the mutation.
+func (m *DownloadAppMutation) Version() (r string, exists bool) {
+	v := m.version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVersion returns the old "version" field's value of the DownloadApp entity.
+// If the DownloadApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DownloadAppMutation) OldVersion(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVersion: %w", err)
+	}
+	return oldValue.Version, nil
+}
+
+// ResetVersion resets all changes to the "version" field.
+func (m *DownloadAppMutation) ResetVersion() {
+	m.version = nil
+}
+
+// SetAssetsJSON sets the "assets_json" field.
+func (m *DownloadAppMutation) SetAssetsJSON(ma []model.DownloadAsset) {
+	m.assets_json = &ma
+	m.appendassets_json = nil
+}
+
+// AssetsJSON returns the value of the "assets_json" field in the mutation.
+func (m *DownloadAppMutation) AssetsJSON() (r []model.DownloadAsset, exists bool) {
+	v := m.assets_json
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAssetsJSON returns the old "assets_json" field's value of the DownloadApp entity.
+// If the DownloadApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DownloadAppMutation) OldAssetsJSON(ctx context.Context) (v []model.DownloadAsset, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAssetsJSON is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAssetsJSON requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAssetsJSON: %w", err)
+	}
+	return oldValue.AssetsJSON, nil
+}
+
+// AppendAssetsJSON adds ma to the "assets_json" field.
+func (m *DownloadAppMutation) AppendAssetsJSON(ma []model.DownloadAsset) {
+	m.appendassets_json = append(m.appendassets_json, ma...)
+}
+
+// AppendedAssetsJSON returns the list of values that were appended to the "assets_json" field in this mutation.
+func (m *DownloadAppMutation) AppendedAssetsJSON() ([]model.DownloadAsset, bool) {
+	if len(m.appendassets_json) == 0 {
+		return nil, false
+	}
+	return m.appendassets_json, true
+}
+
+// ResetAssetsJSON resets all changes to the "assets_json" field.
+func (m *DownloadAppMutation) ResetAssetsJSON() {
+	m.assets_json = nil
+	m.appendassets_json = nil
+}
+
+// SetPublished sets the "published" field.
+func (m *DownloadAppMutation) SetPublished(b bool) {
+	m.published = &b
+}
+
+// Published returns the value of the "published" field in the mutation.
+func (m *DownloadAppMutation) Published() (r bool, exists bool) {
+	v := m.published
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublished returns the old "published" field's value of the DownloadApp entity.
+// If the DownloadApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DownloadAppMutation) OldPublished(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublished is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublished requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublished: %w", err)
+	}
+	return oldValue.Published, nil
+}
+
+// ResetPublished resets all changes to the "published" field.
+func (m *DownloadAppMutation) ResetPublished() {
+	m.published = nil
+}
+
+// SetUpdatedBy sets the "updated_by" field.
+func (m *DownloadAppMutation) SetUpdatedBy(s string) {
+	m.updated_by = &s
+}
+
+// UpdatedBy returns the value of the "updated_by" field in the mutation.
+func (m *DownloadAppMutation) UpdatedBy() (r string, exists bool) {
+	v := m.updated_by
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedBy returns the old "updated_by" field's value of the DownloadApp entity.
+// If the DownloadApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DownloadAppMutation) OldUpdatedBy(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedBy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedBy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedBy: %w", err)
+	}
+	return oldValue.UpdatedBy, nil
+}
+
+// ResetUpdatedBy resets all changes to the "updated_by" field.
+func (m *DownloadAppMutation) ResetUpdatedBy() {
+	m.updated_by = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *DownloadAppMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *DownloadAppMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the DownloadApp entity.
+// If the DownloadApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DownloadAppMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *DownloadAppMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *DownloadAppMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *DownloadAppMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the DownloadApp entity.
+// If the DownloadApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DownloadAppMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *DownloadAppMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the DownloadAppMutation builder.
+func (m *DownloadAppMutation) Where(ps ...predicate.DownloadApp) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DownloadAppMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DownloadAppMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DownloadApp, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DownloadAppMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DownloadAppMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (DownloadApp).
+func (m *DownloadAppMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DownloadAppMutation) Fields() []string {
+	fields := make([]string, 0, 13)
+	if m.platform != nil {
+		fields = append(fields, downloadapp.FieldPlatform)
+	}
+	if m.eyebrow_json != nil {
+		fields = append(fields, downloadapp.FieldEyebrowJSON)
+	}
+	if m.title_json != nil {
+		fields = append(fields, downloadapp.FieldTitleJSON)
+	}
+	if m.description_json != nil {
+		fields = append(fields, downloadapp.FieldDescriptionJSON)
+	}
+	if m.requirements_json != nil {
+		fields = append(fields, downloadapp.FieldRequirementsJSON)
+	}
+	if m.architecture_json != nil {
+		fields = append(fields, downloadapp.FieldArchitectureJSON)
+	}
+	if m.features_json != nil {
+		fields = append(fields, downloadapp.FieldFeaturesJSON)
+	}
+	if m.version != nil {
+		fields = append(fields, downloadapp.FieldVersion)
+	}
+	if m.assets_json != nil {
+		fields = append(fields, downloadapp.FieldAssetsJSON)
+	}
+	if m.published != nil {
+		fields = append(fields, downloadapp.FieldPublished)
+	}
+	if m.updated_by != nil {
+		fields = append(fields, downloadapp.FieldUpdatedBy)
+	}
+	if m.created_at != nil {
+		fields = append(fields, downloadapp.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, downloadapp.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DownloadAppMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case downloadapp.FieldPlatform:
+		return m.Platform()
+	case downloadapp.FieldEyebrowJSON:
+		return m.EyebrowJSON()
+	case downloadapp.FieldTitleJSON:
+		return m.TitleJSON()
+	case downloadapp.FieldDescriptionJSON:
+		return m.DescriptionJSON()
+	case downloadapp.FieldRequirementsJSON:
+		return m.RequirementsJSON()
+	case downloadapp.FieldArchitectureJSON:
+		return m.ArchitectureJSON()
+	case downloadapp.FieldFeaturesJSON:
+		return m.FeaturesJSON()
+	case downloadapp.FieldVersion:
+		return m.Version()
+	case downloadapp.FieldAssetsJSON:
+		return m.AssetsJSON()
+	case downloadapp.FieldPublished:
+		return m.Published()
+	case downloadapp.FieldUpdatedBy:
+		return m.UpdatedBy()
+	case downloadapp.FieldCreatedAt:
+		return m.CreatedAt()
+	case downloadapp.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DownloadAppMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case downloadapp.FieldPlatform:
+		return m.OldPlatform(ctx)
+	case downloadapp.FieldEyebrowJSON:
+		return m.OldEyebrowJSON(ctx)
+	case downloadapp.FieldTitleJSON:
+		return m.OldTitleJSON(ctx)
+	case downloadapp.FieldDescriptionJSON:
+		return m.OldDescriptionJSON(ctx)
+	case downloadapp.FieldRequirementsJSON:
+		return m.OldRequirementsJSON(ctx)
+	case downloadapp.FieldArchitectureJSON:
+		return m.OldArchitectureJSON(ctx)
+	case downloadapp.FieldFeaturesJSON:
+		return m.OldFeaturesJSON(ctx)
+	case downloadapp.FieldVersion:
+		return m.OldVersion(ctx)
+	case downloadapp.FieldAssetsJSON:
+		return m.OldAssetsJSON(ctx)
+	case downloadapp.FieldPublished:
+		return m.OldPublished(ctx)
+	case downloadapp.FieldUpdatedBy:
+		return m.OldUpdatedBy(ctx)
+	case downloadapp.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case downloadapp.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown DownloadApp field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DownloadAppMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case downloadapp.FieldPlatform:
+		v, ok := value.(downloadapp.Platform)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPlatform(v)
+		return nil
+	case downloadapp.FieldEyebrowJSON:
+		v, ok := value.(model.LocalizedText)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEyebrowJSON(v)
+		return nil
+	case downloadapp.FieldTitleJSON:
+		v, ok := value.(model.LocalizedText)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitleJSON(v)
+		return nil
+	case downloadapp.FieldDescriptionJSON:
+		v, ok := value.(model.LocalizedText)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescriptionJSON(v)
+		return nil
+	case downloadapp.FieldRequirementsJSON:
+		v, ok := value.(model.LocalizedText)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequirementsJSON(v)
+		return nil
+	case downloadapp.FieldArchitectureJSON:
+		v, ok := value.(model.LocalizedText)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetArchitectureJSON(v)
+		return nil
+	case downloadapp.FieldFeaturesJSON:
+		v, ok := value.([]model.LocalizedText)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFeaturesJSON(v)
+		return nil
+	case downloadapp.FieldVersion:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVersion(v)
+		return nil
+	case downloadapp.FieldAssetsJSON:
+		v, ok := value.([]model.DownloadAsset)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAssetsJSON(v)
+		return nil
+	case downloadapp.FieldPublished:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublished(v)
+		return nil
+	case downloadapp.FieldUpdatedBy:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedBy(v)
+		return nil
+	case downloadapp.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case downloadapp.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DownloadApp field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DownloadAppMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DownloadAppMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DownloadAppMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown DownloadApp numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DownloadAppMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DownloadAppMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DownloadAppMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown DownloadApp nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DownloadAppMutation) ResetField(name string) error {
+	switch name {
+	case downloadapp.FieldPlatform:
+		m.ResetPlatform()
+		return nil
+	case downloadapp.FieldEyebrowJSON:
+		m.ResetEyebrowJSON()
+		return nil
+	case downloadapp.FieldTitleJSON:
+		m.ResetTitleJSON()
+		return nil
+	case downloadapp.FieldDescriptionJSON:
+		m.ResetDescriptionJSON()
+		return nil
+	case downloadapp.FieldRequirementsJSON:
+		m.ResetRequirementsJSON()
+		return nil
+	case downloadapp.FieldArchitectureJSON:
+		m.ResetArchitectureJSON()
+		return nil
+	case downloadapp.FieldFeaturesJSON:
+		m.ResetFeaturesJSON()
+		return nil
+	case downloadapp.FieldVersion:
+		m.ResetVersion()
+		return nil
+	case downloadapp.FieldAssetsJSON:
+		m.ResetAssetsJSON()
+		return nil
+	case downloadapp.FieldPublished:
+		m.ResetPublished()
+		return nil
+	case downloadapp.FieldUpdatedBy:
+		m.ResetUpdatedBy()
+		return nil
+	case downloadapp.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case downloadapp.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown DownloadApp field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DownloadAppMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DownloadAppMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DownloadAppMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DownloadAppMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DownloadAppMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DownloadAppMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DownloadAppMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown DownloadApp unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DownloadAppMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown DownloadApp edge %s", name)
 }
 
 // EducationMediaMutation represents an operation that mutates the EducationMedia nodes in the graph.

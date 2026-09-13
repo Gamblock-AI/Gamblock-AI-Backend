@@ -52,6 +52,7 @@ func (s *Store) Snapshot() Store {
 		AggregateEvents:           append([]AggregateEvent(nil), s.AggregateEvents...),
 		EmergencyKeyRequests:      append([]EmergencyKeyRequest(nil), s.EmergencyKeyRequests...),
 		SiteSocialLinks:           append([]SiteSocialLink(nil), s.SiteSocialLinks...),
+		DownloadApps:              append([]DownloadApp(nil), s.DownloadApps...),
 		OperatorInvitations:       append([]OperatorInvitation(nil), s.OperatorInvitations...),
 		Institutions:              append([]Institution(nil), s.Institutions...),
 		AcademicPrograms:          append([]AcademicProgram(nil), s.AcademicPrograms...),

@@ -14,6 +14,44 @@ type SiteSocialLink struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// LocalizedText contains the public Indonesian and English copy maintained by
+// administrators for a download card. Release metadata is operational content,
+// not user or browsing data.
+type LocalizedText struct {
+	ID string `json:"id"`
+	EN string `json:"en"`
+}
+
+type DownloadAsset struct {
+	ID        string        `json:"id"`
+	Label     LocalizedText `json:"label"`
+	FileName  string        `json:"file_name"`
+	URL       string        `json:"url"`
+	SizeBytes int64         `json:"size_bytes"`
+	SHA256    string        `json:"sha256"`
+	Primary   bool          `json:"primary"`
+}
+
+// DownloadApp is one of the fixed public distribution cards. Platform is
+// intentionally constrained in the persistence schema to Android, Windows,
+// and the passive browser extension.
+type DownloadApp struct {
+	ID           string          `json:"id"`
+	Platform     string          `json:"platform"`
+	Eyebrow      LocalizedText   `json:"eyebrow"`
+	Title        LocalizedText   `json:"title"`
+	Description  LocalizedText   `json:"description"`
+	Requirements LocalizedText   `json:"requirements"`
+	Architecture LocalizedText   `json:"architecture"`
+	Features     []LocalizedText `json:"features"`
+	Version      string          `json:"version"`
+	Assets       []DownloadAsset `json:"assets"`
+	Published    bool            `json:"published"`
+	UpdatedBy    string          `json:"-"`
+	CreatedAt    time.Time       `json:"created_at"`
+	UpdatedAt    time.Time       `json:"updated_at"`
+}
+
 type OperatorInvitation struct {
 	ID         string     `json:"id"`
 	Email      string     `json:"email"`

@@ -516,6 +516,31 @@ func (SiteSocialLink) Indexes() []ent.Index {
 	return []ent.Index{index.Fields("platform").Unique()}
 }
 
+type DownloadApp struct{ ent.Schema }
+
+func (DownloadApp) Fields() []ent.Field {
+	return []ent.Field{
+		idField(),
+		field.Enum("platform").Values("android", "windows", "browser_extension"),
+		field.JSON("eyebrow_json", model.LocalizedText{}),
+		field.JSON("title_json", model.LocalizedText{}),
+		field.JSON("description_json", model.LocalizedText{}),
+		field.JSON("requirements_json", model.LocalizedText{}),
+		field.JSON("architecture_json", model.LocalizedText{}),
+		field.JSON("features_json", []model.LocalizedText{}),
+		field.String("version"),
+		field.JSON("assets_json", []model.DownloadAsset{}),
+		field.Bool("published").Default(false),
+		field.String("updated_by"),
+		createdAt(),
+		updatedAt(),
+	}
+}
+
+func (DownloadApp) Indexes() []ent.Index {
+	return []ent.Index{index.Fields("platform").Unique()}
+}
+
 type AuditLog struct{ ent.Schema }
 
 func (AuditLog) Fields() []ent.Field {

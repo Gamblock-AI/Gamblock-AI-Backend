@@ -60,6 +60,7 @@ func (r *Repository) RefreshStore(ctx context.Context) {
 	r.store.AggregateEvents = loaded.AggregateEvents
 	r.store.EmergencyKeyRequests = loaded.EmergencyKeyRequests
 	r.store.SiteSocialLinks = loaded.SiteSocialLinks
+	r.store.DownloadApps = loaded.DownloadApps
 	r.store.OperatorInvitations = loaded.OperatorInvitations
 	r.store.Institutions = loaded.Institutions
 	r.store.AcademicPrograms = loaded.AcademicPrograms

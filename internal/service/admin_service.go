@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -55,12 +56,121 @@ var socialHosts = map[string][]string{
 	"github":    {"github.com"},
 }
 
+var downloadReleasePrefixes = map[string]string{
+	"android":           "/Gamblock-AI/Gamblock-AI-Apps/releases/download/",
+	"windows":           "/Gamblock-AI/Gamblock-AI-Apps/releases/download/",
+	"browser_extension": "/Gamblock-AI/Gamblock-AI-Browser-Extention/releases/download/",
+}
+
+var (
+	sha256Pattern        = regexp.MustCompile(`^[a-f0-9]{64}$`)
+	assetIDPattern       = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{0,63}$`)
+	stableVersionPattern = regexp.MustCompile(`^v?[0-9]+\.[0-9]+\.[0-9]+(?:\+[0-9A-Za-z.-]+)?$`)
+)
+
 func (s *AdminService) PublicSocialLinks(ctx context.Context) ([]model.SiteSocialLink, error) {
 	return s.repo.ListSiteSocialLinks(ctx, true)
 }
 
 func (s *AdminService) SiteSocialLinks(ctx context.Context) ([]model.SiteSocialLink, error) {
 	return s.repo.ListSiteSocialLinks(ctx, false)
+}
+
+func (s *AdminService) PublicDownloadApps(ctx context.Context) ([]model.DownloadApp, error) {
+	return s.repo.ListDownloadApps(ctx, true)
+}
+
+func (s *AdminService) DownloadApps(ctx context.Context) ([]model.DownloadApp, error) {
+	return s.repo.ListDownloadApps(ctx, false)
+}
+
+func (s *AdminService) UpdateDownloadApp(ctx context.Context, actorID, platform, reason string, item model.DownloadApp) (model.DownloadApp, error) {
+	platform = strings.ToLower(strings.TrimSpace(platform))
+	if _, ok := downloadReleasePrefixes[platform]; !ok {
+		return model.DownloadApp{}, fmt.Errorf("unknown download platform")
+	}
+	if item.Platform != "" && strings.TrimSpace(item.Platform) != platform {
+		return model.DownloadApp{}, fmt.Errorf("platform cannot be changed")
+	}
+	item.Platform = platform
+	item.Version = strings.TrimSpace(item.Version)
+	if item.Version == "" || len(item.Version) > 40 || !stableVersionPattern.MatchString(item.Version) {
+		return model.DownloadApp{}, fmt.Errorf("invalid release version")
+	}
+	for _, value := range []*model.LocalizedText{&item.Eyebrow, &item.Title, &item.Description, &item.Requirements, &item.Architecture} {
+		if err := normalizeDownloadText(value, 600); err != nil {
+			return model.DownloadApp{}, err
+		}
+	}
+	if len(item.Features) == 0 || len(item.Features) > 4 {
+		return model.DownloadApp{}, fmt.Errorf("download app requires one to four features")
+	}
+	for index := range item.Features {
+		if err := normalizeDownloadText(&item.Features[index], 180); err != nil {
+			return model.DownloadApp{}, err
+		}
+	}
+	if len(item.Assets) == 0 || len(item.Assets) > 4 {
+		return model.DownloadApp{}, fmt.Errorf("download app requires one to four assets")
+	}
+	primaryCount := 0
+	seenAssets := map[string]bool{}
+	for index := range item.Assets {
+		asset := &item.Assets[index]
+		asset.ID = strings.ToLower(strings.TrimSpace(asset.ID))
+		asset.FileName = strings.TrimSpace(asset.FileName)
+		asset.URL = strings.TrimSpace(asset.URL)
+		asset.SHA256 = strings.ToLower(strings.TrimSpace(asset.SHA256))
+		if !assetIDPattern.MatchString(asset.ID) || seenAssets[asset.ID] || asset.FileName == "" || len(asset.FileName) > 180 || strings.ContainsAny(asset.FileName, "/\\") || asset.SizeBytes <= 0 || !sha256Pattern.MatchString(asset.SHA256) {
+			return model.DownloadApp{}, fmt.Errorf("invalid download asset")
+		}
+		seenAssets[asset.ID] = true
+		if err := normalizeDownloadText(&asset.Label, 100); err != nil {
+			return model.DownloadApp{}, err
+		}
+		if err := validateDownloadAssetURL(platform, item.Version, asset.URL, asset.FileName); err != nil {
+			return model.DownloadApp{}, err
+		}
+		if asset.Primary {
+			primaryCount++
+		}
+	}
+	if primaryCount != 1 {
+		return model.DownloadApp{}, fmt.Errorf("download app requires exactly one primary asset")
+	}
+	if (platform == "android" || platform == "windows") && len(item.Assets) != 1 {
+		return model.DownloadApp{}, fmt.Errorf("platform requires exactly one asset")
+	}
+	saved, err := s.repo.SaveDownloadApp(ctx, actorID, item)
+	if err != nil {
+		return model.DownloadApp{}, err
+	}
+	_ = s.audit(ctx, actorID, "download_app_updated", "download_app", saved.Platform, strings.TrimSpace(reason), map[string]any{
+		"version": saved.Version, "published": saved.Published, "asset_count": len(saved.Assets),
+	})
+	return saved, nil
+}
+
+func normalizeDownloadText(value *model.LocalizedText, limit int) error {
+	value.ID = strings.TrimSpace(value.ID)
+	value.EN = strings.TrimSpace(value.EN)
+	if value.ID == "" || value.EN == "" || len(value.ID) > limit || len(value.EN) > limit {
+		return fmt.Errorf("invalid localized download metadata")
+	}
+	return nil
+}
+
+func validateDownloadAssetURL(platform, version, value, filename string) error {
+	parsed, err := url.Parse(value)
+	if err != nil || parsed.Scheme != "https" || parsed.Hostname() != "github.com" || parsed.User != nil || parsed.Port() != "" || parsed.RawQuery != "" || parsed.Fragment != "" {
+		return fmt.Errorf("download URL is not allowed")
+	}
+	prefix := downloadReleasePrefixes[platform]
+	expectedPath := prefix + version + "/" + filename
+	if parsed.Path != expectedPath || strings.Contains(strings.ToLower(parsed.EscapedPath()), "staging") || strings.Contains(strings.ToLower(filename), "staging") {
+		return fmt.Errorf("download URL must target an official stable release asset")
+	}
+	return nil
 }
 
 func (s *AdminService) ReplaceSiteSocialLinks(ctx context.Context, actorID, reason string, items []model.SiteSocialLink) ([]model.SiteSocialLink, error) {

@@ -102,6 +102,9 @@ export data needs to be retained.
 - `PUT  /v1/psychoeducation/modules/:id/revisions/:revision/progress`
 - `POST /v1/psychoeducation/modules/:id/revisions/:revision/checks/:check_id/answer`
 - `GET  /v1/education/media/:id`
+- `GET  /v1/public/download-apps`
+- `GET  /v1/admin/download-apps`
+- `PUT  /v1/admin/download-apps/:platform` (recent auth; audited)
 - `GET/POST/PUT /v1/admin/content/modules[...]`
 - `GET/POST/PUT /v1/admin/content/learning-hub/items[...]`
 - `GET/POST/PUT/DELETE /v1/admin/content/learning-hub/taxonomy[...]`
@@ -238,7 +241,8 @@ the standard envelope.
   external media is restricted to configured HTTPS hosts.
 - Account roles are exactly `user`, `partner`, and `admin`. Admins directly
   provision immutable-role accounts with one-time temporary passwords, and
-  manage content, support queue, safe public social links,
+  manage content, support queue, safe public social links, a checksum-bearing
+  public application-release catalog (official GitHub Release assets only),
   audit history, and dual-control emergency access. Refresh rotation preserves the original authentication time
   used by recent-auth gates, and disabled/changed operator identity is checked
   on every bearer request.

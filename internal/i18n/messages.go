@@ -186,6 +186,7 @@ var messages = map[string]string{
 	"release_rollout_transition_failed": "Status peluncuran rilis belum dapat diperbarui.",
 	"admin_overview_failed":             "Gagal memuat ringkasan operasional.",
 	"site_social_links_failed":          "Pengaturan sosial media belum dapat diproses.",
+	"download_apps_failed":              "Informasi rilis aplikasi belum dapat diproses.",
 	"audit_events_failed":               "Gagal memuat jejak audit.",
 	"operators_fetch_failed":            "Gagal memuat akun operator.",
 	"admin_accounts_fetch_failed":       "Gagal memuat daftar akun.",

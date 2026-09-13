@@ -57,6 +57,7 @@ func NewSeeded() *Store {
 		},
 		Modules:        seed.DemoEducationModules(now),
 		EducationMedia: seed.DemoEducationMedia(now),
+		DownloadApps:   seed.DefaultDownloadApps(now),
 		SupportCases: []SupportCase{
 			{ID: "CASE-1087", UserID: "usr_gading", Title: "Setup and permissions", Type: "device_recovery", Status: "waiting_user", Priority: "normal", Owner: "Gading", CreatedAt: now, UpdatedAt: now},
 			{ID: "CASE-1084", UserID: "usr_dery", Title: "Cannot finish app setup", Type: "device_recovery", Status: "waiting_user", Priority: "normal", Owner: "Dery", CreatedAt: now, UpdatedAt: now},

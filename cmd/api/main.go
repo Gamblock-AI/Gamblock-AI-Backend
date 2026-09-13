@@ -37,6 +37,9 @@ func main() {
 	defer cancel()
 
 	backendStore := store.New()
+	// Keep the public release catalogue available when development deliberately
+	// runs without PostgreSQL. This is metadata only; it creates no demo users.
+	backendStore.DownloadApps = seed.DefaultDownloadApps(time.Now().UTC())
 	if cfg.EnableDemoData && !cfg.IsProduction() {
 		backendStore = store.NewSeeded()
 		if err := seed.InstallEducationAssets(cfg.MediaStoragePath); err != nil {
@@ -58,6 +61,12 @@ func main() {
 				logger.Fatal("database migration failed", zap.Error(err))
 			}
 			logger.Warn("database migration failed; using in-memory store", zap.Error(err))
+			_ = closer()
+		} else if err := seed.SeedDownloadApps(ctx, client); err != nil {
+			if cfg.IsProduction() {
+				logger.Fatal("download-app seed failed", zap.Error(err))
+			}
+			logger.Warn("download-app seed failed; using in-memory store", zap.Error(err))
 			_ = closer()
 		} else if cfg.EnableDemoData && !cfg.IsProduction() {
 			if err := db.Seed(ctx, client, cfg.MediaStoragePath); err != nil {

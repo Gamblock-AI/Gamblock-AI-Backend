@@ -31,5 +31,8 @@ func SeedProductionDefaultsWithReport(ctx context.Context, client *ent.Client, m
 	if err := SeedSiteSocialLinks(ctx, client); err != nil {
 		return LearningHubSeedReport{}, err
 	}
+	if err := SeedDownloadApps(ctx, client); err != nil {
+		return LearningHubSeedReport{}, err
+	}
 	return report, nil
 }

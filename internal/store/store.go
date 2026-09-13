@@ -45,6 +45,7 @@ type (
 	AggregateEvent           = model.AggregateEvent
 	EmergencyKeyRequest      = model.EmergencyKeyRequest
 	SiteSocialLink           = model.SiteSocialLink
+	DownloadApp              = model.DownloadApp
 	OperatorInvitation       = model.OperatorInvitation
 	Institution              = model.Institution
 	AcademicProgram          = model.AcademicProgram
@@ -98,6 +99,7 @@ type Store struct {
 	AggregateEvents           []AggregateEvent           `json:"aggregate_events"`
 	EmergencyKeyRequests      []EmergencyKeyRequest      `json:"emergency_key_requests"`
 	SiteSocialLinks           []SiteSocialLink           `json:"site_social_links"`
+	DownloadApps              []DownloadApp              `json:"download_apps"`
 	OperatorInvitations       []OperatorInvitation       `json:"operator_invitations"`
 	Institutions              []Institution              `json:"institutions"`
 	AcademicPrograms          []AcademicProgram          `json:"academic_programs"`
@@ -107,13 +109,13 @@ type Store struct {
 	LearningItems             []LearningItem             `json:"learning_items"`
 	AdminLearningItems        []AdminLearningItem        `json:"admin_learning_items"`
 	LearningRevisions         []LearningRevision         `json:"learning_revisions"`
-	LearningProgress          []LearningProgress          `json:"learning_progress"`
-	ExperienceGrants          []ExperienceGrant           `json:"experience_grants"`
-	ReminderPreferences       []ReminderPreference        `json:"reminder_preferences"`
-	PushSubscriptions         []PushSubscription          `json:"push_subscriptions"`
-	InterventionRecords       []InterventionRecord        `json:"intervention_records"`
-	BlockedEvents             []BlockedEvent              `json:"blocked_events"`
-	SpkPreferences            []SpkPreference             `json:"spk_preferences"`
+	LearningProgress          []LearningProgress         `json:"learning_progress"`
+	ExperienceGrants          []ExperienceGrant          `json:"experience_grants"`
+	ReminderPreferences       []ReminderPreference       `json:"reminder_preferences"`
+	PushSubscriptions         []PushSubscription         `json:"push_subscriptions"`
+	InterventionRecords       []InterventionRecord       `json:"intervention_records"`
+	BlockedEvents             []BlockedEvent             `json:"blocked_events"`
+	SpkPreferences            []SpkPreference            `json:"spk_preferences"`
 }
 
 func New() *Store {

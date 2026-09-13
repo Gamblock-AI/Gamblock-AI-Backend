@@ -19,7 +19,7 @@ func loadOperationsStore(ctx context.Context, client *ent.Client, out *store.Sto
 			ID: item.ID, OwnerPartnerID: item.OwnerPartnerID, Name: item.Name,
 			Description: item.Description, JoinCodeHash: item.JoinCodeHash, JoinCodeHint: item.JoinCodeHint,
 			JoinCodeEncrypted: item.JoinCodeEncrypted,
-			Status: item.Status.String(), CodeRotatedAt: item.CodeRotatedAt,
+			Status:            item.Status.String(), CodeRotatedAt: item.CodeRotatedAt,
 			CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt,
 		})
 	}
@@ -164,6 +164,21 @@ func loadOperationsStore(ctx context.Context, client *ent.Client, out *store.Sto
 	socialLinks, err := client.SiteSocialLink.Query().All(ctx)
 	if err != nil {
 		return err
+	}
+
+	downloadApps, err := client.DownloadApp.Query().All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, item := range downloadApps {
+		out.DownloadApps = append(out.DownloadApps, store.DownloadApp{
+			ID: item.ID, Platform: item.Platform.String(), Eyebrow: item.EyebrowJSON,
+			Title: item.TitleJSON, Description: item.DescriptionJSON,
+			Requirements: item.RequirementsJSON, Architecture: item.ArchitectureJSON,
+			Features: item.FeaturesJSON, Version: item.Version, Assets: item.AssetsJSON,
+			Published: item.Published, UpdatedBy: item.UpdatedBy,
+			CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt,
+		})
 	}
 	for _, item := range socialLinks {
 		out.SiteSocialLinks = append(out.SiteSocialLinks, store.SiteSocialLink{

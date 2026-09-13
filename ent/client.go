@@ -27,6 +27,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/downloadapp"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
@@ -96,6 +97,8 @@ type Client struct {
 	DataRequest *DataRequestClient
 	// Device is the client for interacting with the Device builders.
 	Device *DeviceClient
+	// DownloadApp is the client for interacting with the DownloadApp builders.
+	DownloadApp *DownloadAppClient
 	// EducationMedia is the client for interacting with the EducationMedia builders.
 	EducationMedia *EducationMediaClient
 	// EducationRevision is the client for interacting with the EducationRevision builders.
@@ -192,6 +195,7 @@ func (c *Client) init() {
 	c.DailyMission = NewDailyMissionClient(c.config)
 	c.DataRequest = NewDataRequestClient(c.config)
 	c.Device = NewDeviceClient(c.config)
+	c.DownloadApp = NewDownloadAppClient(c.config)
 	c.EducationMedia = NewEducationMediaClient(c.config)
 	c.EducationRevision = NewEducationRevisionClient(c.config)
 	c.EmergencyKeyRequest = NewEmergencyKeyRequestClient(c.config)
@@ -333,6 +337,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		DailyMission:             NewDailyMissionClient(cfg),
 		DataRequest:              NewDataRequestClient(cfg),
 		Device:                   NewDeviceClient(cfg),
+		DownloadApp:              NewDownloadAppClient(cfg),
 		EducationMedia:           NewEducationMediaClient(cfg),
 		EducationRevision:        NewEducationRevisionClient(cfg),
 		EmergencyKeyRequest:      NewEmergencyKeyRequestClient(cfg),
@@ -401,6 +406,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		DailyMission:             NewDailyMissionClient(cfg),
 		DataRequest:              NewDataRequestClient(cfg),
 		Device:                   NewDeviceClient(cfg),
+		DownloadApp:              NewDownloadAppClient(cfg),
 		EducationMedia:           NewEducationMediaClient(cfg),
 		EducationRevision:        NewEducationRevisionClient(cfg),
 		EmergencyKeyRequest:      NewEmergencyKeyRequestClient(cfg),
@@ -469,16 +475,17 @@ func (c *Client) Use(hooks ...Hook) {
 		c.AcademicProgram, c.AccountabilityGroup, c.AccountabilityMembership,
 		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.BlockedEvent, c.CheckIn,
 		c.ContactVerification, c.ContentProgress, c.DailyMission, c.DataRequest,
-		c.Device, c.EducationMedia, c.EducationRevision, c.EmergencyKeyRequest,
-		c.ExperienceGrant, c.Institution, c.Intention, c.InterventionRecord,
-		c.LearningCluster, c.LearningItem, c.LearningProgress, c.LearningRevision,
-		c.MembershipExitRequest, c.NotificationDelivery, c.OperatorInvitation,
-		c.Organization, c.OrganizationInvite, c.OrganizationMember,
-		c.OrganizationPolicy, c.PartnerContactRequest, c.PartnerLink,
-		c.PsychoeducationModule, c.PsychoeducationProgress, c.PushSubscription,
-		c.RecoveryPracticeSession, c.RecoveryRecord, c.RecoverySpace, c.Reflection,
-		c.RefreshToken, c.ReminderPreference, c.ReportRollup, c.SiteSocialLink,
-		c.SpkPreference, c.SupportActionAudit, c.SupportCase, c.SupportMessage, c.User,
+		c.Device, c.DownloadApp, c.EducationMedia, c.EducationRevision,
+		c.EmergencyKeyRequest, c.ExperienceGrant, c.Institution, c.Intention,
+		c.InterventionRecord, c.LearningCluster, c.LearningItem, c.LearningProgress,
+		c.LearningRevision, c.MembershipExitRequest, c.NotificationDelivery,
+		c.OperatorInvitation, c.Organization, c.OrganizationInvite,
+		c.OrganizationMember, c.OrganizationPolicy, c.PartnerContactRequest,
+		c.PartnerLink, c.PsychoeducationModule, c.PsychoeducationProgress,
+		c.PushSubscription, c.RecoveryPracticeSession, c.RecoveryRecord,
+		c.RecoverySpace, c.Reflection, c.RefreshToken, c.ReminderPreference,
+		c.ReportRollup, c.SiteSocialLink, c.SpkPreference, c.SupportActionAudit,
+		c.SupportCase, c.SupportMessage, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -491,16 +498,17 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.AcademicProgram, c.AccountabilityGroup, c.AccountabilityMembership,
 		c.AggregateEvent, c.ApprovalRequest, c.AuditLog, c.BlockedEvent, c.CheckIn,
 		c.ContactVerification, c.ContentProgress, c.DailyMission, c.DataRequest,
-		c.Device, c.EducationMedia, c.EducationRevision, c.EmergencyKeyRequest,
-		c.ExperienceGrant, c.Institution, c.Intention, c.InterventionRecord,
-		c.LearningCluster, c.LearningItem, c.LearningProgress, c.LearningRevision,
-		c.MembershipExitRequest, c.NotificationDelivery, c.OperatorInvitation,
-		c.Organization, c.OrganizationInvite, c.OrganizationMember,
-		c.OrganizationPolicy, c.PartnerContactRequest, c.PartnerLink,
-		c.PsychoeducationModule, c.PsychoeducationProgress, c.PushSubscription,
-		c.RecoveryPracticeSession, c.RecoveryRecord, c.RecoverySpace, c.Reflection,
-		c.RefreshToken, c.ReminderPreference, c.ReportRollup, c.SiteSocialLink,
-		c.SpkPreference, c.SupportActionAudit, c.SupportCase, c.SupportMessage, c.User,
+		c.Device, c.DownloadApp, c.EducationMedia, c.EducationRevision,
+		c.EmergencyKeyRequest, c.ExperienceGrant, c.Institution, c.Intention,
+		c.InterventionRecord, c.LearningCluster, c.LearningItem, c.LearningProgress,
+		c.LearningRevision, c.MembershipExitRequest, c.NotificationDelivery,
+		c.OperatorInvitation, c.Organization, c.OrganizationInvite,
+		c.OrganizationMember, c.OrganizationPolicy, c.PartnerContactRequest,
+		c.PartnerLink, c.PsychoeducationModule, c.PsychoeducationProgress,
+		c.PushSubscription, c.RecoveryPracticeSession, c.RecoveryRecord,
+		c.RecoverySpace, c.Reflection, c.RefreshToken, c.ReminderPreference,
+		c.ReportRollup, c.SiteSocialLink, c.SpkPreference, c.SupportActionAudit,
+		c.SupportCase, c.SupportMessage, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -535,6 +543,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.DataRequest.mutate(ctx, m)
 	case *DeviceMutation:
 		return c.Device.mutate(ctx, m)
+	case *DownloadAppMutation:
+		return c.DownloadApp.mutate(ctx, m)
 	case *EducationMediaMutation:
 		return c.EducationMedia.mutate(ctx, m)
 	case *EducationRevisionMutation:
@@ -2338,6 +2348,139 @@ func (c *DeviceClient) mutate(ctx context.Context, m *DeviceMutation) (Value, er
 		return (&DeviceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Device mutation op: %q", m.Op())
+	}
+}
+
+// DownloadAppClient is a client for the DownloadApp schema.
+type DownloadAppClient struct {
+	config
+}
+
+// NewDownloadAppClient returns a client for the DownloadApp from the given config.
+func NewDownloadAppClient(c config) *DownloadAppClient {
+	return &DownloadAppClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `downloadapp.Hooks(f(g(h())))`.
+func (c *DownloadAppClient) Use(hooks ...Hook) {
+	c.hooks.DownloadApp = append(c.hooks.DownloadApp, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `downloadapp.Intercept(f(g(h())))`.
+func (c *DownloadAppClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DownloadApp = append(c.inters.DownloadApp, interceptors...)
+}
+
+// Create returns a builder for creating a DownloadApp entity.
+func (c *DownloadAppClient) Create() *DownloadAppCreate {
+	mutation := newDownloadAppMutation(c.config, OpCreate)
+	return &DownloadAppCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DownloadApp entities.
+func (c *DownloadAppClient) CreateBulk(builders ...*DownloadAppCreate) *DownloadAppCreateBulk {
+	return &DownloadAppCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DownloadAppClient) MapCreateBulk(slice any, setFunc func(*DownloadAppCreate, int)) *DownloadAppCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DownloadAppCreateBulk{err: fmt.Errorf("calling to DownloadAppClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DownloadAppCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DownloadAppCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DownloadApp.
+func (c *DownloadAppClient) Update() *DownloadAppUpdate {
+	mutation := newDownloadAppMutation(c.config, OpUpdate)
+	return &DownloadAppUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DownloadAppClient) UpdateOne(_m *DownloadApp) *DownloadAppUpdateOne {
+	mutation := newDownloadAppMutation(c.config, OpUpdateOne, withDownloadApp(_m))
+	return &DownloadAppUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DownloadAppClient) UpdateOneID(id string) *DownloadAppUpdateOne {
+	mutation := newDownloadAppMutation(c.config, OpUpdateOne, withDownloadAppID(id))
+	return &DownloadAppUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DownloadApp.
+func (c *DownloadAppClient) Delete() *DownloadAppDelete {
+	mutation := newDownloadAppMutation(c.config, OpDelete)
+	return &DownloadAppDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DownloadAppClient) DeleteOne(_m *DownloadApp) *DownloadAppDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DownloadAppClient) DeleteOneID(id string) *DownloadAppDeleteOne {
+	builder := c.Delete().Where(downloadapp.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DownloadAppDeleteOne{builder}
+}
+
+// Query returns a query builder for DownloadApp.
+func (c *DownloadAppClient) Query() *DownloadAppQuery {
+	return &DownloadAppQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDownloadApp},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DownloadApp entity by its id.
+func (c *DownloadAppClient) Get(ctx context.Context, id string) (*DownloadApp, error) {
+	return c.Query().Where(downloadapp.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DownloadAppClient) GetX(ctx context.Context, id string) *DownloadApp {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *DownloadAppClient) Hooks() []Hook {
+	return c.hooks.DownloadApp
+}
+
+// Interceptors returns the client interceptors.
+func (c *DownloadAppClient) Interceptors() []Interceptor {
+	return c.inters.DownloadApp
+}
+
+func (c *DownloadAppClient) mutate(ctx context.Context, m *DownloadAppMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DownloadAppCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DownloadAppUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DownloadAppUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DownloadAppDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DownloadApp mutation op: %q", m.Op())
 	}
 }
 
@@ -7134,29 +7277,29 @@ type (
 	hooks struct {
 		AcademicProgram, AccountabilityGroup, AccountabilityMembership, AggregateEvent,
 		ApprovalRequest, AuditLog, BlockedEvent, CheckIn, ContactVerification,
-		ContentProgress, DailyMission, DataRequest, Device, EducationMedia,
-		EducationRevision, EmergencyKeyRequest, ExperienceGrant, Institution,
-		Intention, InterventionRecord, LearningCluster, LearningItem, LearningProgress,
-		LearningRevision, MembershipExitRequest, NotificationDelivery,
-		OperatorInvitation, Organization, OrganizationInvite, OrganizationMember,
-		OrganizationPolicy, PartnerContactRequest, PartnerLink, PsychoeducationModule,
-		PsychoeducationProgress, PushSubscription, RecoveryPracticeSession,
-		RecoveryRecord, RecoverySpace, Reflection, RefreshToken, ReminderPreference,
-		ReportRollup, SiteSocialLink, SpkPreference, SupportActionAudit, SupportCase,
-		SupportMessage, User []ent.Hook
+		ContentProgress, DailyMission, DataRequest, Device, DownloadApp,
+		EducationMedia, EducationRevision, EmergencyKeyRequest, ExperienceGrant,
+		Institution, Intention, InterventionRecord, LearningCluster, LearningItem,
+		LearningProgress, LearningRevision, MembershipExitRequest,
+		NotificationDelivery, OperatorInvitation, Organization, OrganizationInvite,
+		OrganizationMember, OrganizationPolicy, PartnerContactRequest, PartnerLink,
+		PsychoeducationModule, PsychoeducationProgress, PushSubscription,
+		RecoveryPracticeSession, RecoveryRecord, RecoverySpace, Reflection,
+		RefreshToken, ReminderPreference, ReportRollup, SiteSocialLink, SpkPreference,
+		SupportActionAudit, SupportCase, SupportMessage, User []ent.Hook
 	}
 	inters struct {
 		AcademicProgram, AccountabilityGroup, AccountabilityMembership, AggregateEvent,
 		ApprovalRequest, AuditLog, BlockedEvent, CheckIn, ContactVerification,
-		ContentProgress, DailyMission, DataRequest, Device, EducationMedia,
-		EducationRevision, EmergencyKeyRequest, ExperienceGrant, Institution,
-		Intention, InterventionRecord, LearningCluster, LearningItem, LearningProgress,
-		LearningRevision, MembershipExitRequest, NotificationDelivery,
-		OperatorInvitation, Organization, OrganizationInvite, OrganizationMember,
-		OrganizationPolicy, PartnerContactRequest, PartnerLink, PsychoeducationModule,
-		PsychoeducationProgress, PushSubscription, RecoveryPracticeSession,
-		RecoveryRecord, RecoverySpace, Reflection, RefreshToken, ReminderPreference,
-		ReportRollup, SiteSocialLink, SpkPreference, SupportActionAudit, SupportCase,
-		SupportMessage, User []ent.Interceptor
+		ContentProgress, DailyMission, DataRequest, Device, DownloadApp,
+		EducationMedia, EducationRevision, EmergencyKeyRequest, ExperienceGrant,
+		Institution, Intention, InterventionRecord, LearningCluster, LearningItem,
+		LearningProgress, LearningRevision, MembershipExitRequest,
+		NotificationDelivery, OperatorInvitation, Organization, OrganizationInvite,
+		OrganizationMember, OrganizationPolicy, PartnerContactRequest, PartnerLink,
+		PsychoeducationModule, PsychoeducationProgress, PushSubscription,
+		RecoveryPracticeSession, RecoveryRecord, RecoverySpace, Reflection,
+		RefreshToken, ReminderPreference, ReportRollup, SiteSocialLink, SpkPreference,
+		SupportActionAudit, SupportCase, SupportMessage, User []ent.Interceptor
 	}
 )

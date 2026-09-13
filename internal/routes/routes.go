@@ -34,6 +34,7 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 	v1.POST("/auth/phone-verification/verify/resend", mid.RateLimitMiddleware("3-M"), h.ResendPhoneVerification)
 	v1.GET("/operator/invitations/:token", h.RetiredOperatorInvitation)
 	v1.GET("/public/site-social-links", h.PublicSiteSocialLinks)
+	v1.GET("/public/download-apps", h.PublicDownloadApps)
 
 	// Devices
 	v1.POST("/devices", mid.AuthRequired(), h.CreateDevice)
@@ -213,6 +214,8 @@ func Register(r *gin.Engine, h *handler.Handler, mid *middleware.Middleware) {
 		admin.POST("/data-requests/:id/reject", h.RejectAdminDataRequest)
 		admin.GET("/site-social-links", h.AdminSiteSocialLinks)
 		admin.PUT("/site-social-links", mid.RequireRecentAuth(15*time.Minute), h.ReplaceAdminSiteSocialLinks)
+		admin.GET("/download-apps", h.AdminDownloadApps)
+		admin.PUT("/download-apps/:platform", mid.RequireRecentAuth(15*time.Minute), h.UpdateAdminDownloadApp)
 		admin.GET("/audit-events", h.AdminAuditEvents)
 		admin.GET("/accounts", h.AdminAccounts)
 		admin.POST("/accounts", mid.RequireRecentAuth(15*time.Minute), h.CreateAdminAccount)

@@ -25,6 +25,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/downloadapp"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
@@ -134,6 +135,7 @@ func checkColumn(t, c string) error {
 			dailymission.Table:             dailymission.ValidColumn,
 			datarequest.Table:              datarequest.ValidColumn,
 			device.Table:                   device.ValidColumn,
+			downloadapp.Table:              downloadapp.ValidColumn,
 			educationmedia.Table:           educationmedia.ValidColumn,
 			educationrevision.Table:        educationrevision.ValidColumn,
 			emergencykeyrequest.Table:      emergencykeyrequest.ValidColumn,

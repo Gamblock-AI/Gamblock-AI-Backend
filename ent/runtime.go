@@ -18,6 +18,7 @@ import (
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/dailymission"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/datarequest"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/device"
+	"github.com/gamblock-ai/gamblock-ai-backend/ent/downloadapp"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationmedia"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/educationrevision"
 	"github.com/gamblock-ai/gamblock-ai-backend/ent/emergencykeyrequest"
@@ -305,6 +306,26 @@ func init() {
 	deviceDescID := deviceFields[0].Descriptor()
 	// device.DefaultID holds the default value on creation for the id field.
 	device.DefaultID = deviceDescID.Default.(func() string)
+	downloadappFields := schema.DownloadApp{}.Fields()
+	_ = downloadappFields
+	// downloadappDescPublished is the schema descriptor for published field.
+	downloadappDescPublished := downloadappFields[10].Descriptor()
+	// downloadapp.DefaultPublished holds the default value on creation for the published field.
+	downloadapp.DefaultPublished = downloadappDescPublished.Default.(bool)
+	// downloadappDescCreatedAt is the schema descriptor for created_at field.
+	downloadappDescCreatedAt := downloadappFields[12].Descriptor()
+	// downloadapp.DefaultCreatedAt holds the default value on creation for the created_at field.
+	downloadapp.DefaultCreatedAt = downloadappDescCreatedAt.Default.(func() time.Time)
+	// downloadappDescUpdatedAt is the schema descriptor for updated_at field.
+	downloadappDescUpdatedAt := downloadappFields[13].Descriptor()
+	// downloadapp.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	downloadapp.DefaultUpdatedAt = downloadappDescUpdatedAt.Default.(func() time.Time)
+	// downloadapp.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	downloadapp.UpdateDefaultUpdatedAt = downloadappDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// downloadappDescID is the schema descriptor for id field.
+	downloadappDescID := downloadappFields[0].Descriptor()
+	// downloadapp.DefaultID holds the default value on creation for the id field.
+	downloadapp.DefaultID = downloadappDescID.Default.(func() string)
 	educationmediaFields := schema.EducationMedia{}.Fields()
 	_ = educationmediaFields
 	// educationmediaDescSizeBytes is the schema descriptor for size_bytes field.

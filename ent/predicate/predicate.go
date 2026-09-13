@@ -45,6 +45,9 @@ type DataRequest func(*sql.Selector)
 // Device is the predicate function for device builders.
 type Device func(*sql.Selector)
 
+// DownloadApp is the predicate function for downloadapp builders.
+type DownloadApp func(*sql.Selector)
+
 // EducationMedia is the predicate function for educationmedia builders.
 type EducationMedia func(*sql.Selector)
 
