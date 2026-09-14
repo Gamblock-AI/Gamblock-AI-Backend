@@ -420,7 +420,8 @@ func TestRepositorySecurityLifecycle_RecoveryOwnershipAndRetention(t *testing.T)
 func TestRepositorySecurityLifecycle_SPKRecordsAndPrivacySafeInputs(t *testing.T) {
 	repo, st := newRepo(t)
 	ctx := context.Background()
-	now := time.Now().UTC().Truncate(time.Second)
+	current := time.Now().UTC()
+	now := time.Date(current.Year(), current.Month(), current.Day(), 12, 0, 0, 0, time.UTC)
 
 	preference, err := repo.SpkPreference(ctx, "usr_spk_cov")
 	require.NoError(t, err)

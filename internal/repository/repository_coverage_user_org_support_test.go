@@ -125,7 +125,7 @@ func mustCountPendingApprovalsCoverage(t *testing.T, repo *Repository, ctx conte
 }
 
 func TestRepositoryCoverageUserOrgSupport_PartnerOwnershipAndPhoneStates(t *testing.T) {
-	now := time.Date(2026, time.September, 5, 12, 0, 0, 0, time.UTC)
+	now := time.Now().UTC().Truncate(time.Second)
 	st := store.New()
 	st.Partners = []model.Partner{
 		{ID: "partner-cov-owner", UserID: "usr_owner_cov", PartnerUserID: "usr_partner_cov", Name: "Partner", Contact: "owner@example.test | +628111", PartnerEmail: "partner@example.test", Status: "active", CreatedAt: now, UpdatedAt: now},

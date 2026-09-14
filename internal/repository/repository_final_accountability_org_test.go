@@ -143,7 +143,7 @@ func TestRepositoryFinalAccountabilityOrg_MembershipContactAndTerminalErrors(t *
 
 func TestRepositoryFinalAccountabilityOrg_OrganizationMetricsAndPartnerFiltering(t *testing.T) {
 	ctx := t.Context()
-	now := time.Date(2026, time.September, 5, 14, 0, 0, 0, time.UTC)
+	now := time.Now().UTC().Truncate(time.Second)
 	st := store.New()
 	st.Users = []model.User{
 		{ID: "final-owner", Email: "owner@example.test", DisplayName: "Owner"},
